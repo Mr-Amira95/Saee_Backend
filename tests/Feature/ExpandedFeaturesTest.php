@@ -150,6 +150,41 @@ class ExpandedFeaturesTest extends TestCase
         $this->assertEquals('resolved', $ticket->fresh()->status);
     }
 
+    public function test_admin_can_open_support_ticket_with_client_or_driver()
+    {
+        $this->actingAs($this->admin);
+
+        // Submit opening ticket form
+        $response = $this->post(route('admin.support.store'), [
+            'user_id'  => $this->driver->id,
+            'title'    => 'Route Dispute Issue',
+            'category' => 'delivery_issue',
+            'priority' => 'high',
+            'message'  => 'Please contact logistics manager أحمد regarding your current route.',
+        ]);
+
+        // Verify it redirects back to the conversation
+        $ticket = SupportTicket::where('user_id', $this->driver->id)->first();
+        $this->assertNotNull($ticket);
+        $response->assertRedirect(route('admin.support.index', ['ticket' => $ticket->ticket_number]));
+
+        // Assert database records
+        $this->assertDatabaseHas('support_tickets', [
+            'id'       => $ticket->id,
+            'user_id'  => $this->driver->id,
+            'title'    => 'Route Dispute Issue',
+            'category' => 'delivery_issue',
+            'priority' => 'high',
+            'status'   => 'open',
+        ]);
+
+        $this->assertDatabaseHas('support_messages', [
+            'support_ticket_id' => $ticket->id,
+            'sender_id'         => $this->admin->id,
+            'message'           => 'Please contact logistics manager أحمد regarding your current route.',
+        ]);
+    }
+
     public function test_notification_broadcast_and_nav_bell()
     {
         $this->actingAs($this->admin);

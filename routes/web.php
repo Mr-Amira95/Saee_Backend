@@ -19,10 +19,15 @@ use App\Http\Controllers\Admin\SupportController;
 use App\Http\Controllers\PublicSupportController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\SiteSettingController;
+use App\Http\Controllers\PublicCmsController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [PublicCmsController::class, 'home'])->name('public.home');
+Route::get('/page/{slug}', [PublicCmsController::class, 'showPage'])->name('public.page');
 
 // ─── Public Order Location Sharing & Support Chat ──────────────────────────────
 Route::get('/order/{order_number}/share-location',  [PublicOrderLocationController::class, 'show'])->name('public.share-location');
@@ -52,6 +57,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', fn () => view('admin.dashboard'))->name('dashboard');
         Route::post('logout',   [AuthController::class, 'logout'])->name('logout');
 
+        // CMS Management
+        Route::resource('cms/pages', PageController::class)->names('cms.pages');
+        Route::resource('cms/banners', BannerController::class)->names('cms.banners');
+        Route::resource('cms/services', ServiceController::class)->names('cms.services');
+        Route::resource('cms/faqs', FaqController::class)->names('cms.faqs');
+        Route::get('settings/site', [SiteSettingController::class, 'index'])->name('settings.site.index');
+        Route::post('settings/site', [SiteSettingController::class, 'update'])->name('settings.site.update');
+
         // Locations management
         Route::resource('cities', CityController::class)->names('cities');
         Route::post('cities/{city}/areas',            [CityController::class, 'storeArea'])->name('cities.areas.store');
@@ -72,6 +85,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Support Tickets & Chat Center
         Route::get('support',                     [SupportController::class, 'index'])->name('support.index');
+        Route::post('support',                    [SupportController::class, 'store'])->name('support.store');
         Route::post('support/{ticket}/send',      [SupportController::class, 'sendMessage'])->name('support.send');
         Route::post('support/{ticket}/resolve',   [SupportController::class, 'resolveTicket'])->name('support.resolve');
         Route::get('support/{ticket}/messages',   [SupportController::class, 'getMessages'])->name('support.messages');

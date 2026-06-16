@@ -258,8 +258,11 @@
         
         {{-- Tickets Queue --}}
         <div class="chat-sidebar">
-            <div class="chat-sidebar-head">
+            <div class="chat-sidebar-head" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                 <h3>Tickets Queue</h3>
+                <button onclick="openCreateTicketModal()" class="btn-primary" style="padding: 4px 8px; font-size: .75rem; box-shadow: none; border-radius: 6px;">
+                    + Open Ticket
+                </button>
             </div>
             <div class="ticket-list">
                 @forelse($tickets as $t)
@@ -357,6 +360,75 @@
             @endif
         </div>
 
+    {{-- Modal Overlay for Support Ticket Creation --}}
+    <div id="createTicketModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease;">
+        <div style="background: var(--bg-2); border: 1px solid var(--bdr); border-radius: 16px; width: 100%; max-width: 500px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); transform: translateY(-20px); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); margin: 0 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--bdr); padding-bottom: 10px;">
+                <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text);">Open Support Ticket</h3>
+                <button onclick="closeCreateTicketModal()" style="background: none; border: none; color: var(--text-dim); font-size: 1.2rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <form action="{{ route('admin.support.store') }}" method="POST">
+                @csrf
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="font-size: 0.8rem; margin-bottom: 5px;">Select Client / Driver <span class="req">*</span></label>
+                    <select name="user_id" class="form-input" required style="background: var(--in-bg); color: var(--text); border-color: var(--in-bdr);">
+                        <option value="">-- Choose User --</option>
+                        @foreach($users as $u)
+                            <option value="{{ $u->id }}">{{ $u->name }} ({{ str_replace('_', ' ', $u->role) }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="font-size: 0.8rem; margin-bottom: 5px;">Related Order (Optional)</label>
+                    <select name="order_id" class="form-input" style="background: var(--in-bg); color: var(--text); border-color: var(--in-bdr);">
+                        <option value="">-- Select Order --</option>
+                        @foreach($orders as $o)
+                            <option value="{{ $o->id }}">#{{ $o->order_number }} - To: {{ $o->receiver_name }} ({{ $o->receiver_phone }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="form-grid-2" style="margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.8rem; margin-bottom: 5px;">Category <span class="req">*</span></label>
+                        <select name="category" class="form-input" required style="background: var(--in-bg); color: var(--text); border-color: var(--in-bdr);">
+                            <option value="general">General Inquiry</option>
+                            <option value="delivery_issue">Delivery Issue</option>
+                            <option value="financial">Financial / COD</option>
+                            <option value="complaint">Complaint</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.8rem; margin-bottom: 5px;">Priority <span class="req">*</span></label>
+                        <select name="priority" class="form-input" required style="background: var(--in-bg); color: var(--text); border-color: var(--in-bdr);">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="font-size: 0.8rem; margin-bottom: 5px;">Subject Title <span class="req">*</span></label>
+                    <input type="text" name="title" class="form-input" placeholder="e.g. Shipping Delay Inquiry" required style="background: var(--in-bg); color: var(--text); border-color: var(--in-bdr);">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" style="font-size: 0.8rem; margin-bottom: 5px;">Initial Message <span class="req">*</span></label>
+                    <textarea name="message" class="form-input" rows="4" placeholder="Describe the issue or start the conversation..." required style="height: auto; background: var(--in-bg); color: var(--text); border-color: var(--in-bdr); resize: none;"></textarea>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--bdr); padding-top: 15px;">
+                    <button type="button" onclick="closeCreateTicketModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
     </div>
 @endsection
 
@@ -439,4 +511,26 @@
     }
 </script>
 @endif
+
+<script>
+    function openCreateTicketModal() {
+        const modal = document.getElementById('createTicketModal');
+        const content = modal.firstElementChild;
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.style.opacity = '1';
+            content.style.transform = 'translateY(0)';
+        }, 20);
+    }
+    
+    function closeCreateTicketModal() {
+        const modal = document.getElementById('createTicketModal');
+        const content = modal.firstElementChild;
+        modal.style.opacity = '0';
+        content.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 200);
+    }
+</script>
 @endsection

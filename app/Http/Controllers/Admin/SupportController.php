@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use App\Models\SupportMessage;
+use App\Models\User;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,7 +35,53 @@ class SupportController extends Controller
             }
         }
 
-        return view('admin.support.index', compact('tickets', 'activeTicket'));
+        // Fetch clients and drivers to open tickets with
+        $users = User::whereIn('role', ['driver', 'client_master', 'client_employee'])
+            ->orderBy('name')
+            ->get();
+
+        // Fetch recent orders
+        $orders = Order::orderBy('created_at', 'desc')
+            ->take(100)
+            ->get();
+
+        return view('admin.support.index', compact('tickets', 'activeTicket', 'users', 'orders'));
+    }
+
+    /**
+     * Open a new support ticket with a client or driver.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id'  => 'required|exists:users,id',
+            'order_id' => 'nullable|exists:orders,id',
+            'title'    => 'required|string|max:255',
+            'category' => 'required|in:general,delivery_issue,financial,complaint',
+            'priority' => 'required|in:low,medium,high',
+            'message'  => 'required|string',
+        ]);
+
+        $ticket = SupportTicket::create([
+            'user_id'  => $validated['user_id'],
+            'order_id' => $validated['order_id'] ?? null,
+            'title'    => $validated['title'],
+            'category' => $validated['category'],
+            'priority' => $validated['priority'],
+            'status'   => 'open',
+        ]);
+
+        // Create the initial message from the admin
+        SupportMessage::create([
+            'support_ticket_id' => $ticket->id,
+            'sender_id'         => Auth::id(),
+            'sender_name'       => Auth::user()->name . ' (Operations)',
+            'message'           => $validated['message'],
+            'is_read'           => true,
+        ]);
+
+        return redirect()->route('admin.support.index', ['ticket' => $ticket->ticket_number])
+            ->with('success', "Support ticket {$ticket->ticket_number} opened successfully.");
     }
 
     /**

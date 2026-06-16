@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Saee Logistics - Fast, Reliable & Seamless Logistic Services</title>
-        <meta name="description" content="Saee Logistics offers premium logistics, real-time shipment tracking, express delivery, and warehousing solutions. Optimize your supply chain today.">
+        <title>{{ $settings['meta_title'] }}</title>
+        <meta name="description" content="{{ $settings['meta_description'] }}">
 
         <!-- Google Fonts: Outfit -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,8 +66,8 @@
                 width: 100%;
                 height: 100%;
                 background-image: 
-                    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+                 linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                 linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
                 background-size: 40px 40px;
                 z-index: -2;
                 pointer-events: none;
@@ -194,9 +194,9 @@
                 transform: translateY(-2px);
             }
 
-            /* Hero Section */
+            /* Hero / Slider Section */
             .hero {
-                padding: 8rem 0 5rem 0;
+                padding: 6rem 0 5rem 0;
                 text-align: center;
                 position: relative;
             }
@@ -251,6 +251,66 @@
                 margin-bottom: 5rem;
             }
 
+            /* Banner Slider specific styles */
+            .banner-slider {
+                position: relative;
+                width: 100%;
+                min-height: 550px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #000;
+                border-bottom: 1px solid var(--border-color);
+                overflow: hidden;
+            }
+
+            .banner-slider .slide {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.8s ease-in-out;
+                z-index: 1;
+            }
+
+            .banner-slider .slide.active {
+                opacity: 1;
+                z-index: 2;
+            }
+
+            .banner-slider .slide-bg {
+                position: absolute;
+                inset: 0;
+                background-size: cover;
+                background-position: center;
+                filter: brightness(0.4) contrast(1.1);
+            }
+
+            .banner-slider .slide-content {
+                position: relative;
+                z-index: 3;
+                text-align: center;
+                padding: 0 2rem;
+            }
+
+            .slider-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                border: none;
+                background: rgba(255, 255, 255, 0.3);
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .slider-dot.active {
+                background: var(--primary-color) !important;
+                width: 24px !important;
+                border-radius: 6px !important;
+            }
+
             /* Glassmorphic Interactive Dashboard */
             .interactive-dashboard {
                 display: grid;
@@ -269,7 +329,6 @@
 
             .dashboard-card {
                 display: flex;
-                flex-col: column;
                 flex-direction: column;
                 justify-content: space-between;
             }
@@ -901,29 +960,32 @@
         <!-- Header -->
         <header>
             <div class="container nav-container">
-                <a href="#" class="logo-link" id="homeLogoLink">
-                    <img src="{{ asset('logo.png') }}" alt="Saee Logistics Logo" class="logo-img">
+                <a href="{{ route('public.home') }}" class="logo-link" id="homeLogoLink">
+                    <img src="{{ asset('logo.png') }}" alt="{{ $settings['site_name'] }} Logo" class="logo-img">
+                    <span style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px;">{{ $settings['site_name'] }}</span>
                 </a>
                 <nav aria-label="Main Navigation">
                     <ul>
-                        <li><a href="#" class="active" id="navHome">Home</a></li>
+                        <li><a href="{{ route('public.home') }}" class="active" id="navHome">Home</a></li>
                         <li><a href="#services" id="navServices">Services</a></li>
                         <li><a href="#about" id="navAbout">About Us</a></li>
+                        @if($faqs->count())
+                            <li><a href="#faqs">FAQs</a></li>
+                        @endif
+                        @foreach($headerPages as $hp)
+                            <li><a href="{{ route('public.page', $hp->slug) }}">{{ $hp->title }}</a></li>
+                        @endforeach
                         <li><a href="#contact" id="navContact">Contact</a></li>
                     </ul>
                 </nav>
                 <div class="auth-buttons">
                     @if (Route::has('login'))
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="btn btn-secondary" id="btnDashboard">Dashboard</a>
+                            <a href="{{ url('/admin/dashboard') }}" class="btn btn-secondary" id="btnDashboard">Dashboard</a>
                         @else
                             <a href="{{ route('login') }}" class="btn btn-secondary" id="btnLogIn">Log in</a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="btn btn-primary" id="btnRegister">Get Started</a>
-                            @endif
                         @endauth
                     @else
-                        <!-- Fallback standard CTAs if auth routes don't exist -->
                         <a href="#contact" class="btn btn-primary" id="btnGetQuoteNav">Get a Quote</a>
                     @endif
                 </div>
@@ -934,97 +996,134 @@
         <main>
             
             <!-- Hero Section -->
-            <section class="hero" aria-labelledby="heroTitle">
-                <div class="container">
-                    <div class="hero-badge">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
-                        Smart & Swift Delivery Network
+            @if($banners->count())
+                <section class="banner-slider">
+                    @foreach($banners as $index => $banner)
+                        <div class="slide {{ $index === 0 ? 'active' : '' }}">
+                            <div class="slide-bg" style="background-image: url('{{ $banner->image_path }}');"></div>
+                            <div class="slide-content container">
+                                <div class="hero-badge" style="animation: none;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                                    Premium Logistic Solutions
+                                </div>
+                                <h1 style="font-size: 3.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.5rem; letter-spacing: -1px;">
+                                    {!! preg_replace('/(\S+)$/', '<span>$1</span>', $banner->title) !!}
+                                </h1>
+                                @if($banner->subtitle)
+                                    <p style="font-size: 1.25rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 3rem auto;">{{ $banner->subtitle }}</p>
+                                @endif
+                                <div class="hero-actions" style="margin-bottom: 0;">
+                                    @if($banner->link_url)
+                                        <a href="{{ $banner->link_url }}" class="btn btn-primary">{{ $banner->link_text ?: 'Ship Now' }}</a>
+                                    @endif
+                                    <a href="#tracker" class="btn btn-secondary">Track Shipment</a>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                    @if($banners->count() > 1)
+                        <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10;">
+                            @foreach($banners as $index => $banner)
+                                <button onclick="setSlide({{ $index }})" class="slider-dot {{ $index === 0 ? 'active' : '' }}"></button>
+                            @endforeach
+                        </div>
+                    @endif
+                </section>
+            @else
+                <section class="hero" aria-labelledby="heroTitle">
+                    <div class="container">
+                        <div class="hero-badge">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                            Smart & Swift Delivery Network
+                        </div>
+                        <h1 id="heroTitle">Logistics Redefined.<br>Speed <span>Perfected.</span></h1>
+                        <p>Experience seamless supply chain management, cargo transportation, and real-time shipping solutions designed to keep your business moving ahead.</p>
+                        <div class="hero-actions">
+                            <a href="#tracker" class="btn btn-primary" id="btnTrackShipmentHero">Track Shipment</a>
+                            <a href="#about" class="btn btn-secondary" id="btnLearnMoreHero">Learn More</a>
+                        </div>
                     </div>
-                    <h1 id="heroTitle">Logistics Redefined.<br>Speed <span>Perfected.</span></h1>
-                    <p>Experience seamless supply chain management, cargo transportation, and real-time shipping solutions designed to keep your business moving ahead.</p>
-                    <div class="hero-actions">
-                        <a href="#tracker" class="btn btn-primary" id="btnTrackShipmentHero">Track Shipment</a>
-                        <a href="#about" class="btn btn-secondary" id="btnLearnMoreHero">Learn More</a>
-                    </div>
+                </section>
+            @endif
 
-                    <!-- Glassmorphic Interactive Dashboard (Calculator + Tracker) -->
-                    <div class="interactive-dashboard" id="tracker">
+            <!-- Glassmorphic Interactive Dashboard (Calculator + Tracker) -->
+            <div class="container" style="margin-top: -2rem; position: relative; z-index: 10;">
+                <div class="interactive-dashboard" id="tracker">
+                    
+                    <!-- Tracking Card -->
+                    <div class="dashboard-card">
+                        <div>
+                            <h2 class="card-title">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                                Shipment Tracking
+                            </h2>
+                            <p class="card-description">Check the live status of your domestic and international shipments instantly.</p>
+                        </div>
                         
-                        <!-- Tracking Card -->
-                        <div class="dashboard-card">
-                            <div>
-                                <h2 class="card-title">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                                    Shipment Tracking
-                                </h2>
-                                <p class="card-description">Check the live status of your domestic and international shipments instantly.</p>
+                        <div class="tracking-wrapper">
+                            <div class="input-group">
+                                <input type="text" id="trackingInput" placeholder="Enter Tracking Number (e.g. SAEE-8742-XP)" aria-label="Tracking Number">
+                                <button class="btn btn-primary" id="btnTrackSubmit" onclick="simulateTracking()">Track</button>
                             </div>
-                            
-                            <div class="tracking-wrapper">
-                                <div class="input-group">
-                                    <input type="text" id="trackingInput" placeholder="Enter Tracking Number (e.g. SAEE-8742-XP)" aria-label="Tracking Number">
-                                    <button class="btn btn-primary" id="btnTrackSubmit" onclick="simulateTracking()">Track</button>
-                                </div>
 
-                                <!-- Dynamic Results Stepper -->
-                                <div class="tracking-results" id="trackingResults">
-                                    <div class="status-header">
-                                        <span class="status-id" id="resultTrackingId">SAEE-8742-XP</span>
-                                        <span class="status-badge" id="resultStatus">In Transit</span>
+                            <!-- Dynamic Results Stepper -->
+                            <div class="tracking-results" id="trackingResults">
+                                <div class="status-header">
+                                    <span class="status-id" id="resultTrackingId">SAEE-8742-XP</span>
+                                    <span class="status-badge" id="resultStatus">In Transit</span>
+                                </div>
+                                <div class="stepper">
+                                    <div class="stepper-progress" id="stepperProgress"></div>
+                                    <div class="step completed">
+                                        <div class="step-title">Order Processed</div>
+                                        <div class="step-desc">Sender created shipment record. Riyadh, SA</div>
                                     </div>
-                                    <div class="stepper">
-                                        <div class="stepper-progress" id="stepperProgress"></div>
-                                        <div class="step completed">
-                                            <div class="step-title">Order Processed</div>
-                                            <div class="step-desc">Sender created shipment record. Riyadh, SA</div>
-                                        </div>
-                                        <div class="step completed">
-                                            <div class="step-title">In Transit</div>
-                                            <div class="step-desc">Parcel sorted at main hub. Jeddah sorting center</div>
-                                        </div>
-                                        <div class="step active" id="latestStep">
-                                            <div class="step-title">Out for Delivery</div>
-                                            <div class="step-desc">Courier assigned for final destination. Dammam, SA</div>
-                                        </div>
+                                    <div class="step completed">
+                                        <div class="step-title">In Transit</div>
+                                        <div class="step-desc">Parcel sorted at main hub. Jeddah sorting center</div>
+                                    </div>
+                                    <div class="step active" id="latestStep">
+                                        <div class="step-title">Out for Delivery</div>
+                                        <div class="step-desc">Courier assigned for final destination. Dammam, SA</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Calculator Card -->
-                        <div class="dashboard-card calculator-card">
-                            <div>
-                                <h2 class="card-title">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line></svg>
-                                    Rate Estimator
-                                </h2>
-                                <p class="card-description">Instant estimated quote based on weight and package destination.</p>
-                            </div>
-
-                            <div class="calc-group">
-                                <div class="select-group">
-                                    <label for="destinationSelect">Destination Region</label>
-                                    <select id="destinationSelect" onchange="calculateRate()">
-                                        <option value="15">Central Region (Riyadh)</option>
-                                        <option value="25">Western Region (Jeddah, Makkah)</option>
-                                        <option value="30">Eastern Region (Dammam, Khobar)</option>
-                                        <option value="45">International Shipping</option>
-                                    </select>
-                                </div>
-                                <div class="select-group">
-                                    <label for="weightInput">Weight (kg)</label>
-                                    <input type="number" id="weightInput" value="1" min="1" max="1000" oninput="calculateRate()">
-                                </div>
-                                <div class="calc-result">
-                                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight:600;">ESTIMATED TOTAL</div>
-                                    <div class="calc-price" id="calcPrice">SAR <span>20.00</span></div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
+
+                    <!-- Calculator Card -->
+                    <div class="dashboard-card calculator-card">
+                        <div>
+                            <h2 class="card-title">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line></svg>
+                                Rate Estimator
+                            </h2>
+                            <p class="card-description">Instant estimated quote based on weight and package destination.</p>
+                        </div>
+
+                        <div class="calc-group">
+                            <div class="select-group">
+                                <label for="destinationSelect">Destination Region</label>
+                                <select id="destinationSelect" onchange="calculateRate()">
+                                    <option value="5">Local Delivery (Same City)</option>
+                                    <option value="15">Central Region (Amman)</option>
+                                    <option value="25">Northern Region (Irbid, Jerash)</option>
+                                    <option value="30">Southern Region (Aqaba, Karak)</option>
+                                </select>
+                            </div>
+                            <div class="select-group">
+                                <label for="weightInput">Weight (kg)</label>
+                                <input type="number" id="weightInput" value="1" min="1" max="1000" oninput="calculateRate()">
+                            </div>
+                            <div class="calc-result">
+                                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight:600;">ESTIMATED TOTAL</div>
+                                <div class="calc-price" id="calcPrice">JD <span>5.00</span></div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-            </section>
+            </div>
 
             <!-- Services Section -->
             <section class="services" id="services" aria-labelledby="servicesTitle">
@@ -1034,33 +1133,42 @@
                         <p>Providing custom, scalable freight and courier solutions tailored to support businesses and individuals worldwide.</p>
                     </div>
                     <div class="services-grid">
-                        
-                        <!-- Service 1 -->
-                        <article class="service-card">
-                            <div class="service-icon">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                            </div>
-                            <h3>Express Delivery</h3>
-                            <p>Fast, door-to-door courier service prioritizing swift transits for your time-sensitive consignments locally and globally.</p>
-                        </article>
+                        @forelse($services as $service)
+                            <article class="service-card">
+                                <div class="service-icon" style="font-size: 1.8rem; display: flex; align-items: center; justify-content: center;">
+                                    {{ $service->icon ?: '📦' }}
+                                </div>
+                                <h3>{{ $service->title }}</h3>
+                                <p>{{ $service->description }}</p>
+                            </article>
+                        @empty
+                            <!-- Service 1 -->
+                            <article class="service-card">
+                                <div class="service-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                </div>
+                                <h3>Express Delivery</h3>
+                                <p>Fast, door-to-door courier service prioritizing swift transits for your time-sensitive consignments locally and globally.</p>
+                            </article>
 
-                        <!-- Service 2 -->
-                        <article class="service-card">
-                            <div class="service-icon">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="16.5 19.79 16.5 14.6 21 12"></polyline><polyline points="12 22.08 12 12.5 3 7.29"></polyline><polyline points="12 12.5 21 7.29"></polyline></article>
-                            <h3>Smart Warehousing</h3>
-                            <p>State-of-the-art secure storage centers strategically located with fully managed inventory and fulfillment systems.</p>
-                        </article>
+                            <!-- Service 2 -->
+                            <article class="service-card">
+                                <div class="service-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="16.5 19.79 16.5 14.6 21 12"></polyline><polyline points="12 22.08 12 12.5 3 7.29"></polyline><polyline points="12 12.5 21 7.29"></polyline></svg>
+                                </div>
+                                <h3>Smart Warehousing</h3>
+                                <p>State-of-the-art secure storage centers strategically located with fully managed inventory and fulfillment systems.</p>
+                            </article>
 
-                        <!-- Service 3 -->
-                        <article class="service-card">
-                            <div class="service-icon">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16.242V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-1.758a2 2 0 0 0-.586-1.414l-4.364-4.364A2 2 0 0 0 15.636 10H8.364a2 2 0 0 0-1.414.586l-4.364 4.364A2 2 0 0 0 2 16.242z"></path><circle cx="12" cy="5" r="2"></circle></svg>
-                            </div>
-                            <h3>Enterprise Freight</h3>
-                            <p>End-to-end global shipping solutions including air, sea, and land cargo management tailored to your enterprise demand.</p>
-                        </article>
-
+                            <!-- Service 3 -->
+                            <article class="service-card">
+                                <div class="service-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16.242V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-1.758a2 2 0 0 0-.586-1.414l-4.364-4.364A2 2 0 0 0 15.636 10H8.364a2 2 0 0 0-1.414.586l-4.364 4.364A2 2 0 0 0 2 16.242z"></path><circle cx="12" cy="5" r="2"></circle></svg>
+                                </div>
+                                <h3>Enterprise Freight</h3>
+                                <p>End-to-end global shipping solutions including air, sea, and land cargo management tailored to your enterprise demand.</p>
+                            </article>
+                        @endforelse
                     </div>
                 </div>
             </section>
@@ -1070,7 +1178,7 @@
                 <div class="container fleet-section">
                     <div class="fleet-content">
                         <h2 id="aboutTitle">Empowering Commerce with Premier Logistics</h2>
-                        <p>Saee Logistics is built on accuracy, reliability, and custom-driven supply chain management. We utilize advanced fleet analytics to offer maximum visibility and speed for every package.</p>
+                        <p>{{ $settings['site_name'] }} is built on accuracy, reliability, and custom-driven supply chain management. We utilize advanced fleet analytics to offer maximum visibility and speed for every package.</p>
                         <div class="stats-row">
                             <div class="stat-box">
                                 <div class="stat-number">99.8%</div>
@@ -1087,11 +1195,42 @@
                         <div class="logo-showcase-card">
                             <div class="showcase-tag">Verified Brand</div>
                             <img src="{{ asset('logo.png') }}" alt="Saee Logo Showcase" class="showcase-img">
-                            <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted)">Your premium logistics partner across Saudi Arabia & beyond.</p>
+                            <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted)">Your premium logistics partner across {{ $settings['site_address'] }}.</p>
                         </div>
                     </div>
                 </div>
             </section>
+
+            <!-- FAQs Section -->
+            @if($faqs->count())
+            <section class="faqs-section" id="faqs" style="padding: 6rem 0; background: rgba(255,255,255,0.01); border-top: 1px solid var(--border-color);" aria-labelledby="faqsTitle">
+                <div class="container">
+                    <div class="section-header">
+                        <h2 id="faqsTitle" style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">Frequently Asked Questions</h2>
+                        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Find quick answers to common questions about our express delivery, warehousing, and corporate shipping solutions.</p>
+                    </div>
+
+                    <div style="max-width: 800px; margin: 4rem auto 0 auto; display: flex; flex-direction: column; gap: 1.2rem;">
+                        @foreach($faqs as $category => $catFaqs)
+                            <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); text-transform: uppercase; letter-spacing: 2px; margin-top: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">{{ $category }}</h3>
+                            @foreach($catFaqs as $faq)
+                                <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all var(--transition-normal);">
+                                    <button onclick="toggleFaq(this)" class="faq-question" style="width: 100%; text-align: left; background: none; border: none; padding: 1.25rem 1.5rem; font-size: 1.05rem; font-weight: 600; color: var(--text-light); cursor: pointer; display: flex; justify-content: space-between; align-items: center; outline: none; gap: 15px;">
+                                        <span>{{ $faq->question }}</span>
+                                        <svg class="faq-icon" style="width: 16px; height: 16px; transition: transform var(--transition-normal); opacity: 0.6; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                    </button>
+                                    <div class="faq-answer-container" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div style="padding: 0 1.5rem 1.5rem 1.5rem; font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
+                                            {!! nl2br(e($faq->answer)) !!}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+            @endif
 
             <!-- Contact/Quote Section -->
             <section class="cta-contact" id="contact" aria-labelledby="contactTitle">
@@ -1107,7 +1246,7 @@
                                 </div>
                                 <div class="info-text">
                                     <div class="info-label">Customer Support</div>
-                                    <strong>+966 9200 12345</strong>
+                                    <strong>{{ $settings['site_phone'] }}</strong>
                                 </div>
                             </div>
 
@@ -1117,7 +1256,7 @@
                                 </div>
                                 <div class="info-text">
                                     <div class="info-label">Email Queries</div>
-                                    <strong>info@saee.sa</strong>
+                                    <strong>{{ $settings['site_email'] }}</strong>
                                 </div>
                             </div>
                         </div>
@@ -1153,45 +1292,67 @@
         <footer>
             <div class="container footer-grid">
                 <div class="footer-about">
-                    <img src="{{ asset('logo.png') }}" alt="Saee Logistics Logo Footer" class="logo-img">
-                    <p>Building paths, matching schedules, and accelerating commerce through premium logistics solutions across the Kingdom of Saudi Arabia.</p>
+                    <div style="display:flex; align-items:center; gap: 10px; margin-bottom:1.5rem;">
+                        <img src="{{ asset('logo.png') }}" alt="{{ $settings['site_name'] }} Logo Footer" class="logo-img" style="height:38px;">
+                        <span style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.5px; color:var(--text-light)">{{ $settings['site_name'] }}</span>
+                    </div>
+                    <p>Building paths, matching schedules, and accelerating commerce through premium logistics solutions across Jordan.</p>
                 </div>
                 <div class="footer-links">
                     <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="#" id="footerNavHome">Home</a></li>
+                        <li><a href="{{ route('public.home') }}" id="footerNavHome">Home</a></li>
                         <li><a href="#services" id="footerNavServices">Services</a></li>
                         <li><a href="#about" id="footerNavAbout">About Us</a></li>
                         <li><a href="#contact" id="footerNavContact">Contact Support</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
-                    <h4>Our Services</h4>
+                    <h4>Social Media</h4>
                     <ul>
-                        <li><a href="#" id="footerServiceExpress">Express Courier</a></li>
-                        <li><a href="#" id="footerServiceB2B">Corporate Logistics</a></li>
-                        <li><a href="#" id="footerServiceWarehousing">Secure Storage</a></li>
-                        <li><a href="#" id="footerServiceAir">Freight Solutions</a></li>
+                        @if($settings['social_facebook']) <li><a href="{{ $settings['social_facebook'] }}" target="_blank">Facebook</a></li> @endif
+                        @if($settings['social_twitter']) <li><a href="{{ $settings['social_twitter'] }}" target="_blank">Twitter / X</a></li> @endif
+                        @if($settings['social_instagram']) <li><a href="{{ $settings['social_instagram'] }}" target="_blank">Instagram</a></li> @endif
+                        @if($settings['social_linkedin']) <li><a href="{{ $settings['social_linkedin'] }}" target="_blank">LinkedIn</a></li> @endif
                     </ul>
                 </div>
                 <div class="footer-links">
-                    <h4>Resources</h4>
+                    <h4>Company Policies</h4>
                     <ul>
-                        <li><a href="#" id="footerResSupport">Help Center</a></li>
-                        <li><a href="#" id="footerResTerms">Terms of Service</a></li>
-                        <li><a href="#" id="footerResPrivacy">Privacy Policy</a></li>
-                        <li><a href="#" id="footerResApi">API Integration</a></li>
+                        @foreach($headerPages as $hp)
+                            <li><a href="{{ route('public.page', $hp->slug) }}">{{ $hp->title }}</a></li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
             <div class="container footer-bottom">
-                <p>&copy; {{ date('Y') }} Saee Logistics Services. All rights reserved.</p>
+                <p>&copy; {{ date('Y') }} {{ $settings['site_name'] }} Services. All rights reserved.</p>
                 <p>Designed with absolute precision.</p>
             </div>
         </footer>
 
         <!-- Javascript Operations for Interactive UI elements -->
         <script>
+            // Slide controller
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.banner-slider .slide');
+            const dots = document.querySelectorAll('.slider-dot');
+            
+            function setSlide(index) {
+                if (slides.length === 0) return;
+                slides[currentSlide].classList.remove('active');
+                if (dots[currentSlide]) dots[currentSlide].classList.remove('active');
+                currentSlide = (index + slides.length) % slides.length;
+                slides[currentSlide].classList.add('active');
+                if (dots[currentSlide]) dots[currentSlide].classList.add('active');
+            }
+            
+            if (slides.length > 1) {
+                setInterval(() => {
+                    setSlide(currentSlide + 1);
+                }, 5000);
+            }
+
             // Shipment tracking simulator
             function simulateTracking() {
                 const inputVal = document.getElementById('trackingInput').value.trim();
@@ -1233,11 +1394,32 @@
                 const priceContainer = document.getElementById('calcPrice');
 
                 // Formulate cost: base rate + (weight-1) * rate factor
-                const weightFactor = weightVal > 1 ? (weightVal - 1) * 5.5 : 0;
+                const weightFactor = weightVal > 1 ? (weightVal - 1) * 1.5 : 0;
                 const finalPrice = basePrice + weightFactor;
 
                 // Update UI text
-                priceContainer.innerHTML = `SAR <span>${finalPrice.toFixed(2)}</span>`;
+                priceContainer.innerHTML = `JD <span>${finalPrice.toFixed(2)}</span>`;
+            }
+
+            // FAQ accordion toggle helper
+            function toggleFaq(button) {
+                const faqItem = button.closest('.faq-item');
+                const answer = faqItem.querySelector('.faq-answer-container');
+                const icon = faqItem.querySelector('.faq-icon');
+                
+                if (answer.style.maxHeight && answer.style.maxHeight !== '0px') {
+                    answer.style.maxHeight = '0px';
+                    icon.style.transform = 'rotate(0deg)';
+                    faqItem.style.borderColor = 'var(--border-color)';
+                } else {
+                    document.querySelectorAll('.faq-answer-container').forEach(a => a.style.maxHeight = '0px');
+                    document.querySelectorAll('.faq-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+                    document.querySelectorAll('.faq-item').forEach(item => item.style.borderColor = 'var(--border-color)');
+                    
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                    icon.style.transform = 'rotate(180deg)';
+                    faqItem.style.borderColor = 'rgba(229, 23, 0, 0.3)';
+                }
             }
         </script>
     </body>
