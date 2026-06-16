@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "skills": {
+    "configure-nightwatch": {
+      "source": "laravel/agent-skills",
+      "ref": "main",
+      "sourceType": "github",
+      "skillPath": "laravel-nightwatch/skills/configure-nightwatch/SKILL.md",
+      "computedHash": "87a409d0398016223a9b4e0249b8c74afe6d2c42c7b7b4a2dec5643526756998"
+    },
+    "deploying-laravel-cloud": {
+      "source": "laravel/agent-skills",
+      "ref": "main",
+      "sourceType": "github",
+      "skillPath": "laravel-cloud/skills/deploying-laravel-cloud/SKILL.md",
+      "computedHash": "3b446e6e48f403897f7a163b8a57db6495ca018413957a26121b3e38f2b9ee54"
+    },
+    "laravel-specialist": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "skillPath": "skills/laravel-specialist/SKILL.md",
+      "computedHash": "805be17bd59f759e2f2f2dcbd6bd205ca6678420a87b21da1c16e0793093615c"
+    },
+    "mysql": {
+      "source": "planetscale/database-skills",
+      "sourceType": "github",
+      "skillPath": "skills/mysql/SKILL.md",
+      "computedHash": "a74d7d018c4a9cfe4fd6e37f8758ef03272cde3f3dc2444c4f299636f4b3d275"
+    },
+    "starter-kit-upgrade": {
+      "source": "laravel/agent-skills",
+      "ref": "main",
+      "sourceType": "github",
+      "skillPath": "laravel/skills/starter-kit-upgrade/SKILL.md",
+      "computedHash": "84eafa9dd365f27f2d1841a5b4040987c21d833df65abdfe87a5755cd2554229"
+    }
+  }
+}
