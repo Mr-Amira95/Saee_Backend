@@ -86,6 +86,11 @@ class ClientProfile extends Model
         return $this->hasMany(FinancialLedgerEntry::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function getDeliveryPriceForCity(int $cityId): float
     {
         $custom = $this->deliveryPrices()->where('city_id', $cityId)->first();

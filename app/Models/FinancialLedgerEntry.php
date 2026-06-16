@@ -46,4 +46,9 @@ class FinancialLedgerEntry extends Model
     {
         return $this->belongsTo(User::class, 'recorded_by');
     }
+
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class, 'payout_ledger_entry_id');
+    }
 }

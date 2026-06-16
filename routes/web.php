@@ -15,14 +15,21 @@ use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\PublicOrderLocationController;
 use App\Http\Controllers\Admin\WhatsAppTemplateController;
 use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\SupportController;
+use App\Http\Controllers\PublicSupportController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\ReportController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-// ─── Public Order Location Sharing ─────────────────────────────────────────────
+// ─── Public Order Location Sharing & Support Chat ──────────────────────────────
 Route::get('/order/{order_number}/share-location',  [PublicOrderLocationController::class, 'show'])->name('public.share-location');
 Route::post('/order/{order_number}/share-location', [PublicOrderLocationController::class, 'update'])->name('public.share-location.update');
+Route::get('/support/ticket/{token}',               [PublicSupportController::class, 'show'])->name('public.support');
+Route::post('/support/ticket/{token}',              [PublicSupportController::class, 'store'])->name('public.support.send');
+Route::get('/support/ticket/{token}/messages',     [PublicSupportController::class, 'getMessages'])->name('public.support.messages');
 
 // ─── Set Password (invitation flow) ───────────────────────────────────────────
 Route::get('/set-password',         [SetPasswordController::class, 'show'])->name('set-password');
@@ -63,6 +70,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
         Route::patch('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
 
+        // Support Tickets & Chat Center
+        Route::get('support',                     [SupportController::class, 'index'])->name('support.index');
+        Route::post('support/{ticket}/send',      [SupportController::class, 'sendMessage'])->name('support.send');
+        Route::post('support/{ticket}/resolve',   [SupportController::class, 'resolveTicket'])->name('support.resolve');
+        Route::get('support/{ticket}/messages',   [SupportController::class, 'getMessages'])->name('support.messages');
+
+        // Notifications Center
+        Route::get('notifications',               [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications',              [NotificationController::class, 'store'])->name('notifications.store');
+        Route::get('notifications/unread',        [NotificationController::class, 'getLatestUnread'])->name('notifications.unread');
+        Route::post('notifications/clear',        [NotificationController::class, 'markAllRead'])->name('notifications.clear');
+
+        // Reports & Exports Center
+        Route::get('reports',                     [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/kpis',                [ReportController::class, 'kpis'])->name('reports.kpis');
+        Route::get('reports/export/{table}',      [ReportController::class, 'export'])->name('reports.export');
+
         // Users management
         Route::prefix('users')->name('')->group(function () {
             Route::resource('clients', ClientController::class)->names('clients');
@@ -88,6 +112,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('orders', OrderController::class)->names('orders');
 
         // Financial Ledger & Settlements
+        Route::get('financials/invoices',                [FinancialController::class, 'invoices'])->name('financials.invoices');
+        Route::get('financials/invoices/{invoice}',      [FinancialController::class, 'showInvoice'])->name('financials.invoices.show');
+        Route::get('financials/reconciliation',          [FinancialController::class, 'reconciliation'])->name('financials.reconciliation');
         Route::get('financials',                         [FinancialController::class, 'index'])->name('financials.index');
         Route::get('financials/settle-driver/{driver}',  [FinancialController::class, 'driverSettlementForm'])->name('financials.settle-driver');
         Route::post('financials/settle-driver/{driver}', [FinancialController::class, 'settleDriver'])->name('financials.settle-driver.submit');

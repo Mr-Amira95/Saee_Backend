@@ -87,6 +87,16 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class)->orderBy('date', 'desc');
     }
 
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
+    public function systemNotifications(): HasMany
+    {
+        return $this->hasMany(SystemNotification::class, 'user_id');
+    }
+
     public function driverRatings(): HasMany
     {
         return $this->hasMany(DriverRating::class, 'driver_id');

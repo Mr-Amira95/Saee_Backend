@@ -542,10 +542,25 @@
                 </div>
             </div>
             <div class="topbar-right">
-                <div class="icon-btn" title="Notifications">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    <span class="notif-dot"></span>
+                <div style="position: relative;">
+                    <div class="icon-btn" title="Notifications" id="notifBell" onclick="toggleNotifDropdown(event)">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="notif-dot" id="notifDot" style="display: none;"></span>
+                    </div>
+                    
+                    {{-- Dropdown Container --}}
+                    <div id="notifDropdown" style="display: none; position: absolute; right: 0; top: 44px; width: 320px; background: #0c1230; border: 1px solid var(--bdr); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; overflow: hidden; animation: modal-in .18s ease-out;">
+                        <div style="padding: 12px 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: .78rem; font-weight: 700; color: var(--text-sub);">Notifications</span>
+                            <button onclick="clearAllNotifications(event)" style="background: none; border: none; font-size: .7rem; color: var(--red-lt); font-family: inherit; font-weight:600; cursor: pointer; hover: text-decoration: underline;">Mark all read</button>
+                        </div>
+                        <div id="notifList" style="max-height: 250px; overflow-y: auto;">
+                            {{-- Dynamic List --}}
+                        </div>
+                        <a href="{{ route('admin.notifications.index') }}" style="display: block; text-align: center; padding: 10px; border-top: 1px solid var(--bdr); font-size: .72rem; color: var(--text-dim); text-decoration: none; font-weight: 600;">View All Notifications</a>
+                    </div>
                 </div>
+
                 <div class="icon-btn">
                     <div class="u-avatar" style="width:24px;height:24px;font-size:.65rem;border-radius:6px">{{ strtoupper(substr(auth()->user()->name,0,2)) }}</div>
                 </div>
@@ -619,6 +634,88 @@ function toggleSubmenu(btnId, menuId) {
     btn.classList.toggle('parent-open', open);
 }
 
+// Notifications dropdown logic
+function toggleNotifDropdown(e) {
+    e.stopPropagation();
+    const dropdown = document.getElementById('notifDropdown');
+    const isVisible = dropdown.style.display === 'block';
+    dropdown.style.display = isVisible ? 'none' : 'block';
+}
+
+function fetchUnreadNotifications() {
+    fetch("{{ route('admin.notifications.unread') }}")
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const dot = document.getElementById('notifDot');
+            const list = document.getElementById('notifList');
+            
+            if (data.count > 0) {
+                dot.style.display = 'block';
+            } else {
+                dot.style.display = 'none';
+            }
+
+            list.innerHTML = '';
+            if (data.notifications.length === 0) {
+                list.innerHTML = `<div style="padding: 20px; text-align: center; font-size: .78rem; color: var(--text-dim);">No unread notifications.</div>`;
+            } else {
+                data.notifications.forEach(n => {
+                    const item = document.createElement('a');
+                    item.href = n.link ? n.link : '#';
+                    item.style.display = 'block';
+                    item.style.padding = '12px 16px';
+                    item.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
+                    item.style.textDecoration = 'none';
+                    item.style.color = 'inherit';
+                    item.style.transition = 'background .15s';
+                    item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.02)';
+                    item.onmouseleave = () => item.style.background = 'transparent';
+
+                    item.innerHTML = `
+                        <div style="font-weight: 600; font-size: .8rem; color: #fff;">${n.title}</div>
+                        <div style="font-size: .74rem; color: var(--text-sub); margin-top: 3px; line-height:1.4;">${n.message}</div>
+                        <div style="font-size: .65rem; color: var(--text-dim); margin-top: 5px;">Just now</div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+        }
+    });
+}
+
+function clearAllNotifications(e) {
+    e.stopPropagation();
+    fetch("{{ route('admin.notifications.clear') }}", {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            fetchUnreadNotifications();
+        }
+    });
+}
+
+// Close dropdown on click outside
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('notifDropdown');
+    const bell = document.getElementById('notifBell');
+    if (dropdown && dropdown.style.display === 'block' && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+// Run on load and poll every 10 seconds
+if (document.getElementById('notifBell')) {
+    fetchUnreadNotifications();
+    setInterval(fetchUnreadNotifications, 10000);
+}
+
 // Auto-open menus based on current route
 (function() {
     const path = window.location.pathname;
@@ -628,9 +725,21 @@ function toggleSubmenu(btnId, menuId) {
         if (menu) menu.classList.add('open');
         if (btn)  btn.classList.add('parent-open');
     }
-    if (path.includes('/admin/cities') || path.includes('/admin/rejection-reasons') || path.includes('/admin/whatsapp-templates') || path.includes('/admin/attendance')) {
+    if (path.includes('/admin/cities') || path.includes('/admin/rejection-reasons') || path.includes('/admin/whatsapp-templates') || path.includes('/admin/attendance') || path.includes('/admin/notifications')) {
         const menu = document.getElementById('settingsMenu');
         const btn  = document.getElementById('settingsBtn');
+        if (menu) menu.classList.add('open');
+        if (btn)  btn.classList.add('parent-open');
+    }
+    if (path.includes('/admin/financials')) {
+        const menu = document.getElementById('financeMenu');
+        const btn  = document.getElementById('financeBtn');
+        if (menu) menu.classList.add('open');
+        if (btn)  btn.classList.add('parent-open');
+    }
+    if (path.includes('/admin/reports')) {
+        const menu = document.getElementById('reportsMenu');
+        const btn  = document.getElementById('reportsBtn');
         if (menu) menu.classList.add('open');
         if (btn)  btn.classList.add('parent-open');
     }

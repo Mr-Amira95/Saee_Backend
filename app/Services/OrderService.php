@@ -284,14 +284,16 @@ class OrderService
             $orders = Order::whereIn('id', $orderIds)
                 ->where('client_profile_id', $client->id)
                 ->where('status', 'delivered')
-                ->whereIn('payment_status', ['with_driver', 'pending']) // Or settled with company
+                ->whereIn('payment_status', ['with_driver', 'pending'])
                 ->get();
 
+            $totalCod = 0;
+            $totalShipping = 0;
+            $payoutLedgerEntry = null;
+
             foreach ($orders as $order) {
-                // If it is COD and has not been paid to client yet
                 if ($order->payment_type === 'cod' && $order->order_price > 0) {
-                    // Create ledger entry: Company -> Client payout
-                    FinancialLedgerEntry::create([
+                    $ledger = FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $client->id,
                         'driver_id'         => $order->driver_id,
@@ -303,6 +305,13 @@ class OrderService
                         'recorded_by'       => $actor->id,
                         'notes'             => $notes ?? 'COD payout to client for order ' . $order->order_number,
                     ]);
+
+                    if (!$payoutLedgerEntry) {
+                        $payoutLedgerEntry = $ledger;
+                    }
+
+                    $totalCod += $order->order_price;
+                    $totalShipping += $order->delivery_on_customer ? 0 : $order->delivery_amount;
 
                     $order->payment_status = 'paid';
                     $order->save();
@@ -316,6 +325,21 @@ class OrderService
                     );
                     $count++;
                 }
+            }
+
+            if ($count > 0 && $payoutLedgerEntry) {
+                $invoiceNumber = 'INV-' . now()->format('Ymd') . '-' . rand(1000, 9999);
+                \App\Models\Invoice::create([
+                    'invoice_number'         => $invoiceNumber,
+                    'client_profile_id'      => $client->id,
+                    'payout_ledger_entry_id' => $payoutLedgerEntry->id,
+                    'total_orders'           => $count,
+                    'cod_amount'             => $totalCod,
+                    'shipping_amount'        => $totalShipping,
+                    'net_amount'             => $totalCod - $totalShipping,
+                    'status'                 => 'paid',
+                    'notes'                  => $notes ?? 'Auto-generated invoice for client payout.',
+                ]);
             }
 
             return $count;

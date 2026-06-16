@@ -114,4 +114,9 @@ class Order extends Model
     {
         return $this->hasOne(DriverRating::class);
     }
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
 }

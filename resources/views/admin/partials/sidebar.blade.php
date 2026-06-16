@@ -50,26 +50,66 @@
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             <span class="nav-label-text">Orders</span>
         </a>
+        <a href="{{ route('admin.support.index') }}" class="nav-item {{ request()->routeIs('admin.support.*') ? 'active' : '' }}">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            <span class="nav-label-text">Support Tickets</span>
+        </a>
 
         {{-- Finance --}}
         <div class="nav-label">Finance</div>
-        <a href="{{ route('admin.financials.index') }}" class="nav-item {{ request()->routeIs('admin.financials.*') ? 'active' : '' }}">
+        <button
+            id="financeBtn"
+            class="nav-item nav-parent-btn {{ request()->routeIs('admin.financials.*') ? 'active parent-open' : '' }}"
+            onclick="toggleSubmenu('financeBtn','financeMenu')"
+        >
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="nav-label-text">Settlements</span>
-        </a>
+            <span class="nav-label-text">Finance</span>
+            <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div class="nav-submenu {{ request()->routeIs('admin.financials.*') ? 'open' : '' }}" id="financeMenu">
+            <a href="{{ route('admin.financials.index') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.index') || request()->routeIs('admin.financials.settle-driver') || request()->routeIs('admin.financials.payout-client') ? 'active' : '' }}">
+                <span class="sub-dot"></span> Settlements
+            </a>
+            <a href="{{ route('admin.financials.invoices') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.invoices*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> Invoices
+            </a>
+            <a href="{{ route('admin.financials.reconciliation') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.reconciliation') ? 'active' : '' }}">
+                <span class="sub-dot"></span> Reconciliation
+            </a>
+        </div>
+
+        {{-- Reports --}}
+        <div class="nav-label">Reports</div>
+        <button
+            id="reportsBtn"
+            class="nav-item nav-parent-btn {{ request()->routeIs('admin.reports.*') ? 'active parent-open' : '' }}"
+            onclick="toggleSubmenu('reportsBtn','reportsMenu')"
+        >
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"/></svg>
+            <span class="nav-label-text">Reports</span>
+            <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div class="nav-submenu {{ request()->routeIs('admin.reports.*') ? 'open' : '' }}" id="reportsMenu">
+            <a href="{{ route('admin.reports.index') }}" class="nav-sub-item {{ request()->routeIs('admin.reports.index') ? 'active' : '' }}">
+                <span class="sub-dot"></span> Reports Center
+            </a>
+            <a href="{{ route('admin.reports.kpis') }}" class="nav-sub-item {{ request()->routeIs('admin.reports.kpis') ? 'active' : '' }}">
+                <span class="sub-dot"></span> KPI Insights
+            </a>
+        </div>
 
         {{-- Settings --}}
         <div class="nav-label">Settings</div>
         <button
             id="settingsBtn"
-            class="nav-item nav-parent-btn {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') ? 'active parent-open' : '' }}"
+            class="nav-item nav-parent-btn {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') ? 'active parent-open' : '' }}"
             onclick="toggleSubmenu('settingsBtn','settingsMenu')"
         >
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span class="nav-label-text">Settings</span>
             <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
-        <div class="nav-submenu {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') ? 'open' : '' }}" id="settingsMenu">
+        <div class="nav-submenu {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') ? 'open' : '' }}" id="settingsMenu">
             <a href="{{ route('admin.cities.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cities.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> Cities &amp; Areas
             </a>
@@ -81,6 +121,9 @@
             </a>
             <a href="{{ route('admin.attendance.index') }}" class="nav-sub-item {{ request()->routeIs('admin.attendance.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> Attendance Logs
+            </a>
+            <a href="{{ route('admin.notifications.index') }}" class="nav-sub-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> Broadcast Alerts
             </a>
         </div>
     </nav>

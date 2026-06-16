@@ -11,6 +11,7 @@ use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Invoice;
 
 class FinancialController extends Controller
 {
@@ -211,5 +212,92 @@ class FinancialController extends Controller
 
         return redirect()->route('admin.financials.index')
             ->with('success', "Successfully processed COD payout for {$payoutCount} orders to client {$client->company_name}.");
+    }
+
+    /**
+     * View client invoices.
+     */
+    public function invoices(Request $request)
+    {
+        $query = Invoice::with('clientProfile');
+
+        if ($request->filled('client_id')) {
+            $query->where('client_profile_id', $request->input('client_id'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('invoice_number', 'like', "%{$search}%")
+                ->orWhereHas('clientProfile', function ($q) use ($search) {
+                    $q->where('company_name', 'like', "%{$search}%");
+                });
+        }
+
+        $invoices = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $clients = ClientProfile::orderBy('company_name')->get();
+
+        return view('admin.financials.invoices', compact('invoices', 'clients'));
+    }
+
+    /**
+     * View specific invoice layout.
+     */
+    public function showInvoice(Invoice $invoice)
+    {
+        $invoice->load('clientProfile.city', 'clientProfile.area', 'payoutLedgerEntry');
+        
+        $ref = $invoice->payoutLedgerEntry->reference_number;
+        
+        if ($ref) {
+            $orders = Order::where('client_profile_id', $invoice->client_profile_id)
+                ->whereHas('financialLedgerEntries', function ($q) use ($ref) {
+                    $q->where('type', 'client_payout')->where('reference_number', $ref);
+                })
+                ->get();
+        } else {
+            $orders = Order::where('client_profile_id', $invoice->client_profile_id)
+                ->where('payment_status', 'paid')
+                ->whereDate('updated_at', $invoice->created_at->toDateString())
+                ->get();
+        }
+
+        return view('admin.financials.invoice_show', compact('invoice', 'orders'));
+    }
+
+    /**
+     * Financial Reconciliation.
+     */
+    public function reconciliation(Request $request)
+    {
+        $drivers = User::where('role', 'driver')->get()->map(function ($driver) {
+            $collected = FinancialLedgerEntry::where('driver_id', $driver->id)
+                ->where('to_account', 'driver')
+                ->sum('amount');
+
+            $settled = FinancialLedgerEntry::where('driver_id', $driver->id)
+                ->where('from_account', 'driver')
+                ->sum('amount');
+
+            $cashHeld = $collected - $settled;
+
+            $undeliveredCashHeld = Order::where('driver_id', $driver->id)
+                ->where('status', '!=', 'delivered')
+                ->where('payment_status', 'with_driver')
+                ->count();
+
+            return [
+                'driver' => $driver,
+                'collected' => $collected,
+                'settled' => $settled,
+                'cash_held' => $cashHeld,
+                'mismatch' => $undeliveredCashHeld > 0 || $cashHeld < 0
+            ];
+        });
+
+        $totalCollected = FinancialLedgerEntry::where('to_account', 'driver')->sum('amount');
+        $totalSettled = FinancialLedgerEntry::where('from_account', 'driver')->sum('amount');
+        $netDiscrepancy = $totalCollected - $totalSettled;
+
+        return view('admin.financials.reconciliation', compact('drivers', 'totalCollected', 'totalSettled', 'netDiscrepancy'));
     }
 }
