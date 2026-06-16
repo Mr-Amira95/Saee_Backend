@@ -1,6 +1,13 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <head>
+        <script>
+            (function() {
+                if (localStorage.getItem('theme') === 'light') {
+                    document.documentElement.classList.add('light-theme');
+                }
+            })();
+        </script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ $page->meta_title ?: $page->title }} — {{ $settings['site_name'] }}</title>
@@ -261,6 +268,74 @@
                 margin: 0 auto;
                 padding: 0 2rem;
             }
+
+            /* ─── Light Mode Overrides ───────────────────────── */
+            html.light-theme {
+                --bg-dark: #f8fafc;
+                --bg-card: rgba(255, 255, 255, 0.85);
+                --bg-input: rgba(15, 23, 42, 0.04);
+                --text-light: #0f172a;
+                --text-muted: #475569;
+                --border-color: rgba(15, 23, 42, 0.08);
+            }
+            html.light-theme body {
+                background-color: var(--bg-dark);
+                color: var(--text-light);
+            }
+            html.light-theme header {
+                background: rgba(255, 255, 255, 0.8);
+            }
+            html.light-theme .logo-link {
+                color: #0f172a;
+            }
+            html.light-theme .btn-secondary {
+                background: var(--bg-input);
+                color: var(--text-light);
+                border: 1px solid var(--border-color);
+            }
+            html.light-theme .btn-secondary:hover {
+                background: rgba(15, 23, 42, 0.08);
+            }
+            html.light-theme nav a {
+                color: var(--text-muted);
+            }
+            html.light-theme nav a:hover, html.light-theme nav a.active {
+                color: var(--text-light);
+            }
+            html.light-theme .page-title {
+                color: #0f172a;
+            }
+            html.light-theme .rich-text {
+                color: var(--text-muted);
+            }
+            html.light-theme .rich-text h2, html.light-theme .rich-text h3 {
+                color: #0f172a;
+            }
+            html.light-theme footer {
+                background: #ffffff;
+                color: #0f172a;
+            }
+            html.light-theme footer h4 {
+                color: #0f172a;
+            }
+            html.light-theme footer a {
+                color: var(--text-muted);
+            }
+            html.light-theme footer a:hover {
+                color: #0f172a;
+            }
+            html.light-theme .footer-bottom {
+                color: var(--text-muted);
+                border-top: 1px solid rgba(15, 23, 42, 0.05);
+            }
+
+            /* ─── RTL Directional Overrides ──────────────────── */
+            html[dir="rtl"] nav ul {
+                flex-direction: row-reverse;
+            }
+            html[dir="rtl"] .footer-links ul {
+                text-align: right;
+            }
         </style>
     </head>
     <body>
@@ -274,24 +349,37 @@
                 </a>
                 <nav aria-label="Main Navigation">
                     <ul>
-                        <li><a href="{{ route('public.home') }}" id="navHome">Home</a></li>
-                        <li><a href="{{ route('public.home') }}#services" id="navServices">Services</a></li>
-                        <li><a href="{{ route('public.home') }}#about" id="navAbout">About Us</a></li>
+                        <li><a href="{{ route('public.home') }}" id="navHome">{{ __('Home') }}</a></li>
+                        <li><a href="{{ route('public.home') }}#services" id="navServices">{{ __('Services') }}</a></li>
+                        <li><a href="{{ route('public.home') }}#about" id="navAbout">{{ __('About Us') }}</a></li>
                         @foreach($headerPages as $hp)
                             <li><a href="{{ route('public.page', $hp->slug) }}" class="{{ $hp->id === $page->id ? 'active' : '' }}">{{ $hp->title }}</a></li>
                         @endforeach
-                        <li><a href="{{ route('public.home') }}#contact" id="navContact">Contact</a></li>
+                        <li><a href="{{ route('public.home') }}#contact" id="navContact">{{ __('Contact') }}</a></li>
                     </ul>
                 </nav>
                 <div class="auth-buttons">
+                    {{-- Language Switcher --}}
+                    @if(app()->getLocale() === 'en')
+                        <a href="{{ route('lang.switch', 'ar') }}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">عربي</a>
+                    @else
+                        <a href="{{ route('lang.switch', 'en') }}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">EN</a>
+                    @endif
+
+                    {{-- Theme Switcher --}}
+                    <button class="btn btn-secondary" id="themeToggler" onclick="toggleTheme()" style="padding: 0.5rem 1rem;" title="Toggle Theme">
+                        <svg id="themeMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+                        <svg id="themeSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m8.942-8.942h-2.25M4.313 12H2.063m15.122-6.938l-1.591 1.591M6.818 17.182l-1.591 1.591m12.94 0l-1.591-1.591M6.818 6.818L5.227 5.227M12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
+                    </button>
+
                     @if (Route::has('login'))
                         @auth
-                            <a href="{{ url('/admin/dashboard') }}" class="btn btn-secondary" id="btnDashboard">Dashboard</a>
+                            <a href="{{ url('/admin/dashboard') }}" class="btn btn-secondary" id="btnDashboard">{{ __('Dashboard') }}</a>
                         @else
-                            <a href="{{ route('login') }}" class="btn btn-secondary" id="btnLogIn">Log in</a>
+                            <a href="{{ route('login') }}" class="btn btn-secondary" id="btnLogIn">{{ __('Admin Login') }}</a>
                         @endauth
                     @else
-                        <a href="{{ route('public.home') }}#contact" class="btn btn-primary" id="btnGetQuoteNav">Get a Quote</a>
+                        <a href="{{ route('public.home') }}#contact" class="btn btn-primary" id="btnGetQuoteNav">{{ __('Get a Quote') }}</a>
                     @endif
                 </div>
             </div>
@@ -355,5 +443,31 @@
                 <p>Designed with absolute precision.</p>
             </div>
         </footer>
+        <script>
+            // Theme toggler logic
+            function toggleTheme() {
+                const html = document.documentElement;
+                const isLight = html.classList.toggle('light-theme');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                updateThemeIcons();
+            }
+
+            function updateThemeIcons() {
+                const isLight = document.documentElement.classList.contains('light-theme');
+                const sun = document.getElementById('themeSun');
+                const moon = document.getElementById('themeMoon');
+                if (sun && moon) {
+                    if (isLight) {
+                        sun.style.display = 'none';
+                        moon.style.display = 'block';
+                    } else {
+                        sun.style.display = 'block';
+                        moon.style.display = 'none';
+                    }
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', updateThemeIcons);
+        </script>
     </body>
 </html>

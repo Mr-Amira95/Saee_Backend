@@ -1,6 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
+    <script>
+        (function() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light-theme');
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -525,6 +532,82 @@
         .cell-avatar { background: linear-gradient(135deg,#7f1d1d,#dc2626); }
         /* profile avatar background */
         .profile-avatar { background: linear-gradient(135deg,#7f1d1d,#dc2626); }
+
+        /* ─── Light Mode Overrides ───────────────────────── */
+        html.light-theme {
+            --bg:       #f8fafc; --bg-2: #f1f5f9;
+            --sidebar:  #ffffff;
+            --card:     rgba(255, 255, 255, 0.75);
+            --bdr:      rgba(15, 23, 42, 0.08);
+            --bdr-red:  rgba(220, 38, 38, 0.1);
+            --text:     #0f172a; --text-sub: #475569; --text-dim: #64748b;
+            --in-bg:    rgba(15, 23, 42, 0.02); --in-bdr: rgba(15, 23, 42, 0.08);
+        }
+        html.light-theme body {
+            background: var(--bg);
+            color: var(--text);
+        }
+        html.light-theme .nav-item:hover { background: rgba(15, 23, 42, 0.04); color: var(--text); }
+        html.light-theme .nav-sub-item:hover { background: rgba(15, 23, 42, 0.03); color: var(--text-sub); }
+        html.light-theme .topbar { background: rgba(255, 255, 255, 0.7); border-bottom: 1px solid var(--bdr); }
+        html.light-theme .icon-btn { background: rgba(15, 23, 42, 0.04); border-color: var(--bdr); }
+        html.light-theme .icon-btn:hover { background: rgba(15, 23, 42, 0.07); }
+        html.light-theme .sidebar-user { background: rgba(15, 23, 42, 0.02); }
+        html.light-theme .form-select option { background: #ffffff; color: #0f172a; }
+        html.light-theme #notifDropdown { background: #ffffff; color: #0f172a; border-color: var(--bdr); }
+        html.light-theme #notifDropdown span { color: var(--text-sub) !important; }
+        html.light-theme #notifList a div { color: #0f172a !important; }
+        html.light-theme .modal-card { background: #ffffff; border-color: rgba(220,38,38,0.15); color: #0f172a; }
+        html.light-theme .modal-card h3 { color: #0f172a; }
+        html.light-theme .modal-card p { color: var(--text-sub); }
+        html.light-theme .nav-chevron { color: var(--text-dim); }
+        html.light-theme .sidebar-logo-text { color: var(--text-dim); }
+
+        /* ─── RTL Directional Overrides ──────────────────── */
+        html[dir="rtl"] .sidebar {
+            border-left: 1px solid var(--bdr);
+            border-right: none;
+            animation: sidebar-in-rtl .55s cubic-bezier(.16,1,.3,1) both;
+        }
+        @keyframes sidebar-in-rtl { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        
+        html[dir="rtl"] .nav-chevron {
+            transform: scaleX(-1);
+        }
+        html[dir="rtl"] .nav-item.parent-open .nav-chevron {
+            transform: scaleX(-1) rotate(180deg);
+        }
+        html[dir="rtl"] .nav-submenu {
+            padding-right: 12px;
+            padding-left: 0;
+        }
+        html[dir="rtl"] #notifDropdown {
+            left: 0;
+            right: auto;
+        }
+        html[dir="rtl"] .filter-search-wrap svg {
+            right: 11px;
+            left: auto;
+        }
+        html[dir="rtl"] .filter-input {
+            padding: 8px 36px 8px 12px;
+        }
+        html[dir="rtl"] .filter-select {
+            background-position: left 9px center;
+            padding-left: 30px;
+            padding-right: 11px;
+        }
+        html[dir="rtl"] .form-select {
+            background-position: left 11px center;
+            padding-left: 32px;
+            padding-right: 13px;
+        }
+        html[dir="rtl"] thead th {
+            text-align: right;
+        }
+        html[dir="rtl"] .form-actions {
+            justify-content: flex-start;
+        }
     </style>
     @yield('head')
 </head>
@@ -542,6 +625,19 @@
                 </div>
             </div>
             <div class="topbar-right">
+                {{-- Language Switcher --}}
+                @if(app()->getLocale() === 'en')
+                    <a href="{{ route('lang.switch', 'ar') }}" class="icon-btn" title="تغيير اللغة إلى العربية" style="text-decoration: none; font-weight: 700; font-size: 0.8rem;">عربي</a>
+                @else
+                    <a href="{{ route('lang.switch', 'en') }}" class="icon-btn" title="Switch to English" style="text-decoration: none; font-weight: 700; font-size: 0.8rem;">EN</a>
+                @endif
+
+                {{-- Theme Switcher --}}
+                <button class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="Toggle Theme">
+                    <svg id="themeMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+                    <svg id="themeSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m8.942-8.942h-2.25M4.313 12H2.063m15.122-6.938l-1.591 1.591M6.818 17.182l-1.591 1.591m12.94 0l-1.591-1.591M6.818 6.818L5.227 5.227M12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
+                </button>
+
                 <div style="position: relative;">
                     <div class="icon-btn" title="Notifications" id="notifBell" onclick="toggleNotifDropdown(event)">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -625,6 +721,32 @@ document.getElementById('deleteModal').addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeDeleteModal();
 });
+
+// Theme toggle logic
+function toggleTheme() {
+    const html = document.documentElement;
+    const isLight = html.classList.toggle('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateThemeIcons();
+}
+
+function updateThemeIcons() {
+    const isLight = document.documentElement.classList.contains('light-theme');
+    const sun = document.getElementById('themeSun');
+    const moon = document.getElementById('themeMoon');
+    if (sun && moon) {
+        if (isLight) {
+            sun.style.display = 'none';
+            moon.style.display = 'block';
+        } else {
+            sun.style.display = 'block';
+            moon.style.display = 'none';
+        }
+    }
+}
+
+// Call on load to align icons
+document.addEventListener('DOMContentLoaded', updateThemeIcons);
 
 // Sidebar submenu toggle
 function toggleSubmenu(btnId, menuId) {

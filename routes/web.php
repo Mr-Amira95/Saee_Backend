@@ -26,6 +26,13 @@ use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\PublicCmsController;
 
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'ar'])) {
+        session()->put('locale', $locale);
+    }
+    return redirect()->back();
+})->name('lang.switch');
+
 Route::get('/', [PublicCmsController::class, 'home'])->name('public.home');
 Route::get('/page/{slug}', [PublicCmsController::class, 'showPage'])->name('public.page');
 
