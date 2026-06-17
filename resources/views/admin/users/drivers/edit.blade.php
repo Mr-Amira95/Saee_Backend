@@ -98,7 +98,7 @@
                         <span class="arrow">▼</span>
                     </button>
                     <input type="hidden" name="phone_country_code" id="phoneExtVal"
-                           value="{{ old('phone_country_code', $driver->phone_country_code ?? '+962') }}">
+                           value="{{ old('phone_country_code', $driver->user->phone_country_code ?? '+962') }}">
                     <input type="text" name="phone" class="phone-input-field"
                            value="{{ old('phone', $driver->user->phone) }}" placeholder="7X XXX XXXX">
                 </div>

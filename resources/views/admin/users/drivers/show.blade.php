@@ -120,7 +120,7 @@
                 <span class="info-row-key">Phone</span>
                 <span class="info-row-val">
                     @if($driver->user?->phone)
-                        <span style="color:var(--text-dim);font-size:.8rem;margin-right:4px;">{{ $driver->phone_country_code ?? '' }}</span>{{ $driver->user->phone }}
+                        <span style="color:var(--text-dim);font-size:.8rem;margin-right:4px;">{{ $driver->user->phone_country_code ?? '' }}</span>{{ $driver->user->phone }}
                     @else —
                     @endif
                 </span>

@@ -160,11 +160,11 @@
                         <div class="phone-wrap">
                             <button type="button" class="phone-ext-btn" id="personalExtBtn">
                                 <span class="flag" id="personalExtFlag">🇯🇴</span>
-                                <span class="code" id="personalExtCode">{{ old('phone_country_code', $client->phone_country_code ?? '+962') }}</span>
+                                <span class="code" id="personalExtCode">{{ old('phone_country_code', $client->masterUser->phone_country_code ?? '+962') }}</span>
                                 <span class="arrow">▼</span>
                             </button>
                             <input type="hidden" name="phone_country_code" id="personalExtVal"
-                                   value="{{ old('phone_country_code', $client->phone_country_code ?? '+962') }}">
+                                   value="{{ old('phone_country_code', $client->masterUser->phone_country_code ?? '+962') }}">
                             <input type="text" name="phone" class="phone-input-field"
                                    value="{{ old('phone', $client->masterUser->phone) }}" placeholder="7X XXX XXXX">
                         </div>

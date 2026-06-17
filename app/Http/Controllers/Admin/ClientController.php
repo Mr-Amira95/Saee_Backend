@@ -70,12 +70,13 @@ class ClientController extends Controller
 
         $user = DB::transaction(function () use ($data, $request) {
             $user = User::create([
-                'name'     => $data['name'],
-                'email'    => $data['email'],
-                'password' => Hash::make(Str::random(40)),
-                'phone'    => $data['phone'] ?? null,
-                'role'     => 'client_master',
-                'status'   => 'pending',
+                'name'               => $data['name'],
+                'email'              => $data['email'],
+                'password'           => Hash::make(Str::random(40)),
+                'phone'              => $data['phone'] ?? null,
+                'phone_country_code' => $data['phone_country_code'] ?? '+962',
+                'role'               => 'client_master',
+                'status'             => 'pending',
             ]);
 
             $logoPath = null;
@@ -89,7 +90,6 @@ class ClientController extends Controller
                 'company_name_ar'              => $data['company_name_ar'] ?? null,
                 'commercial_register_number'   => $data['commercial_register_number'] ?? null,
                 'vat_number'                   => $data['vat_number'] ?? null,
-                'phone_country_code'           => $data['phone_country_code'] ?? '+962',
                 'email'                        => $data['company_email'] ?? null,
                 'logo_path'                    => $logoPath,
                 'address_line1'                => $data['address_line1'] ?? null,
@@ -164,10 +164,11 @@ class ClientController extends Controller
 
         DB::transaction(function () use ($data, $request, $client) {
             $client->masterUser->update([
-                'name'   => $data['name'],
-                'email'  => $data['email'],
-                'phone'  => $data['phone'] ?? null,
-                'status' => $data['user_status'] ?? $client->masterUser->status,
+                'name'               => $data['name'],
+                'email'              => $data['email'],
+                'phone'              => $data['phone'] ?? null,
+                'phone_country_code' => $data['phone_country_code'] ?? $client->masterUser->phone_country_code,
+                'status'             => $data['user_status'] ?? $client->masterUser->status,
             ]);
 
             $logoPath = $client->logo_path;
@@ -181,7 +182,6 @@ class ClientController extends Controller
                 'company_name_ar'             => $data['company_name_ar'] ?? null,
                 'commercial_register_number'  => $data['commercial_register_number'] ?? null,
                 'vat_number'                  => $data['vat_number'] ?? null,
-                'phone_country_code'          => $data['phone_country_code'] ?? $client->phone_country_code,
                 'email'                       => $data['company_email'] ?? null,
                 'logo_path'                   => $logoPath,
                 'address_line1'               => $data['address_line1'] ?? null,

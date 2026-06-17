@@ -132,7 +132,7 @@
                 <span class="info-row-key">Phone</span>
                 <span class="info-row-val">
                     @if($client->masterUser?->phone)
-                        <span style="color:var(--text-dim);font-size:.8rem;margin-right:4px;">{{ $client->phone_country_code }}</span>{{ $client->masterUser->phone }}
+                        <span style="color:var(--text-dim);font-size:.8rem;margin-right:4px;">{{ $client->masterUser->phone_country_code ?? '' }}</span>{{ $client->masterUser->phone }}
                     @else —
                     @endif
                 </span>

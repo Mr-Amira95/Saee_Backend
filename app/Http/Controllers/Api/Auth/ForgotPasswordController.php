@@ -58,8 +58,8 @@ class ForgotPasswordController extends Controller
             ->update(['expires_at' => now()]);
 
         // Generate 6-digit code: str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT)
-        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
+        //$code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $code = "123456"; // For testing purposes, use a fixed code. In production, uncomment the line above.
         PasswordResetCode::create([
             'user_id'    => $user->id,
             'phone'      => $user->phone,

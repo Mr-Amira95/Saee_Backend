@@ -39,12 +39,13 @@ class ClientEmployeeController extends Controller
         $user = null;
         DB::transaction(function () use ($data, $client, &$user) {
             $user = User::create([
-                'name'     => $data['name'],
-                'email'    => $data['email'],
-                'password' => Hash::make(Str::random(40)),
-                'phone'    => $data['phone'] ?? null,
-                'role'     => 'client_employee',
-                'status'   => 'pending',
+                'name'               => $data['name'],
+                'email'              => $data['email'],
+                'password'           => Hash::make(Str::random(40)),
+                'phone'              => $data['phone'] ?? null,
+                'phone_country_code' => $data['phone_country_code'] ?? '+962',
+                'role'               => 'client_employee',
+                'status'             => 'pending',
             ]);
 
             ClientEmployee::create([

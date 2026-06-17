@@ -73,12 +73,13 @@ class DriverController extends Controller
 
         $user = DB::transaction(function () use ($data, $request) {
             $user = User::create([
-                'name'     => $data['name'],
-                'email'    => $data['email'],
-                'password' => Hash::make(Str::random(40)),
-                'phone'    => $data['phone'] ?? null,
-                'role'     => 'driver',
-                'status'   => 'pending',
+                'name'               => $data['name'],
+                'email'              => $data['email'],
+                'password'           => Hash::make(Str::random(40)),
+                'phone'              => $data['phone'] ?? null,
+                'phone_country_code' => $data['phone_country_code'] ?? '+962',
+                'role'               => 'driver',
+                'status'             => 'pending',
             ]);
 
             $licenseAttachment = null;
@@ -99,7 +100,6 @@ class DriverController extends Controller
                 'license_number'         => $data['license_number'],
                 'license_expiry_date'    => $data['license_expiry_date'],
                 'license_attachment'     => $licenseAttachment,
-                'phone_country_code'     => $data['phone_country_code'] ?? '+962',
                 'vehicle_type'           => $data['vehicle_type'] ?? null,
                 'vehicle_plate'          => $data['vehicle_plate'] ?? null,
                 'car_license_expiry'     => $data['car_license_expiry'] ?? null,
@@ -177,10 +177,11 @@ class DriverController extends Controller
 
         DB::transaction(function () use ($data, $request, $driver) {
             $driver->user->update([
-                'name'   => $data['name'],
-                'email'  => $data['email'],
-                'phone'  => $data['phone'] ?? null,
-                'status' => $data['user_status'] ?? $driver->user->status,
+                'name'               => $data['name'],
+                'email'              => $data['email'],
+                'phone'              => $data['phone'] ?? null,
+                'phone_country_code' => $data['phone_country_code'] ?? $driver->user->phone_country_code,
+                'status'             => $data['user_status'] ?? $driver->user->status,
             ]);
 
             $licenseAttachment = $driver->license_attachment;
@@ -203,7 +204,6 @@ class DriverController extends Controller
                 'license_expiry_date'    => $data['license_expiry_date'],
                 'license_class'          => $data['license_class'] ?? null,
                 'license_attachment'     => $licenseAttachment,
-                'phone_country_code'     => $data['phone_country_code'] ?? $driver->phone_country_code,
                 'vehicle_type'           => $data['vehicle_type'] ?? null,
                 'vehicle_plate'          => $data['vehicle_plate'] ?? null,
                 'car_license_expiry'     => $data['car_license_expiry'] ?? null,

@@ -12,7 +12,6 @@ class DriverProfileResource extends JsonResource
         return [
             'id'                  => $this->id,
             'user_id'             => $this->user_id,
-            'phone_country_code'  => $this->phone_country_code,
             'national_id'         => $this->national_id,
             'license_number'      => $this->license_number,
             'license_expiry_date' => $this->license_expiry_date?->toDateString(),
