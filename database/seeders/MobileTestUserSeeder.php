@@ -33,8 +33,8 @@ class MobileTestUserSeeder extends Seeder
         $clientUser = User::updateOrCreate(
             ['email' => 'merchant@saeelogistics.com'],
             [
-                'name'               => 'Speedy Merchant Co.',
-                'phone'              => '0599999991',
+                'name'               => 'Hussam Merchant',
+                'phone'              => '792856567',
                 'phone_country_code' => '+962',
                 'password'           => Hash::make('password'),
                 'role'               => 'client_master',
@@ -58,8 +58,8 @@ class MobileTestUserSeeder extends Seeder
         $driverUser = User::updateOrCreate(
             ['email' => 'driver1@saeelogistics.com'],
             [
-                'name'               => 'Ahmed Driver',
-                'phone'              => '0599999992',
+                'name'               => 'Mohammad Driver',
+                'phone'              => '792694669',
                 'phone_country_code' => '+962',
                 'password'           => Hash::make('password'),
                 'role'               => 'driver',
