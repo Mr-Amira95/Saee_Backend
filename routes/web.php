@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\SiteSettingController;
+use App\Http\Controllers\Admin\LegalContentController;
 use App\Http\Controllers\PublicCmsController;
 
 Route::get('/lang/{locale}', function ($locale) {
@@ -71,6 +72,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('cms/faqs', FaqController::class)->names('cms.faqs');
         Route::get('settings/site', [SiteSettingController::class, 'index'])->name('settings.site.index');
         Route::post('settings/site', [SiteSettingController::class, 'update'])->name('settings.site.update');
+        Route::get('settings/legal', [LegalContentController::class, 'index'])->name('settings.legal.index');
+        Route::post('settings/legal', [LegalContentController::class, 'update'])->name('settings.legal.update');
 
         // Locations management
         Route::resource('cities', CityController::class)->names('cities');

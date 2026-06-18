@@ -128,14 +128,14 @@
         <div class="nav-label">{{ __('Settings') }}</div>
         <button
             id="settingsBtn"
-            class="nav-item nav-parent-btn {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') || request()->routeIs('admin.settings.site.*') ? 'active parent-open' : '' }}"
+            class="nav-item nav-parent-btn {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') || request()->routeIs('admin.settings.site.*') || request()->routeIs('admin.settings.legal.*') ? 'active parent-open' : '' }}"
             onclick="toggleSubmenu('settingsBtn','settingsMenu')"
         >
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span class="nav-label-text">{{ __('Settings') }}</span>
             <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
-        <div class="nav-submenu {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') || request()->routeIs('admin.settings.site.*') ? 'open' : '' }}" id="settingsMenu">
+        <div class="nav-submenu {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') || request()->routeIs('admin.settings.site.*') || request()->routeIs('admin.settings.legal.*') ? 'open' : '' }}" id="settingsMenu">
             <a href="{{ route('admin.settings.site.index') }}" class="nav-sub-item {{ request()->routeIs('admin.settings.site.index') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('General Settings') }}
             </a>
@@ -153,6 +153,9 @@
             </a>
             <a href="{{ route('admin.notifications.index') }}" class="nav-sub-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Broadcast Alerts') }}
+            </a>
+            <a href="{{ route('admin.settings.legal.index') }}" class="nav-sub-item {{ request()->routeIs('admin.settings.legal.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Legal Content') }}
             </a>
         </div>
     </nav>
