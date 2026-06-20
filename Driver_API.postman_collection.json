@@ -1,0 +1,567 @@
+{
+  "info": {
+    "name": "Driver API",
+    "_postman_id": "driver-api-collection",
+    "description": "All API endpoints for the Driver mobile app",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Sanctum bearer token — set after login"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"country_code\": \"+962\",\n  \"phone_number\": \"791234567\",\n  \"full_phone\": \"+962791234567\",\n  \"password\": \"password123\"\n}"
+            },
+            "description": "Authenticate a driver. Returns a Sanctum bearer token and profile data.\n\n**Rate limit:** 10 requests / minute\n\n**Body fields:**\n- `country_code` (required) — e.g. `+962`\n- `phone_number` (required)\n- `full_phone` (optional) — pre-combined number\n- `password` (required)\n\n**Success 200:**\n```json\n{\n  \"success\": true,\n  \"message\": \"Logged in successfully\",\n  \"data\": {\n    \"token\": \"<sanctum_token>\",\n    \"role_type\": \"driver\",\n    \"user\": { ... },\n    \"profile\": { ... }\n  }\n}\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.token) {",
+                  "  pm.collectionVariables.set('token', res.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] },
+            "description": "Revoke the current Sanctum token.\n\n**Auth:** Bearer token required\n\n**Success 200:**\n```json\n{ \"success\": true, \"message\": \"Logged out successfully\" }\n```"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/change-password", "host": ["{{base_url}}"], "path": ["auth", "change-password"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"current_password\": \"oldPassword1\",\n  \"password\": \"newPassword1\",\n  \"password_confirmation\": \"newPassword1\"\n}"
+            },
+            "description": "Change the authenticated driver's password. All other sessions are revoked on success.\n\n**Auth:** Bearer token required  \n**Rate limit:** 10 requests / minute\n\n**Rules:** min 8 chars, must contain letters and numbers, must differ from current password."
+          }
+        },
+        {
+          "name": "Forgot Password — Request Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/forgot-password/request-code", "host": ["{{base_url}}"], "path": ["auth", "forgot-password", "request-code"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"country_code\": \"+962\",\n  \"phone_number\": \"791234567\",\n  \"full_phone\": \"+962791234567\"\n}"
+            },
+            "description": "Send a 6-digit OTP to the registered phone number. Code is valid for 5 minutes.\n\n**Note (dev/local env):** response includes `debug_code` with the raw OTP."
+          }
+        },
+        {
+          "name": "Forgot Password — Verify Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/forgot-password/verify-code", "host": ["{{base_url}}"], "path": ["auth", "forgot-password", "verify-code"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"country_code\": \"+962\",\n  \"phone_number\": \"791234567\",\n  \"full_phone\": \"+962791234567\",\n  \"code\": \"123456\"\n}"
+            },
+            "description": "Verify the OTP. Returns a short-lived `reset_token` (valid 10 minutes) used in the next step.\n\n**Max attempts:** 5 before the code is locked."
+          }
+        },
+        {
+          "name": "Forgot Password — Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/forgot-password/reset", "host": ["{{base_url}}"], "path": ["auth", "forgot-password", "reset"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"reset_token\": \"<token_from_verify_step>\",\n  \"password\": \"newPassword1\",\n  \"password_confirmation\": \"newPassword1\"\n}"
+            },
+            "description": "Complete the password reset using the token obtained from verify-code. All existing Sanctum tokens are revoked."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Home",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/home", "host": ["{{base_url}}"], "path": ["home"] },
+            "description": "Driver home screen data — today's orders, attendance status, and cash summary."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/profile", "host": ["{{base_url}}"], "path": ["profile"] },
+            "description": "Retrieve the authenticated driver's profile including licenses, vehicle info, attachments, and current attendance status."
+          }
+        },
+        {
+          "name": "Update Notification Preferences",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/profile/notifications", "host": ["{{base_url}}"], "path": ["profile", "notifications"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"notifications_enabled\": true\n}"
+            },
+            "description": "Enable or disable push notifications for the authenticated driver.\n\n**Body:** `notifications_enabled` (boolean, required)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications?filter=unread",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"],
+              "query": [
+                { "key": "filter", "value": "unread", "description": "Pass 'unread' to show only unread notifications. Omit for all." }
+              ]
+            },
+            "description": "Paginated list of system notifications. Includes `unread_count` at the top level.\n\n**Query params:**\n- `filter=unread` — only unread notifications"
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/1/read",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "1", "read"]
+            },
+            "description": "Mark a specific notification as read by its ID."
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/notifications/read-all", "host": ["{{base_url}}"], "path": ["notifications", "read-all"] },
+            "description": "Mark all unread notifications as read. Returns `marked_count`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "List Attendance Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/attendance",
+              "host": ["{{base_url}}"],
+              "path": ["attendance"],
+              "query": [
+                { "key": "date", "value": "2026-06-20", "description": "Filter by exact date (YYYY-MM-DD)", "disabled": true },
+                { "key": "month", "value": "6", "description": "Filter by month (use with year)", "disabled": true },
+                { "key": "year", "value": "2026", "description": "Filter by year (use with month)", "disabled": true },
+                { "key": "from", "value": "2026-06-01", "description": "Date range start (YYYY-MM-DD)", "disabled": true },
+                { "key": "to", "value": "2026-06-30", "description": "Date range end (YYYY-MM-DD)", "disabled": true },
+                { "key": "status", "value": "checked_in", "description": "not_checked_in | checked_in | checked_out", "disabled": true }
+              ]
+            },
+            "description": "Paginated attendance history for the authenticated driver.\n\n**Query params (all optional):**\n- `date` — exact date filter\n- `month` + `year` — filter by month\n- `from` / `to` — date range\n- `status` — `not_checked_in` | `checked_in` | `checked_out`"
+          }
+        },
+        {
+          "name": "Check In",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/attendance/check-in", "host": ["{{base_url}}"], "path": ["attendance", "check-in"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"location\": \"Amman, Jordan\"\n}"
+            },
+            "description": "Start a new attendance session for today. Fails if the driver is already checked in.\n\n**Body:**\n- `location` (optional) — free-text location string"
+          }
+        },
+        {
+          "name": "Check Out",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/attendance/check-out", "host": ["{{base_url}}"], "path": ["attendance", "check-out"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"location\": \"Amman, Jordan\"\n}"
+            },
+            "description": "Close the current open attendance session. Fails if the driver is not checked in.\n\n**Body:**\n- `location` (optional) — free-text location string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                { "key": "status", "value": "picked_up", "description": "pending | picked_up | delivered | rejected", "disabled": true },
+                { "key": "payment_status", "value": "pending", "description": "pending | with_driver | settled", "disabled": true },
+                { "key": "payment_type", "value": "cod", "description": "cod | prepaid", "disabled": true },
+                { "key": "city_id", "value": "1", "disabled": true },
+                { "key": "area_id", "value": "1", "disabled": true },
+                { "key": "from", "value": "2026-06-01", "description": "Date range start (YYYY-MM-DD)", "disabled": true },
+                { "key": "to", "value": "2026-06-30", "description": "Date range end (YYYY-MM-DD)", "disabled": true },
+                { "key": "search", "value": "", "description": "Search by order_number, receiver_name, or receiver_phone", "disabled": true }
+              ]
+            },
+            "description": "Paginated list of orders assigned to the authenticated driver.\n\n**Query params (all optional):**\n- `status` — `pending` | `picked_up` | `delivered` | `rejected`\n- `payment_status` — `pending` | `with_driver` | `settled`\n- `payment_type` — `cod` | `prepaid`\n- `city_id`, `area_id`\n- `from` / `to` — date range\n- `search` — order number, receiver name, or phone"
+          }
+        },
+        {
+          "name": "Get Order",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/1",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "1"]
+            },
+            "description": "Retrieve a single order by ID. Driver can only access their own orders."
+          }
+        },
+        {
+          "name": "Deliver Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/1/deliver",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "1", "deliver"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "signature", "type": "file", "description": "Required. Recipient signature image (max 5 MB)" },
+                { "key": "proof_image", "type": "file", "description": "Optional. Delivery proof photo (max 5 MB)", "disabled": true },
+                { "key": "latitude", "value": "31.9522", "type": "text", "description": "Optional. GPS latitude", "disabled": true },
+                { "key": "longitude", "value": "35.9330", "type": "text", "description": "Optional. GPS longitude", "disabled": true }
+              ]
+            },
+            "description": "Mark an order as delivered. Order must be in `picked_up` status.\n\n**Body (multipart/form-data):**\n- `signature` (file, required) — max 5 MB image\n- `proof_image` (file, optional) — max 5 MB image\n- `latitude` (numeric, optional)\n- `longitude` (numeric, optional)\n\nFor COD orders, payment_status is automatically set to `with_driver`."
+          }
+        },
+        {
+          "name": "Reject Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/1/reject",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "1", "reject"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"rejection_reason_id\": 1,\n  \"notes\": \"Customer not available\",\n  \"latitude\": 31.9522,\n  \"longitude\": 35.9330\n}"
+            },
+            "description": "Reject an order. Order must be in `picked_up` status.\n\n**Body:**\n- `rejection_reason_id` (integer, required) — must be an active reason from `/rejection-reasons`\n- `notes` (string, optional, max 1000 chars)\n- `latitude` (numeric, optional)\n- `longitude` (numeric, optional)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Finances",
+      "item": [
+        {
+          "name": "Get Financial Ledger",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/finances", "host": ["{{base_url}}"], "path": ["finances"] },
+            "description": "Driver financial ledger entries with summary: total collections, total settlements, and pending cash."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ratings",
+      "item": [
+        {
+          "name": "List Ratings",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/ratings", "host": ["{{base_url}}"], "path": ["ratings"] },
+            "description": "Paginated list of ratings received by the authenticated driver."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rejection Reasons",
+      "item": [
+        {
+          "name": "List Rejection Reasons",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/rejection-reasons", "host": ["{{base_url}}"], "path": ["rejection-reasons"] },
+            "description": "List of active rejection reasons for use when rejecting an order."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cities",
+      "item": [
+        {
+          "name": "List Cities",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/cities", "host": ["{{base_url}}"], "path": ["cities"] },
+            "description": "List of available cities."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Support",
+      "item": [
+        {
+          "name": "List Support Tickets",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/support", "host": ["{{base_url}}"], "path": ["support"] },
+            "description": "Paginated list of the driver's support tickets. Each ticket includes `unread_count` and the latest message."
+          }
+        },
+        {
+          "name": "Create Support Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/support", "host": ["{{base_url}}"], "path": ["support"] },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title\": \"Issue with order #ORD-001\",\n  \"category\": \"delivery_issue\",\n  \"message\": \"The customer refused the delivery but the order was not updated.\",\n  \"order_id\": null\n}"
+            },
+            "description": "Open a new support ticket.\n\n**Body:**\n- `title` (string, required, max 255)\n- `category` (required) — `general` | `delivery_issue` | `financial` | `complaint`\n- `message` (string, required) — first message body\n- `order_id` (integer, optional) — link to an existing order"
+          }
+        },
+        {
+          "name": "Get Support Ticket",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/support/1",
+              "host": ["{{base_url}}"],
+              "path": ["support", "1"]
+            },
+            "description": "Retrieve a single support ticket with all messages. Admin/support messages are automatically marked as read."
+          }
+        },
+        {
+          "name": "Send Support Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/support/1/messages",
+              "host": ["{{base_url}}"],
+              "path": ["support", "1", "messages"]
+            },
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"message\": \"Still waiting for a resolution.\"\n}"
+            },
+            "description": "Reply to an existing support ticket. Fails if the ticket is `resolved`.\n\n**Body:**\n- `message` (string, required)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Legal (Public)",
+      "item": [
+        {
+          "name": "Terms of Service",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/legal/terms", "host": ["{{base_url}}"], "path": ["legal", "terms"] },
+            "description": "Public endpoint — no authentication required. Returns the terms of service content."
+          }
+        },
+        {
+          "name": "Privacy Policy",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/legal/privacy", "host": ["{{base_url}}"], "path": ["legal", "privacy"] },
+            "description": "Public endpoint — no authentication required. Returns the privacy policy content."
+          }
+        }
+      ]
+    }
+  ]
+}
