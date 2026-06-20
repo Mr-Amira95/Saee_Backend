@@ -803,14 +803,28 @@ const _toastIcons = {
     danger:  `<svg width="16" height="16" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
 };
 
-function showToast(title, message, type, link) {
+// Mark one notification as read then navigate to its link (or the notifications page).
+const _notifBaseUrl   = '{{ url("admin/notifications") }}';
+const _notifIndexUrl  = '{{ route("admin.notifications.index") }}';
+const _csrfToken      = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+function notifNavigate(id, link) {
+    const dest = (link && link !== '#') ? link : _notifIndexUrl;
+    if (!id) { window.location.href = dest; return; }
+    fetch(`${_notifBaseUrl}/${id}/read`, {
+        method: 'PATCH',
+        headers: { 'X-CSRF-TOKEN': _csrfToken }
+    }).finally(() => { window.location.href = dest; });
+}
+
+function showToast(title, message, type, link, notifId) {
     const stack = document.getElementById('toastStack');
     if (!stack) return;
-    const t = document.cloneNode ? document.createElement('div') : null;
-    if (!t) return;
+    const t = document.createElement('div');
 
     const safeType = _toastIcons[type] ? type : 'warning';
     t.className = `toast toast-${safeType}`;
+    t.style.cursor = 'pointer';
 
     t.innerHTML = `
         <div class="toast-body">
@@ -819,17 +833,14 @@ function showToast(title, message, type, link) {
                 <div class="toast-title">${title}</div>
                 <div class="toast-msg">${message}</div>
             </div>
-            <button class="toast-close" onclick="dismissToast(this.closest('.toast'))">&#x2715;</button>
+            <button class="toast-close" onclick="event.stopPropagation();dismissToast(this.closest('.toast'))">&#x2715;</button>
         </div>
         <div class="toast-bar"></div>
     `;
 
-    if (link && link !== '#') {
-        t.style.cursor = 'pointer';
-        t.addEventListener('click', function(e) {
-            if (!e.target.closest('.toast-close')) window.location.href = link;
-        });
-    }
+    t.addEventListener('click', function(e) {
+        if (!e.target.closest('.toast-close')) notifNavigate(notifId, link);
+    });
 
     stack.appendChild(t);
 
@@ -859,7 +870,7 @@ function fetchUnreadNotifications() {
             if (_notifInitDone) {
                 data.notifications.forEach(n => {
                     if (!_seenNotifIds.has(n.id)) {
-                        showToast(n.title, n.message, n.type || 'warning', n.link || '#');
+                        showToast(n.title, n.message, n.type || 'warning', n.link || null, n.id);
                     }
                 });
             }
@@ -871,16 +882,15 @@ function fetchUnreadNotifications() {
                 list.innerHTML = `<div style="padding: 20px; text-align: center; font-size: .78rem; color: var(--text-dim);">No unread notifications.</div>`;
             } else {
                 data.notifications.forEach(n => {
-                    const item = document.createElement('a');
-                    item.href = n.link ? n.link : '#';
+                    const item = document.createElement('div');
                     item.style.display = 'block';
                     item.style.padding = '12px 16px';
                     item.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
-                    item.style.textDecoration = 'none';
-                    item.style.color = 'inherit';
+                    item.style.cursor = 'pointer';
                     item.style.transition = 'background .15s';
-                    item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.02)';
+                    item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.04)';
                     item.onmouseleave = () => item.style.background = 'transparent';
+                    item.onclick = () => notifNavigate(n.id, n.link);
 
                     item.innerHTML = `
                         <div style="font-weight: 600; font-size: .8rem; color: #fff;">${n.title}</div>

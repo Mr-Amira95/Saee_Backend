@@ -106,6 +106,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('notifications',              [NotificationController::class, 'store'])->name('notifications.store');
         Route::get('notifications/unread',        [NotificationController::class, 'getLatestUnread'])->name('notifications.unread');
         Route::post('notifications/clear',        [NotificationController::class, 'markAllRead'])->name('notifications.clear');
+        Route::patch('notifications/{id}/read',   [NotificationController::class, 'markOneRead'])->name('notifications.read-one');
 
         // Reports & Exports Center
         Route::get('reports',                     [ReportController::class, 'index'])->name('reports.index');

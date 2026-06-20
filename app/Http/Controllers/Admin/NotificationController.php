@@ -102,6 +102,25 @@ class NotificationController extends Controller
     }
 
     /**
+     * Mark a single notification as read (AJAX).
+     */
+    public function markOneRead(int $id)
+    {
+        $user = Auth::user();
+
+        SystemNotification::where('id', $id)
+            ->whereNull('read_at')
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('role', $user->role)
+                  ->orWhere('role', 'all');
+            })
+            ->update(['read_at' => now()]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Clear all unread notifications for logged-in user (AJAX).
      */
     public function markAllRead()
