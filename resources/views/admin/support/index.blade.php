@@ -10,10 +10,19 @@
 
 @section('head')
 <style>
+    /* Make the content area itself a flex column so chat-layout can fill it */
+    .content {
+        overflow: hidden !important;
+        padding: 16px !important;
+        display: flex;
+        flex-direction: column;
+    }
+
     .chat-layout {
         display: grid;
         grid-template-columns: 320px 1fr;
-        height: calc(100vh - 150px);
+        flex: 1;
+        min-height: 0;
         background: var(--card);
         border: 1px solid var(--bdr);
         border-radius: 16px;
