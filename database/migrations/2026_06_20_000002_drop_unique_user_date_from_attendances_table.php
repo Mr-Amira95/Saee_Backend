@@ -9,6 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('attendances', function (Blueprint $table) {
+            $table->index('user_id', 'attendances_user_id_index');
+        });
+
+        Schema::table('attendances', function (Blueprint $table) {
             $table->dropUnique('attendances_user_id_date_unique');
         });
     }
@@ -17,6 +21,7 @@ return new class extends Migration
     {
         Schema::table('attendances', function (Blueprint $table) {
             $table->unique(['user_id', 'date']);
+            $table->dropIndex('attendances_user_id_index');
         });
     }
 };
