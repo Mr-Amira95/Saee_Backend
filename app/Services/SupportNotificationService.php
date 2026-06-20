@@ -18,22 +18,26 @@ class SupportNotificationService
     public function notifyTicketOpened(SupportTicket $ticket, int $createdBy): void
     {
         $this->sendToUser(
-            userId:    $ticket->user_id,
-            title:     'New Support Ticket Opened',
-            message:   'Operations has opened a support ticket: ' . $ticket->title,
-            type:      'info',
-            createdBy: $createdBy,
+            userId:     $ticket->user_id,
+            title:      'New Support Ticket Opened',
+            message:    'Operations has opened a support ticket: ' . $ticket->title,
+            type:       'info',
+            createdBy:  $createdBy,
+            entityType: 'support_ticket',
+            entityId:   $ticket->id,
         );
     }
 
     public function notifyAdminReply(SupportTicket $ticket, int $createdBy): void
     {
         $this->sendToUser(
-            userId:    $ticket->user_id,
-            title:     'New Message in Your Ticket',
-            message:   'Operations replied to your ticket: ' . $ticket->title,
-            type:      'info',
-            createdBy: $createdBy,
+            userId:     $ticket->user_id,
+            title:      'New Message in Your Ticket',
+            message:    'Operations replied to your ticket: ' . $ticket->title,
+            type:       'info',
+            createdBy:  $createdBy,
+            entityType: 'support_ticket',
+            entityId:   $ticket->id,
         );
     }
 
@@ -42,31 +46,40 @@ class SupportNotificationService
     public function notifyAdminsNewTicket(SupportTicket $ticket): void
     {
         $this->sendToAdmins(
-            title:   'New Support Ticket',
-            message: $ticket->user?->name . ' opened ticket: ' . $ticket->title,
-            type:    'info',
+            title:      'New Support Ticket',
+            message:    $ticket->user?->name . ' opened ticket: ' . $ticket->title,
+            type:       'info',
+            entityType: 'support_ticket',
+            entityId:   $ticket->id,
         );
     }
 
     public function notifyAdminsDriverReply(SupportTicket $ticket): void
     {
         $this->sendToAdmins(
-            title:   'New Message on Ticket ' . $ticket->ticket_number,
-            message: $ticket->user?->name . ' sent a message on: ' . $ticket->title,
-            type:    'info',
+            title:      'New Message on Ticket ' . $ticket->ticket_number,
+            message:    $ticket->user?->name . ' sent a message on: ' . $ticket->title,
+            type:       'info',
+            entityType: 'support_ticket',
+            entityId:   $ticket->id,
         );
     }
 
     // ── Internals ────────────────────────────────────────────────────────────
 
-    private function sendToUser(int $userId, string $title, string $message, string $type, int $createdBy): void
-    {
+    private function sendToUser(
+        int $userId, string $title, string $message, string $type, int $createdBy,
+        ?string $entityType = null, ?int $entityId = null,
+    ): void {
         $record = SystemNotification::create([
-            'user_id'    => $userId,
-            'title'      => $title,
-            'message'    => $message,
-            'type'       => $type,
-            'created_by' => $createdBy,
+            'user_id'     => $userId,
+            'title'       => $title,
+            'message'     => $message,
+            'type'        => $type,
+            'created_by'  => $createdBy,
+            'link'        => $this->resolveLink($entityType, $entityId),
+            'entity_type' => $entityType,
+            'entity_id'   => $entityId,
         ]);
 
         broadcast(new UserNotificationSent($userId, $title, $message, $type));
@@ -83,18 +96,41 @@ class SupportNotificationService
         }
     }
 
-    private function sendToAdmins(string $title, string $message, string $type): void
-    {
+    private function sendToAdmins(
+        string $title, string $message, string $type,
+        ?string $entityType = null, ?int $entityId = null,
+    ): void {
+        $link = $this->resolveLink($entityType, $entityId);
+
         // One record per admin role — the admin bell query matches by role
         foreach (['admin', 'superadmin'] as $role) {
             SystemNotification::create([
-                'user_id' => null,
-                'role'    => $role,
-                'title'   => $title,
-                'message' => $message,
-                'type'    => $type,
+                'user_id'     => null,
+                'role'        => $role,
+                'title'       => $title,
+                'message'     => $message,
+                'type'        => $type,
+                'link'        => $link,
+                'entity_type' => $entityType,
+                'entity_id'   => $entityId,
             ]);
         }
+    }
+
+    private function resolveLink(?string $entityType, ?int $entityId): ?string
+    {
+        if (! $entityType || ! $entityId) {
+            return null;
+        }
+
+        if ($entityType === 'support_ticket') {
+            $ticket = SupportTicket::find($entityId);
+            if ($ticket) {
+                return route('admin.support.index') . '?ticket=' . $ticket->ticket_number;
+            }
+        }
+
+        return null;
     }
 
     private function sendFcmPush(array $tokens, string $title, string $message, string $type, ?int $notificationId = null): void

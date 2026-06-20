@@ -13,6 +13,8 @@ class SystemNotification extends Model
         'title',
         'message',
         'link',
+        'entity_type',
+        'entity_id',
         'type',
         'read_at',
         'created_by',
