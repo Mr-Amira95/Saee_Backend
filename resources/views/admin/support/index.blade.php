@@ -36,6 +36,8 @@
         display: flex;
         flex-direction: column;
         background: rgba(6, 9, 23, 0.4);
+        min-height: 0;
+        overflow: hidden;
     }
 
     .chat-sidebar-head {
@@ -119,8 +121,8 @@
         display: flex;
         flex-direction: column;
         background: rgba(8, 12, 30, 0.6);
-        height: 100%;
-        position: relative;
+        min-height: 0;
+        overflow: hidden;
     }
 
     .chat-window-head {
