@@ -21,7 +21,7 @@ class SupportNotificationService
             userId:    $ticket->user_id,
             title:     'New Support Ticket Opened',
             message:   'Operations has opened a support ticket: ' . $ticket->title,
-            type:      'support',
+            type:      'info',
             createdBy: $createdBy,
         );
     }
@@ -32,7 +32,7 @@ class SupportNotificationService
             userId:    $ticket->user_id,
             title:     'New Message in Your Ticket',
             message:   'Operations replied to your ticket: ' . $ticket->title,
-            type:      'support',
+            type:      'info',
             createdBy: $createdBy,
         );
     }
