@@ -124,7 +124,7 @@ if (! $this->canAccessOrder($user, $order)) {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (! $user->isDriver() || $order->driver_id !== $user->id) {
+        if (! $user->isDriver() || (int) $order->driver_id !== (int) $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',
@@ -184,7 +184,7 @@ if (! $this->canAccessOrder($user, $order)) {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (! $user->isDriver() || $order->driver_id !== $user->id) {
+        if (! $user->isDriver() || (int) $order->driver_id !== (int) $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',

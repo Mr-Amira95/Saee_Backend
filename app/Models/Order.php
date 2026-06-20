@@ -40,6 +40,11 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            'client_profile_id'        => 'integer',
+            'driver_id'                => 'integer',
+            'city_id'                  => 'integer',
+            'area_id'                  => 'integer',
+            'rejection_reason_id'      => 'integer',
             'delivery_on_customer'     => 'boolean',
             'delivery_customer_amount' => 'decimal:2',
             'delivery_amount'          => 'decimal:2',
