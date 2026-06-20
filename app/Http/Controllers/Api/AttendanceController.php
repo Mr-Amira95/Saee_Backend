@@ -65,14 +65,15 @@ class AttendanceController extends Controller
 
         $today = now()->toDateString();
 
-        $existing = Attendance::where('user_id', $user->id)
+        $openSession = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
+            ->whereNull('check_out_at')
             ->first();
 
-        if ($existing) {
+        if ($openSession) {
             return response()->json([
                 'success' => false,
-                'message' => 'You have already checked in today.',
+                'message' => 'You are already checked in. Please check out first.',
                 'code'    => 'ALREADY_CHECKED_IN',
             ], 422);
         }
@@ -100,21 +101,15 @@ class AttendanceController extends Controller
 
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
+            ->whereNull('check_out_at')
+            ->latest('check_in_at')
             ->first();
 
         if (! $attendance) {
             return response()->json([
                 'success' => false,
-                'message' => 'You have not checked in today.',
+                'message' => 'You are not currently checked in.',
                 'code'    => 'NOT_CHECKED_IN',
-            ], 422);
-        }
-
-        if ($attendance->check_out_at) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You have already checked out today.',
-                'code'    => 'ALREADY_CHECKED_OUT',
             ], 422);
         }
 
