@@ -103,6 +103,17 @@ class OrderController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
+        \Log::info('OrderController@show debug', [
+            'user_id'          => $user->id,
+            'user_id_type'     => gettype($user->id),
+            'user_role'        => $user->role ?? 'N/A',
+            'order_id'         => $order->id,
+            'order_driver_id'  => $order->driver_id,
+            'driver_id_type'   => gettype($order->driver_id),
+            'ids_match'        => $order->driver_id === $user->id,
+            'is_driver'        => $user->isDriver(),
+        ]);
+
         if (! $this->canAccessOrder($user, $order)) {
             return response()->json([
                 'success' => false,
