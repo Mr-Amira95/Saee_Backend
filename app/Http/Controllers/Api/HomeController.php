@@ -28,6 +28,7 @@ class HomeController extends Controller
 
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
+            ->latest('check_in_at')
             ->first();
 
         $totalOrders = Order::where('driver_id', $user->id)
