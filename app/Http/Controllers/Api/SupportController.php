@@ -98,7 +98,7 @@ class SupportController extends Controller
 
         broadcast(new SupportTicketCreated($ticket));
 
-        app(SupportNotificationService::class)->notifyAdminsNewTicket($ticket);
+        rescue(fn () => app(SupportNotificationService::class)->notifyAdminsNewTicket($ticket));
 
         return response()->json([
             'success' => true,
@@ -143,7 +143,7 @@ class SupportController extends Controller
 
         broadcast(new SupportMessageSent($message));
 
-        app(SupportNotificationService::class)->notifyAdminsDriverReply($ticket);
+        rescue(fn () => app(SupportNotificationService::class)->notifyAdminsDriverReply($ticket));
 
         return response()->json([
             'success' => true,

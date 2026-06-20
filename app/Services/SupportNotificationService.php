@@ -13,7 +13,7 @@ use Throwable;
 
 class SupportNotificationService
 {
-    public function __construct(private readonly Messaging $messaging) {}
+    public function __construct(private readonly ?Messaging $messaging = null) {}
 
     // ── Admin → Driver ───────────────────────────────────────────────────────
 
@@ -91,7 +91,7 @@ class SupportNotificationService
             ->pluck('fcm_token')
             ->all();
 
-        if (! empty($tokens)) {
+        if (! empty($tokens) && $this->messaging !== null) {
             $this->sendFcmPush($tokens, $title, $message, $type, $record->id, $entityType, $entityId);
         } else {
             $record->update(['fcm_status' => 'skipped']);
