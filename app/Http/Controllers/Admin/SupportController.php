@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\SupportMessageSent;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use App\Models\SupportMessage;
@@ -100,6 +101,8 @@ class SupportController extends Controller
             'message'           => $request->input('message'),
             'is_read'           => true,
         ]);
+
+        broadcast(new SupportMessageSent($message));
 
         // Touch the ticket to update its timestamp
         $ticket->touch();

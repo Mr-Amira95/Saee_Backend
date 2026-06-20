@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\SupportMessageSent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\SupportMessageResource;
 use App\Http\Resources\Api\SupportTicketResource;
@@ -133,6 +134,8 @@ class SupportController extends Controller
             'message'     => $data['message'],
             'is_read'     => false,
         ]);
+
+        broadcast(new SupportMessageSent($message));
 
         return response()->json([
             'success' => true,
