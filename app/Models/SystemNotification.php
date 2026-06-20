@@ -16,12 +16,17 @@ class SystemNotification extends Model
         'type',
         'read_at',
         'created_by',
+        'fcm_status',
+        'fcm_sent_count',
+        'fcm_failed_count',
     ];
 
     protected function casts(): array
     {
         return [
-            'read_at' => 'datetime',
+            'read_at'          => 'datetime',
+            'fcm_sent_count'   => 'integer',
+            'fcm_failed_count' => 'integer',
         ];
     }
 

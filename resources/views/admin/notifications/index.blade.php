@@ -96,6 +96,7 @@
                             <th>Alert Details</th>
                             <th>Target Group / User</th>
                             <th>Status / Style</th>
+                            <th>FCM Push</th>
                             <th>Sent By</th>
                             <th>Timestamp</th>
                         </tr>
@@ -126,6 +127,20 @@
                                     </span>
                                 </td>
                                 <td>
+                                    @if($n->fcm_status === 'sent')
+                                        <span class="badge badge-active" title="{{ $n->fcm_sent_count }} delivered">Sent ({{ $n->fcm_sent_count }})</span>
+                                    @elseif($n->fcm_status === 'partial')
+                                        <span class="badge badge-pending" title="{{ $n->fcm_sent_count }} sent / {{ $n->fcm_failed_count }} failed">Partial</span>
+                                        <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">{{ $n->fcm_sent_count }}✓ / {{ $n->fcm_failed_count }}✗</div>
+                                    @elseif($n->fcm_status === 'failed')
+                                        <span class="badge badge-suspended">Failed</span>
+                                    @elseif($n->fcm_status === 'skipped')
+                                        <span style="font-size:.72rem;color:var(--text-dim);">No tokens</span>
+                                    @else
+                                        <span style="font-size:.72rem;color:var(--text-dim);">—</span>
+                                    @endif
+                                </td>
+                                <td>
                                     <div class="cell-main">{{ $n->creator->name ?? 'System' }}</div>
                                 </td>
                                 <td>
@@ -135,7 +150,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" style="text-align: center; color: var(--text-dim); padding: 40px;">
+                                <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 40px;">
                                     No notifications have been dispatched yet.
                                 </td>
                             </tr>

@@ -61,7 +61,7 @@ class SupportNotificationService
 
     private function sendToUser(int $userId, string $title, string $message, string $type, int $createdBy): void
     {
-        SystemNotification::create([
+        $record = SystemNotification::create([
             'user_id'    => $userId,
             'title'      => $title,
             'message'    => $message,
@@ -77,7 +77,9 @@ class SupportNotificationService
             ->all();
 
         if (! empty($tokens)) {
-            $this->sendFcmPush($tokens, $title, $message, $type);
+            $this->sendFcmPush($tokens, $title, $message, $type, $record->id);
+        } else {
+            $record->update(['fcm_status' => 'skipped']);
         }
     }
 
@@ -95,11 +97,14 @@ class SupportNotificationService
         }
     }
 
-    private function sendFcmPush(array $tokens, string $title, string $message, string $type): void
+    private function sendFcmPush(array $tokens, string $title, string $message, string $type, ?int $notificationId = null): void
     {
+        $totalSent   = 0;
+        $totalFailed = 0;
+
         try {
-            $messaging     = app(Messaging::class);
-            $notification  = Notification::create($title, $message);
+            $messaging    = app(Messaging::class);
+            $notification = Notification::create($title, $message);
 
             foreach (array_chunk($tokens, 500) as $chunk) {
                 $multicast = CloudMessage::new()
@@ -107,6 +112,9 @@ class SupportNotificationService
                     ->withData(['type' => $type]);
 
                 $report = $messaging->sendMulticast($multicast, $chunk);
+
+                $totalSent   += $report->successes()->count();
+                $totalFailed += $report->failures()->count();
 
                 // Clean up tokens Firebase says are permanently invalid
                 if ($report->failures()->count() > 0) {
@@ -119,11 +127,32 @@ class SupportNotificationService
                     }
                 }
             }
+
+            if ($notificationId) {
+                $status = match (true) {
+                    $totalFailed === 0              => 'sent',
+                    $totalSent   === 0              => 'failed',
+                    default                         => 'partial',
+                };
+                SystemNotification::where('id', $notificationId)->update([
+                    'fcm_status'       => $status,
+                    'fcm_sent_count'   => $totalSent,
+                    'fcm_failed_count' => $totalFailed,
+                ]);
+            }
         } catch (Throwable $e) {
             logger()->error('FCM push failed', [
                 'error'  => $e->getMessage(),
                 'tokens' => count($tokens),
             ]);
+
+            if ($notificationId) {
+                SystemNotification::where('id', $notificationId)->update([
+                    'fcm_status'       => 'failed',
+                    'fcm_sent_count'   => 0,
+                    'fcm_failed_count' => count($tokens),
+                ]);
+            }
         }
     }
 }

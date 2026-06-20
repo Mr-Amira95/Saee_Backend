@@ -638,23 +638,9 @@
                     <svg id="themeSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m8.942-8.942h-2.25M4.313 12H2.063m15.122-6.938l-1.591 1.591M6.818 17.182l-1.591 1.591m12.94 0l-1.591-1.591M6.818 6.818L5.227 5.227M12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
                 </button>
 
-                <div style="position: relative;">
-                    <div class="icon-btn" title="Notifications" id="notifBell" onclick="toggleNotifDropdown(event)">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                        <span class="notif-dot" id="notifDot" style="display: none;"></span>
-                    </div>
-                    
-                    {{-- Dropdown Container --}}
-                    <div id="notifDropdown" style="display: none; position: absolute; right: 0; top: 44px; width: 320px; background: #0c1230; border: 1px solid var(--bdr); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; overflow: hidden; animation: modal-in .18s ease-out;">
-                        <div style="padding: 12px 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: .78rem; font-weight: 700; color: var(--text-sub);">Notifications</span>
-                            <button onclick="clearAllNotifications(event)" style="background: none; border: none; font-size: .7rem; color: var(--red-lt); font-family: inherit; font-weight:600; cursor: pointer; hover: text-decoration: underline;">Mark all read</button>
-                        </div>
-                        <div id="notifList" style="max-height: 250px; overflow-y: auto;">
-                            {{-- Dynamic List --}}
-                        </div>
-                        <a href="{{ route('admin.notifications.index') }}" style="display: block; text-align: center; padding: 10px; border-top: 1px solid var(--bdr); font-size: .72rem; color: var(--text-dim); text-decoration: none; font-weight: 600;">View All Notifications</a>
-                    </div>
+                <div class="icon-btn" title="Notifications" id="notifBell" onclick="toggleNotifDropdown(event)">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span class="notif-dot" id="notifDot" style="display: none;"></span>
                 </div>
 
                 <div class="icon-btn">
@@ -760,8 +746,20 @@ function toggleSubmenu(btnId, menuId) {
 function toggleNotifDropdown(e) {
     e.stopPropagation();
     const dropdown = document.getElementById('notifDropdown');
+    const bell = document.getElementById('notifBell');
     const isVisible = dropdown.style.display === 'block';
-    dropdown.style.display = isVisible ? 'none' : 'block';
+    if (isVisible) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    // Position relative to the bell button, escaping any stacking context
+    const rect = bell.getBoundingClientRect();
+    const dropW = 320;
+    let left = rect.right - dropW;
+    if (left < 8) left = 8;
+    dropdown.style.top  = (rect.bottom + 8) + 'px';
+    dropdown.style.left = left + 'px';
+    dropdown.style.display = 'block';
 }
 
 function fetchUnreadNotifications() {
@@ -868,5 +866,17 @@ if (document.getElementById('notifBell')) {
 })();
 </script>
 @yield('scripts')
+
+{{-- Notification Dropdown — rendered at body level to escape topbar stacking context --}}
+<div id="notifDropdown" style="display: none; position: fixed; width: 320px; background: #0c1230; border: 1px solid var(--bdr); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 99999; overflow: hidden; animation: modal-in .18s ease-out;">
+    <div style="padding: 12px 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: .78rem; font-weight: 700; color: var(--text-sub);">Notifications</span>
+        <button onclick="clearAllNotifications(event)" style="background: none; border: none; font-size: .7rem; color: var(--red-lt); font-family: inherit; font-weight:600; cursor: pointer;">Mark all read</button>
+    </div>
+    <div id="notifList" style="max-height: 250px; overflow-y: auto;">
+        {{-- Dynamic List --}}
+    </div>
+    <a href="{{ route('admin.notifications.index') }}" style="display: block; text-align: center; padding: 10px; border-top: 1px solid var(--bdr); font-size: .72rem; color: var(--text-dim); text-decoration: none; font-weight: 600;">View All Notifications</a>
+</div>
 </body>
 </html>
