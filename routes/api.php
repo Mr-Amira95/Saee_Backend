@@ -98,6 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('orders/{order}/reject', [OrderController::class, 'reject'])
         ->name('api.orders.reject');
 
+    Route::post('orders/{order}/return', [OrderController::class, 'returnOrder'])
+        ->name('api.orders.return');
+
     Route::get('support', [SupportController::class, 'index'])
         ->name('api.support.index');
 

@@ -237,6 +237,55 @@ if (! $this->canAccessOrder($user, $order)) {
         ]);
     }
 
+    public function returnOrder(Request $request, Order $order): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isDriver() || $order->driver_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        if ($order->status !== 'rejected') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only rejected orders can be marked as returned.',
+                'code'    => 'INVALID_STATUS_TRANSITION',
+            ], 422);
+        }
+
+        $request->validate([
+            'latitude'  => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+        ]);
+
+        $order->update([
+            'status'         => 'returned',
+            'payment_status' => 'no_payment',
+        ]);
+
+        OrderTrackingLog::create([
+            'order_id'    => $order->id,
+            'user_id'     => $user->id,
+            'from_status' => 'rejected',
+            'to_status'   => 'returned',
+            'description' => 'Order returned to hub/client by driver.',
+            'latitude'    => $request->input('latitude'),
+            'longitude'   => $request->input('longitude'),
+        ]);
+
+        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order marked as returned successfully.',
+            'data'    => new OrderResource($order),
+        ]);
+    }
+
     private function canAccessOrder(User $user, Order $order): bool
     {
         if ($user->isDriver()) {
