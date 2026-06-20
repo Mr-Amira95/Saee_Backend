@@ -45,7 +45,7 @@ class ClientEmployeeController extends Controller
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? '+962',
                 'role'               => 'client_employee',
-                'status'             => 'pending',
+                'status'             => 'active',
             ]);
 
             ClientEmployee::create([

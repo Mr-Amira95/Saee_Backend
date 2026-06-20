@@ -76,7 +76,7 @@ class ClientController extends Controller
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? '+962',
                 'role'               => 'client_master',
-                'status'             => 'pending',
+                'status'             => 'active',
             ]);
 
             $logoPath = null;

@@ -79,7 +79,7 @@ class DriverController extends Controller
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? '+962',
                 'role'               => 'driver',
-                'status'             => 'pending',
+                'status'             => 'active',
             ]);
 
             $licenseAttachment = null;
