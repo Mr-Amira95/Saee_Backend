@@ -13,6 +13,8 @@ use Throwable;
 
 class SupportNotificationService
 {
+    public function __construct(private readonly Messaging $messaging) {}
+
     // ── Admin → Driver ───────────────────────────────────────────────────────
 
     public function notifyTicketOpened(SupportTicket $ticket, int $createdBy): void
@@ -142,7 +144,6 @@ class SupportNotificationService
         $errorReasons = [];
 
         try {
-            $messaging    = app(Messaging::class);
             $notification = Notification::create($title, $message);
 
             $data = array_filter([
@@ -156,7 +157,7 @@ class SupportNotificationService
                     ->withNotification($notification)
                     ->withData($data);
 
-                $report = $messaging->sendMulticast($multicast, $chunk);
+                $report = $this->messaging->sendMulticast($multicast, $chunk);
 
                 $totalSent   += $report->successes()->count();
                 $totalFailed += $report->failures()->count();
