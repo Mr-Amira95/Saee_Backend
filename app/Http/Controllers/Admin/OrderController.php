@@ -151,6 +151,38 @@ class OrderController extends Controller
         return redirect()->back()->with('success', 'Order updated successfully.');
     }
 
+    public function assignDriver(Request $request)
+    {
+        $validated = $request->validate([
+            'order_ids'   => 'required|array|min:1',
+            'order_ids.*' => 'exists:orders,id',
+            'driver_id'   => 'required|exists:users,id',
+        ]);
+
+        $orders = Order::whereIn('id', $validated['order_ids'])
+            ->where('status', 'pending')
+            ->get();
+
+        $assigned = 0;
+        foreach ($orders as $order) {
+            $this->orderService->updateStatus(
+                $order,
+                'picked_up',
+                ['driver_id' => $validated['driver_id']],
+                Auth::user()
+            );
+            $assigned++;
+        }
+
+        $skipped = count($validated['order_ids']) - $assigned;
+        $msg = "{$assigned} order(s) assigned to driver and marked as Picked Up.";
+        if ($skipped > 0) {
+            $msg .= " {$skipped} order(s) skipped (not pending).";
+        }
+
+        return redirect()->back()->with('success', $msg);
+    }
+
     public function destroy(Order $order)
     {
         $order->delete();

@@ -135,6 +135,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('orders/import/template',   [BulkOrderController::class, 'downloadTemplate'])->name('orders.import.template');
         Route::post('orders/import/upload',    [BulkOrderController::class, 'import'])->name('orders.import.upload');
         Route::post('orders/calculate-price',  [OrderController::class, 'calculatePrice'])->name('orders.calculate-price');
+        Route::post('orders/assign-driver',    [OrderController::class, 'assignDriver'])->name('orders.assign-driver');
         Route::resource('orders', OrderController::class)->names('orders');
 
         // Financial Ledger & Settlements

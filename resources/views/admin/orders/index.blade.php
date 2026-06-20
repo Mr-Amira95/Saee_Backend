@@ -122,12 +122,57 @@
         </form>
     </div>
 
+    {{-- Assign Driver Modal --}}
+    <div id="assign-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.45); align-items:center; justify-content:center;">
+        <div style="background:var(--card-bg,#fff); border-radius:10px; padding:28px 32px; min-width:360px; max-width:480px; box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <h3 style="margin:0 0 6px; font-size:1.05rem;">Assign Driver</h3>
+            <p id="assign-modal-subtitle" style="margin:0 0 20px; color:var(--text-sub,#666); font-size:.85rem;"></p>
+
+            <form id="assign-form" method="POST" action="{{ route('admin.orders.assign-driver') }}">
+                @csrf
+                <div id="assign-order-ids"></div>
+
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; font-size:.82rem; font-weight:600; margin-bottom:6px; color:var(--text-sub,#555);">Select Driver</label>
+                    <select name="driver_id" required style="width:100%; padding:9px 12px; border:1px solid var(--border,#ddd); border-radius:7px; font-size:.9rem; background:var(--input-bg,#fff); color:var(--text,#222);">
+                        <option value="">— Choose a driver —</option>
+                        @foreach($drivers as $d)
+                            <option value="{{ $d->id }}">{{ $d->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button type="button" onclick="closeAssignModal()" style="padding:9px 20px; border:1px solid var(--border,#ddd); border-radius:7px; background:transparent; cursor:pointer; font-size:.88rem;">Cancel</button>
+                    <button type="submit" class="btn-primary" style="padding:9px 22px; font-size:.88rem;">
+                        Assign & Mark Picked Up
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- Orders Table --}}
     <div class="table-card">
+
+        {{-- Bulk Action Bar (hidden until rows are selected) --}}
+        <div id="bulk-bar" style="display:none; align-items:center; gap:12px; padding:12px 20px; background:rgba(59,130,246,.07); border-bottom:1px solid rgba(59,130,246,.15);">
+            <svg width="16" height="16" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span id="bulk-count" style="font-size:.88rem; color:#3b82f6; font-weight:600;"></span>
+            <button onclick="openBulkAssign()" class="btn-primary" style="padding:7px 16px; font-size:.83rem; margin-left:4px;">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="margin-right:5px;"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Assign to Driver
+            </button>
+            <button onclick="clearSelection()" style="padding:7px 14px; font-size:.83rem; border:1px solid var(--border,#ddd); border-radius:7px; background:transparent; cursor:pointer; color:var(--text-sub,#555);">Clear</button>
+        </div>
+
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
+                        <th style="width:40px; text-align:center;">
+                            <input type="checkbox" id="select-all" title="Select all pending orders" style="cursor:pointer; width:15px; height:15px;">
+                        </th>
                         <th>Order #</th>
                         <th>Batch #</th>
                         <th>Client</th>
@@ -137,12 +182,18 @@
                         <th>Payment Status</th>
                         <th>Driver</th>
                         <th>Created At</th>
-                        <th style="width: 80px; text-align: center;">Actions</th>
+                        <th style="width: 100px; text-align: center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($orders as $order)
-                        <tr>
+                        @php $isPending = $order->status === 'pending'; @endphp
+                        <tr class="{{ $isPending ? 'order-row-pending' : '' }}">
+                            <td style="text-align:center;">
+                                @if($isPending)
+                                    <input type="checkbox" class="order-checkbox" value="{{ $order->id }}" style="cursor:pointer; width:15px; height:15px;">
+                                @endif
+                            </td>
                             <td>
                                 <a href="{{ route('admin.orders.show', $order) }}" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">
                                     #{{ $order->order_number }}
@@ -218,15 +269,20 @@
                                     <a href="{{ route('admin.orders.show', $order) }}" class="act-btn act-view" title="View Details">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     </a>
-                                    <button class="act-btn act-delete" onclick="confirmDelete('{{ route('admin.orders.destroy', $order) }}', 'Order #{{ $order->order_number }}')" title="Delete">
-                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
+                                    @if($isPending)
+                                        <button class="act-btn act-edit" title="Assign Driver" onclick="openSingleAssign({{ $order->id }}, '#{{ $order->order_number }}')">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        </button>
+                                        <button class="act-btn act-delete" onclick="confirmDelete('{{ route('admin.orders.destroy', $order) }}', 'Order #{{ $order->order_number }}')" title="Delete">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                            <td colspan="11" style="text-align: center; color: var(--text-dim); padding: 30px;">
                                 No orders found matching the filter criteria.
                             </td>
                         </tr>
@@ -247,4 +303,79 @@
             </div>
         @endif
     </div>
+
+    <script>
+    (function () {
+        const selectAll   = document.getElementById('select-all');
+        const bulkBar     = document.getElementById('bulk-bar');
+        const bulkCount   = document.getElementById('bulk-count');
+        const modal       = document.getElementById('assign-modal');
+        const orderIdsDiv = document.getElementById('assign-order-ids');
+        const subtitle    = document.getElementById('assign-modal-subtitle');
+
+        function getChecked() {
+            return Array.from(document.querySelectorAll('.order-checkbox:checked'));
+        }
+
+        function updateBulkBar() {
+            const checked = getChecked();
+            if (checked.length > 0) {
+                bulkCount.textContent = checked.length + ' order' + (checked.length > 1 ? 's' : '') + ' selected';
+                bulkBar.style.display = 'flex';
+            } else {
+                bulkBar.style.display = 'none';
+            }
+            selectAll.indeterminate = checked.length > 0 && checked.length < document.querySelectorAll('.order-checkbox').length;
+            selectAll.checked = checked.length > 0 && checked.length === document.querySelectorAll('.order-checkbox').length;
+        }
+
+        selectAll.addEventListener('change', function () {
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = this.checked);
+            updateBulkBar();
+        });
+
+        document.querySelectorAll('.order-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateBulkBar);
+        });
+
+        window.clearSelection = function () {
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = false);
+            selectAll.checked = false;
+            bulkBar.style.display = 'none';
+        };
+
+        function buildHiddenInputs(ids) {
+            orderIdsDiv.innerHTML = '';
+            ids.forEach(id => {
+                const input = document.createElement('input');
+                input.type  = 'hidden';
+                input.name  = 'order_ids[]';
+                input.value = id;
+                orderIdsDiv.appendChild(input);
+            });
+        }
+
+        window.openBulkAssign = function () {
+            const ids = getChecked().map(cb => cb.value);
+            buildHiddenInputs(ids);
+            subtitle.textContent = ids.length + ' pending order' + (ids.length > 1 ? 's' : '') + ' will be assigned and marked as Picked Up.';
+            modal.style.display = 'flex';
+        };
+
+        window.openSingleAssign = function (orderId, orderLabel) {
+            buildHiddenInputs([orderId]);
+            subtitle.textContent = 'Order ' + orderLabel + ' will be assigned and marked as Picked Up.';
+            modal.style.display = 'flex';
+        };
+
+        window.closeAssignModal = function () {
+            modal.style.display = 'none';
+            orderIdsDiv.innerHTML = '';
+        };
+
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeAssignModal();
+        });
+    })();
+    </script>
 @endsection
