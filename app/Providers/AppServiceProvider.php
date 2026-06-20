@@ -7,14 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Kreait\Firebase\Contract\Messaging as FirebaseMessaging;
-use Kreait\Laravel\Firebase\FirebaseProjectManager;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->app->singleton(FirebaseMessaging::class, function ($app) {
-            return $app->make(FirebaseProjectManager::class)->project()->messaging();
+            return $app->make('firebase.messaging');
         });
     }
 
