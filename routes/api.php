@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\SupportController;
 use App\Http\Controllers\Public\LegalController;
 use Illuminate\Support\Facades\Route;
 
+// Fallback login route — prevents Laravel redirecting API clients to a web login page.
+Route::get('login', fn () => response()->json(['message' => 'Unauthenticated.'], 401))->name('login');
+
 // Public legal content endpoints (no auth required)
 Route::get('legal/terms',   [LegalController::class, 'terms'])->name('api.legal.terms');
 Route::get('legal/privacy', [LegalController::class, 'privacy'])->name('api.legal.privacy');
