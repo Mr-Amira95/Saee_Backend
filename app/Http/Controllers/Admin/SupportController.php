@@ -36,17 +36,23 @@ class SupportController extends Controller
             }
         }
 
-        // Fetch clients and drivers to open tickets with
+        return view('admin.support.index', compact('tickets', 'activeTicket'));
+    }
+
+    /**
+     * Show create ticket form.
+     */
+    public function create()
+    {
         $users = User::whereIn('role', ['driver', 'client_master', 'client_employee'])
             ->orderBy('name')
             ->get();
 
-        // Fetch recent orders
         $orders = Order::orderBy('created_at', 'desc')
             ->take(100)
             ->get();
 
-        return view('admin.support.index', compact('tickets', 'activeTicket', 'users', 'orders'));
+        return view('admin.support.create', compact('users', 'orders'));
     }
 
     /**

@@ -95,6 +95,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Support Tickets & Chat Center
         Route::get('support',                     [SupportController::class, 'index'])->name('support.index');
+        Route::get('support/create',              [SupportController::class, 'create'])->name('support.create');
         Route::post('support',                    [SupportController::class, 'store'])->name('support.store');
         Route::post('support/{ticket}/send',      [SupportController::class, 'sendMessage'])->name('support.send');
         Route::post('support/{ticket}/resolve',   [SupportController::class, 'resolveTicket'])->name('support.resolve');
