@@ -103,18 +103,7 @@ class OrderController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        \Log::info('OrderController@show debug', [
-            'user_id'          => $user->id,
-            'user_id_type'     => gettype($user->id),
-            'user_role'        => $user->role ?? 'N/A',
-            'order_id'         => $order->id,
-            'order_driver_id'  => $order->driver_id,
-            'driver_id_type'   => gettype($order->driver_id),
-            'ids_match'        => $order->driver_id === $user->id,
-            'is_driver'        => $user->isDriver(),
-        ]);
-
-        if (! $this->canAccessOrder($user, $order)) {
+if (! $this->canAccessOrder($user, $order)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Order not found.',
@@ -251,17 +240,17 @@ class OrderController extends Controller
     private function canAccessOrder(User $user, Order $order): bool
     {
         if ($user->isDriver()) {
-            return $order->driver_id === $user->id;
+            return (int) $order->driver_id === (int) $user->id;
         }
 
         if ($user->isClientMaster()) {
             $clientProfile = $user->clientProfile;
-            return $clientProfile && $order->client_profile_id === $clientProfile->id;
+            return $clientProfile && (int) $order->client_profile_id === (int) $clientProfile->id;
         }
 
         if ($user->isClientEmployee()) {
             $employee = $user->clientEmployee;
-            return $employee && $order->client_profile_id === $employee->client_profile_id;
+            return $employee && (int) $order->client_profile_id === (int) $employee->client_profile_id;
         }
 
         return $user->isAdmin() || $user->isSuperAdmin();

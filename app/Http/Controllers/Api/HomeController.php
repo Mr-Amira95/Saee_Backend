@@ -58,7 +58,10 @@ class HomeController extends Controller
 
         $orders = Order::with(['city', 'area', 'rejectionReason'])
             ->where('driver_id', $user->id)
-            ->whereDate('created_at', $today)
+            ->where(function ($q) use ($today) {
+                $q->whereDate('created_at', $today)
+                  ->orWhere('status', 'picked_up');
+            })
             ->latest()
             ->get();
 
