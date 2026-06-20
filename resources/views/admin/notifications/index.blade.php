@@ -132,8 +132,14 @@
                                     @elseif($n->fcm_status === 'partial')
                                         <span class="badge badge-pending" title="{{ $n->fcm_sent_count }} sent / {{ $n->fcm_failed_count }} failed">Partial</span>
                                         <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">{{ $n->fcm_sent_count }}✓ / {{ $n->fcm_failed_count }}✗</div>
+                                        @if($n->fcm_error)
+                                            <div style="font-size:.68rem;color:var(--red-lt);margin-top:2px;line-height:1.4;" title="{{ $n->fcm_error }}">{{ Str::limit($n->fcm_error, 60) }}</div>
+                                        @endif
                                     @elseif($n->fcm_status === 'failed')
                                         <span class="badge badge-suspended">Failed</span>
+                                        @if($n->fcm_error)
+                                            <div style="font-size:.68rem;color:var(--red-lt);margin-top:3px;line-height:1.4;" title="{{ $n->fcm_error }}">{{ Str::limit($n->fcm_error, 60) }}</div>
+                                        @endif
                                     @elseif($n->fcm_status === 'skipped')
                                         <span style="font-size:.72rem;color:var(--text-dim);">No tokens</span>
                                     @else

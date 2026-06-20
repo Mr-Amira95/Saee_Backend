@@ -21,6 +21,7 @@ class SystemNotification extends Model
         'fcm_status',
         'fcm_sent_count',
         'fcm_failed_count',
+        'fcm_error',
     ];
 
     protected function casts(): array

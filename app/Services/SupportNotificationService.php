@@ -139,6 +139,7 @@ class SupportNotificationService
     ): void {
         $totalSent   = 0;
         $totalFailed = 0;
+        $errorReasons = [];
 
         try {
             $messaging    = app(Messaging::class);
@@ -160,11 +161,13 @@ class SupportNotificationService
                 $totalSent   += $report->successes()->count();
                 $totalFailed += $report->failures()->count();
 
-                // Clean up tokens Firebase says are permanently invalid
                 if ($report->failures()->count() > 0) {
                     $dead = [];
                     foreach ($report->failures()->getItems() as $failure) {
                         $dead[] = $failure->target()->value();
+                        if ($failure->error()) {
+                            $errorReasons[] = $failure->error()->getMessage();
+                        }
                     }
                     if (! empty($dead)) {
                         UserDevice::whereIn('fcm_token', $dead)->delete();
@@ -174,14 +177,17 @@ class SupportNotificationService
 
             if ($notificationId) {
                 $status = match (true) {
-                    $totalFailed === 0              => 'sent',
-                    $totalSent   === 0              => 'failed',
-                    default                         => 'partial',
+                    $totalFailed === 0 => 'sent',
+                    $totalSent   === 0 => 'failed',
+                    default            => 'partial',
                 };
                 SystemNotification::where('id', $notificationId)->update([
                     'fcm_status'       => $status,
                     'fcm_sent_count'   => $totalSent,
                     'fcm_failed_count' => $totalFailed,
+                    'fcm_error'        => $errorReasons
+                        ? implode(' | ', array_unique($errorReasons))
+                        : null,
                 ]);
             }
         } catch (Throwable $e) {
@@ -195,6 +201,7 @@ class SupportNotificationService
                     'fcm_status'       => 'failed',
                     'fcm_sent_count'   => 0,
                     'fcm_failed_count' => count($tokens),
+                    'fcm_error'        => $e->getMessage(),
                 ]);
             }
         }
