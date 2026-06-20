@@ -8,6 +8,7 @@ use App\Models\SupportTicket;
 use App\Models\SupportMessage;
 use App\Models\User;
 use App\Models\Order;
+use App\Services\SupportNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -87,6 +88,8 @@ class SupportController extends Controller
             'is_read'           => true,
         ]);
 
+        app(SupportNotificationService::class)->notifyTicketOpened($ticket, Auth::id());
+
         return redirect()->route('admin.support.index', ['ticket' => $ticket->ticket_number])
             ->with('success', "Support ticket {$ticket->ticket_number} opened successfully.");
     }
@@ -109,6 +112,7 @@ class SupportController extends Controller
         ]);
 
         broadcast(new SupportMessageSent($message));
+        app(SupportNotificationService::class)->notifyAdminReply($ticket, Auth::id());
 
         // Touch the ticket to update its timestamp
         $ticket->touch();

@@ -278,7 +278,7 @@
             </div>
             <div class="ticket-list">
                 @forelse($tickets as $t)
-                    <a href="{{ route('admin.support.index', ['ticket' => $t->ticket_number]) }}" class="ticket-item {{ $activeTicket && $activeTicket->id === $t->id ? 'active' : '' }}">
+                    <a href="{{ route('admin.support.index', ['ticket' => $t->ticket_number]) }}" class="ticket-item {{ $activeTicket && $activeTicket->id === $t->id ? 'active' : '' }}" data-ticket-id="{{ $t->id }}">
                         <div class="ticket-item-hd">
                             <span class="ticket-no">{{ $t->ticket_number }}</span>
                             <span class="ticket-time">{{ $t->updated_at->diffForHumans() }}</span>
@@ -371,19 +371,76 @@
 @endsection
 
 @section('scripts')
-@if($activeTicket)
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
-    // Scroll to bottom of chat
-    const chatBody = document.getElementById('chatBody');
+(function () {
+    const PUSHER_KEY    = '{{ config('broadcasting.connections.pusher.key') }}';
+    const PUSHER_CLUSTER = '{{ config('broadcasting.connections.pusher.options.cluster') }}';
+    const pusher  = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER });
+
+    // ── 1. Real-time new tickets in sidebar ──────────────────
+    const ticketList = document.querySelector('.ticket-list');
+    const channel    = pusher.subscribe('support-admin');
+
+    channel.bind('message.sent', function (data) {
+        // Update sidebar item timestamp when a message arrives on any ticket
+        const link = ticketList.querySelector(`a[data-ticket-id="${data.ticket_id}"]`);
+        if (link) {
+            link.querySelector('.ticket-time').textContent = 'Just now';
+            ticketList.prepend(link); // bubble to top
+        }
+    });
+
+    channel.bind('ticket.created', function (data) {
+        // Remove empty state if present
+        const empty = ticketList.querySelector('div');
+        if (empty) empty.remove();
+
+        // Don't duplicate if ticket already in list
+        if (ticketList.querySelector(`[data-ticket-id="${data.id}"]`)) return;
+
+        const statusClass = data.status === 'resolved' ? 'badge-active' : 'badge-pending';
+        const statusLabel = data.status.replace('_', ' ').toUpperCase();
+
+        const a = document.createElement('a');
+        a.href = `?ticket=${data.ticket_number}`;
+        a.className = 'ticket-item';
+        a.dataset.ticketId = data.id;
+        a.innerHTML = `
+            <div class="ticket-item-hd">
+                <span class="ticket-no">${data.ticket_number}</span>
+                <span class="ticket-time">Just now</span>
+            </div>
+            <div class="ticket-title">${data.title}</div>
+            <div class="ticket-meta">
+                <span>By: ${data.user_name}</span>
+                <span class="badge ${statusClass}" style="padding:2px 6px;font-size:.65rem">${statusLabel}</span>
+            </div>
+        `;
+        ticketList.prepend(a);
+    });
+
+@if($activeTicket)
+    // ── 2. Real-time messages in active chat ─────────────────
+    const chatBody    = document.getElementById('chatBody');
+    const activeId    = {{ $activeTicket->id }};
+    const currentUser = {{ auth()->id() }};
+
     if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
 
-    // AJAX Form submission
+    const chatChannel = pusher.subscribe('support.' + activeId);
+    chatChannel.bind('message.sent', function (data) {
+        // Ignore own messages — already appended optimistically
+        if (data.sender_id === currentUser) return;
+        appendMessage(data, false);
+    });
+
+    // AJAX form submit (optimistic append for own messages)
     function handleFormSubmit(e) {
         e.preventDefault();
-        const input = document.getElementById('adminChatInput');
+        const input   = document.getElementById('adminChatInput');
         const message = input.value.trim();
         if (!message) return;
-
         input.value = '';
 
         fetch("{{ route('admin.support.send', $activeTicket) }}", {
@@ -393,54 +450,29 @@
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({ message })
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                appendMessage(data.message, true);
-            }
-        });
+        .then(r => r.json())
+        .then(data => { if (data.success) appendMessage(data.message, true); });
     }
 
-    // Append Message to view
     function appendMessage(msg, isOutgoing) {
         const wrap = document.createElement('div');
         wrap.className = `msg-wrap ${isOutgoing ? 'outgoing' : 'incoming'}`;
-        
-        // Format time
-        const date = new Date(msg.created_at || new Date());
-        const timeStr = String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+
+        const d   = new Date(msg.created_at || msg.sent_at || new Date());
+        const hh  = String(d.getHours()).padStart(2, '0');
+        const mm  = String(d.getMinutes()).padStart(2, '0');
 
         wrap.innerHTML = `
             <div class="msg-sender">${msg.sender_name}</div>
             <div class="msg-bubble">${msg.message}</div>
-            <div class="msg-time">${timeStr}</div>
+            <div class="msg-time">${hh}:${mm}</div>
         `;
-        
         chatBody.appendChild(wrap);
         chatBody.scrollTop = chatBody.scrollHeight;
     }
-
-    // AJAX Polling for real-time messages
-    let lastMessagesCount = {{ $activeTicket->messages->count() }};
-    setInterval(() => {
-        fetch("{{ route('admin.support.messages', $activeTicket) }}")
-        .then(res => res.json())
-        .then(data => {
-            if (data.success && data.messages.length > lastMessagesCount) {
-                // Clear and rebuild or append new
-                const currentUserId = {{ auth()->id() }};
-                chatBody.innerHTML = '';
-                data.messages.forEach(msg => {
-                    appendMessage(msg, msg.sender_id === currentUserId);
-                });
-                lastMessagesCount = data.messages.length;
-            }
-        });
-    }, 3000);
-
-</script>
 @endif
-
+})();
+</script>
 @endsection

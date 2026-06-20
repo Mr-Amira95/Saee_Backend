@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Events\SupportMessageSent;
+use App\Events\SupportTicketCreated;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\SupportMessageResource;
 use App\Http\Resources\Api\SupportTicketResource;
+use App\Services\SupportNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -92,7 +94,11 @@ class SupportController extends Controller
             'is_read'     => false,
         ]);
 
-        $ticket->load('messages');
+        $ticket->load('messages', 'user');
+
+        broadcast(new SupportTicketCreated($ticket));
+
+        app(SupportNotificationService::class)->notifyAdminsNewTicket($ticket);
 
         return response()->json([
             'success' => true,
@@ -136,6 +142,8 @@ class SupportController extends Controller
         ]);
 
         broadcast(new SupportMessageSent($message));
+
+        app(SupportNotificationService::class)->notifyAdminsDriverReply($ticket);
 
         return response()->json([
             'success' => true,

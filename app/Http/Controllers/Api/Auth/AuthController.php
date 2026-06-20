@@ -9,6 +9,7 @@ use App\Http\Resources\Api\ClientProfileResource;
 use App\Http\Resources\Api\DriverProfileResource;
 use App\Http\Resources\Api\UserResource;
 use App\Models\User;
+use App\Models\UserDevice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -77,20 +78,38 @@ class AuthController extends Controller
 
         $token = $user->createToken('mobile')->plainTextToken;
 
+        // Upsert device — reassigns token if it previously belonged to another user
+        $device = UserDevice::updateOrCreate(
+            ['fcm_token'   => $request->fcm_token],
+            [
+                'user_id'     => $user->id,
+                'platform'    => $request->platform,
+                'app_version' => $request->app_version,
+            ]
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Logged in successfully',
             'data'    => [
-                'token'     => $token,
-                'role_type' => $roleType,
-                'user'      => new UserResource($user),
-                'profile'   => $profileResource,
+                'token'                 => $token,
+                'role_type'             => $roleType,
+                'notifications_enabled' => $device->notifications_enabled,
+                'user'                  => new UserResource($user),
+                'profile'               => $profileResource,
             ],
         ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
+        // Remove device record so no more FCM pushes reach this device
+        if ($request->filled('fcm_token')) {
+            UserDevice::where('fcm_token', $request->fcm_token)
+                ->where('user_id', $request->user()->id)
+                ->delete();
+        }
+
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([

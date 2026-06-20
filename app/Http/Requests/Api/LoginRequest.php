@@ -20,6 +20,9 @@ class LoginRequest extends FormRequest
             'phone_number'  => ['required', 'string'],
             'full_phone'    => ['nullable', 'string'],
             'password'      => ['required', 'string'],
+            'fcm_token'     => ['required', 'string'],
+            'platform'      => ['required', 'in:ios,android'],
+            'app_version'   => ['required', 'string', 'max:20'],
         ];
     }
 

@@ -24,7 +24,6 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
-        'notifications_enabled',
     ];
 
     protected $hidden = [
@@ -35,10 +34,9 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at'      => 'datetime',
-            'password'               => 'hashed',
-            'deleted_at'             => 'datetime',
-            'notifications_enabled'  => 'boolean',
+            'email_verified_at' => 'datetime',
+            'password'          => 'hashed',
+            'deleted_at'        => 'datetime',
         ];
     }
 
@@ -93,6 +91,11 @@ class User extends Authenticatable
     public function supportTickets(): HasMany
     {
         return $this->hasMany(SupportTicket::class);
+    }
+
+    public function devices(): HasMany
+    {
+        return $this->hasMany(UserDevice::class);
     }
 
     public function systemNotifications(): HasMany
