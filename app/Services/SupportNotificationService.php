@@ -82,7 +82,7 @@ class SupportNotificationService
             'entity_id'   => $entityId,
         ]);
 
-        broadcast(new UserNotificationSent($userId, $title, $message, $type));
+        broadcast(new UserNotificationSent($userId, $title, $message, $type, $record->link, $entityType, $entityId));
 
         $tokens = UserDevice::where('user_id', $userId)
             ->where('notifications_enabled', true)
@@ -90,7 +90,7 @@ class SupportNotificationService
             ->all();
 
         if (! empty($tokens)) {
-            $this->sendFcmPush($tokens, $title, $message, $type, $record->id);
+            $this->sendFcmPush($tokens, $title, $message, $type, $record->id, $entityType, $entityId);
         } else {
             $record->update(['fcm_status' => 'skipped']);
         }
@@ -133,8 +133,10 @@ class SupportNotificationService
         return null;
     }
 
-    private function sendFcmPush(array $tokens, string $title, string $message, string $type, ?int $notificationId = null): void
-    {
+    private function sendFcmPush(
+        array $tokens, string $title, string $message, string $type,
+        ?int $notificationId = null, ?string $entityType = null, ?int $entityId = null,
+    ): void {
         $totalSent   = 0;
         $totalFailed = 0;
 
@@ -142,10 +144,16 @@ class SupportNotificationService
             $messaging    = app(Messaging::class);
             $notification = Notification::create($title, $message);
 
+            $data = array_filter([
+                'type'        => $type,
+                'entity_type' => $entityType,
+                'entity_id'   => $entityId !== null ? (string) $entityId : null,
+            ]);
+
             foreach (array_chunk($tokens, 500) as $chunk) {
                 $multicast = CloudMessage::new()
                     ->withNotification($notification)
-                    ->withData(['type' => $type]);
+                    ->withData($data);
 
                 $report = $messaging->sendMulticast($multicast, $chunk);
 
