@@ -123,30 +123,28 @@
     </div>
 
     {{-- Assign Driver Modal --}}
-    <div id="assign-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.45); align-items:center; justify-content:center;">
-        <div style="background:var(--card-bg,#fff); border-radius:10px; padding:28px 32px; min-width:360px; max-width:480px; box-shadow:0 8px 32px rgba(0,0,0,.18);">
-            <h3 style="margin:0 0 6px; font-size:1.05rem;">Assign Driver</h3>
-            <p id="assign-modal-subtitle" style="margin:0 0 20px; color:var(--text-sub,#666); font-size:.85rem;"></p>
+    <div class="modal-overlay" id="assignDriverModal">
+        <div class="modal-card" style="border-color: rgba(59,130,246,0.3); max-width: 440px;">
+            <h3>Assign Driver to Order</h3>
+            <p id="assign-modal-subtitle" style="margin-bottom: 18px;">Selected orders will be assigned and marked as Picked Up.</p>
 
             <form id="assign-form" method="POST" action="{{ route('admin.orders.assign-driver') }}">
                 @csrf
                 <div id="assign-order-ids"></div>
 
-                <div style="margin-bottom:20px;">
-                    <label style="display:block; font-size:.82rem; font-weight:600; margin-bottom:6px; color:var(--text-sub,#555);">Select Driver</label>
-                    <select name="driver_id" required style="width:100%; padding:9px 12px; border:1px solid var(--border,#ddd); border-radius:7px; font-size:.9rem; background:var(--input-bg,#fff); color:var(--text,#222);">
-                        <option value="">— Choose a driver —</option>
+                <div class="form-group" style="text-align: left; margin-bottom: 22px;">
+                    <label class="form-label" for="bulk_driver_id">Driver Name</label>
+                    <select name="driver_id" id="bulk_driver_id" class="form-select" required style="width:100%">
+                        <option value="">Select Driver</option>
                         @foreach($drivers as $d)
-                            <option value="{{ $d->id }}">{{ $d->name }}</option>
+                            <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->phone }})</option>
                         @endforeach
                     </select>
                 </div>
 
-                <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" onclick="closeAssignModal()" style="padding:9px 20px; border:1px solid var(--border,#ddd); border-radius:7px; background:transparent; cursor:pointer; font-size:.88rem;">Cancel</button>
-                    <button type="submit" class="btn-primary" style="padding:9px 22px; font-size:.88rem;">
-                        Assign & Mark Picked Up
-                    </button>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('assignDriverModal')">Cancel</button>
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); box-shadow: 0 4px 14px rgba(59,130,246,0.3);">Assign</button>
                 </div>
             </form>
         </div>
@@ -305,11 +303,22 @@
     </div>
 
     <script>
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+    document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === this) closeModal(this.id);
+        });
+    });
+
     (function () {
         const selectAll   = document.getElementById('select-all');
         const bulkBar     = document.getElementById('bulk-bar');
         const bulkCount   = document.getElementById('bulk-count');
-        const modal       = document.getElementById('assign-modal');
         const orderIdsDiv = document.getElementById('assign-order-ids');
         const subtitle    = document.getElementById('assign-modal-subtitle');
 
@@ -319,14 +328,11 @@
 
         function updateBulkBar() {
             const checked = getChecked();
-            if (checked.length > 0) {
-                bulkCount.textContent = checked.length + ' order' + (checked.length > 1 ? 's' : '') + ' selected';
-                bulkBar.style.display = 'flex';
-            } else {
-                bulkBar.style.display = 'none';
-            }
-            selectAll.indeterminate = checked.length > 0 && checked.length < document.querySelectorAll('.order-checkbox').length;
-            selectAll.checked = checked.length > 0 && checked.length === document.querySelectorAll('.order-checkbox').length;
+            const total   = document.querySelectorAll('.order-checkbox').length;
+            bulkBar.style.display = checked.length > 0 ? 'flex' : 'none';
+            bulkCount.textContent = checked.length + ' order' + (checked.length > 1 ? 's' : '') + ' selected';
+            selectAll.indeterminate = checked.length > 0 && checked.length < total;
+            selectAll.checked = total > 0 && checked.length === total;
         }
 
         selectAll.addEventListener('change', function () {
@@ -346,7 +352,7 @@
 
         function buildHiddenInputs(ids) {
             orderIdsDiv.innerHTML = '';
-            ids.forEach(id => {
+            ids.forEach(function (id) {
                 const input = document.createElement('input');
                 input.type  = 'hidden';
                 input.name  = 'order_ids[]';
@@ -359,23 +365,14 @@
             const ids = getChecked().map(cb => cb.value);
             buildHiddenInputs(ids);
             subtitle.textContent = ids.length + ' pending order' + (ids.length > 1 ? 's' : '') + ' will be assigned and marked as Picked Up.';
-            modal.style.display = 'flex';
+            openModal('assignDriverModal');
         };
 
         window.openSingleAssign = function (orderId, orderLabel) {
             buildHiddenInputs([orderId]);
             subtitle.textContent = 'Order ' + orderLabel + ' will be assigned and marked as Picked Up.';
-            modal.style.display = 'flex';
+            openModal('assignDriverModal');
         };
-
-        window.closeAssignModal = function () {
-            modal.style.display = 'none';
-            orderIdsDiv.innerHTML = '';
-        };
-
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) closeAssignModal();
-        });
     })();
     </script>
 @endsection
