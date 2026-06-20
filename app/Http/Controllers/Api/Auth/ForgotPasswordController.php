@@ -30,8 +30,15 @@ class ForgotPasswordController extends Controller
 
         $user = User::whereIn('phone', $candidates)->first();
 
-        // Unknown phone or unsupported role — return generic success to prevent account enumeration
-        if (! $user || in_array($user->role, ['admin', 'superadmin'])) {
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This phone number is not registered',
+                'code'    => 'PHONE_NOT_REGISTERED',
+            ], 404);
+        }
+
+        if (in_array($user->role, ['admin', 'superadmin'])) {
             return $this->genericCodeSentResponse();
         }
 
