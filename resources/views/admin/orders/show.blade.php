@@ -144,6 +144,16 @@
                     <span>Description:</span>
                     <strong>{{ $order->order_description ?: 'No description' }}</strong>
                 </div>
+                @if($order->batch_number)
+                    <div class="info-row">
+                        <span>Batch #:</span>
+                        <strong style="font-family: monospace; letter-spacing: 0.05em; color: var(--red-lt);">
+                            <a href="{{ route('admin.orders.index', ['batch_number' => $order->batch_number]) }}" style="color: var(--red-lt); text-decoration: none;" title="View all orders in this batch">
+                                {{ $order->batch_number }}
+                            </a>
+                        </strong>
+                    </div>
+                @endif
             </div>
         </div>
 

@@ -114,7 +114,9 @@
                 @endforeach
             </select>
 
-            @if(request()->anyFilled(['search', 'status', 'payment_status', 'client_profile_id', 'driver_id', 'city_id']))
+            <input type="text" name="batch_number" value="{{ request('batch_number') }}" class="filter-input" placeholder="Batch #..." style="width: 180px; font-family: monospace;" oninput="if(!this.value) this.form.submit()">
+
+            @if(request()->anyFilled(['search', 'status', 'payment_status', 'client_profile_id', 'driver_id', 'city_id', 'batch_number']))
                 <a href="{{ route('admin.orders.index') }}" class="btn-secondary" style="padding: 8px 12px; height: 35px; display: inline-flex; align-items: center;">Clear</a>
             @endif
         </form>
@@ -127,6 +129,7 @@
                 <thead>
                     <tr>
                         <th>Order #</th>
+                        <th>Batch #</th>
                         <th>Client</th>
                         <th>Receiver</th>
                         <th>Pricing / Payment</th>
@@ -144,6 +147,15 @@
                                 <a href="{{ route('admin.orders.show', $order) }}" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">
                                     #{{ $order->order_number }}
                                 </a>
+                            </td>
+                            <td>
+                                @if($order->batch_number)
+                                    <a href="{{ route('admin.orders.index', ['batch_number' => $order->batch_number]) }}" style="color: var(--text-sub); font-size: 0.76rem; font-family: monospace; text-decoration: none;" title="Filter by this batch">
+                                        {{ $order->batch_number }}
+                                    </a>
+                                @else
+                                    <span class="cell-sub" style="font-style: italic;">—</span>
+                                @endif
                             </td>
                             <td>
                                 <div class="cell-main">{{ $order->clientProfile->company_name }}</div>
@@ -214,7 +226,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                            <td colspan="10" style="text-align: center; color: var(--text-dim); padding: 30px;">
                                 No orders found matching the filter criteria.
                             </td>
                         </tr>

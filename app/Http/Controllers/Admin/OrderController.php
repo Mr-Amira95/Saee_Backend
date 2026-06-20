@@ -51,6 +51,9 @@ class OrderController extends Controller
         if ($request->filled('city_id')) {
             $query->where('city_id', $request->input('city_id'));
         }
+        if ($request->filled('batch_number')) {
+            $query->where('batch_number', $request->input('batch_number'));
+        }
 
         $orders = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
@@ -96,6 +99,7 @@ class OrderController extends Controller
             'address_text'      => 'required|string',
             'address_location'  => 'nullable|string|max:100',
             'notes'             => 'nullable|string',
+            'batch_number'      => 'nullable|string|max:60',
         ]);
 
         $order = $this->orderService->createOrder($validated, Auth::user());

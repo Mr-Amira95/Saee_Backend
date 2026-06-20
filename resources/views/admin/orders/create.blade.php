@@ -177,6 +177,25 @@
                 </div>
             </div>
 
+            {{-- 4. Batch Number --}}
+            <div class="form-section">
+                <div class="form-section-title">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+                    Batch Reference
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="batch_number">Batch Number <span style="color: var(--text-dim); font-weight: 400;">(Optional — used to group orders for driver assignment)</span></label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" name="batch_number" id="batch_number" class="form-input @error('batch_number') err @enderror" value="{{ old('batch_number') }}" placeholder="e.g. BATCH-260620-5-A3F7" style="flex: 1; font-family: monospace; letter-spacing: 0.05em;">
+                        <button type="button" onclick="generateBatchNumber()" style="padding: 0 18px; height: 42px; background: rgba(255,255,255,0.06); border: 1px solid var(--bdr); border-radius: 8px; color: var(--text); cursor: pointer; font-size: 0.82rem; font-weight: 600; white-space: nowrap; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 5px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            Generate
+                        </button>
+                    </div>
+                    @error('batch_number') <span class="form-error">{{ $message }}</span> @enderror
+                </div>
+            </div>
+
             <div class="form-actions">
                 <a href="{{ route('admin.orders.index') }}" class="btn-secondary">Cancel</a>
                 <button type="submit" class="btn-primary">Create Order</button>
@@ -292,6 +311,16 @@
 
         if (clientSelect.value && citySelect.value) {
             calculateShippingEstimate();
+        }
+
+        function generateBatchNumber() {
+            const clientId = document.getElementById('client_profile_id').value || 'X';
+            const d = new Date();
+            const yy = String(d.getFullYear()).slice(-2);
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const rand = Math.random().toString(16).substring(2, 6).toUpperCase();
+            document.getElementById('batch_number').value = `BATCH-${yy}${mm}${dd}-${clientId}-${rand}`;
         }
     </script>
 @endsection

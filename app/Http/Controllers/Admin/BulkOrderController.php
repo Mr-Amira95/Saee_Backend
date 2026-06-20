@@ -191,6 +191,10 @@ class BulkOrderController extends Controller
             ]);
         }
 
+        // Generate one batch number for this entire import session
+        $firstClientId = $results[0]['data']['client_id'] ?? 'X';
+        $batchNumber = 'BATCH-' . now()->format('ymd') . '-' . $firstClientId . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
+
         // If no errors, let's create the orders!
         $importedCount = 0;
         foreach ($results as $item) {
@@ -208,7 +212,8 @@ class BulkOrderController extends Controller
                 'area_id' => (int)$rowData['area_id'],
                 'address_text' => $rowData['address_text'],
                 'notes' => $rowData['notes'] ?? null,
-                'driver_id' => null, // Assingment done separately
+                'driver_id' => null,
+                'batch_number' => $batchNumber,
             ];
 
             $this->orderService->createOrder($orderData, Auth::user());
@@ -216,6 +221,6 @@ class BulkOrderController extends Controller
         }
 
         return redirect()->route('admin.orders.index')
-            ->with('success', "Successfully imported {$importedCount} orders.");
+            ->with('success', "Successfully imported {$importedCount} orders. Batch: {$batchNumber}");
     }
 }
