@@ -463,6 +463,36 @@
         @keyframes shake { 0%,100%{transform:translateX(0);} 15%,45%,75%{transform:translateX(-4px);} 30%,60%,90%{transform:translateX(4px);} }
         @keyframes fade-in { from{opacity:0;} to{opacity:1;} }
         @keyframes modal-in { from{transform:scale(.9);opacity:0;} to{transform:scale(1);opacity:1;} }
+        @keyframes toast-in  { from{transform:translateX(110%);opacity:0;} to{transform:translateX(0);opacity:1;} }
+        @keyframes toast-out { from{transform:translateX(0);opacity:1;}   to{transform:translateX(110%);opacity:0;} }
+        @keyframes toast-progress { from{width:100%;} to{width:0%;} }
+
+        /* ─── Toast notifications ────────────────────────── */
+        #toastStack { position:fixed; bottom:24px; right:24px; z-index:999999; display:flex; flex-direction:column-reverse; gap:10px; pointer-events:none; }
+        .toast {
+            pointer-events:all; width:320px; border-radius:12px; overflow:hidden;
+            background:#0c1230; border:1px solid rgba(255,255,255,.07);
+            box-shadow:0 8px 32px rgba(0,0,0,.55);
+            animation:toast-in .32s cubic-bezier(.16,1,.3,1) both;
+        }
+        .toast.toast-hide { animation:toast-out .28s ease-in forwards; }
+        .toast-body { display:flex; align-items:flex-start; gap:11px; padding:13px 14px 11px; }
+        .toast-icon { width:32px; height:32px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+        .toast-text { flex:1; min-width:0; }
+        .toast-title { font-size:.82rem; font-weight:700; color:#f1f5f9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .toast-msg   { font-size:.74rem; color:#94a3b8; margin-top:3px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .toast-close { background:none; border:none; color:#475569; cursor:pointer; padding:2px; line-height:1; flex-shrink:0; font-size:15px; margin-top:-1px; }
+        .toast-close:hover { color:#f1f5f9; }
+        .toast-bar { height:3px; animation:toast-progress 5s linear forwards; }
+        /* type colours */
+        .toast-warning .toast-icon { background:rgba(245,158,11,.12); }
+        .toast-warning .toast-bar  { background:#f59e0b; }
+        .toast-info    .toast-icon { background:rgba(59,130,246,.12); }
+        .toast-info    .toast-bar  { background:#3b82f6; }
+        .toast-success .toast-icon { background:rgba(34,197,94,.12); }
+        .toast-success .toast-bar  { background:#22c55e; }
+        .toast-danger  .toast-icon { background:rgba(220,38,38,.12); }
+        .toast-danger  .toast-bar  { background:#dc2626; }
 
         /* ─── Delete modal ───────────────────────────────── */
         .modal-overlay {
@@ -762,6 +792,59 @@ function toggleNotifDropdown(e) {
     dropdown.style.display = 'block';
 }
 
+// Track notification IDs already seen so we only toast genuinely new arrivals
+const _seenNotifIds = new Set();
+let   _notifInitDone = false;
+
+const _toastIcons = {
+    warning: `<svg width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`,
+    info:    `<svg width="16" height="16" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/></svg>`,
+    success: `<svg width="16" height="16" fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`,
+    danger:  `<svg width="16" height="16" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+};
+
+function showToast(title, message, type, link) {
+    const stack = document.getElementById('toastStack');
+    if (!stack) return;
+    const t = document.cloneNode ? document.createElement('div') : null;
+    if (!t) return;
+
+    const safeType = _toastIcons[type] ? type : 'warning';
+    t.className = `toast toast-${safeType}`;
+
+    t.innerHTML = `
+        <div class="toast-body">
+            <div class="toast-icon">${_toastIcons[safeType]}</div>
+            <div class="toast-text">
+                <div class="toast-title">${title}</div>
+                <div class="toast-msg">${message}</div>
+            </div>
+            <button class="toast-close" onclick="dismissToast(this.closest('.toast'))">&#x2715;</button>
+        </div>
+        <div class="toast-bar"></div>
+    `;
+
+    if (link && link !== '#') {
+        t.style.cursor = 'pointer';
+        t.addEventListener('click', function(e) {
+            if (!e.target.closest('.toast-close')) window.location.href = link;
+        });
+    }
+
+    stack.appendChild(t);
+
+    const timer = setTimeout(() => dismissToast(t), 5000);
+    t._dismissTimer = timer;
+}
+
+function dismissToast(el) {
+    if (!el || el._dismissing) return;
+    el._dismissing = true;
+    clearTimeout(el._dismissTimer);
+    el.classList.add('toast-hide');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+}
+
 function fetchUnreadNotifications() {
     fetch("{{ route('admin.notifications.unread') }}")
     .then(res => res.json())
@@ -769,12 +852,19 @@ function fetchUnreadNotifications() {
         if (data.success) {
             const dot = document.getElementById('notifDot');
             const list = document.getElementById('notifList');
-            
-            if (data.count > 0) {
-                dot.style.display = 'block';
-            } else {
-                dot.style.display = 'none';
+
+            dot.style.display = data.count > 0 ? 'block' : 'none';
+
+            // Detect new notifications (only after initial load)
+            if (_notifInitDone) {
+                data.notifications.forEach(n => {
+                    if (!_seenNotifIds.has(n.id)) {
+                        showToast(n.title, n.message, n.type || 'warning', n.link || '#');
+                    }
+                });
             }
+            data.notifications.forEach(n => _seenNotifIds.add(n.id));
+            _notifInitDone = true;
 
             list.innerHTML = '';
             if (data.notifications.length === 0) {
@@ -866,6 +956,9 @@ if (document.getElementById('notifBell')) {
 })();
 </script>
 @yield('scripts')
+
+{{-- Toast stack — body-level so it's never clipped by any stacking context --}}
+<div id="toastStack"></div>
 
 {{-- Notification Dropdown — rendered at body level to escape topbar stacking context --}}
 <div id="notifDropdown" style="display: none; position: fixed; width: 320px; background: #0c1230; border: 1px solid var(--bdr); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 99999; overflow: hidden; animation: modal-in .18s ease-out;">
