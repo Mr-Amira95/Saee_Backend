@@ -56,18 +56,35 @@ class HomeController extends Controller
             )
             ->value('total');
 
-        $orders = Order::with(['city', 'area', 'rejectionReason'])
+        $isCheckedIn = $attendance && $attendance->check_in_at && ! $attendance->check_out_at;
+
+        $ordersQuery = Order::with(['city', 'area', 'rejectionReason'])
             ->where('driver_id', $user->id)
-            ->where(function ($q) use ($today) {
-                $q->whereDate('created_at', $today)
-                  ->orWhere('status', 'picked_up');
+            ->where(function ($q) use ($today, $isCheckedIn) {
+                $q->whereDate('created_at', $today);
+                if ($isCheckedIn) {
+                    $q->orWhere('status', 'picked_up');
+                }
             })
-            ->latest()
-            ->get();
+            ->latest();
+
+        $checkInAlert = null;
+        if (! $isCheckedIn) {
+            $hasHiddenOrders = Order::where('driver_id', $user->id)
+                ->whereIn('status', ['picked_up', 'rejected'])
+                ->exists();
+
+            if ($hasHiddenOrders) {
+                $checkInAlert = 'You have pending orders. Please check in to view your orders.';
+            }
+        }
+
+        $orders = $ordersQuery->get();
 
         return response()->json([
             'success' => true,
             'message' => 'Home data retrieved successfully.',
+            'alert'   => $checkInAlert,
             'data'    => [
                 'attendance' => $attendance
                     ? new AttendanceResource($attendance)

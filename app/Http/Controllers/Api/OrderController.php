@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\OrderResource;
+use App\Models\Attendance;
 use App\Models\Order;
 use App\Models\OrderTrackingLog;
 use App\Models\RejectionReason;
@@ -22,8 +23,29 @@ class OrderController extends Controller
         $query = Order::with(['city', 'area', 'driver', 'rejectionReason'])
             ->latest();
 
+        $checkInAlert = null;
+
         if ($user->isDriver()) {
             $query->where('driver_id', $user->id);
+
+            $todayAttendance = Attendance::where('user_id', $user->id)
+                ->whereDate('date', now()->toDateString())
+                ->latest('check_in_at')
+                ->first();
+
+            $isCheckedIn = $todayAttendance && $todayAttendance->check_in_at && ! $todayAttendance->check_out_at;
+
+            if (! $isCheckedIn) {
+                $hasHiddenOrders = Order::where('driver_id', $user->id)
+                    ->whereIn('status', ['picked_up', 'rejected'])
+                    ->exists();
+
+                if ($hasHiddenOrders) {
+                    $checkInAlert = 'You have pending orders. Please check in to view your orders.';
+                }
+
+                $query->where('status', '!=', 'picked_up');
+            }
         } elseif ($user->isClientMaster()) {
             $clientProfile = $user->clientProfile;
             if (! $clientProfile) {
@@ -88,6 +110,7 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Orders retrieved successfully.',
+            'alert'   => $checkInAlert,
             'data'    => OrderResource::collection($orders->items()),
             'meta'    => [
                 'current_page' => $orders->currentPage(),
