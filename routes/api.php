@@ -105,6 +105,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('orders/{order}/return', [OrderController::class, 'returnOrder'])
         ->name('api.orders.return');
 
+    Route::post('driver/confirm-handover', [OrderController::class, 'confirmHandover'])
+        ->name('api.driver.confirm-handover');
+
     Route::get('support', [SupportController::class, 'index'])
         ->name('api.support.index');
 

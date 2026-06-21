@@ -317,6 +317,45 @@ if (! $this->canAccessOrder($user, $order)) {
         ]);
     }
 
+    public function confirmHandover(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isDriver()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        $request->validate([
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $hasRejected = Order::where('driver_id', $user->id)
+            ->where('status', 'rejected')
+            ->exists();
+
+        if (! $hasRejected) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No rejected orders found to confirm handover.',
+                'code'    => 'NO_REJECTED_ORDERS',
+            ], 422);
+        }
+
+        $count = $this->orderService->confirmHandover($user, $request->input('notes'));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Handover confirmed. {$count} order(s) marked as returned.",
+            'data'    => [
+                'returned_count' => $count,
+            ],
+        ]);
+    }
+
     private function isDriverCheckedIn(User $user): bool
     {
         $attendance = Attendance::where('user_id', $user->id)

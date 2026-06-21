@@ -342,6 +342,51 @@ class OrderService
     }
 
     /**
+     * Bulk-return all rejected orders for a driver and record shipping charges.
+     */
+    public function confirmHandover(User $driver, ?string $notes = null): int
+    {
+        return DB::transaction(function () use ($driver, $notes) {
+            $orders = Order::where('driver_id', $driver->id)
+                ->where('status', 'rejected')
+                ->get();
+
+            $count = 0;
+            foreach ($orders as $order) {
+                $order->update([
+                    'status'         => 'returned',
+                    'payment_status' => 'no_payment',
+                ]);
+
+                if ($order->delivery_amount > 0) {
+                    FinancialLedgerEntry::create([
+                        'order_id'          => $order->id,
+                        'client_profile_id' => $order->client_profile_id,
+                        'driver_id'         => $driver->id,
+                        'from_account'      => 'client',
+                        'to_account'        => 'company',
+                        'amount'            => $order->delivery_amount,
+                        'type'              => 'shipping_charge',
+                        'recorded_by'       => $driver->id,
+                        'notes'             => 'Delivery charge for returned order ' . $order->order_number,
+                    ]);
+                }
+
+                $description = 'Driver confirmed handover — order returned to client.';
+                if ($notes) {
+                    $description .= " Notes: {$notes}";
+                }
+
+                $this->logTracking($order->id, $driver->id, 'rejected', 'returned', $description);
+
+                $count++;
+            }
+
+            return $count;
+        });
+    }
+
+    /**
      * Write tracking log helper.
      */
     private function logTracking(int $orderId, int $userId, ?string $fromStatus, string $toStatus, string $description): OrderTrackingLog
