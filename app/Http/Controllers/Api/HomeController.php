@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -31,22 +32,27 @@ class HomeController extends Controller
             ->latest('check_in_at')
             ->first();
 
-        $totalOrders = Order::where('driver_id', $user->id)
-            ->whereDate('created_at', $today)
-            ->count();
+        // Orders "today" = orders assigned to this driver today, identified via the tracking log.
+        // Using created_at would miss orders created on a prior day and assigned today.
+        $todayOrderIds = DB::table('order_tracking_logs')
+            ->join('orders', 'order_tracking_logs.order_id', '=', 'orders.id')
+            ->where('orders.driver_id', $user->id)
+            ->where('order_tracking_logs.to_status', 'picked_up')
+            ->whereDate('order_tracking_logs.created_at', $today)
+            ->distinct()
+            ->pluck('order_tracking_logs.order_id');
 
-        $completedOrders = Order::where('driver_id', $user->id)
-            ->whereDate('created_at', $today)
+        $totalOrders = Order::whereIn('id', $todayOrderIds)->count();
+
+        $completedOrders = Order::whereIn('id', $todayOrderIds)
             ->where('status', 'delivered')
             ->count();
 
-        $rejectedOrders = Order::where('driver_id', $user->id)
-            ->whereDate('created_at', $today)
+        $rejectedOrders = Order::whereIn('id', $todayOrderIds)
             ->where('status', 'rejected')
             ->count();
 
-        $cashCollected = Order::where('driver_id', $user->id)
-            ->whereDate('created_at', $today)
+        $cashCollected = Order::whereIn('id', $todayOrderIds)
             ->where('payment_type', 'cod')
             ->where('status', 'delivered')
             ->selectRaw(
@@ -60,8 +66,8 @@ class HomeController extends Controller
 
         $ordersQuery = Order::with(['city', 'area', 'rejectionReason'])
             ->where('driver_id', $user->id)
-            ->where(function ($q) use ($today, $isCheckedIn) {
-                $q->whereDate('created_at', $today);
+            ->where(function ($q) use ($todayOrderIds, $isCheckedIn) {
+                $q->whereIn('id', $todayOrderIds);
                 if ($isCheckedIn) {
                     $q->orWhere('status', 'picked_up');
                 }
