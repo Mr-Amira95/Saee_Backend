@@ -27,6 +27,9 @@ class OrderService
             $deliveryOnCustomer = filter_var($data['delivery_on_customer'] ?? false, FILTER_VALIDATE_BOOLEAN);
             $deliveryCustomerAmount = $deliveryOnCustomer ? (float)($data['delivery_customer_amount'] ?? 0) : null;
             
+            $hasDriver = !empty($data['driver_id']);
+            $initialStatus = $hasDriver ? 'picked_up' : 'pending';
+
             $order = Order::create([
                 'client_profile_id'        => $client->id,
                 'driver_id'                => $data['driver_id'] ?? null,
@@ -42,7 +45,7 @@ class OrderService
                 'area_id'                  => (int)$data['area_id'],
                 'address_text'             => $data['address_text'],
                 'address_location'         => $data['address_location'] ?? null,
-                'status'                   => 'pending',
+                'status'                   => $initialStatus,
                 'payment_status'           => 'pending',
                 'notes'                    => $data['notes'] ?? null,
             ]);
@@ -50,10 +53,10 @@ class OrderService
             // Create tracking log
             $this->logTracking($order->id, $actor->id, null, 'pending', 'Order created in the system.');
 
-            if ($order->driver_id) {
+            if ($hasDriver) {
                 $driver = User::find($order->driver_id);
                 $driverName = $driver ? $driver->name : 'Driver';
-                $this->logTracking($order->id, $actor->id, 'pending', 'pending', "Order assigned to driver: {$driverName}");
+                $this->logTracking($order->id, $actor->id, 'pending', 'picked_up', "Order assigned to driver: {$driverName} and picked up.");
             }
 
             // Send WhatsApp notification on order creation
