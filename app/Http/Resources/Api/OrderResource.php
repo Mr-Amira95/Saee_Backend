@@ -15,16 +15,18 @@ class OrderResource extends JsonResource
             'order_number'             => $this->order_number,
             'status'                   => $this->status,
             'payment_type'             => $this->payment_type,
-            'payment_status'           => $this->payment_status,
+            'payment_status'           => $this->when($this->payment_type !== 'prepaid', $this->payment_status),
             'order_description'        => $this->order_description,
-            'delivery_on_customer'     => (bool) $this->delivery_on_customer,
-            'delivery_amount'          => (float) $this->delivery_amount,
-            'delivery_customer_amount' => $this->delivery_customer_amount !== null
-                ? (float) $this->delivery_customer_amount
-                : null,
-            'order_price'              => $this->order_price !== null
-                ? (float) $this->order_price
-                : null,
+            'delivery_on_customer'     => $this->when($this->payment_type !== 'prepaid', (bool) $this->delivery_on_customer),
+            'delivery_amount'          => $this->when($this->payment_type !== 'prepaid', (float) $this->delivery_amount),
+            'delivery_customer_amount' => $this->when(
+                $this->payment_type !== 'prepaid',
+                $this->delivery_customer_amount !== null ? (float) $this->delivery_customer_amount : null
+            ),
+            'order_price'              => $this->when(
+                $this->payment_type !== 'prepaid',
+                $this->order_price !== null ? (float) $this->order_price : null
+            ),
             'receiver_name'            => $this->receiver_name,
             'receiver_phone'           => $this->receiver_phone,
             'address_text'             => $this->address_text,
