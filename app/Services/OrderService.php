@@ -109,21 +109,8 @@ class OrderService
                     $order->payment_status = 'no_payment'; // Prepaid, delivery paid by client
                 }
 
-                // POST FINANCIAL TRANSACTIONS
-                // 1. Shipping Charge: Client owes Company the delivery_amount
-                FinancialLedgerEntry::create([
-                    'order_id'          => $order->id,
-                    'client_profile_id' => $order->client_profile_id,
-                    'driver_id'         => $order->driver_id,
-                    'from_account'      => 'client',
-                    'to_account'        => 'company',
-                    'amount'            => $order->delivery_amount,
-                    'type'              => 'shipping_charge',
-                    'recorded_by'       => $actor->id,
-                    'notes'             => 'Delivery charge for delivered order ' . $order->order_number,
-                ]);
-
-                // 2. COD Collection: Customer paid Driver
+                // Record cash the driver physically collected from the customer
+                // 1. COD Collection: Customer paid Driver for goods
                 if ($order->payment_type === 'cod' && $order->order_price > 0) {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
@@ -138,7 +125,7 @@ class OrderService
                     ]);
                 }
 
-                // 3. Customer Delivery Collection: Customer paid Driver
+                // 2. Delivery fee collected from customer (customer pays delivery, not client)
                 if ($order->delivery_on_customer && $order->delivery_customer_amount > 0) {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
@@ -150,19 +137,6 @@ class OrderService
                         'type'              => 'delivery_collection',
                         'recorded_by'       => $actor->id,
                         'notes'             => 'Delivery fee collected from customer by driver',
-                    ]);
-
-                    // Reimburse the client since customer paid the delivery fee
-                    FinancialLedgerEntry::create([
-                        'order_id'          => $order->id,
-                        'client_profile_id' => $order->client_profile_id,
-                        'driver_id'         => $order->driver_id,
-                        'from_account'      => 'company',
-                        'to_account'        => 'client',
-                        'amount'            => $order->delivery_customer_amount,
-                        'type'              => 'client_payout', // Technically credit offset
-                        'recorded_by'       => $actor->id,
-                        'notes'             => 'Delivery reimbursement credited to client (paid by customer)',
                     ]);
                 }
 
@@ -292,6 +266,25 @@ class OrderService
             $payoutLedgerEntry = null;
 
             foreach ($orders as $order) {
+                // Shipping charge: client owes company for delivery (recorded here, not at delivery time)
+                $shippingFee = $order->delivery_on_customer ? 0 : $order->delivery_amount;
+                if ($shippingFee > 0) {
+                    FinancialLedgerEntry::create([
+                        'order_id'          => $order->id,
+                        'client_profile_id' => $client->id,
+                        'driver_id'         => $order->driver_id,
+                        'from_account'      => 'client',
+                        'to_account'        => 'company',
+                        'amount'            => $shippingFee,
+                        'type'              => 'shipping_charge',
+                        'reference_number'  => $ref,
+                        'recorded_by'       => $actor->id,
+                        'notes'             => 'Delivery charge for order ' . $order->order_number,
+                    ]);
+                    $totalShipping += $shippingFee;
+                }
+
+                // COD payout: company pays client their goods money (reverse of customer → driver COD collection)
                 if ($order->payment_type === 'cod' && $order->order_price > 0) {
                     $ledger = FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
@@ -311,20 +304,19 @@ class OrderService
                     }
 
                     $totalCod += $order->order_price;
-                    $totalShipping += $order->delivery_on_customer ? 0 : $order->delivery_amount;
-
-                    $order->payment_status = 'paid';
-                    $order->save();
-
-                    $this->logTracking(
-                        $order->id, 
-                        $actor->id, 
-                        $order->status, 
-                        $order->status, 
-                        "COD payout of {$order->order_price} completed to client."
-                    );
-                    $count++;
                 }
+
+                $order->payment_status = 'paid';
+                $order->save();
+
+                $this->logTracking(
+                    $order->id,
+                    $actor->id,
+                    $order->status,
+                    $order->status,
+                    "Payout completed to client for order " . $order->order_number . "."
+                );
+                $count++;
             }
 
             if ($count > 0 && $payoutLedgerEntry) {
