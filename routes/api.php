@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
@@ -39,6 +40,12 @@ Route::post('auth/forgot-password/verify-code', [ForgotPasswordController::class
 Route::post('auth/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword'])
     ->middleware('throttle:10,1')
     ->name('api.auth.forgot-password.reset');
+
+// Public chatbot endpoints
+Route::prefix('chatbot')->middleware('throttle:30,1')->group(function () {
+    Route::post('message', [ChatbotController::class, 'message'])->name('api.chatbot.message');
+    Route::get('history/{session_id}', [ChatbotController::class, 'history'])->name('api.chatbot.history');
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('home', [HomeController::class, 'index'])
