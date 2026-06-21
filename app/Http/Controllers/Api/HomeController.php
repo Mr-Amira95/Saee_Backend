@@ -32,29 +32,31 @@ class HomeController extends Controller
             ->latest('check_in_at')
             ->first();
 
-        // Orders "today" = orders assigned to this driver today, identified via the tracking log.
-        // Using created_at would miss orders created on a prior day and assigned today.
-        $todayOrderIds = DB::table('order_tracking_logs')
+        $totalOrders = Order::where('driver_id', $user->id)
+            ->where('status', 'picked_up')
+            ->count();
+
+        $completedOrderIds = DB::table('order_tracking_logs')
             ->join('orders', 'order_tracking_logs.order_id', '=', 'orders.id')
             ->where('orders.driver_id', $user->id)
-            ->where('order_tracking_logs.to_status', 'picked_up')
+            ->where('order_tracking_logs.to_status', 'delivered')
             ->whereDate('order_tracking_logs.created_at', $today)
             ->distinct()
             ->pluck('order_tracking_logs.order_id');
 
-        $totalOrders = Order::whereIn('id', $todayOrderIds)->count();
+        $rejectedOrderIds = DB::table('order_tracking_logs')
+            ->join('orders', 'order_tracking_logs.order_id', '=', 'orders.id')
+            ->where('orders.driver_id', $user->id)
+            ->where('order_tracking_logs.to_status', 'rejected')
+            ->whereDate('order_tracking_logs.created_at', $today)
+            ->distinct()
+            ->pluck('order_tracking_logs.order_id');
 
-        $completedOrders = Order::whereIn('id', $todayOrderIds)
-            ->where('status', 'delivered')
-            ->count();
+        $completedOrders = $completedOrderIds->count();
+        $rejectedOrders  = $rejectedOrderIds->count();
 
-        $rejectedOrders = Order::whereIn('id', $todayOrderIds)
-            ->where('status', 'rejected')
-            ->count();
-
-        $cashCollected = Order::whereIn('id', $todayOrderIds)
+        $cashCollected = Order::whereIn('id', $completedOrderIds)
             ->where('payment_type', 'cod')
-            ->where('status', 'delivered')
             ->selectRaw(
                 'COALESCE(SUM(order_price), 0)'
                 . ' + COALESCE(SUM(CASE WHEN delivery_on_customer = 1 THEN delivery_customer_amount ELSE 0 END), 0)'
@@ -64,13 +66,13 @@ class HomeController extends Controller
 
         $isCheckedIn = $attendance && $attendance->check_in_at && ! $attendance->check_out_at;
 
+        $todayActivityIds = $completedOrderIds->merge($rejectedOrderIds);
+
         $ordersQuery = Order::with(['city', 'area', 'rejectionReason'])
             ->where('driver_id', $user->id)
-            ->where(function ($q) use ($todayOrderIds, $isCheckedIn) {
-                $q->whereIn('id', $todayOrderIds);
-                if ($isCheckedIn) {
-                    $q->orWhere('status', 'picked_up');
-                }
+            ->where(function ($q) use ($todayActivityIds) {
+                $q->where('status', 'picked_up')
+                  ->orWhereIn('id', $todayActivityIds);
             })
             ->latest();
 
