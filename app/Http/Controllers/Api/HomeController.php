@@ -66,14 +66,9 @@ class HomeController extends Controller
 
         $isCheckedIn = $attendance && $attendance->check_in_at && ! $attendance->check_out_at;
 
-        $todayActivityIds = $completedOrderIds->merge($rejectedOrderIds);
-
         $ordersQuery = Order::with(['city', 'area', 'rejectionReason'])
             ->where('driver_id', $user->id)
-            ->where(function ($q) use ($todayActivityIds) {
-                $q->where('status', 'picked_up')
-                  ->orWhereIn('id', $todayActivityIds);
-            })
+            ->where('status', 'picked_up')
             ->latest();
 
         $checkInAlert = null;
