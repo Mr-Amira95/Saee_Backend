@@ -8,16 +8,18 @@ use Illuminate\Support\Carbon;
 
 class AutoCheckoutAbsentees extends Command
 {
-    protected $signature   = 'attendance:auto-checkout';
+    protected $signature   = 'attendance:auto-checkout {--before= : Process records before this date (Y-m-d), defaults to yesterday}';
     protected $description = 'Auto-checkout users who checked in but never checked out for past days';
 
     public function handle(): int
     {
-        $yesterday = Carbon::yesterday()->toDateString();
+        $before = $this->option('before')
+            ? Carbon::parse($this->option('before'))->toDateString()
+            : Carbon::yesterday()->toDateString();
 
         $records = Attendance::whereNotNull('check_in_at')
             ->whereNull('check_out_at')
-            ->whereDate('date', '<=', $yesterday)
+            ->whereDate('date', '<=', $before)
             ->get();
 
         if ($records->isEmpty()) {
