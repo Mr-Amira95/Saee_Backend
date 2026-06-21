@@ -126,6 +126,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('drivers', DriverController::class)->names('drivers');
             Route::post('drivers/{driver}/resend-invitation', [DriverController::class, 'resendInvitation'])->name('drivers.resend-invitation');
             Route::get('drivers/{driver}/location-history',   [DriverController::class, 'locationHistory'])->name('drivers.location-history');
+            Route::get('drivers-live-map',                    [DriverController::class, 'liveMap'])->name('drivers.live-map');
 
             Route::resource('admins',  AdminUserController::class)->names('admins');
         });

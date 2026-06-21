@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\NotificationPreferenceController;
 use App\Http\Controllers\Api\OrderController;
@@ -52,6 +53,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('profile', [ProfileController::class, 'show'])
         ->name('api.profile.show');
+
+    Route::post('location', [LocationController::class, 'update'])
+        ->name('api.location.update');
 
     Route::patch('profile/notifications', [NotificationPreferenceController::class, 'update'])
         ->name('api.profile.notifications.update');

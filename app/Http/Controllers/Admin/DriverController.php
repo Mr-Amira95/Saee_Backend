@@ -262,6 +262,16 @@ class DriverController extends Controller
         return view('admin.users.drivers.location-history', compact('driver', 'points', 'from', 'to', 'distanceKm'));
     }
 
+    public function liveMap()
+    {
+        $drivers = DriverProfile::with('user')
+            ->whereNotNull('current_latitude')
+            ->whereNotNull('current_longitude')
+            ->get(['id', 'user_id', 'current_latitude', 'current_longitude', 'location_updated_at']);
+
+        return view('admin.users.drivers.live-map', compact('drivers'));
+    }
+
     public function resendInvitation(DriverProfile $driver)
     {
         $this->sendInvitation($driver->user);
