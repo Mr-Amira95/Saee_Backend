@@ -9,12 +9,15 @@ use App\Models\Order;
 use App\Models\OrderTrackingLog;
 use App\Models\RejectionReason;
 use App\Models\User;
+use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
+    public function __construct(private OrderService $orderService) {}
+
     public function index(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
@@ -177,22 +180,10 @@ if (! $this->canAccessOrder($user, $order)) {
             ? $request->file('proof_image')->store("orders/{$order->id}/proofs", 'public')
             : null;
 
-        $order->update([
-            'status'           => 'delivered',
-            'payment_status'   => $order->payment_type === 'cod' ? 'with_driver' : $order->payment_status,
+        $order = $this->orderService->updateStatus($order, 'delivered', [
             'signature_path'   => $signaturePath,
             'proof_image_path' => $proofImagePath,
-        ]);
-
-        OrderTrackingLog::create([
-            'order_id'    => $order->id,
-            'user_id'     => $user->id,
-            'from_status' => 'picked_up',
-            'to_status'   => 'delivered',
-            'description' => 'Order delivered successfully.',
-            'latitude'    => $request->input('latitude'),
-            'longitude'   => $request->input('longitude'),
-        ]);
+        ], $user);
 
         $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
