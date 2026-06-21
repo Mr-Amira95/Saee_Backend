@@ -9,6 +9,7 @@ use App\Models\City;
 use App\Models\User;
 use App\Models\RejectionReason;
 use App\Services\OrderService;
+use App\Services\SupportNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -163,7 +164,7 @@ class OrderController extends Controller
             ->where('status', 'pending')
             ->get();
 
-        $assigned = 0;
+        $assignedOrderIds = [];
         foreach ($orders as $order) {
             $this->orderService->updateStatus(
                 $order,
@@ -171,7 +172,17 @@ class OrderController extends Controller
                 ['driver_id' => $validated['driver_id']],
                 Auth::user()
             );
-            $assigned++;
+            $assignedOrderIds[] = $order->id;
+        }
+
+        $assigned = count($assignedOrderIds);
+
+        if ($assigned > 0) {
+            app(SupportNotificationService::class)->notifyOrdersAssigned(
+                $validated['driver_id'],
+                $assignedOrderIds,
+                Auth::id()
+            );
         }
 
         $skipped = count($validated['order_ids']) - $assigned;

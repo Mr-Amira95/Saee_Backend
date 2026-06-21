@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Events\UserNotificationSent;
+use App\Models\Attendance;
 use App\Models\SystemNotification;
 use App\Models\SupportTicket;
 use App\Models\UserDevice;
@@ -65,6 +66,50 @@ class SupportNotificationService
             entityType: 'support_ticket',
             entityId:   $ticket->id,
         );
+    }
+
+    // ── Order Assignment Notifications ───────────────────────────────────────
+
+    public function notifyOrdersAssigned(int $driverId, array $orderIds, int $createdBy): void
+    {
+        $hasCheckedIn = Attendance::where('user_id', $driverId)
+            ->whereDate('date', today())
+            ->whereNotNull('check_in_at')
+            ->exists();
+
+        if ($hasCheckedIn) {
+            if (count($orderIds) === 1) {
+                $this->sendToUser(
+                    userId:     $driverId,
+                    title:      'New Order Assigned',
+                    message:    'You have a new order assigned to you.',
+                    type:       'info',
+                    createdBy:  $createdBy,
+                    entityType: 'single_order',
+                    entityId:   $orderIds[0],
+                );
+            } else {
+                $this->sendToUser(
+                    userId:     $driverId,
+                    title:      'New Orders Assigned',
+                    message:    'You have ' . count($orderIds) . ' new orders assigned to you.',
+                    type:       'info',
+                    createdBy:  $createdBy,
+                    entityType: 'batch_order',
+                    entityId:   null,
+                );
+            }
+        } else {
+            $this->sendToUser(
+                userId:     $driverId,
+                title:      'New Orders Waiting',
+                message:    'You have new orders assigned. Check in to view them.',
+                type:       'info',
+                createdBy:  $createdBy,
+                entityType: 'attendance',
+                entityId:   null,
+            );
+        }
     }
 
     // ── Internals ────────────────────────────────────────────────────────────
