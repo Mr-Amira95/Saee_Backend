@@ -28,14 +28,7 @@ class OrderController extends Controller
         if ($user->isDriver()) {
             $query->where('driver_id', $user->id);
 
-            $todayAttendance = Attendance::where('user_id', $user->id)
-                ->whereDate('date', now()->toDateString())
-                ->latest('check_in_at')
-                ->first();
-
-            $isCheckedIn = $todayAttendance && $todayAttendance->check_in_at && ! $todayAttendance->check_out_at;
-
-            if (! $isCheckedIn) {
+            if (! $this->isDriverCheckedIn($user)) {
                 $hasHiddenOrders = Order::where('driver_id', $user->id)
                     ->whereIn('status', ['picked_up', 'rejected'])
                     ->exists();
@@ -154,6 +147,14 @@ if (! $this->canAccessOrder($user, $order)) {
             ], 403);
         }
 
+        if (! $this->isDriverCheckedIn($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not checked in. Please check in to perform this action.',
+                'code'    => 'NOT_CHECKED_IN',
+            ], 403);
+        }
+
         if ($order->status !== 'picked_up') {
             return response()->json([
                 'success' => false,
@@ -211,6 +212,14 @@ if (! $this->canAccessOrder($user, $order)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        if (! $this->isDriverCheckedIn($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not checked in. Please check in to perform this action.',
+                'code'    => 'NOT_CHECKED_IN',
             ], 403);
         }
 
@@ -272,6 +281,14 @@ if (! $this->canAccessOrder($user, $order)) {
             ], 403);
         }
 
+        if (! $this->isDriverCheckedIn($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not checked in. Please check in to perform this action.',
+                'code'    => 'NOT_CHECKED_IN',
+            ], 403);
+        }
+
         if ($order->status !== 'rejected') {
             return response()->json([
                 'success' => false,
@@ -307,6 +324,16 @@ if (! $this->canAccessOrder($user, $order)) {
             'message' => 'Order marked as returned successfully.',
             'data'    => new OrderResource($order),
         ]);
+    }
+
+    private function isDriverCheckedIn(User $user): bool
+    {
+        $attendance = Attendance::where('user_id', $user->id)
+            ->whereDate('date', now()->toDateString())
+            ->latest('check_in_at')
+            ->first();
+
+        return $attendance && $attendance->check_in_at && ! $attendance->check_out_at;
     }
 
     private function canAccessOrder(User $user, Order $order): bool
