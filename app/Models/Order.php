@@ -29,6 +29,9 @@ class Order extends Model
         'area_id',
         'address_text',
         'address_location',
+        'receiver_latitude',
+        'receiver_longitude',
+        'location_received_at',
         'status',
         'payment_status',
         'signature_path',
@@ -49,6 +52,9 @@ class Order extends Model
             'delivery_customer_amount' => 'decimal:2',
             'delivery_amount'          => 'decimal:2',
             'order_price'              => 'decimal:2',
+            'receiver_latitude'        => 'decimal:8',
+            'receiver_longitude'       => 'decimal:8',
+            'location_received_at'     => 'datetime',
             'deleted_at'               => 'datetime',
         ];
     }

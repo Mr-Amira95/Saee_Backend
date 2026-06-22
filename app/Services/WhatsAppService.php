@@ -3,81 +3,169 @@
 namespace App\Services;
 
 use App\Models\Order;
-use App\Models\WhatsAppTemplate;
 use App\Models\WhatsAppLog;
+use App\Models\WhatsAppTemplate;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppService
 {
     /**
-     * Compile template and simulate sending a WhatsApp message.
+     * Generic template dispatcher — the primary method for all outgoing messages.
+     *
+     * @param  string  $event      Template event key (e.g. 'order_picked_up').
+     * @param  string  $phone      Recipient phone number.
+     * @param  array   $variables  Map of placeholder names to replacement values.
+     * @param  int|null $orderId   Optional order ID for audit logging.
+     * @return array{success: bool, log?: WhatsAppLog, error?: string}
+     */
+    public function sendTemplate(
+        string $event,
+        string $phone,
+        array  $variables = [],
+        ?int   $orderId   = null,
+    ): array {
+        // 1. Validate phone
+        if (empty(trim($phone))) {
+            Log::warning("WhatsApp sendTemplate [{$event}]: missing phone number.");
+            return ['success' => false, 'error' => 'Missing phone number.'];
+        }
+
+        // 2. Load template
+        $template = WhatsAppTemplate::where('event', $event)->first();
+        if (! $template) {
+            Log::warning("WhatsApp sendTemplate [{$event}]: template not found in database.");
+            return ['success' => false, 'error' => "Template [{$event}] not found."];
+        }
+
+        // 3. Replace {{placeholders}}
+        $message = $this->replacePlaceholders($template->template_body, $variables);
+
+        // 4. Send via provider
+        $apiResult = $this->sendRawMessage($phone, $message);
+
+        // 5. Log to database
+        $status = $apiResult['success'] ? 'sent' : 'failed';
+        $log = WhatsAppLog::create([
+            'order_id' => $orderId,
+            'phone'    => $phone,
+            'message'  => $message,
+            'status'   => $status,
+        ]);
+
+        if ($apiResult['success']) {
+            Log::info("WhatsApp [{$event}] sent to {$phone}.", ['order_id' => $orderId]);
+            return ['success' => true, 'log' => $log];
+        }
+
+        Log::error("WhatsApp [{$event}] failed to {$phone}: {$apiResult['error']}", [
+            'order_id'   => $orderId,
+            'api_status' => $apiResult['status'] ?? null,
+        ]);
+
+        return ['success' => false, 'error' => $apiResult['error'], 'log' => $log];
+    }
+
+    /**
+     * Convenience wrapper that builds variables from an Order model.
+     * Kept for backward compatibility; new callers should use sendTemplate() directly.
      */
     public function sendNotification(Order $order, string $event): ?WhatsAppLog
     {
+        $variables = $this->buildOrderVariables($order, $event);
+        $result    = $this->sendTemplate($event, $order->receiver_phone, $variables, $order->id);
+
+        return $result['log'] ?? null;
+    }
+
+    /**
+     * Send a plain text message to a phone number via the configured provider.
+     *
+     * @return array{success: bool, response?: array, error?: string, status?: int}
+     */
+    private function sendRawMessage(string $phone, string $message): array
+    {
+        $provider = config('whatsapp.provider', 'meta');
+
         try {
-            $templateModel = WhatsAppTemplate::where('event', $event)->first();
-            $templateBody = $templateModel ? $templateModel->template_body : $this->getDefaultTemplate($event);
+            return match ($provider) {
+                'meta'  => $this->sendViaMeta($phone, $message),
+                default => $this->sendViaMeta($phone, $message),
+            };
+        } catch (\Throwable $e) {
+            Log::error("WhatsApp API exception: {$e->getMessage()}");
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 
-            $message = $this->compileMessage($order, $templateBody, $event);
-            $phone = $order->receiver_phone;
+    /**
+     * Send a message using the Meta WhatsApp Cloud API.
+     * Endpoint: POST {api_url}/{sender}/messages
+     */
+    private function sendViaMeta(string $phone, string $message): array
+    {
+        $url = sprintf('%s/%s/messages', rtrim(config('whatsapp.api_url'), '/'), config('whatsapp.sender'));
 
-            // Log simulation in Laravel system logs
-            Log::info("WhatsApp Send Simulation [Event: {$event}] to {$phone}: \n{$message}");
-
-            // Save to database audit logs
-            return WhatsAppLog::create([
-                'order_id' => $order->id,
-                'phone'    => $phone,
-                'message'  => $message,
-                'status'   => 'simulated',
+        $response = Http::withToken(config('whatsapp.api_token'))
+            ->timeout(15)
+            ->post($url, [
+                'messaging_product' => 'whatsapp',
+                'recipient_type'    => 'individual',
+                'to'                => $phone,
+                'type'              => 'text',
+                'text'              => [
+                    'preview_url' => false,
+                    'body'        => $message,
+                ],
             ]);
-        } catch (\Exception $e) {
-            Log::error("Failed to send WhatsApp notification for Order #{$order->order_number}: " . $e->getMessage());
-            return null;
-        }
-    }
 
-    /**
-     * Compile template by replacing placeholders with actual order values.
-     */
-    public function compileMessage(Order $order, string $template, string $event): string
-    {
-        $driverName = $order->driver ? $order->driver->name : 'our driver';
-        $driverPhone = $order->driver ? $order->driver->phone : 'our office';
-        
-        // Generate public location sharing link
-        // We use order_number to look up the order on the public side
-        $locationLink = route('public.share-location', ['order_number' => $order->order_number]);
-
-        $rejectionReason = 'Not specified';
-        if ($event === 'order_rejected') {
-            $rejectionReason = $order->rejectionReason 
-                ? $order->rejectionReason->reason 
-                : ($order->notes ?? 'Not specified');
+        if ($response->successful()) {
+            return ['success' => true, 'response' => $response->json()];
         }
 
-        $placeholders = [
-            '{customer_name}'     => $order->receiver_name,
-            '{order_number}'      => $order->order_number,
-            '{driver_name}'       => $driverName,
-            '{driver_phone}'      => $driverPhone,
-            '{location_link}'     => $locationLink,
-            '{rejection_reason}'  => $rejectionReason,
+        $errorMessage = $response->json('error.message')
+            ?? $response->json('error.error_data.details')
+            ?? "HTTP {$response->status()}";
+
+        return [
+            'success' => false,
+            'error'   => $errorMessage,
+            'status'  => $response->status(),
         ];
-
-        return str_replace(array_keys($placeholders), array_values($placeholders), $template);
     }
 
     /**
-     * Get fallbacks for default templates if none are in the DB.
+     * Replace all {{placeholder}} tokens in the template body.
      */
-    private function getDefaultTemplate(string $event): string
+    private function replacePlaceholders(string $body, array $variables): string
     {
-        return match ($event) {
-            'order_created' => "Hello {customer_name}, your order #{order_number} has been created and assigned to {driver_name} (Phone: {driver_phone}). Please share your location here: {location_link}",
-            'order_delivered' => "Hello {customer_name}, your order #{order_number} has been delivered successfully by {driver_name}! Please rate our service and share your feedback here: {location_link}",
-            'order_rejected' => "Hello {customer_name}, your order #{order_number} could not be delivered. Reason: {rejection_reason}. Please review and update your location/details here: {location_link}",
-            default => "Hello {customer_name}, order #{order_number} status updated.",
-        };
+        $search  = array_map(fn ($k) => '{{' . $k . '}}', array_keys($variables));
+        $replace = array_values($variables);
+
+        return str_replace($search, $replace, $body);
+    }
+
+    /**
+     * Build the standard variable map from an Order for legacy sendNotification() calls.
+     */
+    private function buildOrderVariables(Order $order, string $event): array
+    {
+        $locationLink = rescue(
+            fn () => route('public.share-location', ['order_number' => $order->order_number]),
+            ''
+        );
+
+        $rejectionReason = $event === 'order_rejected'
+            ? (optional($order->rejectionReason)->reason ?? $order->notes ?? 'Not specified')
+            : '';
+
+        return [
+            'customer_name'    => $order->receiver_name   ?? '',
+            'order_number'     => $order->order_number    ?? '',
+            'driver_name'      => optional($order->driver)->name  ?? '',
+            'driver_phone'     => optional($order->driver)->phone ?? '',
+            'location_link'    => $locationLink,
+            'rejection_reason' => $rejectionReason,
+        ];
     }
 }

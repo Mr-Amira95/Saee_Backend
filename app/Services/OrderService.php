@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendWhatsappMessageJob;
 use App\Models\Order;
 use App\Models\OrderTrackingLog;
 use App\Models\FinancialLedgerEntry;
@@ -59,8 +60,19 @@ class OrderService
                 $this->logTracking($order->id, $actor->id, 'pending', 'picked_up', "Order assigned to driver: {$driverName} and picked up.");
             }
 
-            // Send WhatsApp notification on order creation
-            app(WhatsAppService::class)->sendNotification($order, 'order_created');
+            // Dispatch WhatsApp notification for order creation (non-blocking)
+            SendWhatsappMessageJob::dispatch(
+                'order_created',
+                $order->receiver_phone,
+                [
+                    'customer_name' => $order->receiver_name ?? '',
+                    'order_number'  => $order->order_number  ?? '',
+                    'driver_name'   => optional($order->driver)->name  ?? '',
+                    'driver_phone'  => optional($order->driver)->phone ?? '',
+                    'location_link' => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
+                ],
+                $order->id,
+            )->onQueue(config('whatsapp.queue', 'default'));
 
             return $order;
         });
@@ -179,11 +191,45 @@ class OrderService
 
             $order->save();
 
-            // Trigger WhatsApp notifications
+            // Dispatch WhatsApp notifications (non-blocking queue jobs)
             if ($newStatus === 'delivered') {
-                app(WhatsAppService::class)->sendNotification($order, 'order_delivered');
+                SendWhatsappMessageJob::dispatch(
+                    'order_delivered',
+                    $order->receiver_phone,
+                    [
+                        'customer_name' => $order->receiver_name ?? '',
+                        'order_number'  => $order->order_number  ?? '',
+                        'driver_name'   => optional($order->driver)->name ?? '',
+                        'location_link' => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
+                    ],
+                    $order->id,
+                )->onQueue(config('whatsapp.queue', 'default'));
+
             } elseif ($newStatus === 'rejected') {
-                app(WhatsAppService::class)->sendNotification($order, 'order_rejected');
+                SendWhatsappMessageJob::dispatch(
+                    'order_rejected',
+                    $order->receiver_phone,
+                    [
+                        'customer_name'    => $order->receiver_name ?? '',
+                        'order_number'     => $order->order_number  ?? '',
+                        'rejection_reason' => optional($order->rejectionReason)->reason ?? ($order->notes ?? 'Not specified'),
+                        'location_link'    => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
+                    ],
+                    $order->id,
+                )->onQueue(config('whatsapp.queue', 'default'));
+
+            } elseif ($newStatus === 'picked_up') {
+                SendWhatsappMessageJob::dispatch(
+                    'order_picked_up',
+                    $order->receiver_phone,
+                    [
+                        'customer_name' => $order->receiver_name ?? '',
+                        'order_number'  => $order->order_number  ?? '',
+                        'driver_name'   => optional($order->driver)->name  ?? '',
+                        'driver_phone'  => optional($order->driver)->phone ?? '',
+                    ],
+                    $order->id,
+                )->onQueue(config('whatsapp.queue', 'default'));
             }
 
             return $order;

@@ -15,11 +15,18 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\RejectionReasonController;
 use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Api\WhatsAppWebhookController;
 use App\Http\Controllers\Public\LegalController;
 use Illuminate\Support\Facades\Route;
 
 // Fallback login route — prevents Laravel redirecting API clients to a web login page.
 Route::get('login', fn () => response()->json(['message' => 'Unauthenticated.'], 401))->name('login');
+
+// WhatsApp webhook endpoints (no auth — called by Meta/provider)
+Route::prefix('webhooks')->group(function () {
+    Route::get('whatsapp',  [WhatsAppWebhookController::class, 'verify'])->name('webhooks.whatsapp.verify');
+    Route::post('whatsapp', [WhatsAppWebhookController::class, 'receive'])->name('webhooks.whatsapp.receive');
+});
 
 // Public legal content endpoints (no auth required)
 Route::get('legal/terms',   [LegalController::class, 'terms'])->name('api.legal.terms');
