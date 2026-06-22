@@ -38,6 +38,7 @@ class Order extends Model
         'proof_image_path',
         'rejection_reason_id',
         'notes',
+        'route_order',
     ];
 
     protected function casts(): array
@@ -56,6 +57,7 @@ class Order extends Model
             'receiver_longitude'       => 'decimal:8',
             'location_received_at'     => 'datetime',
             'deleted_at'               => 'datetime',
+            'route_order'              => 'integer',
         ];
     }
 

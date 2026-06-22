@@ -41,8 +41,11 @@ class WhatsAppService
         // 3. Replace {{placeholders}}
         $message = $this->replacePlaceholders($template->template_body, $variables);
 
-        // 4. Send via provider
-        $apiResult = $this->sendRawMessage($phone, $message);
+        // 4. Normalise phone to international format required by Meta (e.g. 962792856567)
+        $normalizedPhone = $this->normalizePhone($phone);
+
+        // 5. Send via provider
+        $apiResult = $this->sendRawMessage($normalizedPhone, $message);
 
         // 5. Log to database
         $status = $apiResult['success'] ? 'sent' : 'failed';
@@ -120,8 +123,15 @@ class WhatsAppService
             ]);
 
         if ($response->successful()) {
+            Log::info('WhatsApp Meta API response', ['body' => $response->json()]);
             return ['success' => true, 'response' => $response->json()];
         }
+
+        // Log the full error body so we can diagnose delivery issues
+        Log::error('WhatsApp Meta API error', [
+            'status' => $response->status(),
+            'body'   => $response->json(),
+        ]);
 
         $errorMessage = $response->json('error.message')
             ?? $response->json('error.error_data.details')
@@ -143,6 +153,31 @@ class WhatsAppService
         $replace = array_values($variables);
 
         return str_replace($search, $replace, $body);
+    }
+
+    /**
+     * Normalise a phone number to the format Meta expects: digits only, with country code, no leading +.
+     * Examples:
+     *   0792856567   → 962792856567  (Jordanian local → international)
+     *   +962792856567 → 962792856567
+     *   962792856567  → 962792856567  (already correct)
+     */
+    private function normalizePhone(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+
+        // Already has country code (Jordan 962, length 12)
+        if (str_starts_with($digits, '962')) {
+            return $digits;
+        }
+
+        // Local format: leading 0 → strip and prepend 962
+        if (str_starts_with($digits, '0')) {
+            return '962' . substr($digits, 1);
+        }
+
+        // No leading 0 and no country code — assume Jordan
+        return '962' . $digits;
     }
 
     /**

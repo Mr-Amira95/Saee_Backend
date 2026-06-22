@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\RouteController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\Auth\AuthController;
@@ -121,6 +122,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('driver/confirm-handover', [OrderController::class, 'confirmHandover'])
         ->name('api.driver.confirm-handover');
+
+    Route::get('driver/route',              [RouteController::class, 'show'])
+        ->name('api.driver.route.show');
+
+    Route::post('driver/route/recalculate', [RouteController::class, 'recalculate'])
+        ->name('api.driver.route.recalculate');
 
     Route::get('support', [SupportController::class, 'index'])
         ->name('api.support.index');

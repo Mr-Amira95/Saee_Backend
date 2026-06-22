@@ -40,4 +40,10 @@ return [
         'model' => env('OPENAI_MODEL', 'gpt-5.5'),
     ],
 
+    'google' => [
+        'maps_api_key'       => env('GOOGLE_MAPS_API_KEY'),
+        'directions_url'     => 'https://maps.googleapis.com/maps/api/directions/json',
+        'directions_timeout' => (int) env('GOOGLE_DIRECTIONS_TIMEOUT', 10),
+    ],
+
 ];
