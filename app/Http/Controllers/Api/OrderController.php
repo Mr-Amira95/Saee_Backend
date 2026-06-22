@@ -333,18 +333,6 @@ if (! $this->canAccessOrder($user, $order)) {
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $hasRejected = Order::where('driver_id', $user->id)
-            ->where('status', 'rejected')
-            ->exists();
-
-        if (! $hasRejected) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No rejected orders found to confirm handover.',
-                'code'    => 'NO_REJECTED_ORDERS',
-            ], 422);
-        }
-
         $result = $this->orderService->confirmHandover($user, $request->input('notes'));
 
         return response()->json([
