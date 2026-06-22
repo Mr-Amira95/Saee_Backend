@@ -46,7 +46,7 @@ class ClientController extends Controller
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
             'email'                       => 'required|email|unique:users,email',
-            'phone'                       => 'nullable|string|max:20',
+            'phone'                       => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'          => 'nullable|string|max:10',
             'company_name'                => 'required|string|max:255',
             'company_name_ar'             => 'nullable|string|max:255',
@@ -139,7 +139,7 @@ class ClientController extends Controller
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
             'email'                       => ['required','email', Rule::unique('users','email')->ignore($client->master_user_id)],
-            'phone'                       => 'nullable|string|max:20',
+            'phone'                       => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($client->master_user_id)],
             'phone_country_code'          => 'nullable|string|max:10',
             'company_name'                => 'required|string|max:255',
             'company_name_ar'             => 'nullable|string|max:255',

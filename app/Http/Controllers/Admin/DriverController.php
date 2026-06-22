@@ -53,7 +53,7 @@ class DriverController extends Controller
         $data = $request->validate([
             'name'                   => 'required|string|max:255',
             'email'                  => 'required|email|unique:users,email',
-            'phone'                  => 'nullable|string|max:20',
+            'phone'                  => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'     => 'nullable|string|max:10',
             'national_id'            => 'required|string|max:20|unique:driver_profiles,national_id',
             'license_number'         => 'required|string|max:50|unique:driver_profiles,license_number',
@@ -152,7 +152,7 @@ class DriverController extends Controller
         $data = $request->validate([
             'name'                   => 'required|string|max:255',
             'email'                  => ['required','email', Rule::unique('users','email')->ignore($driver->user_id)],
-            'phone'                  => 'nullable|string|max:20',
+            'phone'                  => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($driver->user_id)],
             'phone_country_code'     => 'nullable|string|max:10',
             'national_id'            => ['required','string','max:20', Rule::unique('driver_profiles','national_id')->ignore($driver->id)],
             'license_number'         => ['required','string','max:50', Rule::unique('driver_profiles','license_number')->ignore($driver->id)],
