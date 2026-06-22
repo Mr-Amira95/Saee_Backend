@@ -169,7 +169,10 @@
                 <thead>
                     <tr>
                         <th style="width:40px; text-align:center;">
-                            <input type="checkbox" id="select-all" title="Select all pending orders" style="cursor:pointer; width:15px; height:15px;">
+                            <label class="custom-cb" title="Select all pending orders">
+                                <input type="checkbox" id="select-all">
+                                <span class="custom-cb-ring"></span>
+                            </label>
                         </th>
                         <th>Order #</th>
                         <th>Batch #</th>
@@ -189,7 +192,10 @@
                         <tr class="{{ $isPending ? 'order-row-pending' : '' }}">
                             <td style="text-align:center;">
                                 @if($isPending)
-                                    <input type="checkbox" class="order-checkbox" value="{{ $order->id }}" style="cursor:pointer; width:15px; height:15px;">
+                                    <label class="custom-cb">
+                                        <input type="checkbox" class="order-checkbox" value="{{ $order->id }}">
+                                        <span class="custom-cb-ring"></span>
+                                    </label>
                                 @endif
                             </td>
                             <td>
@@ -301,6 +307,65 @@
             </div>
         @endif
     </div>
+
+    <style>
+    .custom-cb {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        line-height: 1;
+    }
+    .custom-cb input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+    }
+    .custom-cb-ring {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid var(--border, #d1d5db);
+        background: var(--card-bg, #fff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color .15s, background .15s, box-shadow .15s;
+        flex-shrink: 0;
+    }
+    .custom-cb:hover .custom-cb-ring {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+    }
+    .custom-cb input:checked ~ .custom-cb-ring {
+        background: #3b82f6;
+        border-color: #3b82f6;
+    }
+    .custom-cb input:checked ~ .custom-cb-ring::after {
+        content: '';
+        display: block;
+        width: 5px;
+        height: 9px;
+        border: 2px solid #fff;
+        border-top: none;
+        border-left: none;
+        transform: rotate(45deg) translate(-1px, -1px);
+    }
+    .custom-cb input:indeterminate ~ .custom-cb-ring {
+        background: #3b82f6;
+        border-color: #3b82f6;
+    }
+    .custom-cb input:indeterminate ~ .custom-cb-ring::after {
+        content: '';
+        display: block;
+        width: 8px;
+        height: 2px;
+        background: #fff;
+        border-radius: 2px;
+    }
+    </style>
 
     <script>
     function openModal(id) {
