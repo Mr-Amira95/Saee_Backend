@@ -310,18 +310,24 @@
 
     <style>
     .custom-cb {
+        position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         line-height: 1;
+        width: 18px;
+        height: 18px;
     }
     .custom-cb input[type="checkbox"] {
         position: absolute;
+        inset: 0;
         opacity: 0;
-        width: 0;
-        height: 0;
-        pointer-events: none;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        cursor: pointer;
+        z-index: 1;
     }
     .custom-cb-ring {
         width: 18px;
