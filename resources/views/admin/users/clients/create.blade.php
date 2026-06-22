@@ -376,8 +376,8 @@
                 <div style="display:flex;gap:8px;">
                     <select name="cliq_alias_type" class="form-select" style="width:150px;flex-shrink:0;">
                         <option value="">— Type —</option>
-                        <option value="phone"       {{ old('cliq_alias_type') === 'phone'       ? 'selected' : '' }}>Phone</option>
-                        <option value="national_id" {{ old('cliq_alias_type') === 'national_id' ? 'selected' : '' }}>National ID</option>
+                        <option value="alias" {{ old('cliq_alias_type') === 'alias' ? 'selected' : '' }}>Alias</option>
+                        <option value="phone" {{ old('cliq_alias_type') === 'phone' ? 'selected' : '' }}>Phone</option>
                     </select>
                     <input class="form-input @error('cliq_id') is-error @enderror" type="text"
                            name="cliq_id" value="{{ old('cliq_id') }}"

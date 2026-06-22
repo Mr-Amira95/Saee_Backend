@@ -289,7 +289,7 @@
                 <span class="info-row-val">
                     {{ $bd->cliq_id }}
                     @if($bd->cliq_alias_type)
-                        <span style="font-size:.74rem;color:var(--text-dim);margin-left:6px;">({{ $bd->cliq_alias_type === 'national_id' ? 'National ID' : 'Phone' }})</span>
+                        <span style="font-size:.74rem;color:var(--text-dim);margin-left:6px;">({{ $bd->cliq_alias_type === 'alias' ? 'Alias' : 'Phone' }})</span>
                     @endif
                 </span>
             </div>

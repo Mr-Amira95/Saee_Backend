@@ -32,7 +32,7 @@ class AiConversationController extends Controller
             }
         }
 
-        $sessions = $query->orderByDesc('updated_at')->paginate(25)->withQueryString();
+        $sessions = $query->latest('updated_at')->paginate(25)->withQueryString();
 
         $stats = [
             'total'   => ChatSession::count(),
@@ -49,5 +49,13 @@ class AiConversationController extends Controller
         $aiConversation->load(['user', 'messages' => fn ($q) => $q->orderBy('created_at')]);
 
         return view('admin.ai-conversations.show', ['session' => $aiConversation]);
+    }
+
+    public function destroy(ChatSession $aiConversation)
+    {
+        $aiConversation->delete();
+
+        return redirect()->route('admin.ai-conversations.index')
+            ->with('success', 'Conversation session deleted.');
     }
 }

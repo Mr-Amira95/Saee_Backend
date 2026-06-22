@@ -72,7 +72,7 @@ class ClientController extends Controller
             'iban'                        => 'nullable|string|max:34',
             'swift_code'                  => 'nullable|string|max:11',
             'cliq_id'                     => 'nullable|string|max:50',
-            'cliq_alias_type'             => ['nullable', Rule::in(['phone', 'national_id'])],
+            'cliq_alias_type'             => ['nullable', Rule::in(['alias', 'phone'])],
             'bank_notes'                  => 'nullable|string|max:500',
         ]);
 
@@ -188,7 +188,7 @@ class ClientController extends Controller
             'iban'                        => 'nullable|string|max:34',
             'swift_code'                  => 'nullable|string|max:11',
             'cliq_id'                     => 'nullable|string|max:50',
-            'cliq_alias_type'             => ['nullable', Rule::in(['phone', 'national_id'])],
+            'cliq_alias_type'             => ['nullable', Rule::in(['alias', 'phone'])],
             'bank_notes'                  => 'nullable|string|max:500',
         ]);
 

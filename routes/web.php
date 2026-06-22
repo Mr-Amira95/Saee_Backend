@@ -95,8 +95,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
 
         // AI Conversations
-        Route::get('ai-conversations',                   [AiConversationController::class, 'index'])->name('ai-conversations.index');
-        Route::get('ai-conversations/{aiConversation}',  [AiConversationController::class, 'show'])->name('ai-conversations.show');
+        Route::get('ai-conversations',                      [AiConversationController::class, 'index'])->name('ai-conversations.index');
+        Route::get('ai-conversations/{aiConversation}',     [AiConversationController::class, 'show'])->name('ai-conversations.show');
+        Route::delete('ai-conversations/{aiConversation}',  [AiConversationController::class, 'destroy'])->name('ai-conversations.destroy');
 
         // Support Tickets & Chat Center
         Route::get('support',                     [SupportController::class, 'index'])->name('support.index');
