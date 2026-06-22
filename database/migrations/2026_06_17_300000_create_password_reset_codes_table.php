@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('attempts')->default(0);
             $table->timestamp('verified_at')->nullable();
             $table->timestamp('used_at')->nullable();
-            $table->timestamp('expires_at');
+            $table->timestamp('expires_at')->useCurrent();
             $table->timestamp('reset_token_expires_at')->nullable();
             $table->timestamps();
 

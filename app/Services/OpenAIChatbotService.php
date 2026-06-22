@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\ChatMessage;
 use App\Models\ChatSession;
 use App\Models\Faq;
 use App\Models\Order;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -14,6 +14,7 @@ class OpenAIChatbotService
 {
     private const SYSTEM_PROMPT = <<<PROMPT
 You are SAEE Logistics Assistant.
+
 Your responsibilities:
 - Answer customer inquiries using only the provided FAQ data.
 - Track orders using provided order information.
@@ -21,12 +22,26 @@ Your responsibilities:
 - Be professional, concise, and friendly.
 - Support Arabic and English — reply in the same language as the customer.
 - If information is unavailable, politely ask the customer to contact SAEE support.
+
+When tracking a shipment:
+- If the context contains "NEEDS_IDENTIFIER", you MUST ask the customer to provide ONE of:
+  (1) their order reference number, (2) the phone number used when placing the order,
+  or (3) their full name as registered on the order. Do not make up tracking info.
+- If multiple orders are returned, present each one clearly and concisely.
+- If the order is not found, apologize and suggest the customer verify their details.
 PROMPT;
 
     private const TRACKING_KEYWORDS = [
         'track', 'order', 'shipment', 'package', 'delivery', 'deliver',
         'where is', 'status', 'تتبع', 'طلب', 'شحنة', 'اين', 'أين',
         'وين', 'متى', 'توصيل',
+    ];
+
+    // Phrases that indicate the bot previously asked for an identifier
+    private const IDENTIFIER_REQUEST_PHRASES = [
+        'order reference', 'order number', 'reference number', 'tracking number',
+        'phone number', 'full name', 'your name', 'registered name',
+        'رقم الطلب', 'رقم الهاتف', 'اسمك', 'اسم المستلم', 'الاسم الكامل',
     ];
 
     public function chat(string $sessionId, string $userMessage, ?int $userId = null): array
@@ -42,6 +57,12 @@ PROMPT;
         ]);
 
         $intent = $this->detectIntent($userMessage);
+
+        // If the previous bot turn was asking for identifier info, force tracking intent
+        // even when the reply contains no tracking keywords (e.g. user just says "Ahmed Al-Rashid")
+        if ($intent === 'general_question' && $this->previousBotAskedForIdentifier($session)) {
+            $intent = 'tracking';
+        }
 
         $context = match ($intent) {
             'tracking'         => $this->buildTrackingContext($userMessage),
@@ -91,14 +112,61 @@ PROMPT;
 
     public function extractOrderNumber(string $message): ?string
     {
-        // Tight: 10-15 digit numeric (matches existing CCYYMMDDSSSS format)
+        // Tight: 10–15 digit numeric — matches the system's CCYYMMDDSSSS format
         if (preg_match('/\b(\d{10,15})\b/', $message, $m)) {
             return $m[1];
         }
 
-        // Broad: 5-20 char alphanumeric with optional hyphens (future-proof)
-        if (preg_match('/\b([A-Za-z0-9]{5,20}(?:-[A-Za-z0-9]+)*)\b/', $message, $m)) {
-            return $m[1];
+        // Broad: alphanumeric that contains at least one digit (prevents matching plain words/names)
+        if (preg_match('/\b(?=[A-Za-z0-9\-]*\d)[A-Za-z0-9]{5,20}(?:-[A-Za-z0-9]+)*\b/', $message, $m)) {
+            return $m[0];
+        }
+
+        return null;
+    }
+
+    public function extractPhone(string $message): ?string
+    {
+        // Saudi: +9665XXXXXXXX, 05XXXXXXXX
+        // Jordanian: +9627XXXXXXXX, 07XXXXXXXX
+        // Gulf/MENA variations with optional spaces/dashes
+        $patterns = [
+            '/\+9\d[\d\s\-]{7,13}/',   // +9xx international (e.g. +966 5X...)
+            '/\b00\d{9,13}\b/',         // 009xx
+            '/\b0[5-9]\d{7,9}\b/',      // 05x–09x local (Gulf + Jordan)
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $message, $m)) {
+                return preg_replace('/[\s\-]/', '', $m[0]);
+            }
+        }
+
+        return null;
+    }
+
+    public function extractName(string $message): ?string
+    {
+        // Explicit: "my name is X", "اسمي X", "name: X", etc.
+        if (preg_match(
+            '/(?:my name is|name[:\s]+|i\'?m\s+|i am\s+|اسمي\s+|اسم[:\s]+)\s*([A-Za-z\x{0600}-\x{06FF}][A-Za-z\x{0600}-\x{06FF}\s]{2,50})/iu',
+            $message,
+            $m,
+        )) {
+            return trim(preg_replace('/\s+/', ' ', $m[1]));
+        }
+
+        // Arabic: two or more consecutive Arabic words
+        if (preg_match('/[\x{0600}-\x{06FF}]{2,}(?:\s+[\x{0600}-\x{06FF}]{2,})+/u', $message, $m)) {
+            return trim($m[0]);
+        }
+
+        // English: two+ consecutive capitalised words that don't look like sentence starts
+        if (preg_match('/\b([A-Z][a-z]{2,}(?:\s+(?:Al-?|El-?|Bin\s+)?[A-Z][a-z]{2,})+)\b/', $message, $m)) {
+            $candidate = $m[1];
+            if (! preg_match('/^(?:Please|Hello|Hi|Good|Thank|Sorry|Can|Could|Would|Where|What|When|How|My|The|I|We|Track|Order)\b/i', $candidate)) {
+                return $candidate;
+            }
         }
 
         return null;
@@ -106,44 +174,76 @@ PROMPT;
 
     public function buildTrackingContext(string $message): string
     {
-        $number = $this->extractOrderNumber($message);
+        $phone  = $this->extractPhone($message);
+        $refNum = $this->extractOrderNumber($message);
+        $name   = $this->extractName($message);
 
-        if ($number === null) {
-            return 'No order number found in the customer message.';
-        }
-
-        $order = Order::where('order_number', $number)
-            ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(5)])
-            ->first();
-
-        if ($order === null) {
-            return "Order {$number} was not found in the system.";
-        }
-
-        $lines = [
-            "Order Number: {$order->order_number}",
-            "Current Status: {$order->status}",
-            "Receiver: {$order->receiver_name}",
-            "Payment Type: {$order->payment_type}",
-            "Payment Status: {$order->payment_status}",
-            "Delivery Amount: {$order->delivery_amount}",
-        ];
-
-        if ($order->notes) {
-            $lines[] = "Notes: {$order->notes}";
-        }
-
-        if ($order->trackingLogs->isNotEmpty()) {
-            $lines[] = '';
-            $lines[] = 'Tracking History:';
-
-            foreach ($order->trackingLogs as $log) {
-                $from = $log->from_status ?? 'N/A';
-                $lines[] = "{$from} → {$log->to_status} | {$log->created_at->toDateTimeString()} | {$log->description}";
+        // If phone digits are a subset of refNum it's the same token — don't double-search
+        if ($phone && $refNum) {
+            $phoneDigits = preg_replace('/\D/', '', $phone);
+            $refDigits   = preg_replace('/\D/', '', $refNum);
+            if (str_contains($refDigits, $phoneDigits) || str_contains($phoneDigits, $refDigits)) {
+                $refNum = null;
             }
         }
 
-        return implode("\n", $lines);
+        // ── 1. Search by reference / order number ────────────────────────
+        if ($refNum) {
+            $order = Order::where('order_number', $refNum)
+                ->orWhere('batch_number', $refNum)
+                ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(5)])
+                ->first();
+
+            if ($order) {
+                return $this->formatOrderContext($order);
+            }
+
+            // Not found — still fall through to phone/name if present
+            if (! $phone && ! $name) {
+                return "Order reference \"{$refNum}\" was not found in the system. Ask the customer to verify the number or try their phone number or full name instead.";
+            }
+        }
+
+        // ── 2. Search by phone ────────────────────────────────────────────
+        if ($phone) {
+            $digits = preg_replace('/\D/', '', $phone);
+            $short  = ltrim($digits, '0');
+
+            $orders = Order::where(function ($q) use ($digits, $short) {
+                $q->where('receiver_phone', 'LIKE', "%{$digits}%")
+                  ->orWhere('receiver_phone', 'LIKE', "%{$short}%");
+            })
+                ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(3)])
+                ->latest()
+                ->limit(5)
+                ->get();
+
+            if ($orders->isNotEmpty()) {
+                return $this->formatMultipleOrdersContext($orders, "phone number {$phone}");
+            }
+
+            if (! $name) {
+                return "No orders found for phone number {$phone}. Ask the customer to verify the number or provide their order reference or full name.";
+            }
+        }
+
+        // ── 3. Search by name ─────────────────────────────────────────────
+        if ($name) {
+            $orders = Order::where('receiver_name', 'LIKE', "%{$name}%")
+                ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(3)])
+                ->latest()
+                ->limit(5)
+                ->get();
+
+            if ($orders->isNotEmpty()) {
+                return $this->formatMultipleOrdersContext($orders, "name \"{$name}\"");
+            }
+
+            return "No orders found for name \"{$name}\". Ask the customer to verify their name or provide their order reference or phone number.";
+        }
+
+        // ── 4. No identifier found at all ─────────────────────────────────
+        return 'NEEDS_IDENTIFIER: The customer wants to track a shipment but has not provided any identifying information. You MUST ask them to provide ONE of: (1) their order reference or tracking number, (2) the phone number used when placing the order, or (3) their full name as registered on the order.';
     }
 
     public function buildFaqContext(string $message): string
@@ -184,8 +284,75 @@ PROMPT;
         return implode("\n", $lines);
     }
 
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    private function previousBotAskedForIdentifier(ChatSession $session): bool
+    {
+        $lastBotMessage = $session->messages()
+            ->where('role', 'assistant')
+            ->latest()
+            ->value('message');
+
+        if (! $lastBotMessage) {
+            return false;
+        }
+
+        $lower = mb_strtolower($lastBotMessage);
+
+        foreach (self::IDENTIFIER_REQUEST_PHRASES as $phrase) {
+            if (str_contains($lower, $phrase)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function formatOrderContext(Order $order): string
+    {
+        $lines = [
+            "Order Number: {$order->order_number}",
+            "Current Status: {$order->status}",
+            "Receiver Name: {$order->receiver_name}",
+            "Receiver Phone: {$order->receiver_phone}",
+            "Payment Type: {$order->payment_type}",
+            "Payment Status: {$order->payment_status}",
+            "Delivery Amount: {$order->delivery_amount}",
+        ];
+
+        if ($order->notes) {
+            $lines[] = "Notes: {$order->notes}";
+        }
+
+        if ($order->relationLoaded('trackingLogs') && $order->trackingLogs->isNotEmpty()) {
+            $lines[] = '';
+            $lines[] = 'Tracking History:';
+
+            foreach ($order->trackingLogs as $log) {
+                $from = $log->from_status ?? 'N/A';
+                $lines[] = "{$from} → {$log->to_status} | {$log->created_at->toDateTimeString()} | {$log->description}";
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    private function formatMultipleOrdersContext(Collection $orders, string $searchedBy = ''): string
+    {
+        $count = $orders->count();
+        $lines = ["Found {$count} order(s)" . ($searchedBy ? " matching {$searchedBy}" : '') . ':'];
+
+        foreach ($orders as $i => $order) {
+            $lines[] = '';
+            $lines[] = '--- Order ' . ($i + 1) . ' ---';
+            $lines[] = $this->formatOrderContext($order);
+        }
+
+        return implode("\n", $lines);
+    }
+
     private function buildMessages(
-        \Illuminate\Support\Collection $history,
+        Collection $history,
         string $userMessage,
         string $context,
     ): array {
@@ -208,7 +375,7 @@ PROMPT;
             $lastUserContent .= "\n\n--- Context ---\n" . $context;
         }
 
-        // Replace the last user message entry with the context-enriched version
+        // Replace the last user message with the context-enriched version
         for ($i = count($messages) - 1; $i >= 0; $i--) {
             if ($messages[$i]['role'] === 'user') {
                 $messages[$i]['content'] = $lastUserContent;
