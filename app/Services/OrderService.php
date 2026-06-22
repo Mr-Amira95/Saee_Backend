@@ -271,16 +271,14 @@ class OrderService
                         'notes'             => $notes ?? 'Driver cash settled to company for order ' . $order->order_number,
                     ]);
 
-                    // If order has no COD (or COD was prepaid), we mark it as paid.
-                    // If it has COD, does the company still need to payout to the client?
-                    // Yes. The company now has the cash. But the payment_status should remain 'with_driver' or change to 'paid'?
-                    // The user said: payment_status: 'paid (driver or the company paid to the client)'.
-                    // So once the company payouts the client, we set payment_status to 'paid'.
-                    // If the order has NO COD (prepaid) but had delivery_on_customer, once driver settles to company, the payment is fully closed. So we set it to 'paid'.
+                    // Cash is now with the company. For prepaid/no-COD orders the cycle is closed → paid.
+                    // For COD orders, company still needs to payout the client → with_company.
                     if ($order->payment_type === 'prepaid' || $order->order_price == 0) {
                         $order->payment_status = 'paid';
-                        $order->save();
+                    } else {
+                        $order->payment_status = 'with_company';
                     }
+                    $order->save();
                     
                     $this->logTracking(
                         $order->id, 
@@ -307,7 +305,7 @@ class OrderService
             $orders = Order::whereIn('id', $orderIds)
                 ->where('client_profile_id', $client->id)
                 ->where('status', 'delivered')
-                ->whereIn('payment_status', ['with_driver', 'pending'])
+                ->where('payment_status', 'with_company')
                 ->get();
 
             $totalCod = 0;
@@ -388,17 +386,27 @@ class OrderService
     }
 
     /**
-     * Bulk-return all rejected orders for a driver and record shipping charges.
+     * Bulk-return all rejected orders and settle all delivered COD cash to company.
+     *
+     * Two things happen in one transaction:
+     * 1. Rejected orders → returned, shipping_charge ledger entry created.
+     * 2. Delivered orders with payment_status=with_driver → with_company,
+     *    driver_settlement ledger entry created (driver hands cash to Saee).
+     *
+     * Returns total number of orders affected (returned + settled).
      */
-    public function confirmHandover(User $driver, ?string $notes = null): int
+    public function confirmHandover(User $driver, ?string $notes = null): array
     {
         return DB::transaction(function () use ($driver, $notes) {
-            $orders = Order::where('driver_id', $driver->id)
+            $returnedCount = 0;
+            $settledCount  = 0;
+
+            // 1. Handle rejected orders → returned
+            $rejectedOrders = Order::where('driver_id', $driver->id)
                 ->where('status', 'rejected')
                 ->get();
 
-            $count = 0;
-            foreach ($orders as $order) {
+            foreach ($rejectedOrders as $order) {
                 $order->update([
                     'status'         => 'returned',
                     'payment_status' => 'no_payment',
@@ -424,11 +432,50 @@ class OrderService
                 }
 
                 $this->logTracking($order->id, $driver->id, 'rejected', 'returned', $description);
-
-                $count++;
+                $returnedCount++;
             }
 
-            return $count;
+            // 2. Settle all delivered COD / delivery_on_customer orders still with driver → company
+            $deliveredOrders = Order::where('driver_id', $driver->id)
+                ->where('status', 'delivered')
+                ->where('payment_status', 'with_driver')
+                ->get();
+
+            foreach ($deliveredOrders as $order) {
+                $driverCollected = FinancialLedgerEntry::where('order_id', $order->id)
+                    ->where('driver_id', $driver->id)
+                    ->where('to_account', 'driver')
+                    ->sum('amount');
+
+                if ($driverCollected > 0) {
+                    FinancialLedgerEntry::create([
+                        'order_id'          => $order->id,
+                        'client_profile_id' => $order->client_profile_id,
+                        'driver_id'         => $driver->id,
+                        'from_account'      => 'driver',
+                        'to_account'        => 'company',
+                        'amount'            => $driverCollected,
+                        'type'              => 'driver_settlement',
+                        'recorded_by'       => $driver->id,
+                        'notes'             => ($notes ?? 'Driver confirmed cash handover to Saee') . ' — order ' . $order->order_number,
+                    ]);
+                }
+
+                $order->payment_status = 'with_company';
+                $order->save();
+
+                $this->logTracking(
+                    $order->id,
+                    $driver->id,
+                    $order->status,
+                    $order->status,
+                    'Driver confirmed cash transfer to Saee. Amount: ' . $driverCollected . '.'
+                );
+
+                $settledCount++;
+            }
+
+            return ['returned' => $returnedCount, 'settled' => $settledCount];
         });
     }
 

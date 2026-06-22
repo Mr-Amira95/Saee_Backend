@@ -345,13 +345,14 @@ if (! $this->canAccessOrder($user, $order)) {
             ], 422);
         }
 
-        $count = $this->orderService->confirmHandover($user, $request->input('notes'));
+        $result = $this->orderService->confirmHandover($user, $request->input('notes'));
 
         return response()->json([
             'success' => true,
-            'message' => "Handover confirmed. {$count} order(s) marked as returned.",
+            'message' => "Handover confirmed. {$result['returned']} order(s) returned, {$result['settled']} order(s) cash transferred to Saee.",
             'data'    => [
-                'returned_count' => $count,
+                'returned_count' => $result['returned'],
+                'settled_count'  => $result['settled'],
             ],
         ]);
     }
