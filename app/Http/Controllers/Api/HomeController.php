@@ -55,8 +55,8 @@ class HomeController extends Controller
         $completedOrders = $completedOrderIds->count();
         $rejectedOrders  = $rejectedOrderIds->count();
 
-        $cashCollected = Order::whereIn('id', $completedOrderIds)
-            ->where('payment_type', 'cod')
+        $cashCollected = Order::where('driver_id', $user->id)
+            ->where('payment_status', 'with_driver')
             ->selectRaw(
                 'COALESCE(SUM(order_price), 0)'
                 . ' + COALESCE(SUM(CASE WHEN delivery_on_customer = 1 THEN delivery_customer_amount ELSE 0 END), 0)'
