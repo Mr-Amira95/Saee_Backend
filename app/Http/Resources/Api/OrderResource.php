@@ -19,10 +19,7 @@ class OrderResource extends JsonResource
             'order_description'        => $this->order_description,
             'delivery_on_customer'     => $this->when($this->payment_type !== 'prepaid', (bool) $this->delivery_on_customer),
             'delivery_amount'          => $this->when($this->payment_type !== 'prepaid', (float) $this->delivery_amount),
-            'delivery_customer_amount' => $this->when(
-                $this->payment_type !== 'prepaid' && (bool) $this->delivery_on_customer,
-                $this->delivery_customer_amount !== null ? (float) $this->delivery_customer_amount : null
-            ),
+            'delivery_customer_amount' => $this->when((bool) $this->delivery_on_customer, $this->delivery_customer_amount !== null ? (float) $this->delivery_customer_amount : null),
             'order_price'              => $this->when(
                 $this->payment_type !== 'prepaid',
                 $this->order_price !== null ? (float) $this->order_price : null
