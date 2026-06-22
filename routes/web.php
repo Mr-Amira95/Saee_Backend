@@ -16,6 +16,7 @@ use App\Http\Controllers\PublicOrderLocationController;
 use App\Http\Controllers\Admin\WhatsAppTemplateController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\SupportController;
+use App\Http\Controllers\Admin\AiConversationController;
 use App\Http\Controllers\PublicSupportController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ReportController;
@@ -92,6 +93,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
         Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
         Route::patch('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
+
+        // AI Conversations
+        Route::get('ai-conversations',                   [AiConversationController::class, 'index'])->name('ai-conversations.index');
+        Route::get('ai-conversations/{aiConversation}',  [AiConversationController::class, 'show'])->name('ai-conversations.show');
 
         // Support Tickets & Chat Center
         Route::get('support',                     [SupportController::class, 'index'])->name('support.index');

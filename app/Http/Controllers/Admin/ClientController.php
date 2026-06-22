@@ -66,6 +66,14 @@ class ClientController extends Controller
             'attachment_files.*'          => 'nullable|file|max:10240',
             'delivery_prices'             => 'nullable|array',
             'delivery_prices.*'           => 'nullable|numeric|min:0',
+            'bank_name'                   => 'nullable|string|max:255',
+            'account_name'                => 'nullable|string|max:255',
+            'account_number'              => 'nullable|string|max:30',
+            'iban'                        => 'nullable|string|max:34',
+            'swift_code'                  => 'nullable|string|max:11',
+            'cliq_id'                     => 'nullable|string|max:50',
+            'cliq_alias_type'             => ['nullable', Rule::in(['phone', 'national_id'])],
+            'bank_notes'                  => 'nullable|string|max:500',
         ]);
 
         $user = DB::transaction(function () use ($data, $request) {
@@ -102,6 +110,20 @@ class ClientController extends Controller
 
             $this->saveAttachments($request, $client, $user->id);
 
+            $bankFields = array_filter([
+                'bank_name'       => $data['bank_name'] ?? null,
+                'account_name'    => $data['account_name'] ?? null,
+                'account_number'  => $data['account_number'] ?? null,
+                'iban'            => $data['iban'] ?? null,
+                'swift_code'      => $data['swift_code'] ?? null,
+                'cliq_id'         => $data['cliq_id'] ?? null,
+                'cliq_alias_type' => $data['cliq_alias_type'] ?? null,
+                'notes'           => $data['bank_notes'] ?? null,
+            ]);
+            if (!empty($bankFields)) {
+                $client->bankDetail()->create($bankFields);
+            }
+
             foreach ($data['delivery_prices'] ?? [] as $cityId => $price) {
                 if ($price !== null && $price !== '') {
                     $client->deliveryPrices()->create([
@@ -122,13 +144,13 @@ class ClientController extends Controller
 
     public function show(ClientProfile $client)
     {
-        $client->load('masterUser', 'city', 'area', 'employees.user', 'attachments');
+        $client->load('masterUser', 'city', 'area', 'employees.user', 'attachments', 'bankDetail');
         return view('admin.users.clients.show', compact('client'));
     }
 
     public function edit(ClientProfile $client)
     {
-        $client->load('masterUser', 'city', 'area', 'attachments');
+        $client->load('masterUser', 'city', 'area', 'attachments', 'bankDetail');
         $cities = City::orderBy('name')->get();
         $existingPrices = $client->deliveryPrices()->pluck('delivery_price', 'city_id');
         return view('admin.users.clients.edit', compact('client', 'cities', 'existingPrices'));
@@ -160,6 +182,14 @@ class ClientController extends Controller
             'attachment_files.*'          => 'nullable|file|max:10240',
             'delete_attachment_ids'       => 'nullable|array',
             'delete_attachment_ids.*'     => 'nullable|integer',
+            'bank_name'                   => 'nullable|string|max:255',
+            'account_name'                => 'nullable|string|max:255',
+            'account_number'              => 'nullable|string|max:30',
+            'iban'                        => 'nullable|string|max:34',
+            'swift_code'                  => 'nullable|string|max:11',
+            'cliq_id'                     => 'nullable|string|max:50',
+            'cliq_alias_type'             => ['nullable', Rule::in(['phone', 'national_id'])],
+            'bank_notes'                  => 'nullable|string|max:500',
         ]);
 
         DB::transaction(function () use ($data, $request, $client) {
@@ -212,6 +242,17 @@ class ClientController extends Controller
                     $att->delete();
                 }
             }
+
+            $client->bankDetail()->updateOrCreate([], [
+                'bank_name'       => $data['bank_name'] ?? null,
+                'account_name'    => $data['account_name'] ?? null,
+                'account_number'  => $data['account_number'] ?? null,
+                'iban'            => $data['iban'] ?? null,
+                'swift_code'      => $data['swift_code'] ?? null,
+                'cliq_id'         => $data['cliq_id'] ?? null,
+                'cliq_alias_type' => $data['cliq_alias_type'] ?? null,
+                'notes'           => $data['bank_notes'] ?? null,
+            ]);
 
             $this->saveAttachments($request, $client, auth()->id());
         });

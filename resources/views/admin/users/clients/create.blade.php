@@ -331,6 +331,69 @@
         </div>
     </div>
 
+    {{-- Banking Details --}}
+    <div class="form-section">
+        <div class="form-section-title">Banking Details
+            <span class="opt" style="text-transform:none;font-size:.72rem;font-weight:400;">optional</span>
+        </div>
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label class="form-label" for="bank_name">Bank Name</label>
+                <input class="form-input" id="bank_name" type="text" name="bank_name"
+                       value="{{ old('bank_name') }}" placeholder="e.g. Arab Bank, Cairo Amman Bank">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="account_name">Account Holder Name</label>
+                <input class="form-input" id="account_name" type="text" name="account_name"
+                       value="{{ old('account_name') }}" placeholder="As it appears on the bank account">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="iban">IBAN</label>
+                <input class="form-input @error('iban') is-error @enderror" id="iban" type="text"
+                       name="iban" value="{{ old('iban') }}"
+                       placeholder="JO94CBJO0010000000000131000302"
+                       style="font-family:monospace;letter-spacing:.03em;"
+                       oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')">
+                @error('iban')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="swift_code">SWIFT / BIC Code</label>
+                <input class="form-input @error('swift_code') is-error @enderror" id="swift_code" type="text"
+                       name="swift_code" value="{{ old('swift_code') }}"
+                       placeholder="e.g. ARABJOAX"
+                       style="font-family:monospace;text-transform:uppercase;"
+                       oninput="this.value=this.value.toUpperCase()">
+                @error('swift_code')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="account_number">Account Number</label>
+                <input class="form-input" id="account_number" type="text" name="account_number"
+                       value="{{ old('account_number') }}" placeholder="Bank account number"
+                       style="font-family:monospace;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">CliQ ID</label>
+                <div style="display:flex;gap:8px;">
+                    <select name="cliq_alias_type" class="form-select" style="width:150px;flex-shrink:0;">
+                        <option value="">— Type —</option>
+                        <option value="phone"       {{ old('cliq_alias_type') === 'phone'       ? 'selected' : '' }}>Phone</option>
+                        <option value="national_id" {{ old('cliq_alias_type') === 'national_id' ? 'selected' : '' }}>National ID</option>
+                    </select>
+                    <input class="form-input @error('cliq_id') is-error @enderror" type="text"
+                           name="cliq_id" value="{{ old('cliq_id') }}"
+                           placeholder="Phone number or National ID" style="flex:1;">
+                </div>
+                @error('cliq_id')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label" for="bank_notes">Bank Notes</label>
+                <textarea class="form-input" id="bank_notes" name="bank_notes" rows="2"
+                          style="resize:vertical;height:auto;"
+                          placeholder="Any additional payment or transfer instructions…">{{ old('bank_notes') }}</textarea>
+            </div>
+        </div>
+    </div>
+
     {{-- Delivery Prices --}}
     <div class="form-section" style="padding:0;overflow:hidden;">
         <div style="padding:16px 20px;border-bottom:1px solid var(--bdr);">

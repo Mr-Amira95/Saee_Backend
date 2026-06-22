@@ -296,6 +296,77 @@
             </div>
         </div>
 
+        {{-- ── Banking Details ── --}}
+        <div class="form-section">
+            <div class="form-section-title">Banking Details</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+                <div>
+                    <label class="form-label">Bank Name</label>
+                    <input type="text" name="bank_name" class="form-input"
+                           value="{{ old('bank_name', $client->bankDetail->bank_name ?? '') }}"
+                           placeholder="e.g. Arab Bank, Cairo Amman Bank">
+                </div>
+
+                <div>
+                    <label class="form-label">Account Holder Name</label>
+                    <input type="text" name="account_name" class="form-input"
+                           value="{{ old('account_name', $client->bankDetail->account_name ?? '') }}"
+                           placeholder="As it appears on the bank account">
+                </div>
+
+                <div>
+                    <label class="form-label">IBAN</label>
+                    <input type="text" name="iban" class="form-input @error('iban') is-error @enderror"
+                           value="{{ old('iban', $client->bankDetail->iban ?? '') }}"
+                           placeholder="JO94CBJO0010000000000131000302"
+                           style="font-family:monospace;letter-spacing:.03em;"
+                           oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')">
+                    @error('iban')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label class="form-label">SWIFT / BIC Code</label>
+                    <input type="text" name="swift_code" class="form-input @error('swift_code') is-error @enderror"
+                           value="{{ old('swift_code', $client->bankDetail->swift_code ?? '') }}"
+                           placeholder="e.g. ARABJOAX"
+                           style="font-family:monospace;text-transform:uppercase;"
+                           oninput="this.value=this.value.toUpperCase()">
+                    @error('swift_code')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+
+                <div>
+                    <label class="form-label">Account Number</label>
+                    <input type="text" name="account_number" class="form-input"
+                           value="{{ old('account_number', $client->bankDetail->account_number ?? '') }}"
+                           placeholder="Bank account number" style="font-family:monospace;">
+                </div>
+
+                <div>
+                    <label class="form-label">CliQ ID</label>
+                    <div style="display:flex;gap:8px;">
+                        <select name="cliq_alias_type" class="form-input" style="width:150px;flex-shrink:0;">
+                            <option value="">— Type —</option>
+                            <option value="phone"       {{ old('cliq_alias_type', $client->bankDetail->cliq_alias_type ?? '') === 'phone'       ? 'selected' : '' }}>Phone</option>
+                            <option value="national_id" {{ old('cliq_alias_type', $client->bankDetail->cliq_alias_type ?? '') === 'national_id' ? 'selected' : '' }}>National ID</option>
+                        </select>
+                        <input type="text" name="cliq_id" class="form-input @error('cliq_id') is-error @enderror"
+                               value="{{ old('cliq_id', $client->bankDetail->cliq_id ?? '') }}"
+                               placeholder="Phone number or National ID" style="flex:1;">
+                    </div>
+                    @error('cliq_id')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+
+                <div style="grid-column:1/-1;">
+                    <label class="form-label">Bank Notes</label>
+                    <textarea name="bank_notes" class="form-input" rows="2"
+                              style="resize:vertical;height:auto;"
+                              placeholder="Any additional payment or transfer instructions…">{{ old('bank_notes', $client->bankDetail->notes ?? '') }}</textarea>
+                </div>
+
+            </div>
+        </div>
+
         {{-- ── Delivery Prices ── --}}
         <div class="form-section" style="padding:0;overflow:hidden;">
             <div style="padding:16px 20px;border-bottom:1px solid var(--bdr);">

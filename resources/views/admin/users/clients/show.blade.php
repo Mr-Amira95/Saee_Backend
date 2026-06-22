@@ -237,6 +237,75 @@
 
 </div>
 
+{{-- ── Banking Details ── --}}
+@if($client->bankDetail)
+<div class="section-card">
+    <div class="section-card-hd">
+        <span class="section-card-title">Banking Details</span>
+        <a href="{{ route('admin.clients.edit', $client) }}" style="font-size:.78rem;color:var(--red);text-decoration:none;">Edit</a>
+    </div>
+    <div class="section-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+            @php $bd = $client->bankDetail; @endphp
+
+            @if($bd->bank_name)
+            <div class="info-row" style="grid-column:1/-1;">
+                <span class="info-row-key">Bank Name</span>
+                <span class="info-row-val">{{ $bd->bank_name }}</span>
+            </div>
+            @endif
+
+            @if($bd->account_name)
+            <div class="info-row" style="grid-column:1/-1;">
+                <span class="info-row-key">Account Holder</span>
+                <span class="info-row-val">{{ $bd->account_name }}</span>
+            </div>
+            @endif
+
+            @if($bd->iban)
+            <div class="info-row" style="grid-column:1/-1;">
+                <span class="info-row-key">IBAN</span>
+                <span class="info-row-val" style="font-family:monospace;letter-spacing:.04em;word-break:break-all;">{{ $bd->iban }}</span>
+            </div>
+            @endif
+
+            @if($bd->swift_code)
+            <div class="info-row">
+                <span class="info-row-key">SWIFT / BIC</span>
+                <span class="info-row-val" style="font-family:monospace;">{{ $bd->swift_code }}</span>
+            </div>
+            @endif
+
+            @if($bd->account_number)
+            <div class="info-row">
+                <span class="info-row-key">Account Number</span>
+                <span class="info-row-val" style="font-family:monospace;">{{ $bd->account_number }}</span>
+            </div>
+            @endif
+
+            @if($bd->cliq_id)
+            <div class="info-row" style="grid-column:1/-1;">
+                <span class="info-row-key">CliQ ID</span>
+                <span class="info-row-val">
+                    {{ $bd->cliq_id }}
+                    @if($bd->cliq_alias_type)
+                        <span style="font-size:.74rem;color:var(--text-dim);margin-left:6px;">({{ $bd->cliq_alias_type === 'national_id' ? 'National ID' : 'Phone' }})</span>
+                    @endif
+                </span>
+            </div>
+            @endif
+
+            @if($bd->notes)
+            <div class="info-row" style="grid-column:1/-1;">
+                <span class="info-row-key">Notes</span>
+                <span class="info-row-val" style="white-space:pre-line;">{{ $bd->notes }}</span>
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- ── Attachments ── --}}
 @if($client->attachments->count())
 <div class="section-card">

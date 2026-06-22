@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientProfile extends Model
@@ -73,6 +74,11 @@ class ClientProfile extends Model
     public function deliveryPrices(): HasMany
     {
         return $this->hasMany(ClientDeliveryPrice::class);
+    }
+
+    public function bankDetail(): HasOne
+    {
+        return $this->hasOne(ClientBankDetail::class);
     }
 
     public function orders(): HasMany
