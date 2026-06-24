@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\OrderResource;
+use App\Models\Area;
 use App\Models\Attendance;
+use App\Models\City;
+use App\Models\ClientProfile;
 use App\Models\Order;
 use App\Models\OrderTrackingLog;
 use App\Models\RejectionReason;
@@ -12,6 +15,7 @@ use App\Models\User;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
@@ -90,6 +94,10 @@ class OrderController extends Controller
 
         if ($request->filled('to')) {
             $query->whereDate('created_at', '<=', $request->input('to'));
+        }
+
+        if ($request->filled('batch_number')) {
+            $query->where('batch_number', $request->input('batch_number'));
         }
 
         if ($request->filled('search')) {
@@ -345,6 +353,237 @@ if (! $this->canAccessOrder($user, $order)) {
         ]);
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only client accounts can create orders.',
+            ], 403);
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Client profile not found.',
+                'code'    => 'CLIENT_PROFILE_NOT_FOUND',
+            ], 403);
+        }
+
+        $request->validate([
+            'order_description'        => ['nullable', 'string', 'max:255'],
+            'payment_type'             => ['required', 'in:cod,prepaid'],
+            'delivery_on_customer'     => ['nullable', 'boolean'],
+            'delivery_customer_amount' => ['nullable', 'numeric', 'min:0'],
+            'order_price'              => ['nullable', 'numeric', 'min:0'],
+            'receiver_name'            => ['required', 'string', 'max:255'],
+            'receiver_phone'           => ['required', 'string', 'max:20'],
+            'city_id'                  => ['required', 'integer', 'exists:cities,id'],
+            'area_id'                  => ['required', 'integer', 'exists:areas,id'],
+            'address_text'             => ['required', 'string'],
+            'address_location'         => ['nullable', 'string', 'max:100'],
+            'notes'                    => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        if ($request->input('payment_type') === 'cod' && ! $request->filled('order_price')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors'  => ['order_price' => ['Order price is required for COD orders.']],
+            ], 422);
+        }
+
+        if ($request->boolean('delivery_on_customer') && ! $request->filled('delivery_customer_amount')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors'  => ['delivery_customer_amount' => ['Delivery customer amount is required when delivery is on customer.']],
+            ], 422);
+        }
+
+        $order = $this->orderService->createOrder(array_merge($request->only([
+            'order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount',
+            'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id',
+            'address_text', 'address_location', 'notes',
+        ]), [
+            'client_profile_id' => $clientProfile->id,
+            'driver_id'         => null,
+        ]), $user);
+
+        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order created successfully.',
+            'data'    => new OrderResource($order),
+        ], 201);
+    }
+
+    public function importOrders(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only client accounts can import orders.',
+            ], 403);
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Client profile not found.',
+                'code'    => 'CLIENT_PROFILE_NOT_FOUND',
+            ], 403);
+        }
+
+        $request->validate([
+            'csv_file' => ['required', 'file', 'mimes:csv,txt', 'max:4096'],
+        ]);
+
+        $path = $request->file('csv_file')->getRealPath();
+        $rows = [];
+
+        if (($handle = fopen($path, 'r')) !== false) {
+            $headers = fgetcsv($handle, 1000, ',');
+            $expected = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes'];
+
+            if (! $headers || count(array_intersect($headers, $expected)) < 5) {
+                fclose($handle);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid CSV format. Please download and use the provided template.',
+                ], 422);
+            }
+
+            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+                if (count($headers) === count($row)) {
+                    $rows[] = array_combine($headers, $row);
+                }
+            }
+            fclose($handle);
+        }
+
+        if (empty($rows)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The CSV file is empty.',
+            ], 422);
+        }
+
+        $errors = [];
+
+        foreach ($rows as $index => $row) {
+            $rowNum    = $index + 2;
+            $rowErrors = [];
+
+            $paymentType = strtolower($row['payment_type'] ?? '');
+            if (! in_array($paymentType, ['cod', 'prepaid'])) {
+                $rowErrors[] = "Payment type must be 'cod' or 'prepaid'.";
+            }
+
+            $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
+            if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
+                $rowErrors[] = 'Order price must be a positive number for COD orders.';
+            }
+
+            $deliveryOnCustomer = filter_var($row['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($deliveryOnCustomer === null) {
+                $rowErrors[] = "delivery_on_customer must be 'true' or 'false'.";
+            }
+
+            $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
+            if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
+                $rowErrors[] = 'delivery_customer_amount must be a valid number.';
+            }
+
+            $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
+            if (! $cityId || ! City::where('id', $cityId)->exists()) {
+                $rowErrors[] = "City ID [{$row['city_id']}] does not exist.";
+            }
+
+            $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
+            if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
+                $rowErrors[] = "Area ID [{$row['area_id']}] does not exist or does not belong to City [{$row['city_id']}].";
+            }
+
+            if (empty($row['receiver_name']))  { $rowErrors[] = 'Receiver name is required.'; }
+            if (empty($row['receiver_phone'])) { $rowErrors[] = 'Receiver phone is required.'; }
+            if (empty($row['address_text']))   { $rowErrors[] = 'Address is required.'; }
+
+            if (! empty($rowErrors)) {
+                $errors[] = ['row' => $rowNum, 'errors' => $rowErrors];
+            }
+        }
+
+        if (! empty($errors)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'CSV validation failed. Fix the errors and re-upload.',
+                'errors'  => $errors,
+            ], 422);
+        }
+
+        $batchNumber    = 'BATCH-' . now()->format('ymd') . '-' . $clientProfile->id . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
+        $importedCount  = 0;
+
+        foreach ($rows as $row) {
+            $this->orderService->createOrder([
+                'client_profile_id'        => $clientProfile->id,
+                'driver_id'                => null,
+                'order_description'        => $row['order_description'] ?? null,
+                'payment_type'             => strtolower($row['payment_type']),
+                'delivery_on_customer'     => filter_var($row['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN),
+                'delivery_customer_amount' => isset($row['delivery_customer_amount']) ? (float) $row['delivery_customer_amount'] : 0.0,
+                'order_price'              => isset($row['order_price']) ? (float) $row['order_price'] : 0.0,
+                'receiver_name'            => $row['receiver_name'],
+                'receiver_phone'           => $row['receiver_phone'],
+                'city_id'                  => (int) $row['city_id'],
+                'area_id'                  => (int) $row['area_id'],
+                'address_text'             => $row['address_text'],
+                'notes'                    => $row['notes'] ?? null,
+                'batch_number'             => $batchNumber,
+            ], $user);
+
+            $importedCount++;
+        }
+
+        return response()->json([
+            'success'      => true,
+            'message'      => "{$importedCount} order(s) imported successfully.",
+            'batch_number' => $batchNumber,
+            'imported'     => $importedCount,
+        ], 201);
+    }
+
+    public function downloadImportTemplate(): Response
+    {
+        $headers = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes'];
+        $sample  = ['E-commerce parcel', 'cod', 'false', '0.00', '150.00', 'Ahmed Mansour', '0501234567', '1', '2', 'King Fahd Road, Al Malaz', 'Deliver after 5 PM'];
+
+        $callback = function () use ($headers, $sample) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $headers);
+            fputcsv($file, $sample);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="orders_import_template.csv"',
+            'Cache-Control'       => 'no-cache',
+        ]);
+    }
+
     private function isDriverCheckedIn(User $user): bool
     {
         $attendance = Attendance::where('user_id', $user->id)
@@ -372,5 +611,18 @@ if (! $this->canAccessOrder($user, $order)) {
         }
 
         return $user->isAdmin() || $user->isSuperAdmin();
+    }
+
+    private function resolveClientProfile(User $user): ?ClientProfile
+    {
+        if ($user->isClientMaster()) {
+            return $user->clientProfile;
+        }
+
+        if ($user->isClientEmployee()) {
+            return $user->clientEmployee?->clientProfile;
+        }
+
+        return null;
     }
 }

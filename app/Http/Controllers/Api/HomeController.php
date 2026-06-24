@@ -18,13 +18,22 @@ class HomeController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (! $user->isDriver()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Access denied. Only drivers can access this resource.',
-            ], 403);
+        if ($user->isDriver()) {
+            return $this->driverHome($user);
         }
 
+        if ($user->isClientMaster() || $user->isClientEmployee()) {
+            return $this->clientHome($user);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Home data not available for this account type.',
+        ], 403);
+    }
+
+    private function driverHome($user): JsonResponse
+    {
         $today = now()->toDateString();
 
         $attendance = Attendance::where('user_id', $user->id)
@@ -108,6 +117,55 @@ class HomeController extends Controller
                     'cash_collected'   => (float) ($cashCollected ?? 0),
                 ],
                 'orders' => OrderResource::collection($orders),
+            ],
+        ]);
+    }
+
+    private function clientHome($user): JsonResponse
+    {
+        $clientProfile = $user->isClientMaster()
+            ? $user->clientProfile
+            : $user->clientEmployee?->clientProfile;
+
+        if (! $clientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Client profile not found.',
+                'code'    => 'CLIENT_PROFILE_NOT_FOUND',
+            ], 403);
+        }
+
+        $summary = Order::where('client_profile_id', $clientProfile->id)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'pending'   THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'picked_up' THEN 1 ELSE 0 END) as in_transit,
+                SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered,
+                SUM(CASE WHEN status = 'returned'  THEN 1 ELSE 0 END) as returned,
+                SUM(CASE WHEN status = 'rejected'  THEN 1 ELSE 0 END) as rejected
+            ")
+            ->first();
+
+        $activeOrders = Order::with(['city', 'area', 'driver'])
+            ->where('client_profile_id', $clientProfile->id)
+            ->whereIn('status', ['pending', 'picked_up'])
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Home data retrieved successfully.',
+            'data'    => [
+                'summary' => [
+                    'total'      => (int) $summary->total,
+                    'pending'    => (int) $summary->pending,
+                    'in_transit' => (int) $summary->in_transit,
+                    'delivered'  => (int) $summary->delivered,
+                    'returned'   => (int) $summary->returned,
+                    'rejected'   => (int) $summary->rejected,
+                ],
+                'active_orders' => OrderResource::collection($activeOrders),
             ],
         ]);
     }

@@ -25,14 +25,23 @@ class ProfileController extends Controller
             ], 401);
         }
 
-        if (! $user->isDriver()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This endpoint is only available for driver accounts',
-                'code'    => 'UNSUPPORTED_ACCOUNT_TYPE',
-            ], 403);
+        if ($user->isDriver()) {
+            return $this->driverProfile($user);
         }
 
+        if ($user->isClientMaster() || $user->isClientEmployee()) {
+            return $this->clientProfile($user);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Profile not available for this account type.',
+            'code'    => 'UNSUPPORTED_ACCOUNT_TYPE',
+        ], 403);
+    }
+
+    private function driverProfile($user): JsonResponse
+    {
         $driver = $user->driverProfile;
 
         if (! $driver) {
@@ -48,35 +57,21 @@ class ProfileController extends Controller
             ->first();
 
         $attendanceStatus = match (true) {
-            $todayAttendance === null                      => 'not_checked_in',
-            $todayAttendance->check_out_at === null        => 'checked_in',
-            default                                        => 'checked_out',
+            $todayAttendance === null               => 'not_checked_in',
+            $todayAttendance->check_out_at === null => 'checked_in',
+            default                                 => 'checked_out',
         };
 
         $attachments = [];
 
         if ($driver->avatar_path) {
-            $attachments[] = [
-                'type' => 'avatar',
-                'path' => $driver->avatar_path,
-                'url'  => $this->storageUrl($driver->avatar_path),
-            ];
+            $attachments[] = ['type' => 'avatar', 'path' => $driver->avatar_path, 'url' => $this->storageUrl($driver->avatar_path)];
         }
-
         if ($driver->license_attachment) {
-            $attachments[] = [
-                'type' => 'license',
-                'path' => $driver->license_attachment,
-                'url'  => $this->storageUrl($driver->license_attachment),
-            ];
+            $attachments[] = ['type' => 'license', 'path' => $driver->license_attachment, 'url' => $this->storageUrl($driver->license_attachment)];
         }
-
         if ($driver->car_license_attachment) {
-            $attachments[] = [
-                'type' => 'car_license',
-                'path' => $driver->car_license_attachment,
-                'url'  => $this->storageUrl($driver->car_license_attachment),
-            ];
+            $attachments[] = ['type' => 'car_license', 'path' => $driver->car_license_attachment, 'url' => $this->storageUrl($driver->car_license_attachment)];
         }
 
         return response()->json([
@@ -105,13 +100,66 @@ class ProfileController extends Controller
                 ],
                 'attachments' => $attachments,
                 'attendance'  => [
-                    'status'              => $attendanceStatus,
-                    'check_in_at'         => $todayAttendance?->check_in_at?->toDateTimeString(),
-                    'check_out_at'        => $todayAttendance?->check_out_at?->toDateTimeString(),
-                    'check_in_location'   => $todayAttendance?->check_in_location,
-                    'check_out_location'  => $todayAttendance?->check_out_location,
+                    'status'             => $attendanceStatus,
+                    'check_in_at'        => $todayAttendance?->check_in_at?->toDateTimeString(),
+                    'check_out_at'       => $todayAttendance?->check_out_at?->toDateTimeString(),
+                    'check_in_location'  => $todayAttendance?->check_in_location,
+                    'check_out_location' => $todayAttendance?->check_out_location,
                 ],
             ],
+        ]);
+    }
+
+    private function clientProfile($user): JsonResponse
+    {
+        $clientProfile = $user->isClientMaster()
+            ? $user->clientProfile
+            : $user->clientEmployee?->clientProfile;
+
+        if (! $clientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Client profile not found.',
+                'code'    => 'PROFILE_NOT_FOUND',
+            ], 404);
+        }
+
+        $logoUrl = $clientProfile->logo_path
+            ? $this->storageUrl($clientProfile->logo_path)
+            : null;
+
+        $data = [
+            'user'    => new UserResource($user),
+            'company' => [
+                'id'                              => $clientProfile->id,
+                'company_name'                    => $clientProfile->company_name,
+                'company_name_ar'                 => $clientProfile->company_name_ar,
+                'email'                           => $clientProfile->email,
+                'commercial_register_number'      => $clientProfile->commercial_register_number,
+                'commercial_register_verified_at' => $clientProfile->commercial_register_verified_at?->toDateTimeString(),
+                'vat_number'                      => $clientProfile->vat_number,
+                'address_line1'                   => $clientProfile->address_line1,
+                'city_id'                         => $clientProfile->city_id,
+                'area_id'                         => $clientProfile->area_id,
+                'logo_url'                        => $logoUrl,
+                'status'                          => $clientProfile->status,
+                'expiry_date'                     => $clientProfile->expiry_date?->toDateString(),
+            ],
+        ];
+
+        if ($user->isClientEmployee()) {
+            $employee    = $user->clientEmployee;
+            $data['employee'] = [
+                'id'        => $employee->id,
+                'job_title' => $employee->job_title,
+                'status'    => $employee->status,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile retrieved successfully.',
+            'data'    => $data,
         ]);
     }
 

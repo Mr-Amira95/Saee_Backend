@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\RejectionReasonController;
 use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Api\ClientUserController;
+use App\Http\Controllers\Api\TrackOrderController;
+use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\WhatsAppWebhookController;
 use App\Http\Controllers\Public\LegalController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +35,11 @@ Route::prefix('webhooks')->group(function () {
 // Public legal content endpoints (no auth required)
 Route::get('legal/terms',   [LegalController::class, 'terms'])->name('api.legal.terms');
 Route::get('legal/privacy', [LegalController::class, 'privacy'])->name('api.legal.privacy');
+
+// Public order tracking (no auth — end-customers can track by name, reference, or phone)
+Route::get('track', [TrackOrderController::class, 'track'])
+    ->middleware('throttle:30,1')
+    ->name('api.track');
 
 Route::post('auth/login', [AuthController::class, 'login'])
     ->middleware('throttle:10,1')
@@ -69,6 +77,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('profile', [ProfileController::class, 'show'])
         ->name('api.profile.show');
 
+    Route::get('wallet', [WalletController::class, 'index'])
+        ->name('api.wallet.index');
+
     Route::post('location', [LocationController::class, 'update'])
         ->name('api.location.update');
 
@@ -105,8 +116,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('finances', [FinanceController::class, 'index'])
         ->name('api.finances.index');
 
+    // Orders — static/action routes MUST come before the {order} wildcard
+    Route::get('orders/import/template', [OrderController::class, 'downloadImportTemplate'])
+        ->name('api.orders.import.template');
+
+    Route::post('orders/import', [OrderController::class, 'importOrders'])
+        ->name('api.orders.import');
+
     Route::get('orders', [OrderController::class, 'index'])
         ->name('api.orders.index');
+
+    Route::post('orders', [OrderController::class, 'store'])
+        ->name('api.orders.store');
 
     Route::get('orders/{order}', [OrderController::class, 'show'])
         ->name('api.orders.show');
@@ -128,6 +149,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('driver/route/recalculate', [RouteController::class, 'recalculate'])
         ->name('api.driver.route.recalculate');
+
+    // Client user management (employees)
+    Route::get('users',          [ClientUserController::class, 'index'])->name('api.users.index');
+    Route::post('users',         [ClientUserController::class, 'store'])->name('api.users.store');
+    Route::put('users/{employee}',    [ClientUserController::class, 'update'])->name('api.users.update');
+    Route::delete('users/{employee}', [ClientUserController::class, 'destroy'])->name('api.users.destroy');
 
     Route::get('support', [SupportController::class, 'index'])
         ->name('api.support.index');
