@@ -299,7 +299,7 @@
     {{-- Financial & Account Settings --}}
     <div class="form-section">
         <div class="form-section-title">Financial &amp; Account Settings</div>
-        <div class="form-grid-3">
+        <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label" for="credit_limit">Credit Limit <span class="opt">(optional)</span></label>
                 <div id="creditLimitWrap"
@@ -319,14 +319,6 @@
                 <input class="form-input @error('expiry_date') is-error @enderror" id="expiry_date" type="date" name="expiry_date"
                        value="{{ old('expiry_date') }}" min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                 @error('expiry_date')<span class="form-error">{{ $message }}</span>@enderror
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="status">Initial Status</label>
-                <select class="form-select" id="status" name="status">
-                    <option value="pending_verification" {{ old('status','pending_verification') === 'pending_verification' ? 'selected' : '' }}>Pending Verification</option>
-                    <option value="active"    {{ old('status') === 'active'    ? 'selected' : '' }}>Active</option>
-                    <option value="suspended" {{ old('status') === 'suspended' ? 'selected' : '' }}>Suspended</option>
-                </select>
             </div>
         </div>
     </div>
@@ -489,6 +481,15 @@
     </div>
 
 </form>
+
+{{-- Warning Toast --}}
+<div id="validationToast" style="display: none; position: fixed; bottom: 24px; {{ app()->getLocale() === 'ar' ? 'left: 24px;' : 'right: 24px;' }} z-index: 9999; align-items: center; gap: 12px; background: rgba(12, 18, 48, 0.95); border: 1px solid #f59e0b; border-radius: 12px; padding: 14px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(8px); transform: translateY(40px); opacity: 0; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease-out; max-width: 380px;">
+    <div style="width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; flex-shrink: 0; border: 1px solid; color: #fbbf24; background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.2);">!</div>
+    <div style="flex: 1;">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text);">Warning</div>
+        <div id="validationToastMessage" style="font-size: 0.78rem; color: var(--text-sub); margin-top: 2px; line-height: 1.3;"></div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -793,6 +794,22 @@ function clearLogo() {
 /* ── Dynamic attachment rows ── */
 var attIndex = 0;
 function addAttachRow() {
+    // Check if any existing row has an empty label or empty file input
+    const rows = document.querySelectorAll('#attachContainer .attach-row');
+    for (let r of rows) {
+        const labelInput = r.querySelector('input[type="text"]');
+        const fileInput = r.querySelector('input[type="file"]');
+        if (labelInput && !labelInput.value.trim()) {
+            showWarningToast('Please fill in the attachment label before adding a new one.');
+            labelInput.focus();
+            return;
+        }
+        if (fileInput && !fileInput.files.length) {
+            showWarningToast('Please choose a file for the attachment before adding a new one.');
+            return;
+        }
+    }
+
     var i = attIndex++;
     var row = document.createElement('div');
     row.className = 'attach-row';
@@ -810,6 +827,32 @@ function addAttachRow() {
 function removeAttachRow(i) {
     var el = document.getElementById('att-row-' + i);
     if (el) el.remove();
+}
+
+/* ── Toast validation warning ── */
+let validationToastTimeout = null;
+function showWarningToast(message) {
+    const toast = document.getElementById('validationToast');
+    const msgEl = document.getElementById('validationToastMessage');
+    msgEl.textContent = message;
+    
+    if (validationToastTimeout) {
+        clearTimeout(validationToastTimeout);
+    }
+    
+    toast.style.display = 'flex';
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+    
+    validationToastTimeout = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(40px)';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 300);
+    }, 3000);
 }
 
 /* ── Init ── */

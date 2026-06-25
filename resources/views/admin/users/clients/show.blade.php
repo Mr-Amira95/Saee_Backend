@@ -1,14 +1,14 @@
 @extends('admin.layouts.app')
 
-@section('title', $client->company_name)
-@section('page-title', $client->company_name)
+@section('title', app()->getLocale() === 'ar' ? ($client->company_name_ar ?: $client->company_name) : $client->company_name)
+@section('page-title', app()->getLocale() === 'ar' ? ($client->company_name_ar ?: $client->company_name) : $client->company_name)
 
 @section('breadcrumb')
     <a href="{{ route('admin.dashboard') }}">Dashboard</a>
     <span>/</span>
     <a href="{{ route('admin.clients.index') }}">Clients</a>
     <span>/</span>
-    <span>{{ $client->company_name }}</span>
+    <span>{{ app()->getLocale() === 'ar' ? ($client->company_name_ar ?: $client->company_name) : $client->company_name }}</span>
 @endsection
 
 @section('head')
@@ -69,19 +69,17 @@
     @endif
 
     <div style="flex:1;min-width:180px;">
-        <h2 class="profile-name">{{ $client->company_name }}</h2>
-        @if($client->company_name_ar)
-            <div style="font-size:.85rem;color:var(--text-sub);margin-top:4px;" dir="rtl">{{ $client->company_name_ar }}</div>
-        @endif
+        <h2 class="profile-name">
+            @if(app()->getLocale() === 'ar')
+                {{ $client->company_name_ar ?: $client->company_name }}
+            @else
+                {{ $client->company_name }}
+            @endif
+        </h2>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center;">
             @if($client->status === 'active')        <span class="badge-active">Active</span>
             @elseif($client->status === 'suspended') <span class="badge-suspended">Suspended</span>
             @else                                    <span class="badge-pv">Pending Verification</span>
-            @endif
-
-            @if($client->masterUser?->status === 'active')        <span class="badge-info">User Active</span>
-            @elseif($client->masterUser?->status === 'suspended') <span class="badge-suspended">User Suspended</span>
-            @else                                                  <span class="badge-pending">User Pending</span>
             @endif
 
             @if($client->expiry_date)
@@ -94,6 +92,22 @@
                 @endphp
                 <span class="expiry-badge {{ $ecls }}">⏱ {{ $elbl }}</span>
             @endif
+        </div>
+
+        {{-- Shortcut Buttons --}}
+        <div class="shortcut-buttons" style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+            <a href="{{ route('admin.orders.index', ['client_profile_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                📦 Orders
+            </a>
+            <a href="{{ route('admin.financials.invoices', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                📄 Invoices
+            </a>
+            <a href="{{ route('admin.support.index', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                🎫 Support Tickets
+            </a>
+            <a href="{{ route('admin.financials.payout-client', $client) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                💰 Payout
+            </a>
         </div>
     </div>
 
@@ -149,31 +163,6 @@
             <div class="info-row">
                 <span class="info-row-key">Member Since</span>
                 <span class="info-row-val">{{ $client->masterUser?->created_at?->format('d M Y') ?? '—' }}</span>
-            </div>
-            <div class="info-row" style="align-items:center;">
-                <span class="info-row-key">Notifications</span>
-                <span class="info-row-val" style="display:flex;align-items:center;gap:10px;">
-                    <span id="admin-notif-label" style="font-size:.82rem;color:var(--text-dim);">
-                        {{ $client->masterUser?->notifications_enabled ? 'Enabled' : 'Disabled' }}
-                    </span>
-                    @if($client->masterUser)
-                    <label style="display:flex;align-items:center;cursor:pointer;" title="Toggle client notifications">
-                        <input type="checkbox" id="admin-notif-toggle" style="display:none;" {{ $client->masterUser->notifications_enabled ? 'checked' : '' }}>
-                        <div id="admin-notif-track" style="
-                            width:40px;height:22px;border-radius:11px;
-                            background:{{ $client->masterUser->notifications_enabled ? 'var(--red,#dc2626)' : '#4b5563' }};
-                            position:relative;transition:background .2s;flex-shrink:0;
-                        ">
-                            <div id="admin-notif-thumb" style="
-                                width:16px;height:16px;border-radius:50%;background:#fff;
-                                position:absolute;top:3px;
-                                left:{{ $client->masterUser->notifications_enabled ? '21px' : '3px' }};
-                                transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);
-                            "></div>
-                        </div>
-                    </label>
-                    @endif
-                </span>
             </div>
         </div>
     </div>
@@ -251,11 +240,23 @@
             </div>
             <div class="info-row">
                 <span class="info-row-key">Governorate</span>
-                <span class="info-row-val">{{ $client->city?->name ?? '—' }}</span>
+                <span class="info-row-val">
+                    @if(app()->getLocale() === 'ar')
+                        {{ $client->city?->name_ar ?: ($client->city?->name ?? '—') }}
+                    @else
+                        {{ $client->city?->name ?? '—' }}
+                    @endif
+                </span>
             </div>
             <div class="info-row">
                 <span class="info-row-key">Area / District</span>
-                <span class="info-row-val">{{ $client->area?->name ?? '—' }}</span>
+                <span class="info-row-val">
+                    @if(app()->getLocale() === 'ar')
+                        {{ $client->area?->name_ar ?: ($client->area?->name ?? '—') }}
+                    @else
+                        {{ $client->area?->name ?? '—' }}
+                    @endif
+                </span>
             </div>
         </div>
     </div>
@@ -295,14 +296,14 @@
             @endif
 
             @if($bd->swift_code)
-            <div class="info-row">
+            <div class="info-row" style="grid-column: 1 / -1;">
                 <span class="info-row-key">SWIFT / BIC</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $bd->swift_code }}</span>
             </div>
             @endif
 
             @if($bd->account_number)
-            <div class="info-row">
+            <div class="info-row" style="grid-column: 1 / -1;">
                 <span class="info-row-key">Account Number</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $bd->account_number }}</span>
             </div>
@@ -425,39 +426,6 @@
     @endif
 </div>
 
-@section('scripts')
-<script>
-(function () {
-    var toggle = document.getElementById('admin-notif-toggle');
-    if (!toggle) return;
 
-    var track = document.getElementById('admin-notif-track');
-    var thumb = document.getElementById('admin-notif-thumb');
-    var label = document.getElementById('admin-notif-label');
-
-    track.parentElement.addEventListener('click', function () {
-        var enabled = !toggle.checked;
-        toggle.checked = enabled;
-
-        track.style.background = enabled ? 'var(--red,#dc2626)' : '#4b5563';
-        thumb.style.left       = enabled ? '21px' : '3px';
-        label.textContent      = enabled ? 'Enabled' : 'Disabled';
-
-        fetch('{{ route('admin.clients.toggle-notifications', $client) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            },
-        }).catch(function () {
-            toggle.checked = !enabled;
-            track.style.background = !enabled ? 'var(--red,#dc2626)' : '#4b5563';
-            thumb.style.left       = !enabled ? '21px' : '3px';
-            label.textContent      = !enabled ? 'Enabled' : 'Disabled';
-        });
-    });
-})();
-</script>
-@endsection
 
 @endsection

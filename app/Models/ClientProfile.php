@@ -17,7 +17,6 @@ class ClientProfile extends Model
         'company_name',
         'company_name_ar',
         'commercial_register_number',
-        'commercial_register_verified_at',
         'vat_number',
         'email',
         'company_phone',
@@ -34,7 +33,6 @@ class ClientProfile extends Model
     protected function casts(): array
     {
         return [
-            'commercial_register_verified_at' => 'datetime',
             'credit_limit'                    => 'decimal:2',
             'balance'                         => 'decimal:2',
             'expiry_date'                     => 'date',

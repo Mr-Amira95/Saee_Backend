@@ -19,9 +19,20 @@ class SupportController extends Controller
      */
     public function index(Request $request)
     {
-        $tickets = SupportTicket::with('user', 'order')
-            ->orderBy('updated_at', 'desc')
-            ->get();
+        $query = SupportTicket::with('user', 'order');
+
+        if ($request->filled('client_id')) {
+            $clientId = $request->input('client_id');
+            $client = \App\Models\ClientProfile::find($clientId);
+            if ($client) {
+                $userIds = [$client->master_user_id];
+                $employeeUserIds = $client->employees()->pluck('user_id')->toArray();
+                $userIds = array_merge($userIds, $employeeUserIds);
+                $query->whereIn('user_id', $userIds);
+            }
+        }
+
+        $tickets = $query->orderBy('updated_at', 'desc')->get();
 
         $activeTicket = null;
         if ($request->filled('ticket')) {
