@@ -249,11 +249,20 @@
 
                         {{-- Area --}}
                         <td class="col-area">
+                            @php $rowCity = $cities->firstWhere('id', $row['city_id'] ?? null); @endphp
                             <select name="rows[{{ $i }}][area_id]"
                                 class="tbl-select area-select"
                                 data-row="{{ $i }}"
                                 data-selected-area="{{ $row['area_id'] ?? '' }}">
                                 <option value="">— Area —</option>
+                                @if($rowCity)
+                                    @foreach($rowCity->areas as $area)
+                                        <option value="{{ $area->id }}"
+                                            {{ ($row['area_id'] ?? '') == $area->id ? 'selected' : '' }}>
+                                            {{ $area->id }} · {{ $area->name }}
+                                        </option>
+                                    @endforeach
+                                @endif
                             </select>
                         </td>
 

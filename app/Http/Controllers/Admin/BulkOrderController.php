@@ -184,7 +184,10 @@ class BulkOrderController extends Controller
         }
 
         $clients = ClientProfile::where('status', 'active')->orderBy('company_name')->get(['id', 'company_name']);
-        $cities  = City::where('is_active', true)->with('areas')->orderBy('name')->get();
+        $cities  = City::where('is_active', true)
+            ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
+            ->orderBy('name')
+            ->get();
 
         return view('admin.orders.import_confirm', compact('rows', 'clients', 'cities'));
     }
