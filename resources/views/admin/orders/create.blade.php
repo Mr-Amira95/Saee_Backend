@@ -19,6 +19,11 @@
             position: relative;
             width: 100%;
         }
+        .searchable-select .form-input {
+            width: 100%;
+            box-sizing: border-box;
+            display: block;
+        }
         .search-dropdown {
             position: absolute;
             top: 100%;

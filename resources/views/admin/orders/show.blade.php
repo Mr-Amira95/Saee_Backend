@@ -92,6 +92,12 @@
             <p>Created by {{ $order->clientProfile->company_name }} on {{ $order->created_at->format('Y-m-d H:i') }}</p>
         </div>
         <div class="page-hd-right" style="display: flex; gap: 8px;">
+            @if($order->status === 'pending')
+                <button class="btn-danger" onclick="openModal('cancelOrderModal')">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Cancel Order
+                </button>
+            @endif
             <button class="btn-primary" onclick="openModal('assignDriverModal')">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 {{ $order->driver ? 'Reassign Driver' : 'Assign Driver' }}
@@ -321,6 +327,26 @@
             </div>
         </div>
     </div>
+
+    {{-- MODAL: Cancel Order --}}
+    @if($order->status === 'pending')
+    <div class="modal-overlay" id="cancelOrderModal">
+        <div class="modal-card" style="border-color: rgba(239,68,68,0.3); max-width: 420px;">
+            <h3 style="color: #ef4444;">Cancel Order</h3>
+            <p style="margin-bottom: 18px;">Are you sure you want to cancel order <strong>#{{ $order->order_number }}</strong>? This action cannot be undone.</p>
+            <form action="{{ route('admin.orders.update', $order) }}" method="POST">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="status" value="cancelled">
+                <input type="hidden" name="driver_id" value="{{ $order->driver_id }}">
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('cancelOrderModal')">Go Back</button>
+                    <button type="submit" class="btn-danger">Cancel Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
 
     {{-- MODAL 1: Assign Driver --}}
     <div class="modal-overlay" id="assignDriverModal">

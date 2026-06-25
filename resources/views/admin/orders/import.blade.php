@@ -60,6 +60,80 @@
             </form>
         </div>
 
+        {{-- Reference: Clients --}}
+        <div class="form-section" style="background: rgba(12, 18, 48, 0.5);">
+            <div class="form-section-title" style="color: var(--text-sub);">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2h5M12 12a4 4 0 100-8 4 4 0 000 8z"/></svg>
+                Client Reference — use these IDs in the <code>client_id</code> column
+            </div>
+            <div style="max-height: 220px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--bdr);">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                    <thead>
+                        <tr style="position: sticky; top: 0; background: var(--card-hd, rgba(12,18,48,0.95));">
+                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 80px;">ID</th>
+                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">Company Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($clients as $client)
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt);">{{ $client->id }}</td>
+                                <td style="padding: 7px 14px; color: var(--text);">{{ $client->company_name }}</td>
+                            </tr>
+                        @endforeach
+                        @if($clients->isEmpty())
+                            <tr><td colspan="2" style="padding: 14px; color: var(--text-dim); text-align: center;">No active clients found.</td></tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Reference: Cities & Areas --}}
+        <div class="form-section" style="background: rgba(12, 18, 48, 0.5);">
+            <div class="form-section-title" style="color: var(--text-sub);">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Cities &amp; Areas Reference — use these IDs in <code>city_id</code> and <code>area_id</code>
+            </div>
+            <div style="max-height: 220px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--bdr);">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                    <thead>
+                        <tr style="position: sticky; top: 0; background: var(--card-hd, rgba(12,18,48,0.95));">
+                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 80px;">City ID</th>
+                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">City Name</th>
+                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 90px;">Area ID</th>
+                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">Area Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($cities as $city)
+                            @if($city->areas->isEmpty())
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt);">{{ $city->id }}</td>
+                                    <td style="padding: 7px 14px; color: var(--text); font-weight: 600;">{{ $city->name }}</td>
+                                    <td colspan="2" style="padding: 7px 14px; color: var(--text-dim); font-style: italic;">No areas</td>
+                                </tr>
+                            @else
+                                @foreach($city->areas as $loop2 => $area)
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                        @if($loop2 === 0)
+                                            <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt); vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ $city->id }}</td>
+                                            <td style="padding: 7px 14px; color: var(--text); font-weight: 600; vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ $city->name }}</td>
+                                        @endif
+                                        <td style="padding: 7px 14px; color: var(--text-dim); padding-left: 20px;">{{ $area->id }}</td>
+                                        <td style="padding: 7px 14px; color: var(--text);">{{ $area->name }}</td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                        @endforeach
+                        @if($cities->isEmpty())
+                            <tr><td colspan="4" style="padding: 14px; color: var(--text-dim); text-align: center;">No active cities found.</td></tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         {{-- Help / Instructions Card --}}
         <div class="form-section" style="background: rgba(12, 18, 48, 0.5);">
             <div class="form-section-title" style="color: var(--text-sub);">

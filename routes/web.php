@@ -155,6 +155,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('orders/import',            [BulkOrderController::class, 'showImport'])->name('orders.import');
         Route::get('orders/import/template',   [BulkOrderController::class, 'downloadTemplate'])->name('orders.import.template');
         Route::post('orders/import/upload',    [BulkOrderController::class, 'import'])->name('orders.import.upload');
+        Route::get('orders/import/review',     [BulkOrderController::class, 'showReview'])->name('orders.import.review');
+        Route::post('orders/import/confirm',   [BulkOrderController::class, 'storeConfirmed'])->name('orders.import.confirm');
         Route::post('orders/calculate-price',  [OrderController::class, 'calculatePrice'])->name('orders.calculate-price');
         Route::post('orders/assign-driver',    [OrderController::class, 'assignDriver'])->name('orders.assign-driver');
         Route::resource('orders', OrderController::class)->names('orders');
