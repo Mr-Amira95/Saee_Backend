@@ -49,8 +49,7 @@
     .metric-lbl   { font-size: .75rem; color: var(--text-dim); font-weight: 500; }
 
     /* ─── Bottom two-col ─────────────────────────── */
-    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media(max-width: 900px) { .bottom-grid { grid-template-columns: 1fr; } }
+    .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 
     .panel {
         background: var(--card); border: 1px solid var(--bdr); border-radius: 14px;
@@ -143,8 +142,6 @@
             </div>
         </div>
     @endif
-
-    <div class="welcome-date" style="text-align: right; min-width: 120px;">{{ now()->format('D, d M Y') }}</div>
 </div>
 
 {{-- Metric cards --}}
@@ -312,6 +309,17 @@
         </div>
     </div>
 </div>
+
+{{-- Custom Modal Alert Dialog --}}
+<div id="customModal" style="display: none; position: fixed; inset: 0; background: rgba(8,12,30,.8); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; opacity: 0; transition: opacity .25s ease-out;">
+    <div style="background: var(--bg-2); border: 1px solid var(--bdr-red); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.5); transform: scale(.95); transition: transform .25s ease-out;" id="customModalContent">
+        <!-- Icon -->
+        <div style="width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.5rem; font-weight: bold; border: 1px solid;"></div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; color: var(--text);" id="customModalTitle"></h3>
+        <p style="font-size: .85rem; color: var(--text-sub); line-height: 1.5; margin-bottom: 24px;" id="customModalMessage"></p>
+        <button onclick="closeCustomModal()" class="btn-primary" style="padding: 9px 24px; font-size: .84rem; width: 100%; justify-content: center; box-shadow: none;">{{ __('Ok') }}</button>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -343,16 +351,17 @@ function submitAttendance(type) {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
-                window.location.reload();
+                showCustomModal('Success', data.message, true, () => {
+                    window.location.reload();
+                });
             } else {
-                alert(data.message || 'Verification failed.');
+                showCustomModal('Verification Failed', data.message || 'Check-in failed.', false);
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
         })
         .catch(err => {
-            alert('A network error occurred. Please try again.');
+            showCustomModal('Error', 'A network error occurred. Please try again.', false);
             btn.disabled = false;
             btn.textContent = originalText;
         });
@@ -389,6 +398,53 @@ if (activeTimer) {
             String(diffMins).padStart(2, '0') + ':' + 
             String(diffSecs).padStart(2, '0');
     }, 1000);
+}
+
+/* Custom Alert Modal Functions */
+function showCustomModal(title, message, isSuccess = true, callback = null) {
+    const modal = document.getElementById('customModal');
+    const content = document.getElementById('customModalContent');
+    const titleEl = document.getElementById('customModalTitle');
+    const msgEl = document.getElementById('customModalMessage');
+    
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    
+    const icon = modal.querySelector('div');
+    if (isSuccess) {
+        icon.textContent = '✓';
+        icon.style.color = 'var(--success)';
+        icon.style.background = 'rgba(34,197,94,.1)';
+        icon.style.borderColor = 'rgba(34,197,94,.2)';
+    } else {
+        icon.textContent = '✕';
+        icon.style.color = '#f87171';
+        icon.style.background = 'rgba(220,38,38,.1)';
+        icon.style.borderColor = 'rgba(220,38,38,.2)';
+    }
+    
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        content.style.transform = 'scale(1)';
+    }, 10);
+    
+    modal.callback = callback;
+}
+
+function closeCustomModal() {
+    const modal = document.getElementById('customModal');
+    const content = document.getElementById('customModalContent');
+    
+    modal.style.opacity = '0';
+    content.style.transform = 'scale(.95)';
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        if (typeof modal.callback === 'function') {
+            modal.callback();
+        }
+    }, 250);
 }
 </script>
 @endsection
