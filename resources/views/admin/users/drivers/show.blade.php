@@ -81,50 +81,43 @@
         </div>
 
         {{-- Row containing Shortcuts and Main Actions together --}}
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:14px; width:100%;">
-            {{-- Shortcut Buttons --}}
-            <div class="shortcut-buttons" style="display:flex;gap:8px;flex-wrap:wrap;">
-                <a href="{{ route('admin.attendance.index', ['search' => $driver->user->name]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    📅 Attendance History
-                </a>
-                <a href="{{ route('admin.drivers.location-history', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    📍 Location History
-                </a>
-                <a href="{{ route('admin.financials.settle-driver', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    💳 Finances
-                </a>
-            </div>
-
-            {{-- Profile Actions (Edit, Toggle Status, Resend, Delete) --}}
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                <a href="{{ route('admin.drivers.edit', $driver) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Driver</a>
-                
-                <form method="POST" action="{{ route('admin.drivers.toggle-status', $driver) }}" style="display:inline;">
-                    @csrf
-                    @method('PATCH')
-                    @if($driver->user?->status === 'active')
-                        <button type="submit" class="btn-secondary" title="Deactivate Driver" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#fbbf24;border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.1);">
-                            ⏸ Deactivate
-                        </button>
-                    @else
-                        <button type="submit" class="btn-secondary" title="Activate Driver" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#4ade80;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);">
-                            ▶ Activate
-                        </button>
-                    @endif
-                </form>
-
-                <form method="POST" action="{{ route('admin.drivers.resend-invitation', $driver) }}" style="display:inline;">
-                    @csrf
-                    <button type="submit" class="btn-secondary" title="Resend invitation email" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        Resend Invitation
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:14px; width:100%;">
+            <a href="{{ route('admin.attendance.index', ['search' => $driver->user->name]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                📅 Attendance History
+            </a>
+            <a href="{{ route('admin.drivers.location-history', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                📍 Location History
+            </a>
+            <a href="{{ route('admin.financials.settle-driver', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                💳 Finances
+            </a>
+            <a href="{{ route('admin.drivers.edit', $driver) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Driver</a>
+            
+            <form method="POST" action="{{ route('admin.drivers.toggle-status', $driver) }}" style="display:inline;">
+                @csrf
+                @method('PATCH')
+                @if($driver->user?->status === 'active')
+                    <button type="submit" class="btn-secondary" title="Deactivate Driver" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#fbbf24;border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.1);">
+                        ⏸ Deactivate
                     </button>
-                </form>
-                <button class="btn-danger" style="font-size:.78rem;padding:6px 12px;"
-                    onclick="confirmDelete('{{ route('admin.drivers.destroy', $driver) }}','{{ addslashes($driver->user->name ?? 'this driver') }}')">
-                    Delete
+                @else
+                    <button type="submit" class="btn-secondary" title="Activate Driver" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#4ade80;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);">
+                        ▶ Activate
+                    </button>
+                @endif
+            </form>
+
+            <form method="POST" action="{{ route('admin.drivers.resend-invitation', $driver) }}" style="display:inline;">
+                @csrf
+                <button type="submit" class="btn-secondary" title="Resend invitation email" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    Resend Invitation
                 </button>
-            </div>
+            </form>
+            <button class="btn-danger" style="font-size:.78rem;padding:6px 12px;"
+                onclick="confirmDelete('{{ route('admin.drivers.destroy', $driver) }}','{{ addslashes($driver->user->name ?? 'this driver') }}')">
+                Delete
+            </button>
         </div>
     </div>
 </div>
