@@ -65,7 +65,7 @@ class DashboardController extends Controller
             ->take(5);
 
         // 4. Pending Dispatch / Action Widget
-        $unassignedOrdersCount = Order::whereNull('driver_id')->count();
+        $unassignedOrdersCount = Order::whereNull('driver_profile_id')->count();
         
         $openTickets = SupportTicket::with(['user.clientProfile', 'user.clientEmployee.clientProfile'])
             ->whereIn('status', ['pending', 'in_progress'])
