@@ -227,14 +227,7 @@
                 </div>
                 @error('phone')<span class="form-error">{{ $message }}</span>@enderror
             </div>
-            <div class="form-group">
-                <label class="form-label" for="user_status">Account Status</label>
-                <select name="user_status" id="user_status" class="form-select">
-                    <option value="active"    {{ old('user_status', $client->masterUser->status) === 'active'    ? 'selected' : '' }}>Active</option>
-                    <option value="suspended" {{ old('user_status', $client->masterUser->status) === 'suspended' ? 'selected' : '' }}>Suspended</option>
-                    <option value="pending"   {{ old('user_status', $client->masterUser->status) === 'pending'   ? 'selected' : '' }}>Pending</option>
-                </select>
-            </div>
+
         </div>
     </div>
 

@@ -134,6 +134,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('clients', ClientController::class)->names('clients');
             Route::post('clients/{client}/resend-invitation',           [ClientController::class, 'resendInvitation'])->name('clients.resend-invitation');
             Route::post('clients/{client}/toggle-notifications',        [ClientController::class, 'toggleNotifications'])->name('clients.toggle-notifications');
+            Route::patch('clients/{client}/toggle-status',              [ClientController::class, 'toggleStatus'])->name('clients.toggle-status');
             Route::get('clients/{client}/employees/create',                    [ClientEmployeeController::class, 'create'])->name('clients.employees.create');
             Route::post('clients/{client}/employees',                          [ClientEmployeeController::class, 'store'])->name('clients.employees.store');
             Route::patch('clients/{client}/employees/{employee}/status',       [ClientEmployeeController::class, 'updateStatus'])->name('clients.employees.status');

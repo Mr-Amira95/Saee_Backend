@@ -197,7 +197,6 @@ class ClientController extends Controller
             'credit_limit'                => 'nullable|numeric|min:0',
             'expiry_date'                 => 'nullable|date',
             'status'                      => ['nullable', Rule::in(['active','suspended','pending_verification'])],
-            'user_status'                 => ['nullable', Rule::in(['active','suspended','pending'])],
             'logo'                        => 'nullable|image|max:2048',
             'attachment_labels'           => 'nullable|array',
             'attachment_labels.*'         => 'nullable|string|max:255',
@@ -316,6 +315,18 @@ class ClientController extends Controller
         $user->save();
 
         return response()->json(['notifications_enabled' => $user->notifications_enabled]);
+    }
+
+    public function toggleStatus(ClientProfile $client)
+    {
+        $newStatus = $client->status === 'active' ? 'suspended' : 'active';
+        $client->update(['status' => $newStatus]);
+
+        $user = $client->masterUser;
+        if ($user) {
+            $user->update(['status' => $newStatus]);
+        }
+        return back()->with('success', 'Account status updated successfully.');
     }
 
     public function areas(Request $request)
