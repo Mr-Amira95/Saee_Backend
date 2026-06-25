@@ -165,78 +165,6 @@
         </div>
     </div>
 
-    {{-- Salary Configuration --}}
-    @php
-        $salaryConfig   = $driver->activeSalaryConfig;
-        $perSalary      = $salaryConfig?->activePerSalaryConfig;
-        $currentType    = old('salary_type', $salaryConfig?->salary_type?->value ?? '');
-    @endphp
-    <div class="form-section">
-        <div class="form-section-title">Salary Configuration</div>
-        <div class="form-grid-2">
-            <div class="form-group">
-                <label class="form-label" for="salary_type">Salary Type</label>
-                <select class="form-select @error('salary_type') is-error @enderror" id="salary_type" name="salary_type"
-                        onchange="updateSalaryFields()">
-                    <option value="">— Not configured —</option>
-                    <option value="per_salary" {{ $currentType === 'per_salary' ? 'selected' : '' }}>Per Salary (Employee)</option>
-                    <option value="per_order"  {{ $currentType === 'per_order'  ? 'selected' : '' }}>Per Order</option>
-                </select>
-                @error('salary_type')<span class="form-error">{{ $message }}</span>@enderror
-            </div>
-            @if($salaryConfig)
-            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:2px;">
-                <span style="font-size:.78rem;color:var(--text-dim);">
-                    Active since {{ $salaryConfig->effective_from->format('d M Y') }}
-                </span>
-            </div>
-            @endif
-        </div>
-
-        {{-- Per Salary fields --}}
-        <div id="per-salary-fields" style="display:none;">
-            <div class="form-grid-2" style="margin-top:12px;">
-                <div class="form-group">
-                    <label class="form-label" for="basic_salary">Basic Salary <span class="req">*</span></label>
-                    <input class="form-input @error('basic_salary') is-error @enderror" id="basic_salary" type="number"
-                           name="basic_salary" value="{{ old('basic_salary', $perSalary?->basic_salary ?? '') }}"
-                           step="0.01" min="0" placeholder="0.00">
-                    @error('basic_salary')<span class="form-error">{{ $message }}</span>@enderror
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="car_allowance">Car &amp; Gasoline Allowance <span class="req">*</span></label>
-                    <input class="form-input @error('car_allowance') is-error @enderror" id="car_allowance" type="number"
-                           name="car_allowance" value="{{ old('car_allowance', $perSalary?->car_allowance ?? '') }}"
-                           step="0.01" min="0" placeholder="0.00">
-                    @error('car_allowance')<span class="form-error">{{ $message }}</span>@enderror
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="extra_order_threshold">Order Bonus Threshold <span class="req">*</span></label>
-                    <input class="form-input @error('extra_order_threshold') is-error @enderror" id="extra_order_threshold" type="number"
-                           name="extra_order_threshold" value="{{ old('extra_order_threshold', $perSalary?->extra_order_threshold ?? '') }}"
-                           min="0" placeholder="e.g. 80">
-                    <span style="font-size:.76rem;color:var(--text-dim);margin-top:4px;display:block;">Bonus kicks in for each order above this count per period</span>
-                    @error('extra_order_threshold')<span class="form-error">{{ $message }}</span>@enderror
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="extra_order_bonus">Bonus Per Extra Order <span class="req">*</span></label>
-                    <input class="form-input @error('extra_order_bonus') is-error @enderror" id="extra_order_bonus" type="number"
-                           name="extra_order_bonus" value="{{ old('extra_order_bonus', $perSalary?->extra_order_bonus ?? '') }}"
-                           step="0.01" min="0" placeholder="0.00">
-                    @error('extra_order_bonus')<span class="form-error">{{ $message }}</span>@enderror
-                </div>
-            </div>
-        </div>
-
-        {{-- Per Order info --}}
-        <div id="per-order-info" style="display:none;margin-top:12px;">
-            <div style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:10px;padding:12px 16px;">
-                <svg width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="1.8" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"/></svg>
-                <span style="font-size:.82rem;color:#93c5fd;">Per-order rates are set globally per city and apply to all per-order drivers automatically.</span>
-            </div>
-        </div>
-    </div>
-
     <div class="form-actions">
         <a href="{{ route('admin.drivers.show', $driver) }}" class="btn-secondary">Cancel</a>
         <button type="submit" class="btn-primary">Save Changes</button>
@@ -315,15 +243,8 @@ function initPhoneDropdown(btnId, flagId, codeId, valId, ddId, listId) {
     document.addEventListener('click', function(e) { if (!dd.contains(e.target) && e.target !== btn) dd.classList.remove('open'); });
 }
 
-function updateSalaryFields() {
-    var type = document.getElementById('salary_type').value;
-    document.getElementById('per-salary-fields').style.display = type === 'per_salary' ? 'block' : 'none';
-    document.getElementById('per-order-info').style.display   = type === 'per_order'  ? 'block' : 'none';
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     initPhoneDropdown('phoneExtBtn','phoneExtFlag','phoneExtCode','phoneExtVal','phoneExtDropdown','phoneExtList');
-    updateSalaryFields();
 });
 
 /* ── Driver Form Validation ── */

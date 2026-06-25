@@ -96,6 +96,11 @@ class ClientProfile extends Model
         return $this->hasMany(Invoice::class);
     }
 
+    public function deliveryInvoices(): HasMany
+    {
+        return $this->hasMany(ClientDeliveryInvoice::class);
+    }
+
     public function getDeliveryPriceForCity(int $cityId): float
     {
         $custom = $this->deliveryPrices()->where('city_id', $cityId)->first();

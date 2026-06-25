@@ -246,62 +246,6 @@
         </div>
     </div>
 
-    {{-- Salary Configuration --}}
-    @php
-        $salaryConfig = $driver->activeSalaryConfig;
-        $perSalary    = $salaryConfig?->activePerSalaryConfig;
-    @endphp
-    <div class="info-card">
-        <div class="info-card-title">Salary Configuration</div>
-        @if(!$salaryConfig)
-            <div style="padding:20px 0;text-align:center;">
-                <div style="font-size:.78rem;color:var(--text-dim);">No salary configured for this driver.</div>
-                <a href="{{ route('admin.drivers.edit', $driver) }}" style="font-size:.78rem;color:var(--red);margin-top:6px;display:inline-block;">Configure now →</a>
-            </div>
-        @else
-            <div class="info-rows">
-                <div class="info-row">
-                    <span class="info-row-key">Salary Type</span>
-                    <span class="info-row-val">
-                        @if($salaryConfig->salary_type->value === 'per_salary')
-                            <span class="badge-info">Per Salary</span>
-                        @else
-                            <span class="badge-info">Per Order</span>
-                        @endif
-                    </span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-key">Active Since</span>
-                    <span class="info-row-val">{{ $salaryConfig->effective_from->format('d M Y') }}</span>
-                </div>
-
-                @if($salaryConfig->salary_type->value === 'per_salary' && $perSalary)
-                    <div class="info-row">
-                        <span class="info-row-key">Basic Salary</span>
-                        <span class="info-row-val" style="font-weight:600;">{{ number_format($perSalary->basic_salary, 2) }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-row-key">Car &amp; Gasoline Allowance</span>
-                        <span class="info-row-val" style="font-weight:600;">{{ number_format($perSalary->car_allowance, 2) }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-row-key">Order Bonus Threshold</span>
-                        <span class="info-row-val">{{ $perSalary->extra_order_threshold }} orders / period</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-row-key">Bonus Per Extra Order</span>
-                        <span class="info-row-val" style="font-weight:600;">{{ number_format($perSalary->extra_order_bonus, 2) }}</span>
-                    </div>
-                @elseif($salaryConfig->salary_type->value === 'per_order')
-                    <div class="info-row">
-                        <span class="info-row-key">Rate Source</span>
-                        <span class="info-row-val" style="color:var(--text-dim);font-size:.82rem;">Global city rates apply</span>
-                    </div>
-                @endif
-            </div>
-        @endif
-    </div>
-
     {{-- Last Known Location --}}
     <div class="info-card" style="grid-column: span 2;">
         <div class="info-card-title">Last Known Location</div>

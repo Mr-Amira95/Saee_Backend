@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Models\ClientDeliveryInvoice;
 use App\Models\FinancialLedgerEntry;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
@@ -26,11 +27,12 @@ class FinanceController extends Controller
             $ledgerQuery->whereDate('created_at', '<=', $request->to);
         }
 
-        $ledger      = $ledgerQuery->latest()->paginate(20)->withQueryString();
-        $invoices    = Invoice::where('client_profile_id', $profile->id)->latest()->paginate(20)->withQueryString();
-        $balance     = (float) ($profile->balance ?? 0);
-        $creditLimit = (float) ($profile->credit_limit ?? 0);
+        $ledger          = $ledgerQuery->latest()->paginate(20)->withQueryString();
+        $invoices        = Invoice::where('client_profile_id', $profile->id)->latest()->paginate(20)->withQueryString();
+        $deliveryInvoices = ClientDeliveryInvoice::where('client_profile_id', $profile->id)->latest()->paginate(20)->withQueryString();
+        $balance         = (float) ($profile->balance ?? 0);
+        $creditLimit     = (float) ($profile->credit_limit ?? 0);
 
-        return view('client.finances.index', compact('profile', 'ledger', 'invoices', 'balance', 'creditLimit'));
+        return view('client.finances.index', compact('profile', 'ledger', 'invoices', 'deliveryInvoices', 'balance', 'creditLimit'));
     }
 }

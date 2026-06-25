@@ -133,6 +133,7 @@ class OrderService
             $driverUserId = $order->driverProfile?->user_id;
 
             if ($newStatus === 'delivered') {
+                $order->delivered_at     = now();
                 $order->signature_path   = $extra['signature_path'] ?? null;
                 $order->proof_image_path = $extra['proof_image_path'] ?? null;
                 $order->rejection_reason_id = null;

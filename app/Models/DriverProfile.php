@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -47,14 +45,9 @@ class DriverProfile extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function salaryConfigs(): HasMany
+    public function payments(): HasMany
     {
-        return $this->hasMany(DriverSalaryConfig::class);
-    }
-
-    public function activeSalaryConfig(): HasOne
-    {
-        return $this->hasOne(DriverSalaryConfig::class)->whereNull('effective_to');
+        return $this->hasMany(DriverPayment::class);
     }
 
     public function locationHistories(): HasMany

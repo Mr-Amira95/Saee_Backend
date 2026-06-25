@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\ClientEmployeeController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BulkOrderController;
 use App\Http\Controllers\Admin\FinancialController;
+use App\Http\Controllers\Admin\DriverPayrollController;
+use App\Http\Controllers\Admin\ClientBillingController;
+use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\PublicOrderLocationController;
 use App\Http\Controllers\Admin\WhatsAppTemplateController;
@@ -170,6 +173,32 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('financials/settle-driver/{driver}', [FinancialController::class, 'settleDriver'])->name('financials.settle-driver.submit');
         Route::get('financials/payout-client/{client}',  [FinancialController::class, 'clientPayoutForm'])->name('financials.payout-client');
         Route::post('financials/payout-client/{client}', [FinancialController::class, 'payoutClient'])->name('financials.payout-client.submit');
+
+        // Driver Payroll (Saee → Driver compensation)
+        Route::get('payroll',                              [DriverPayrollController::class, 'index'])->name('payroll.index');
+        Route::get('payroll/drivers/{driver}/new',         [DriverPayrollController::class, 'create'])->name('payroll.create');
+        Route::post('payroll/drivers/{driver}',            [DriverPayrollController::class, 'store'])->name('payroll.store');
+        Route::get('payroll/{payment}',                    [DriverPayrollController::class, 'show'])->name('payroll.show');
+        Route::post('payroll/{payment}/approve',           [DriverPayrollController::class, 'approve'])->name('payroll.approve');
+        Route::post('payroll/{payment}/pay',               [DriverPayrollController::class, 'pay'])->name('payroll.pay');
+        Route::delete('payroll/{payment}',                 [DriverPayrollController::class, 'destroy'])->name('payroll.destroy');
+
+        // Client Delivery Fee Billing (Client → Saee invoicing)
+        Route::get('billing',                              [ClientBillingController::class, 'index'])->name('billing.index');
+        Route::get('billing/clients/{client}/new',         [ClientBillingController::class, 'create'])->name('billing.create');
+        Route::post('billing/clients/{client}',            [ClientBillingController::class, 'store'])->name('billing.store');
+        Route::get('billing/{invoice}',                    [ClientBillingController::class, 'show'])->name('billing.show');
+        Route::post('billing/{invoice}/issue',             [ClientBillingController::class, 'issue'])->name('billing.issue');
+        Route::post('billing/{invoice}/pay',               [ClientBillingController::class, 'pay'])->name('billing.pay');
+        Route::delete('billing/{invoice}',                 [ClientBillingController::class, 'destroy'])->name('billing.destroy');
+
+        // Expenses
+        Route::get('expenses',                             [ExpenseController::class, 'index'])->name('expenses.index');
+        Route::get('expenses/create',                      [ExpenseController::class, 'create'])->name('expenses.create');
+        Route::post('expenses',                            [ExpenseController::class, 'store'])->name('expenses.store');
+        Route::get('expenses/{expense}',                   [ExpenseController::class, 'show'])->name('expenses.show');
+        Route::post('expenses/{expense}/approve',          [ExpenseController::class, 'approve'])->name('expenses.approve');
+        Route::delete('expenses/{expense}',                [ExpenseController::class, 'destroy'])->name('expenses.destroy');
     });
 });
 

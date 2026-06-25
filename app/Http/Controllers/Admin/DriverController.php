@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\DriverSalaryType;
 use App\Http\Controllers\Controller;
 use App\Mail\UserInvitationMail;
-use App\Models\DriverPerSalaryConfig;
 use App\Models\DriverProfile;
-use App\Models\DriverSalaryConfig;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -65,12 +62,6 @@ class DriverController extends Controller
             'vehicle_plate'          => 'nullable|string|max:20|unique:driver_profiles,vehicle_plate',
             'car_license_expiry'     => 'nullable|date',
             'car_license_attachment' => 'nullable|image|max:10240',
-            // Salary
-            'salary_type'            => ['nullable', Rule::in(['per_salary', 'per_order'])],
-            'basic_salary'           => ['nullable', 'required_if:salary_type,per_salary', 'numeric', 'min:0'],
-            'car_allowance'          => ['nullable', 'required_if:salary_type,per_salary', 'numeric', 'min:0'],
-            'extra_order_threshold'  => ['nullable', 'required_if:salary_type,per_salary', 'integer', 'min:0'],
-            'extra_order_bonus'      => ['nullable', 'required_if:salary_type,per_salary', 'numeric', 'min:0'],
         ]);
 
         $user = DB::transaction(function () use ($data, $request) {
@@ -108,26 +99,6 @@ class DriverController extends Controller
                 'car_license_attachment' => $carLicenseAttachment,
             ]);
 
-            if (!empty($data['salary_type'])) {
-                $salaryConfig = DriverSalaryConfig::create([
-                    'driver_profile_id' => $profile->id,
-                    'salary_type'       => $data['salary_type'],
-                    'effective_from'    => now()->toDateString(),
-                    'created_by'        => auth()->id(),
-                ]);
-
-                if ($data['salary_type'] === 'per_salary') {
-                    DriverPerSalaryConfig::create([
-                        'driver_salary_config_id' => $salaryConfig->id,
-                        'basic_salary'            => $data['basic_salary'],
-                        'car_allowance'           => $data['car_allowance'],
-                        'extra_order_threshold'   => $data['extra_order_threshold'],
-                        'extra_order_bonus'       => $data['extra_order_bonus'],
-                        'effective_from'          => now()->toDateString(),
-                    ]);
-                }
-            }
-
             return $user;
         });
 
@@ -139,13 +110,13 @@ class DriverController extends Controller
 
     public function show(DriverProfile $driver)
     {
-        $driver->load(['user', 'activeSalaryConfig.activePerSalaryConfig']);
+        $driver->load('user');
         return view('admin.users.drivers.show', compact('driver'));
     }
 
     public function edit(DriverProfile $driver)
     {
-        $driver->load(['user', 'activeSalaryConfig.activePerSalaryConfig']);
+        $driver->load('user');
         return view('admin.users.drivers.edit', compact('driver'));
     }
 
@@ -164,15 +135,7 @@ class DriverController extends Controller
             'vehicle_plate'          => ['nullable','string','max:20', Rule::unique('driver_profiles','vehicle_plate')->ignore($driver->id)],
             'car_license_expiry'     => 'nullable|date',
             'car_license_attachment' => 'nullable|image|max:10240',
-            // Salary
-            'salary_type'            => ['nullable', Rule::in(['per_salary', 'per_order'])],
-            'basic_salary'           => ['nullable', 'required_if:salary_type,per_salary', 'numeric', 'min:0'],
-            'car_allowance'          => ['nullable', 'required_if:salary_type,per_salary', 'numeric', 'min:0'],
-            'extra_order_threshold'  => ['nullable', 'required_if:salary_type,per_salary', 'integer', 'min:0'],
-            'extra_order_bonus'      => ['nullable', 'required_if:salary_type,per_salary', 'numeric', 'min:0'],
         ]);
-
-        $driver->load('activeSalaryConfig.activePerSalaryConfig');
 
         DB::transaction(function () use ($data, $request, $driver) {
             $driver->user->update([
@@ -209,9 +172,6 @@ class DriverController extends Controller
                 'is_available'           => $driver->is_available,
             ]);
 
-            if (!empty($data['salary_type'])) {
-                $this->updateSalaryConfig($driver, $data);
-            }
         });
 
         return redirect()->route('admin.drivers.show', $driver)
@@ -285,56 +245,6 @@ class DriverController extends Controller
             $user->save();
         }
         return back()->with('success', 'Driver status updated successfully.');
-    }
-
-    private function updateSalaryConfig(DriverProfile $driver, array $data): void
-    {
-        $activeConfig = $driver->activeSalaryConfig;
-        $newType = $data['salary_type'];
-
-        if (!$activeConfig) {
-            $salaryConfig = DriverSalaryConfig::create([
-                'driver_profile_id' => $driver->id,
-                'salary_type'       => $newType,
-                'effective_from'    => now()->toDateString(),
-                'created_by'        => auth()->id(),
-            ]);
-        } elseif ($activeConfig->salary_type->value !== $newType) {
-            // Type changed: close old config and any active per-salary config
-            $activeConfig->activePerSalaryConfig?->update(['effective_to' => now()->toDateString()]);
-            $activeConfig->update(['effective_to' => now()->toDateString()]);
-
-            $salaryConfig = DriverSalaryConfig::create([
-                'driver_profile_id' => $driver->id,
-                'salary_type'       => $newType,
-                'effective_from'    => now()->toDateString(),
-                'created_by'        => auth()->id(),
-            ]);
-        } else {
-            $salaryConfig = $activeConfig;
-        }
-
-        if ($newType === 'per_salary') {
-            $activePerSalary = $salaryConfig->activePerSalaryConfig;
-
-            if ($activePerSalary) {
-                $activePerSalary->update([
-                    'basic_salary'          => $data['basic_salary'],
-                    'car_allowance'         => $data['car_allowance'],
-                    'extra_order_threshold' => $data['extra_order_threshold'],
-                    'extra_order_bonus'     => $data['extra_order_bonus'],
-                ]);
-            } else {
-                DriverPerSalaryConfig::create([
-                    'driver_salary_config_id' => $salaryConfig->id,
-                    'basic_salary'            => $data['basic_salary'],
-                    'car_allowance'           => $data['car_allowance'],
-                    'extra_order_threshold'   => $data['extra_order_threshold'],
-                    'extra_order_bonus'       => $data['extra_order_bonus'],
-                    'effective_from'          => now()->toDateString(),
-                ]);
-            }
-        }
     }
 
     private function haversineKm(float $lat1, float $lon1, float $lat2, float $lon2): float

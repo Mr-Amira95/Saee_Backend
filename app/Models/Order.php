@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -25,6 +26,7 @@ class Order extends Model
         'proof_image_path',
         'rejection_reason_id',
         'notes',
+        'delivered_at',
     ];
 
     protected function casts(): array
@@ -34,6 +36,7 @@ class Order extends Model
             'driver_profile_id'   => 'integer',
             'rejection_reason_id' => 'integer',
             'route_order'         => 'integer',
+            'delivered_at'        => 'datetime',
             'deleted_at'          => 'datetime',
         ];
     }
@@ -103,6 +106,11 @@ class Order extends Model
     public function financialLedgerEntries(): HasMany
     {
         return $this->hasMany(FinancialLedgerEntry::class)->orderBy('created_at', 'asc');
+    }
+
+    public function clientDeliveryInvoice(): BelongsToMany
+    {
+        return $this->belongsToMany(ClientDeliveryInvoice::class, 'client_delivery_invoice_orders');
     }
 
     public function driverRating(): HasOne
