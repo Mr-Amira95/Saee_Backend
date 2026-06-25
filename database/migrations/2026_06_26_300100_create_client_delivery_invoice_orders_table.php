@@ -10,10 +10,13 @@ return new class extends Migration
     {
         Schema::create('client_delivery_invoice_orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_delivery_invoice_id')
-                  ->constrained('client_delivery_invoices')
-                  ->cascadeOnDelete();
-            $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
+            $table->unsignedBigInteger('client_delivery_invoice_id');
+            $table->unsignedBigInteger('order_id');
+
+            $table->foreign('client_delivery_invoice_id', 'cdio_invoice_id_fk')
+                  ->references('id')->on('client_delivery_invoices')->cascadeOnDelete();
+            $table->foreign('order_id', 'cdio_order_id_fk')
+                  ->references('id')->on('orders')->cascadeOnDelete();
 
             $table->unique('order_id');
             $table->index('client_delivery_invoice_id');
