@@ -87,7 +87,7 @@
             transition: max-height .3s cubic-bezier(.4,0,.2,1);
             padding-left: 12px;
         }
-        .nav-submenu.open { max-height: 220px; }
+        .nav-submenu.open { max-height: 400px; }
         .nav-sub-item {
             display: flex; align-items: center; gap: 9px;
             padding: 7px 11px; border-radius: 8px;
@@ -952,7 +952,7 @@ if (document.getElementById('notifBell')) {
         if (menu) menu.classList.add('open');
         if (btn)  btn.classList.add('parent-open');
     }
-    if (path.includes('/admin/financials')) {
+    if (path.includes('/admin/financials') || path.includes('/admin/payroll') || path.includes('/admin/billing') || path.includes('/admin/expenses')) {
         const menu = document.getElementById('financeMenu');
         const btn  = document.getElementById('financeBtn');
         if (menu) menu.classList.add('open');
