@@ -13,9 +13,11 @@ use App\Models\OrderTrackingLog;
 use App\Models\RejectionReason;
 use App\Models\User;
 use App\Services\OrderService;
+use App\Services\SupportNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
@@ -417,11 +419,52 @@ if (! $this->canAccessOrder($user, $order)) {
 
         $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
+        rescue(fn () => app(SupportNotificationService::class)->notifyAdminsNewOrder($order));
+
         return response()->json([
             'success' => true,
             'message' => 'Order created successfully.',
             'data'    => new OrderResource($order),
         ], 201);
+    }
+
+    public function destroy(Request $request, Order $order): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile || (int) $order->client_profile_id !== (int) $clientProfile->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending orders can be cancelled.',
+                'code'    => 'INVALID_STATUS_TRANSITION',
+            ], 422);
+        }
+
+        rescue(fn () => app(SupportNotificationService::class)->notifyAdminsCancelOrder($order));
+
+        $order->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order cancelled successfully.',
+        ]);
     }
 
     public function importOrders(Request $request): JsonResponse
@@ -557,6 +600,12 @@ if (! $this->canAccessOrder($user, $order)) {
             $importedCount++;
         }
 
+        rescue(fn () => app(SupportNotificationService::class)->notifyAdminsOrdersImported(
+            $clientProfile->company_name,
+            $importedCount,
+            $batchNumber,
+        ));
+
         return response()->json([
             'success'      => true,
             'message'      => "{$importedCount} order(s) imported successfully.",
@@ -565,7 +614,7 @@ if (! $this->canAccessOrder($user, $order)) {
         ], 201);
     }
 
-    public function downloadImportTemplate(): Response
+    public function downloadImportTemplate(): StreamedResponse
     {
         $headers = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes'];
         $sample  = ['E-commerce parcel', 'cod', 'false', '0.00', '150.00', 'Ahmed Mansour', '0501234567', '1', '2', 'King Fahd Road, Al Malaz', 'Deliver after 5 PM'];

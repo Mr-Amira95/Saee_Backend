@@ -1,0 +1,664 @@
+{
+    "info": {
+        "_postman_id": "saee-client-api-v1",
+        "name": "SAEE — Client API",
+        "description": "All client-facing endpoints for the SAEE delivery platform.\n\n**Setup:**\n1. Set the `base_url` collection variable to your server (e.g. `http://localhost:8000/api`).\n2. Call **Login** — the token is saved to `{{token}}` automatically.\n3. All protected requests inherit the Bearer token from the collection.\n\n**Roles:**\n- `client_master` — full access (create orders, manage team, etc.)\n- `client_employee` — read-only access to orders, users, and wallet",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api",
+            "type": "string",
+            "description": "Change this to your server URL"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string",
+            "description": "Auto-filled by the Login request"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const res = pm.response.json();",
+                                    "    if (res.data && res.data.token) {",
+                                    "        pm.collectionVariables.set('token', res.data.token);",
+                                    "        console.log('Token saved:', res.data.token);",
+                                    "    }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": { "type": "noauth" },
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"phone_number\": \"0501234567\",\n    \"country_code\": \"+962\",\n    \"password\": \"your-password\",\n    \"fcm_token\": null,\n    \"platform\": \"android\",\n    \"app_version\": \"1.0.0\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "login"]
+                        },
+                        "description": "Accepts phone_number + country_code OR full_phone. Token is saved to {{token}} automatically."
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fcm_token\": null\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/logout",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "logout"]
+                        }
+                    }
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"current_password\": \"old-password\",\n    \"password\": \"new-password\",\n    \"password_confirmation\": \"new-password\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/change-password",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "change-password"]
+                        }
+                    }
+                },
+                {
+                    "name": "Forgot Password — Request Code",
+                    "request": {
+                        "auth": { "type": "noauth" },
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"phone_number\": \"0501234567\",\n    \"country_code\": \"+962\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/forgot-password/request-code",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "forgot-password", "request-code"]
+                        }
+                    }
+                },
+                {
+                    "name": "Forgot Password — Verify Code",
+                    "request": {
+                        "auth": { "type": "noauth" },
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"phone_number\": \"0501234567\",\n    \"country_code\": \"+962\",\n    \"code\": \"123456\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/forgot-password/verify-code",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "forgot-password", "verify-code"]
+                        }
+                    }
+                },
+                {
+                    "name": "Forgot Password — Reset",
+                    "request": {
+                        "auth": { "type": "noauth" },
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"phone_number\": \"0501234567\",\n    \"country_code\": \"+962\",\n    \"code\": \"123456\",\n    \"password\": \"new-password\",\n    \"password_confirmation\": \"new-password\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/forgot-password/reset",
+                            "host": ["{{base_url}}"],
+                            "path": ["auth", "forgot-password", "reset"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Home",
+            "item": [
+                {
+                    "name": "Get Home (Active Orders)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/home",
+                            "host": ["{{base_url}}"],
+                            "path": ["home"]
+                        },
+                        "description": "Returns order status summary and the 20 most recent active orders (pending + in-transit). For client_master and client_employee."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Profile",
+            "item": [
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/profile",
+                            "host": ["{{base_url}}"],
+                            "path": ["profile"]
+                        },
+                        "description": "Returns company profile for client_master/client_employee, driver profile for drivers."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Wallet",
+            "item": [
+                {
+                    "name": "Get Wallet",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/wallet?page=1",
+                            "host": ["{{base_url}}"],
+                            "path": ["wallet"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "description": "Transactions page number"
+                                }
+                            ]
+                        },
+                        "description": "Returns balance, credit_limit, order stats by status, paginated transaction ledger, and recent invoices."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "List Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/orders",
+                            "host": ["{{base_url}}"],
+                            "path": ["orders"],
+                            "query": [
+                                { "key": "status", "value": "pending", "disabled": true, "description": "pending | picked_up | delivered | rejected | returned | cancelled" },
+                                { "key": "payment_type", "value": "cod", "disabled": true, "description": "cod | prepaid" },
+                                { "key": "payment_status", "value": "pending", "disabled": true, "description": "pending | with_driver | with_company | paid | no_payment" },
+                                { "key": "city_id", "value": "1", "disabled": true },
+                                { "key": "area_id", "value": "1", "disabled": true },
+                                { "key": "batch_number", "value": "BATCH-250624-1-AB12", "disabled": true, "description": "Filter by import batch" },
+                                { "key": "from", "value": "2025-01-01", "disabled": true, "description": "Date range start (YYYY-MM-DD)" },
+                                { "key": "to", "value": "2025-12-31", "disabled": true, "description": "Date range end (YYYY-MM-DD)" },
+                                { "key": "search", "value": "", "disabled": true, "description": "Search by order number, receiver name, or phone" },
+                                { "key": "page", "value": "1", "disabled": true }
+                            ]
+                        },
+                        "description": "Paginated order list. All query params are optional — remove the ones you don't need."
+                    }
+                },
+                {
+                    "name": "Get Order Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/orders/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["orders", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "Order ID"
+                                }
+                            ]
+                        },
+                        "description": "Returns full order detail including city, area, driver, tracking log history."
+                    }
+                },
+                {
+                    "name": "Create Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"receiver_name\": \"Ahmed Mansour\",\n    \"receiver_phone\": \"0501234567\",\n    \"city_id\": 1,\n    \"area_id\": 2,\n    \"address_text\": \"King Fahd Road, Al Malaz, Building 12\",\n    \"address_location\": \"24.7136,46.6753\",\n    \"payment_type\": \"cod\",\n    \"order_price\": 150.00,\n    \"delivery_on_customer\": false,\n    \"delivery_customer_amount\": null,\n    \"order_description\": \"Fragile — handle with care\",\n    \"notes\": \"Call before delivery\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/orders",
+                            "host": ["{{base_url}}"],
+                            "path": ["orders"]
+                        },
+                        "description": "client_master and client_employee only.\n\n- `payment_type`: `cod` or `prepaid`\n- `order_price`: required when `payment_type` is `cod`\n- `delivery_customer_amount`: required when `delivery_on_customer` is `true`\n- `client_profile_id` is resolved automatically from the authenticated user — do not send it"
+                    }
+                },
+                {
+                    "name": "Import Orders (CSV)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "csv_file",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "CSV file — use the Download Template request to get the correct format"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/orders/import",
+                            "host": ["{{base_url}}"],
+                            "path": ["orders", "import"]
+                        },
+                        "description": "Bulk create orders from a CSV file. Returns all row-level validation errors before importing anything — fix them all and re-upload.\n\nCSV columns (in order):\n`order_description, payment_type, delivery_on_customer, delivery_customer_amount, order_price, receiver_name, receiver_phone, city_id, area_id, address_text, notes`\n\nOn success returns `batch_number` you can use to filter the imported batch."
+                    }
+                },
+                {
+                    "name": "Download Import Template",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "text/csv" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/orders/import/template",
+                            "host": ["{{base_url}}"],
+                            "path": ["orders", "import", "template"]
+                        },
+                        "description": "Downloads a ready-to-fill CSV template for the bulk import endpoint."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Track (Public)",
+            "item": [
+                {
+                    "name": "Track Order",
+                    "request": {
+                        "auth": { "type": "noauth" },
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/track?q=0501234567",
+                            "host": ["{{base_url}}"],
+                            "path": ["track"],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "0501234567",
+                                    "description": "Search by order number (exact), receiver name (partial), or receiver phone (partial). Min 3 chars."
+                                }
+                            ]
+                        },
+                        "description": "No authentication required. End-customers can track their delivery by order number, name, or phone number. Returns status and full tracking history but no financial data."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Users — Team Management",
+            "item": [
+                {
+                    "name": "List Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/users",
+                            "host": ["{{base_url}}"],
+                            "path": ["users"]
+                        },
+                        "description": "Returns all employees in the company. Accessible to client_master and client_employee."
+                    }
+                },
+                {
+                    "name": "Create User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Sara Al-Harbi\",\n    \"phone\": \"0551234567\",\n    \"phone_country_code\": \"+962\",\n    \"email\": null,\n    \"password\": \"SecurePass123\",\n    \"job_title\": \"Operations Coordinator\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users",
+                            "host": ["{{base_url}}"],
+                            "path": ["users"]
+                        },
+                        "description": "client_master only. Creates a new employee account under your company. The employee logs in with their phone + password."
+                    }
+                },
+                {
+                    "name": "Edit User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Sara Al-Harbi\",\n    \"phone\": \"0551234567\",\n    \"job_title\": \"Senior Coordinator\",\n    \"status\": \"active\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users/:employee_id",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", ":employee_id"],
+                            "variable": [
+                                {
+                                    "key": "employee_id",
+                                    "value": "1",
+                                    "description": "The client_employees.id (from List Users response)"
+                                }
+                            ]
+                        },
+                        "description": "client_master only. All fields are optional — send only what you want to change.\n\n`status`: `active` | `suspended`"
+                    }
+                },
+                {
+                    "name": "Remove User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/users/:employee_id",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", ":employee_id"],
+                            "variable": [
+                                {
+                                    "key": "employee_id",
+                                    "value": "1",
+                                    "description": "The client_employees.id (from List Users response)"
+                                }
+                            ]
+                        },
+                        "description": "client_master only. Permanently removes the employee account from the company. Cannot remove your own account."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Notifications",
+            "item": [
+                {
+                    "name": "List Notifications",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notifications",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications"]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark All as Read",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/read-all",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications", "read-all"]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark One as Read",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/:id/read",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications", ":id", "read"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "Notification ID"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Notification Preferences",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"notifications_enabled\": true\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profile/notifications",
+                            "host": ["{{base_url}}"],
+                            "path": ["profile", "notifications"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Cities",
+            "item": [
+                {
+                    "name": "List Cities",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/cities",
+                            "host": ["{{base_url}}"],
+                            "path": ["cities"]
+                        },
+                        "description": "Returns active cities with their areas. Use city_id and area_id when creating orders."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Support",
+            "item": [
+                {
+                    "name": "List Tickets",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/support",
+                            "host": ["{{base_url}}"],
+                            "path": ["support"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Ticket",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Order not delivered\",\n    \"category\": \"delivery\",\n    \"message\": \"My order was not delivered on time.\",\n    \"order_id\": null\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/support",
+                            "host": ["{{base_url}}"],
+                            "path": ["support"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Ticket Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/support/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["support", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "Support ticket ID"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Send Message",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"message\": \"Still waiting for an update.\"\n}",
+                            "options": { "raw": { "language": "json" } }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/support/:id/messages",
+                            "host": ["{{base_url}}"],
+                            "path": ["support", ":id", "messages"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1",
+                                    "description": "Support ticket ID"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -27,6 +27,15 @@ use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\LegalContentController;
 use App\Http\Controllers\PublicCmsController;
+use App\Http\Controllers\Client\AuthController as ClientAuthController;
+use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
+use App\Http\Controllers\Client\OrderController as ClientOrderController;
+use App\Http\Controllers\Client\SupportController as ClientSupportController;
+use App\Http\Controllers\Client\NotificationController as ClientNotificationController;
+use App\Http\Controllers\Client\FinanceController as ClientFinanceController;
+use App\Http\Controllers\Client\AccountController as ClientAccountController;
+use App\Http\Controllers\Client\BankingDetailsController as ClientBankingController;
+use App\Http\Controllers\Client\CompanyController as ClientCompanyController;
 
 Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'ar'])) {
@@ -154,5 +163,77 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('financials/settle-driver/{driver}', [FinancialController::class, 'settleDriver'])->name('financials.settle-driver.submit');
         Route::get('financials/payout-client/{client}',  [FinancialController::class, 'clientPayoutForm'])->name('financials.payout-client');
         Route::post('financials/payout-client/{client}', [FinancialController::class, 'payoutClient'])->name('financials.payout-client.submit');
+    });
+});
+
+// ─── Client Portal ────────────────────────────────────────────────────────────
+Route::prefix('client')->name('client.')->group(function () {
+
+    // Guest-only
+    Route::middleware('client.guest')->group(function () {
+        Route::get('login',                        [ClientAuthController::class, 'showLogin'])->name('login');
+        Route::post('login',                       [ClientAuthController::class, 'login']);
+        Route::get('forgot-password',              [ClientAuthController::class, 'showForgotPassword'])->name('forgot-password');
+        Route::post('forgot-password/request',     [ClientAuthController::class, 'requestCode'])->name('forgot-password.request');
+        Route::post('forgot-password/verify',      [ClientAuthController::class, 'verifyCode'])->name('forgot-password.verify');
+        Route::post('forgot-password/reset',       [ClientAuthController::class, 'resetPassword'])->name('forgot-password.reset');
+    });
+
+    // Authenticated clients
+    Route::middleware('client.auth')->group(function () {
+        Route::post('logout', [ClientAuthController::class, 'logout'])->name('logout');
+
+        // Dashboard & tracking
+        Route::get('/',     [ClientDashboardController::class, 'index'])->name('dashboard');
+        Route::get('track', [ClientDashboardController::class, 'track'])->name('track');
+
+        // Orders
+        Route::get('orders/import/template',   [ClientOrderController::class, 'downloadTemplate'])->name('orders.template');
+        Route::get('orders/import',            [ClientOrderController::class, 'showImport'])->name('orders.import');
+        Route::post('orders/import',           [ClientOrderController::class, 'import'])->name('orders.import.submit');
+        Route::get('orders/create',            [ClientOrderController::class, 'create'])->name('orders.create');
+        Route::post('orders',                  [ClientOrderController::class, 'store'])->name('orders.store');
+        Route::get('orders/{order}',           [ClientOrderController::class, 'show'])->name('orders.show');
+        Route::delete('orders/{order}',        [ClientOrderController::class, 'destroy'])->name('orders.destroy');
+        Route::get('orders',                   [ClientOrderController::class, 'index'])->name('orders.index');
+
+        // Support
+        Route::get('support',                          [ClientSupportController::class, 'index'])->name('support.index');
+        Route::post('support',                         [ClientSupportController::class, 'store'])->name('support.store');
+        Route::get('support/{ticket}',                 [ClientSupportController::class, 'show'])->name('support.show');
+        Route::post('support/{ticket}/messages',       [ClientSupportController::class, 'sendMessage'])->name('support.message');
+        Route::get('support/{ticket}/messages',        [ClientSupportController::class, 'getMessages'])->name('support.messages');
+        Route::post('support/{ticket}/close',          [ClientSupportController::class, 'close'])->name('support.close');
+
+        // Notifications
+        Route::get('notifications',                    [ClientNotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/{id}/read',         [ClientNotificationController::class, 'markRead'])->name('notifications.read');
+        Route::post('notifications/read-all',          [ClientNotificationController::class, 'markAllRead'])->name('notifications.read-all');
+        Route::get('notifications/unread',             [ClientNotificationController::class, 'unreadCount'])->name('notifications.unread');
+
+        // Finances
+        Route::get('finances', [ClientFinanceController::class, 'index'])->name('finances.index');
+
+        // Helper: areas for a city (used by create/edit forms)
+        Route::get('api/areas', function (\Illuminate\Http\Request $request) {
+            return response()->json(
+                \App\Models\Area::where('city_id', $request->city_id)
+                    ->where('is_active', true)
+                    ->orderBy('name')
+                    ->get(['id', 'name'])
+            );
+        })->name('api.areas');
+
+        // Account
+        Route::get('account',                  [ClientAccountController::class, 'index'])->name('account.index');
+        Route::get('account/profile',          [ClientAccountController::class, 'editProfile'])->name('account.profile.edit');
+        Route::post('account/profile',         [ClientAccountController::class, 'updateProfile'])->name('account.profile.update');
+        Route::get('account/password',         [ClientAccountController::class, 'editPassword'])->name('account.password.edit');
+        Route::post('account/password',        [ClientAccountController::class, 'updatePassword'])->name('account.password.update');
+        Route::get('account/banking-details',  [ClientBankingController::class, 'index'])->name('account.banking');
+        Route::post('account/banking-details', [ClientBankingController::class, 'save'])->name('account.banking.save');
+        Route::get('account/company',               [ClientCompanyController::class, 'index'])->name('account.company');
+        Route::post('account/company',              [ClientCompanyController::class, 'update'])->name('account.company.update');
+        Route::post('account/notifications/toggle', [ClientAccountController::class, 'toggleNotifications'])->name('account.notifications.toggle');
     });
 });

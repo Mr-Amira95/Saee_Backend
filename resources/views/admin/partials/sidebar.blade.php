@@ -1,13 +1,7 @@
 <aside class="sidebar">
     {{-- Logo --}}
     <div class="sidebar-logo">
-        <svg viewBox="0 0 200 200" width="30" xmlns="http://www.w3.org/2000/svg">
-            <defs><radialGradient id="sg" cx="38%" cy="35%" r="65%"><stop offset="0%" stop-color="#f87171"/><stop offset="50%" stop-color="#dc2626"/><stop offset="100%" stop-color="#7f1d1d"/></radialGradient></defs>
-            <circle cx="100" cy="100" r="95" fill="url(#sg)"/>
-            <path d="M22,158 C38,88 90,52 172,46 L171,68 C96,74 52,108 44,165 Z" fill="white" opacity=".96"/>
-            <path d="M40,132 C56,78 100,53 172,64 L171,83 C108,73 64,95 57,142 Z" fill="white" opacity=".89"/>
-            <path d="M60,108 C74,69 114,55 172,78 L171,95 C118,73 80,88 72,120 Z" fill="white" opacity=".82"/>
-        </svg>
+        <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee Logistic Services" style="width:130px;height:auto;object-fit:contain;">
         <span class="sidebar-logo-text">Admin</span>
     </div>
 

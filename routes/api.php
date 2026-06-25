@@ -132,6 +132,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('orders/{order}', [OrderController::class, 'show'])
         ->name('api.orders.show');
 
+    Route::delete('orders/{order}', [OrderController::class, 'destroy'])
+        ->name('api.orders.destroy');
+
     Route::post('orders/{order}/deliver', [OrderController::class, 'deliver'])
         ->name('api.orders.deliver');
 
@@ -167,4 +170,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('support/{id}/messages', [SupportController::class, 'sendMessage'])
         ->name('api.support.messages.store');
+
+    Route::post('support/{id}/close', [SupportController::class, 'close'])
+        ->name('api.support.close');
 });

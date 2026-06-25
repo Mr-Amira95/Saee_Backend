@@ -20,6 +20,7 @@ class ClientProfile extends Model
         'commercial_register_verified_at',
         'vat_number',
         'email',
+        'company_phone',
         'logo_path',
         'address_line1',
         'city_id',

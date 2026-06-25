@@ -14,7 +14,6 @@ class SupportTicket extends Model
         'user_id',
         'order_id',
         'title',
-        'category',
         'status',
         'priority',
         'token',

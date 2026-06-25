@@ -11,7 +11,6 @@ use App\Models\Order;
 use App\Services\SupportNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Throwable;
 
 class SupportController extends Controller
 {
@@ -138,6 +137,8 @@ class SupportController extends Controller
     {
         $ticket->update(['status' => 'resolved']);
         $ticket->touch();
+
+        rescue(fn () => app(SupportNotificationService::class)->notifyClientTicketResolved($ticket, Auth::id()));
 
         return redirect()->route('admin.support.index', ['ticket' => $ticket->ticket_number])
             ->with('success', "Ticket {$ticket->ticket_number} marked as resolved.");

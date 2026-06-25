@@ -344,7 +344,7 @@
         <header>
             <div class="nav-container">
                 <a href="{{ route('public.home') }}" class="logo-link" id="homeLogoLink">
-                    <img src="{{ asset('logo.png') }}" alt="{{ $settings['site_name'] }} Logo" class="logo-img">
+                    <img src="{{ asset('saee_logo_dark.png') }}" alt="{{ $settings['site_name'] }} Logo" class="logo-img">
                     <span style="font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px;">{{ $settings['site_name'] }}</span>
                 </a>
                 <nav aria-label="Main Navigation">
@@ -406,7 +406,7 @@
             <div class="footer-grid">
                 <div class="footer-about">
                     <div style="display:flex; align-items:center; gap: 10px; margin-bottom:1.5rem;">
-                        <img src="{{ asset('logo.png') }}" alt="{{ $settings['site_name'] }} Logo Footer" class="logo-img" style="height:38px;">
+                        <img src="{{ asset('saee_logo_dark.png') }}" alt="{{ $settings['site_name'] }} Logo Footer" class="logo-img" style="height:38px;">
                         <span style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.5px; color:var(--text-light)">{{ $settings['site_name'] }}</span>
                     </div>
                     <p>Building paths, matching schedules, and accelerating commerce through premium logistics solutions across Jordan.</p>

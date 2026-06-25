@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\UserNotificationSent;
 use App\Models\Attendance;
+use App\Models\Order;
 use App\Models\SystemNotification;
 use App\Models\SupportTicket;
 use App\Models\UserDevice;
@@ -63,6 +64,56 @@ class SupportNotificationService
             title:      'New Message on Ticket ' . $ticket->ticket_number,
             message:    $ticket->user?->name . ' sent a message on: ' . $ticket->title,
             type:       'info',
+            entityType: 'support_ticket',
+            entityId:   $ticket->id,
+        );
+    }
+
+    // ── Client → Admin: Order Notifications ─────────────────────────────────
+
+    public function notifyAdminsNewOrder(Order $order): void
+    {
+        $company = $order->clientProfile?->company_name ?? 'Client';
+        $this->sendToAdmins(
+            title:      'New Order Created',
+            message:    "{$company} created order #{$order->order_number}",
+            type:       'info',
+            entityType: 'order',
+            entityId:   $order->id,
+        );
+    }
+
+    public function notifyAdminsCancelOrder(Order $order): void
+    {
+        $company = $order->clientProfile?->company_name ?? 'Client';
+        $this->sendToAdmins(
+            title:      'Order Cancelled',
+            message:    "{$company} cancelled order #{$order->order_number}",
+            type:       'warning',
+            entityType: 'order',
+            entityId:   $order->id,
+        );
+    }
+
+    public function notifyAdminsOrdersImported(string $company, int $count, string $batchNumber): void
+    {
+        $this->sendToAdmins(
+            title:   'Orders Imported',
+            message: "{$company} imported {$count} order(s) — Batch: {$batchNumber}",
+            type:    'info',
+        );
+    }
+
+    // ── Admin → Client: Ticket Resolved ─────────────────────────────────────
+
+    public function notifyClientTicketResolved(SupportTicket $ticket, int $createdBy): void
+    {
+        $this->sendToUser(
+            userId:     $ticket->user_id,
+            title:      'Support Ticket Resolved',
+            message:    'Your support ticket has been resolved: ' . $ticket->title,
+            type:       'info',
+            createdBy:  $createdBy,
             entityType: 'support_ticket',
             entityId:   $ticket->id,
         );
@@ -175,6 +226,10 @@ class SupportNotificationService
             if ($ticket) {
                 return route('admin.support.index') . '?ticket=' . $ticket->ticket_number;
             }
+        }
+
+        if ($entityType === 'order') {
+            return route('admin.orders.show', $entityId);
         }
 
         return null;

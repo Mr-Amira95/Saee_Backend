@@ -74,14 +74,12 @@ class SupportController extends Controller
 
         $data = $request->validate([
             'title'    => 'required|string|max:255',
-            'category' => 'required|in:general,delivery_issue,financial,complaint',
             'message'  => 'required|string',
             'order_id' => 'nullable|exists:orders,id',
         ]);
 
         $ticket = $user->supportTickets()->create([
             'title'    => $data['title'],
-            'category' => $data['category'],
             'order_id' => $data['order_id'] ?? null,
             'status'   => 'open',
             'priority' => 'medium',
@@ -105,6 +103,38 @@ class SupportController extends Controller
             'message' => 'Support ticket created successfully',
             'data'    => new SupportTicketResource($ticket),
         ], 201);
+    }
+
+    public function close(Request $request, int $id): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $ticket = $user->supportTickets()->find($id);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Support ticket not found',
+                'code'    => 'TICKET_NOT_FOUND',
+            ], 404);
+        }
+
+        if ($ticket->status === 'resolved') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket is already closed',
+                'code'    => 'TICKET_ALREADY_CLOSED',
+            ], 422);
+        }
+
+        $ticket->update(['status' => 'resolved']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Support ticket closed successfully',
+            'data'    => new SupportTicketResource($ticket),
+        ]);
     }
 
     public function sendMessage(Request $request, int $id): JsonResponse

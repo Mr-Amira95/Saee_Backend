@@ -18,8 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
         ]);
         $middleware->alias([
-            'admin.auth'  => \App\Http\Middleware\EnsureAdminRole::class,
-            'admin.guest' => \App\Http\Middleware\RedirectIfAdmin::class,
+            'admin.auth'   => \App\Http\Middleware\EnsureAdminRole::class,
+            'admin.guest'  => \App\Http\Middleware\RedirectIfAdmin::class,
+            'client.auth'  => \App\Http\Middleware\EnsureClientRole::class,
+            'client.guest' => \App\Http\Middleware\RedirectIfClient::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

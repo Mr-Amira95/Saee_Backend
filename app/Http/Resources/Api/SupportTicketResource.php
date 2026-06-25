@@ -13,7 +13,6 @@ class SupportTicketResource extends JsonResource
             'id'              => $this->id,
             'ticket_number'   => $this->ticket_number,
             'title'           => $this->title,
-            'category'        => $this->category,
             'status'          => $this->status,
             'priority'        => $this->priority,
             'order_id'        => $this->order_id,
