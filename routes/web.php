@@ -147,7 +147,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('drivers-live-map',                    [DriverController::class, 'liveMap'])->name('drivers.live-map');
             Route::patch('drivers/{driver}/toggle-status',    [DriverController::class, 'toggleStatus'])->name('drivers.toggle-status');
 
-            Route::resource('admins',  AdminUserController::class)->names('admins');
+            Route::resource('admins',  AdminUserController::class)->except(['show'])->names('admins');
+            Route::post('admins/{admin}/resend-invitation', [AdminUserController::class, 'resendInvitation'])->name('admins.resend-invitation');
         });
 
         // Orders Management

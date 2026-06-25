@@ -318,6 +318,7 @@
         .act-btn.act-delete:hover { background: rgba(220,38,38,.1); border-color: rgba(220,38,38,.2); color: #f87171; }
         .act-btn.act-view:hover  { background: rgba(59,130,246,.08); border-color: rgba(59,130,246,.15); color: #60a5fa; }
         .act-btn.act-edit:hover  { background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.15); color: #fcd34d; }
+        .act-btn.act-resend:hover { background: rgba(16,185,129,.08); border-color: rgba(16,185,129,.15); color: #34d399; }
 
         /* ─── Toggle switch ──────────────────────────────── */
         .toggle-switch { display:inline-flex; align-items:center; cursor:pointer; }

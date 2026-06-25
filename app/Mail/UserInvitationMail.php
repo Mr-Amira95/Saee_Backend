@@ -19,7 +19,13 @@ class UserInvitationMail extends Mailable
     public function __construct(public User $user, string $token)
     {
         $this->setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email));
-        $this->roleLabel      = $user->isDriver() ? 'Driver' : 'Client';
+        if ($user->isDriver()) {
+            $this->roleLabel = 'Driver';
+        } elseif ($user->isAdmin() || $user->isSuperAdmin()) {
+            $this->roleLabel = 'Admin';
+        } else {
+            $this->roleLabel = 'Client';
+        }
     }
 
     public function envelope(): Envelope

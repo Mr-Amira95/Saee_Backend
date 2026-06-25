@@ -30,23 +30,17 @@
     </div>
 </div>
 
-<div class="filter-bar">
-    <form method="GET" action="{{ route('admin.admins.index') }}" class="filter-form">
-        <input class="filter-search" type="text" name="search" value="{{ request('search') }}" placeholder="Search name or email…">
-        <select class="filter-select" name="role">
-            <option value="">All Roles</option>
-            <option value="admin"      {{ request('role') === 'admin'      ? 'selected' : '' }}>Admin</option>
-            <option value="superadmin" {{ request('role') === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
-        </select>
-        <select class="filter-select" name="status">
-            <option value="">All Statuses</option>
-            <option value="active"    {{ request('status') === 'active'    ? 'selected' : '' }}>Active</option>
-            <option value="suspended" {{ request('status') === 'suspended' ? 'selected' : '' }}>Suspended</option>
-        </select>
-        <button class="btn-secondary" type="submit">Filter</button>
-        @if(request('search') || request('status') || request('role'))
-            <a href="{{ route('admin.admins.index') }}" class="btn-secondary">Clear</a>
-        @endif
+<div class="filter-bar" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+    <form method="GET" action="{{ route('admin.admins.index') }}" class="filter-form" style="margin:0; flex:1; max-width:320px;" id="search-form">
+        <input
+            class="filter-search"
+            type="text"
+            name="search"
+            id="search-input"
+            value="{{ request('search') }}"
+            placeholder="Search name, email or phone…"
+            style="width:100%;"
+        >
     </form>
     <a href="{{ route('admin.admins.create') }}" class="btn-primary">+ Add Admin</a>
 </div>
@@ -56,11 +50,9 @@
     <table>
         <thead>
             <tr>
-                <th>Admin</th>
-                <th>Department</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Created</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -70,30 +62,25 @@
                 <td>
                     <div class="cell-name">
                         <div class="cell-avatar">{{ strtoupper(substr($admin->name, 0, 2)) }}</div>
-                        <div>
-                            <div class="cell-main">{{ $admin->name }}</div>
-                            <div class="cell-sub">{{ $admin->email }}</div>
-                        </div>
+                        <div class="cell-main">{{ $admin->name }}</div>
                     </div>
                 </td>
-                <td>{{ $admin->adminProfile?->department ?: '—' }}</td>
+                <td>{{ $admin->email }}</td>
                 <td>
-                    @if($admin->role === 'superadmin') <span class="badge-superadmin">Superadmin</span>
-                    @else <span class="badge-admin">Admin</span>
+                    @if($admin->phone)
+                        <span style="color:var(--text-dim);font-size:.8rem;margin-right:4px;">{{ $admin->phone_country_code ?? '' }}</span>{{ $admin->phone }}
+                    @else
+                        —
                     @endif
                 </td>
-                <td>
-                    @if($admin->status === 'active')     <span class="badge-active">Active</span>
-                    @elseif($admin->status === 'suspended') <span class="badge-suspended">Suspended</span>
-                    @else <span class="badge-pending">Pending</span>
-                    @endif
-                </td>
-                <td>{{ $admin->created_at->format('d M Y') }}</td>
                 <td>
                     <div class="act-btns">
-                        <a href="{{ route('admin.admins.show', $admin) }}" class="act-btn act-view" title="View">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        </a>
+                        <form method="POST" action="{{ route('admin.admins.resend-invitation', $admin) }}" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="act-btn act-resend" title="Resend Code" style="cursor:pointer;">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </button>
+                        </form>
                         @if($admin->role !== 'superadmin' || auth()->user()->isSuperAdmin())
                         <a href="{{ route('admin.admins.edit', $admin) }}" class="act-btn act-edit" title="Edit">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -119,4 +106,25 @@
     <p>No admins found. <a href="{{ route('admin.admins.create') }}">Add the first admin.</a></p>
 </div>
 @endif
+@endsection
+
+@section('scripts')
+<script>
+    // Real-time search script
+    var searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        var timeout = null;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                document.getElementById('search-form').submit();
+            }, 500);
+        });
+        // Keep focus at end of input
+        searchInput.focus();
+        var val = searchInput.value;
+        searchInput.value = '';
+        searchInput.value = val;
+    }
+</script>
 @endsection
