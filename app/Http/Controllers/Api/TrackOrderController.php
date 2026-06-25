@@ -38,6 +38,7 @@ class TrackOrderController extends Controller
             'success' => true,
             'message' => 'Orders found.',
             'data'    => $orders->map(fn ($order) => [
+                'order_id'      => $order->id,
                 'order_number'  => $order->order_number,
                 'status'        => $order->status,
                 'payment_type'  => $order->payment_type,
