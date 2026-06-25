@@ -12,6 +12,7 @@
 @endsection
 
 @section('head')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
 .expiry-badge {
     display: inline-flex; align-items: center; gap: 5px;
@@ -74,34 +75,57 @@
                 <span class="badge-no">Busy</span>
             @endif
 
-            @if($driver->license_class)
-                <span class="badge-info">{{ ucfirst($driver->license_class) }} License</span>
-            @endif
-
             @if($licExp && $licExp->isPast())
                 <span class="expiry-badge expiry-expired">⚠ License Expired</span>
             @endif
         </div>
-    </div>
 
-    <div class="profile-actions">
-        <a href="{{ route('admin.drivers.edit', $driver) }}" class="btn-primary">Edit Driver</a>
-        <a href="{{ route('admin.drivers.location-history', $driver) }}" class="btn-secondary"
-           style="display:inline-flex;align-items:center;gap:6px;">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Location History
-        </a>
-        <form method="POST" action="{{ route('admin.drivers.resend-invitation', $driver) }}" style="display:inline;">
-            @csrf
-            <button type="submit" class="btn-secondary" title="Resend invitation email">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                Resend Invitation
-            </button>
-        </form>
-        <button class="btn-danger"
-            onclick="confirmDelete('{{ route('admin.drivers.destroy', $driver) }}','{{ addslashes($driver->user->name ?? 'this driver') }}')">
-            Delete
-        </button>
+        {{-- Row containing Shortcuts and Main Actions together --}}
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:14px; width:100%;">
+            {{-- Shortcut Buttons --}}
+            <div class="shortcut-buttons" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a href="{{ route('admin.attendance.index', ['search' => $driver->user->name]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                    📅 Attendance History
+                </a>
+                <a href="{{ route('admin.drivers.location-history', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                    📍 Location History
+                </a>
+                <a href="{{ route('admin.financials.settle-driver', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                    💳 Finances
+                </a>
+            </div>
+
+            {{-- Profile Actions (Edit, Toggle Status, Resend, Delete) --}}
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <a href="{{ route('admin.drivers.edit', $driver) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Driver</a>
+                
+                <form method="POST" action="{{ route('admin.drivers.toggle-status', $driver) }}" style="display:inline;">
+                    @csrf
+                    @method('PATCH')
+                    @if($driver->user?->status === 'active')
+                        <button type="submit" class="btn-secondary" title="Deactivate Driver" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#fbbf24;border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.1);">
+                            ⏸ Deactivate
+                        </button>
+                    @else
+                        <button type="submit" class="btn-secondary" title="Activate Driver" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#4ade80;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);">
+                            ▶ Activate
+                        </button>
+                    @endif
+                </form>
+
+                <form method="POST" action="{{ route('admin.drivers.resend-invitation', $driver) }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn-secondary" title="Resend invitation email" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        Resend Invitation
+                    </button>
+                </form>
+                <button class="btn-danger" style="font-size:.78rem;padding:6px 12px;"
+                    onclick="confirmDelete('{{ route('admin.drivers.destroy', $driver) }}','{{ addslashes($driver->user->name ?? 'this driver') }}')">
+                    Delete
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -162,15 +186,6 @@
             <div class="info-row">
                 <span class="info-row-key">License No.</span>
                 <span class="info-row-val" style="font-family:monospace;letter-spacing:.03em;">{{ $driver->license_number }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-row-key">License Class</span>
-                <span class="info-row-val">
-                    @if($driver->license_class)
-                        <span class="badge-info">{{ ucfirst($driver->license_class) }}</span>
-                    @else —
-                    @endif
-                </span>
             </div>
             <div class="info-row">
                 <span class="info-row-key">License Expiry</span>
@@ -238,38 +253,6 @@
         </div>
     </div>
 
-    {{-- Last Known Location --}}
-    <div class="info-card">
-        <div class="info-card-title">Last Known Location</div>
-        <div class="info-rows">
-            <div class="info-row">
-                <span class="info-row-key">Latitude</span>
-                <span class="info-row-val" style="font-family:monospace;">{{ $driver->current_latitude ?? '—' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-row-key">Longitude</span>
-                <span class="info-row-val" style="font-family:monospace;">{{ $driver->current_longitude ?? '—' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-row-key">Last Updated</span>
-                <span class="info-row-val">
-                    @if($driver->location_updated_at)
-                        {{ \Carbon\Carbon::parse($driver->location_updated_at)->format('d M Y, H:i') }}
-                        <span style="color:var(--text-dim);font-size:.78rem;display:block;margin-top:2px;">
-                            {{ \Carbon\Carbon::parse($driver->location_updated_at)->diffForHumans() }}
-                        </span>
-                    @else —
-                    @endif
-                </span>
-            </div>
-        </div>
-        @if(!$driver->current_latitude && !$driver->current_longitude)
-        <div style="margin-top:16px;padding:14px;background:var(--in-bg);border-radius:10px;text-align:center;">
-            <div style="font-size:.78rem;color:var(--text-dim);">No location data available yet.</div>
-        </div>
-        @endif
-    </div>
-
     {{-- Salary Configuration --}}
     @php
         $salaryConfig = $driver->activeSalaryConfig;
@@ -322,6 +305,40 @@
                         <span class="info-row-val" style="color:var(--text-dim);font-size:.82rem;">Global city rates apply</span>
                     </div>
                 @endif
+            </div>
+        @endif
+    </div>
+
+    {{-- Last Known Location --}}
+    <div class="info-card" style="grid-column: span 2;">
+        <div class="info-card-title">Last Known Location</div>
+        <div class="info-rows" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div class="info-row" style="border-bottom: none; padding-bottom: 0;">
+                <span class="info-row-key">Latitude</span>
+                <span class="info-row-val" style="font-family:monospace;">{{ $driver->current_latitude ?? '—' }}</span>
+            </div>
+            <div class="info-row" style="border-bottom: none; padding-bottom: 0;">
+                <span class="info-row-key">Longitude</span>
+                <span class="info-row-val" style="font-family:monospace;">{{ $driver->current_longitude ?? '—' }}</span>
+            </div>
+            <div class="info-row" style="border-bottom: none; padding-bottom: 0;">
+                <span class="info-row-key">Last Updated</span>
+                <span class="info-row-val">
+                    @if($driver->location_updated_at)
+                        {{ \Carbon\Carbon::parse($driver->location_updated_at)->format('d M Y, H:i') }}
+                        <span style="color:var(--text-dim);font-size:.78rem;display:block;margin-top:2px;">
+                            {{ \Carbon\Carbon::parse($driver->location_updated_at)->diffForHumans() }}
+                        </span>
+                    @else —
+                    @endif
+                </span>
+            </div>
+        </div>
+        @if($driver->current_latitude && $driver->current_longitude)
+            <div id="map" style="width: 100%; height: 350px; border-radius: 12px; border: 1px solid var(--bdr); margin-top: 20px; background: #0c1230; z-index: 0;"></div>
+        @else
+            <div style="margin-top:16px;padding:14px;background:var(--in-bg);border-radius:10px;text-align:center;">
+                <div style="font-size:.78rem;color:var(--text-dim);">No location data available yet.</div>
             </div>
         @endif
     </div>
@@ -472,4 +489,35 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var lat = {{ $driver->current_latitude ?? 'null' }};
+        var lng = {{ $driver->current_longitude ?? 'null' }};
+        
+        if (lat !== null && lng !== null) {
+            var map = L.map('map', { zoomControl: true }).setView([lat, lng], 14);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+
+            var initials = "{{ strtoupper(substr($driver->user->name ?? '?', 0, 2)) }}";
+            var driverIcon = L.divIcon({
+                className: '',
+                html: '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7f1d1d,#dc2626);border:2px solid #f87171;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5);">' + initials + '</div>',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18],
+                popupAnchor: [0, -20]
+            });
+
+            L.marker([lat, lng], { icon: driverIcon }).addTo(map)
+                .bindPopup("<b>{{ $driver->user->name ?? 'Driver' }}</b><br>Last known location.");
+        }
+    });
+</script>
 @endsection

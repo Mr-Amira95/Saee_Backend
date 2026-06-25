@@ -17,10 +17,8 @@ class DriverProfile extends Model
     protected $fillable = [
         'user_id',
         'national_id',
-        'national_id_verified_at',
         'license_number',
         'license_expiry_date',
-        'license_class',
         'license_attachment',
         'vehicle_type',
         'vehicle_plate',
@@ -36,7 +34,6 @@ class DriverProfile extends Model
     protected function casts(): array
     {
         return [
-            'national_id_verified_at' => 'datetime',
             'license_expiry_date'     => 'date',
             'car_license_expiry'      => 'date',
             'is_available'            => 'boolean',

@@ -67,6 +67,7 @@
     @method('PUT')
 
     {{-- Account --}}
+    {{-- Account --}}
     <div class="form-section" style="position:relative;z-index:2;">
         <div class="form-section-title">Account Credentials</div>
         <div class="form-grid-2">
@@ -80,16 +81,7 @@
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email', $driver->user->email) }}" required>
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
-            <div class="form-group">
-                <label class="form-label" for="password">New Password <span class="opt">(leave blank to keep)</span></label>
-                <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password">
-                @error('password')<span class="form-error">{{ $message }}</span>@enderror
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="password_confirmation">Confirm New Password</label>
-                <input class="form-input" id="password_confirmation" type="password" name="password_confirmation">
-            </div>
-            <div class="form-group" style="position:relative;">
+            <div class="form-group" style="position:relative; grid-column:span 2;">
                 <label class="form-label">Phone <span class="opt">(optional)</span></label>
                 <div class="phone-wrap">
                     <button type="button" class="phone-ext-btn" id="phoneExtBtn">
@@ -106,14 +98,6 @@
                     <input type="text" class="phone-dd-search" placeholder="Search country or code…">
                     <div class="phone-dd-list" id="phoneExtList"></div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="user_status">Account Status</label>
-                <select class="form-select" id="user_status" name="user_status">
-                    <option value="active"    {{ old('user_status', $driver->user->status) === 'active'    ? 'selected' : '' }}>Active</option>
-                    <option value="suspended" {{ old('user_status', $driver->user->status) === 'suspended' ? 'selected' : '' }}>Suspended</option>
-                    <option value="pending"   {{ old('user_status', $driver->user->status) === 'pending'   ? 'selected' : '' }}>Pending</option>
-                </select>
             </div>
         </div>
     </div>
@@ -136,15 +120,6 @@
                 <label class="form-label" for="license_expiry_date">License Expiry <span class="req">*</span></label>
                 <input class="form-input @error('license_expiry_date') is-error @enderror" id="license_expiry_date" type="date" name="license_expiry_date" value="{{ old('license_expiry_date', \Carbon\Carbon::parse($driver->license_expiry_date)->format('Y-m-d')) }}" required>
                 @error('license_expiry_date')<span class="form-error">{{ $message }}</span>@enderror
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="license_class">License Class</label>
-                <select class="form-select" id="license_class" name="license_class">
-                    <option value="">Select…</option>
-                    <option value="light"      {{ old('license_class', $driver->license_class) === 'light'      ? 'selected' : '' }}>Light</option>
-                    <option value="heavy"      {{ old('license_class', $driver->license_class) === 'heavy'      ? 'selected' : '' }}>Heavy</option>
-                    <option value="motorcycle" {{ old('license_class', $driver->license_class) === 'motorcycle' ? 'selected' : '' }}>Motorcycle</option>
-                </select>
             </div>
             <div class="form-group">
                 <label class="form-label" for="license_attachment">License Attachment <span class="opt">(optional)</span></label>
@@ -186,13 +161,6 @@
                 @endif
                 <input class="form-input" id="car_license_attachment" type="file" name="car_license_attachment" style="padding:6px 8px;">
                 @error('car_license_attachment')<span class="form-error">{{ $message }}</span>@enderror
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="is_available">Availability</label>
-                <select class="form-select" id="is_available" name="is_available">
-                    <option value="1" {{ old('is_available', $driver->is_available ? '1' : '0') === '1' ? 'selected' : '' }}>Available</option>
-                    <option value="0" {{ old('is_available', $driver->is_available ? '1' : '0') === '0' ? 'selected' : '' }}>Busy / Unavailable</option>
-                </select>
             </div>
         </div>
     </div>
@@ -407,12 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!first) first = eEl;
         }
 
-        // Password confirmation
-        var pw = getField('password'), pwc = getField('password_confirmation');
-        if (pw && pwc && pw.value && pw.value !== pwc.value) {
-            showFieldError(pwc, 'Password confirmation does not match.');
-            if (!first) first = pwc;
-        }
+
 
         if (first) {
             e.preventDefault();

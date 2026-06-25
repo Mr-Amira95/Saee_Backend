@@ -145,6 +145,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('drivers/{driver}/resend-invitation', [DriverController::class, 'resendInvitation'])->name('drivers.resend-invitation');
             Route::get('drivers/{driver}/location-history',   [DriverController::class, 'locationHistory'])->name('drivers.location-history');
             Route::get('drivers-live-map',                    [DriverController::class, 'liveMap'])->name('drivers.live-map');
+            Route::patch('drivers/{driver}/toggle-status',    [DriverController::class, 'toggleStatus'])->name('drivers.toggle-status');
 
             Route::resource('admins',  AdminUserController::class)->names('admins');
         });

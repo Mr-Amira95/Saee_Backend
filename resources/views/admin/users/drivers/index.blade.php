@@ -30,29 +30,25 @@
     </div>
 </div>
 
-<div class="filter-bar">
-    <form method="GET" action="{{ route('admin.drivers.index') }}" class="filter-form">
-        <input class="filter-search" type="text" name="search" value="{{ request('search') }}" placeholder="Search name, plate, national ID…">
-        <select class="filter-select" name="status">
-            <option value="">All Statuses</option>
-            <option value="active"    {{ request('status') === 'active'    ? 'selected' : '' }}>Active</option>
-            <option value="suspended" {{ request('status') === 'suspended' ? 'selected' : '' }}>Suspended</option>
-        </select>
-        <select class="filter-select" name="available">
-            <option value="">Availability</option>
-            <option value="1" {{ request('available') === '1' ? 'selected' : '' }}>Available</option>
-            <option value="0" {{ request('available') === '0' ? 'selected' : '' }}>Busy</option>
-        </select>
-        <button class="btn-secondary" type="submit">Filter</button>
-        @if(request('search') || request('status') || request('available') !== null && request('available') !== '')
-            <a href="{{ route('admin.drivers.index') }}" class="btn-secondary">Clear</a>
-        @endif
+<div class="filter-bar" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+    <form method="GET" action="{{ route('admin.drivers.index') }}" class="filter-form" style="margin:0; flex:1; max-width:320px;" id="search-form">
+        <input
+            class="filter-search"
+            type="text"
+            name="search"
+            id="search-input"
+            value="{{ request('search') }}"
+            placeholder="Search name, plate, national ID…"
+            style="width:100%;"
+        >
     </form>
-    <a href="{{ route('admin.drivers.live-map') }}" class="btn-secondary">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        Live Map
-    </a>
-    <a href="{{ route('admin.drivers.create') }}" class="btn-primary">+ Add Driver</a>
+    <div style="display:flex; gap:8px; align-items:center;">
+        <a href="{{ route('admin.drivers.live-map') }}" class="btn-secondary">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Live Map
+        </a>
+        <a href="{{ route('admin.drivers.create') }}" class="btn-primary">+ Add Driver</a>
+    </div>
 </div>
 
 @if($q->count())
@@ -64,8 +60,6 @@
                 <th>Vehicle</th>
                 <th>License</th>
                 <th>License Expiry</th>
-                <th>Available</th>
-                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -99,17 +93,7 @@
                         @endif
                     </span>
                 </td>
-                <td>
-                    @if($driver->is_available) <span class="badge-yes">Yes</span>
-                    @else <span class="badge-no">No</span>
-                    @endif
-                </td>
-                <td>
-                    @if($driver->user?->status === 'active')     <span class="badge-active">Active</span>
-                    @elseif($driver->user?->status === 'suspended') <span class="badge-suspended">Suspended</span>
-                    @else <span class="badge-pending">Pending</span>
-                    @endif
-                </td>
+
                 <td>
                     <div class="act-btns">
                         <a href="{{ route('admin.drivers.show', $driver) }}" class="act-btn act-view" title="View">
@@ -136,4 +120,25 @@
     <p>No drivers found. <a href="{{ route('admin.drivers.create') }}">Add the first driver.</a></p>
 </div>
 @endif
+@endsection
+
+@section('scripts')
+<script>
+    // Real-time search script
+    var searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        var timeout = null;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                document.getElementById('search-form').submit();
+            }, 500);
+        });
+        // Keep focus at end of input
+        searchInput.focus();
+        var val = searchInput.value;
+        searchInput.value = '';
+        searchInput.value = val;
+    }
+</script>
 @endsection

@@ -25,16 +25,18 @@ class DriverController extends Controller
     {
         $q = DriverProfile::with('user')
             ->when($request->search, fn($query, $s) =>
-                $query->whereHas('user', fn($u) =>
-                    $u->where('name', 'like', "%$s%")->orWhere('email', 'like', "%$s%")
-                )->orWhere('vehicle_plate', 'like', "%$s%")
-                 ->orWhere('national_id', 'like', "%$s%")
-            )
-            ->when($request->available !== null && $request->available !== '', fn($query) =>
-                $query->where('is_available', (bool)$request->available)
-            )
-            ->when($request->status, fn($query, $s) =>
-                $query->whereHas('user', fn($u) => $u->where('status', $s))
+                $query->where(function ($sub) use ($s) {
+                    $sub->whereHas('user', fn($u) =>
+                        $u->where('name', 'like', "%$s%")
+                          ->orWhere('email', 'like', "%$s%")
+                          ->orWhere('phone', 'like', "%$s%")
+                    )
+                    ->orWhere('vehicle_plate', 'like', "%$s%")
+                    ->orWhere('vehicle_model', 'like', "%$s%")
+                    ->orWhere('vehicle_color', 'like', "%$s%")
+                    ->orWhere('national_id', 'like', "%$s%")
+                    ->orWhere('license_number', 'like', "%$s%");
+                })
             )
             ->latest()
             ->paginate(15)
@@ -157,14 +159,11 @@ class DriverController extends Controller
             'national_id'            => ['required','string','max:20', Rule::unique('driver_profiles','national_id')->ignore($driver->id)],
             'license_number'         => ['required','string','max:50', Rule::unique('driver_profiles','license_number')->ignore($driver->id)],
             'license_expiry_date'    => 'required|date',
-            'license_class'          => 'nullable|string|max:20',
             'license_attachment'     => 'nullable|image|max:10240',
             'vehicle_type'           => 'nullable|string|max:50',
             'vehicle_plate'          => ['nullable','string','max:20', Rule::unique('driver_profiles','vehicle_plate')->ignore($driver->id)],
             'car_license_expiry'     => 'nullable|date',
             'car_license_attachment' => 'nullable|image|max:10240',
-            'is_available'           => 'nullable|boolean',
-            'user_status'            => ['nullable', Rule::in(['active','suspended','pending'])],
             // Salary
             'salary_type'            => ['nullable', Rule::in(['per_salary', 'per_order'])],
             'basic_salary'           => ['nullable', 'required_if:salary_type,per_salary', 'numeric', 'min:0'],
@@ -181,7 +180,7 @@ class DriverController extends Controller
                 'email'              => $data['email'],
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? $driver->user->phone_country_code,
-                'status'             => $data['user_status'] ?? $driver->user->status,
+                'status'             => $driver->user->status,
             ]);
 
             $licenseAttachment = $driver->license_attachment;
@@ -202,13 +201,12 @@ class DriverController extends Controller
                 'national_id'            => $data['national_id'],
                 'license_number'         => $data['license_number'],
                 'license_expiry_date'    => $data['license_expiry_date'],
-                'license_class'          => $data['license_class'] ?? null,
                 'license_attachment'     => $licenseAttachment,
                 'vehicle_type'           => $data['vehicle_type'] ?? null,
                 'vehicle_plate'          => $data['vehicle_plate'] ?? null,
                 'car_license_expiry'     => $data['car_license_expiry'] ?? null,
                 'car_license_attachment' => $carLicenseAttachment,
-                'is_available'           => isset($data['is_available']) ? (bool)$data['is_available'] : $driver->is_available,
+                'is_available'           => $driver->is_available,
             ]);
 
             if (!empty($data['salary_type'])) {
@@ -277,6 +275,16 @@ class DriverController extends Controller
         $this->sendInvitation($driver->user);
 
         return back()->with('success', "Invitation email resent to {$driver->user->email}.");
+    }
+
+    public function toggleStatus(DriverProfile $driver)
+    {
+        $user = $driver->user;
+        if ($user) {
+            $user->status = $user->status === 'active' ? 'suspended' : 'active';
+            $user->save();
+        }
+        return back()->with('success', 'Driver status updated successfully.');
     }
 
     private function updateSalaryConfig(DriverProfile $driver, array $data): void
