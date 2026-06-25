@@ -92,14 +92,9 @@
             <p>Created by {{ $order->clientProfile->company_name }} on {{ $order->created_at->format('Y-m-d H:i') }}</p>
         </div>
         <div class="page-hd-right" style="display: flex; gap: 8px;">
-            {{-- Quick status update triggers --}}
-            <button class="btn-secondary" onclick="openModal('assignDriverModal')">
+            <button class="btn-primary" onclick="openModal('assignDriverModal')">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 {{ $order->driver ? 'Reassign Driver' : 'Assign Driver' }}
-            </button>
-            <button class="btn-primary" onclick="openModal('updateStatusModal')">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                Update Status
             </button>
         </div>
     </div>
@@ -351,68 +346,7 @@
 
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal('assignDriverModal')">Cancel</button>
-                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); box-shadow: 0 4px 14px rgba(59,130,246,0.3);">Assign</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- MODAL 2: Update Status --}}
-    <div class="modal-overlay" id="updateStatusModal">
-        <div class="modal-card" style="border-color: rgba(220,38,38,0.25); max-width: 460px;">
-            <h3>Update Shipment Status</h3>
-            <p style="margin-bottom: 18px;">Select the new status for this order and provide required details.</p>
-            <form action="{{ route('admin.orders.update', $order) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PATCH')
-                @if($order->driver)
-                    <input type="hidden" name="driver_id" value="{{ $order->driver->id }}">
-                @endif
-                
-                <div class="form-group" style="text-align: left; margin-bottom: 16px;">
-                    <label class="form-label" for="status_select">New Status</label>
-                    <select name="status" id="status_select" class="form-select" required style="width:100%">
-                        <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending Collection</option>
-                        <option value="picked_up" {{ $order->status === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
-                        <option value="delivered" {{ $order->status === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                        <option value="rejected" {{ $order->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                        <option value="returned" {{ $order->status === 'returned' ? 'selected' : '' }}>Returned</option>
-                        <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                    </select>
-                </div>
-
-                {{-- Delivery Proof Fields (shown only when Delivered is selected) --}}
-                <div id="deliveredFields" style="display: none; text-align: left; margin-bottom: 16px; border-top: 1px solid var(--bdr); padding-top: 16px;">
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label class="form-label" for="signature">Customer Signature Image (Optional)</label>
-                        <input type="file" name="signature" id="signature" class="form-input" accept="image/*">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="proof_image">Delivery Proof Photo (Optional)</label>
-                        <input type="file" name="proof_image" id="proof_image" class="form-input" accept="image/*">
-                    </div>
-                </div>
-
-                {{-- Rejection Fields (shown only when Rejected is selected) --}}
-                <div id="rejectedFields" style="display: none; text-align: left; margin-bottom: 16px; border-top: 1px solid var(--bdr); padding-top: 16px;">
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label class="form-label" for="rejection_reason_id">Rejection Reason <span class="req">*</span></label>
-                        <select name="rejection_reason_id" id="rejection_reason_id" class="form-select" style="width:100%">
-                            <option value="">Select Reason</option>
-                            @foreach($rejectionReasons ?? [] as $reason)
-                                <option value="{{ $reason->id }}">{{ $reason->reason }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="modal_notes">Rejection Notes</label>
-                        <textarea name="notes" id="modal_notes" class="form-textarea" placeholder="Provide extra details on why delivery failed..."></textarea>
-                    </div>
-                </div>
-
-                <div class="modal-actions" style="margin-top: 24px;">
-                    <button type="button" class="btn-secondary" onclick="closeModal('updateStatusModal')">Cancel</button>
-                    <button type="submit" class="btn-primary">Update</button>
+                    <button type="submit" class="btn-primary">Assign</button>
                 </div>
             </form>
         </div>
@@ -429,36 +363,10 @@
             document.getElementById(id).classList.remove('open');
         }
 
-        // Handle Modal Overlay Click Dismissals
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
             overlay.addEventListener('click', function(e) {
                 if (e.target === this) closeModal(this.id);
             });
         });
-
-        // Dynamic Status fields toggling
-        const statusSelect = document.getElementById('status_select');
-        const deliveredFields = document.getElementById('deliveredFields');
-        const rejectedFields = document.getElementById('rejectedFields');
-        const rejectionReasonInput = document.getElementById('rejection_reason_id');
-
-        statusSelect.addEventListener('change', function() {
-            if (this.value === 'delivered') {
-                deliveredFields.style.display = 'block';
-                rejectedFields.style.display = 'none';
-                rejectionReasonInput.required = false;
-            } else if (this.value === 'rejected') {
-                deliveredFields.style.display = 'none';
-                rejectedFields.style.display = 'block';
-                rejectionReasonInput.required = true;
-            } else {
-                deliveredFields.style.display = 'none';
-                rejectedFields.style.display = 'none';
-                rejectionReasonInput.required = false;
-            }
-        });
-        
-        // Initial check
-        statusSelect.dispatchEvent(new Event('change'));
     </script>
 @endsection

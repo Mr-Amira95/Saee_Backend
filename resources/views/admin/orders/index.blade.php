@@ -6,7 +6,7 @@
 @section('breadcrumb')
     <span class="sep">/</span>
     <span class="current">Orders</span>
-@@endsection
+@endsection
 
 @section('content')
     {{-- Page Header --}}
@@ -80,17 +80,15 @@
     <div class="filter-bar">
         <form action="{{ route('admin.orders.index') }}" method="GET" id="filter-form">
 
-            {{-- Row 1: Search --}}
             <div class="filter-row">
-                <div class="filter-search-wrap" style="flex: 1;">
+                {{-- Search --}}
+                <div class="filter-search-wrap" style="flex: 2; min-width: 0;">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" name="search" id="live-search" value="{{ request('search') }}" class="filter-input" placeholder="Search order #, batch #, customer name, phone...">
+                    <input type="text" name="search" id="live-search" value="{{ request('search') }}" class="filter-input" placeholder="Search order #, batch #, receiver name, phone...">
                 </div>
-            </div>
 
-            {{-- Row 2: Dropdowns --}}
-            <div class="filter-row">
-                <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1;">
+                {{-- Status --}}
+                <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1; min-width:0;">
                     <option value="">All Statuses</option>
                     <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>Pending</option>
                     <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
@@ -101,12 +99,10 @@
                 </select>
 
                 {{-- Searchable: Clients --}}
-                <div class="ss-wrap" style="flex:1;">
+                <div class="ss-wrap" style="flex:1; min-width:0;">
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
-                            @php
-                                $selectedClient = $clients->firstWhere('id', request('client_profile_id'));
-                            @endphp
+                            @php $selectedClient = $clients->firstWhere('id', request('client_profile_id')); @endphp
                             {{ $selectedClient ? $selectedClient->company_name : 'All Clients' }}
                         </span>
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
@@ -124,12 +120,10 @@
                 </div>
 
                 {{-- Searchable: Drivers --}}
-                <div class="ss-wrap" style="flex:1;">
+                <div class="ss-wrap" style="flex:1; min-width:0;">
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
-                            @php
-                                $selectedDriver = $drivers->firstWhere('id', request('driver_id'));
-                            @endphp
+                            @php $selectedDriver = $drivers->firstWhere('id', request('driver_id')); @endphp
                             {{ $selectedDriver ? $selectedDriver->name : 'All Drivers' }}
                         </span>
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
@@ -147,12 +141,10 @@
                 </div>
 
                 {{-- Searchable: Cities --}}
-                <div class="ss-wrap" style="flex:1;">
+                <div class="ss-wrap" style="flex:1; min-width:0;">
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
-                            @php
-                                $selectedCity = $cities->firstWhere('id', request('city_id'));
-                            @endphp
+                            @php $selectedCity = $cities->firstWhere('id', request('city_id')); @endphp
                             {{ $selectedCity ? $selectedCity->name : 'All Cities' }}
                         </span>
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
@@ -170,7 +162,7 @@
                 </div>
 
                 @if(request()->anyFilled(['search', 'status', 'payment_status', 'client_profile_id', 'driver_id', 'city_id']))
-                    <a href="{{ route('admin.orders.index') }}" class="btn-secondary" style="padding: 8px 14px; height: 35px; display: inline-flex; align-items: center; white-space: nowrap;">Clear</a>
+                    <a href="{{ route('admin.orders.index') }}" class="btn-secondary" style="padding: 8px 14px; height: 35px; display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0;">Clear</a>
                 @endif
             </div>
 
@@ -199,7 +191,7 @@
 
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal('assignDriverModal')">Cancel</button>
-                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); box-shadow: 0 4px 14px rgba(59,130,246,0.3);">Assign</button>
+                    <button type="submit" class="btn-primary">Assign</button>
                 </div>
             </form>
         </div>
@@ -330,8 +322,7 @@
     </div>
 
     <style>
-    /* Filter rows layout */
-    .filter-bar .filter-form,
+    /* Filter row layout */
     .filter-bar form {
         display: flex;
         flex-direction: column;
@@ -343,12 +334,8 @@
         gap: 10px;
         width: 100%;
     }
-    .filter-row .filter-select {
-        flex: 1;
-        min-width: 0;
-    }
 
-    /* Searchable select */
+    /* Searchable select — matches dark admin theme */
     .ss-wrap {
         position: relative;
         min-width: 0;
@@ -359,19 +346,19 @@
         justify-content: space-between;
         padding: 0 12px;
         height: 35px;
-        border: 1px solid var(--border, #ddd);
-        border-radius: 7px;
-        background: var(--card-bg, #fff);
+        border: 1px solid var(--bdr);
+        border-radius: 8px;
+        background: var(--card);
         cursor: pointer;
         font-size: .875rem;
-        color: var(--text-main, #111);
+        color: var(--text);
         gap: 8px;
         user-select: none;
         transition: border-color .15s;
     }
     .ss-trigger:hover,
     .ss-wrap.open .ss-trigger {
-        border-color: #3b82f6;
+        border-color: var(--red-lt);
     }
     .ss-label {
         flex: 1;
@@ -384,10 +371,10 @@
         top: calc(100% + 4px);
         left: 0;
         right: 0;
-        background: var(--card-bg, #fff);
-        border: 1px solid var(--border, #ddd);
+        background: var(--card);
+        border: 1px solid var(--bdr);
         border-radius: 8px;
-        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+        box-shadow: 0 8px 24px rgba(0,0,0,.35);
         z-index: 200;
         display: none;
         overflow: hidden;
@@ -399,11 +386,11 @@
         width: 100%;
         padding: 8px 12px;
         border: none;
-        border-bottom: 1px solid var(--border, #eee);
+        border-bottom: 1px solid var(--bdr);
         font-size: .875rem;
         outline: none;
-        background: var(--card-bg, #fff);
-        color: var(--text-main, #111);
+        background: var(--card);
+        color: var(--text);
         box-sizing: border-box;
     }
     .ss-opts {
@@ -411,17 +398,17 @@
         overflow-y: auto;
     }
     .ss-opt {
-        padding: 8px 12px;
+        padding: 9px 14px;
         font-size: .875rem;
         cursor: pointer;
-        color: var(--text-main, #111);
+        color: var(--text);
         transition: background .1s;
     }
     .ss-opt:hover {
-        background: rgba(59, 130, 246, .07);
+        background: rgba(255,255,255,.08);
     }
     .ss-opt.selected {
-        color: #3b82f6;
+        color: var(--red-lt);
         font-weight: 600;
     }
     .ss-opt.ss-hidden {
