@@ -4,7 +4,7 @@
 
 @section('content')
 
-<h1 style="font-size:1.35rem;font-weight:800;margin-bottom:20px;">Account</h1>
+<h1 style="font-size:1.35rem;font-weight:800;margin-bottom:20px;">{{ __('Account') }}</h1>
 
 {{-- Profile card --}}
 <div class="card" style="margin-bottom:20px;">
@@ -22,15 +22,15 @@
                 <span class="badge badge-info" style="font-size:.72rem;">{{ $profile->company_name }}</span>
                 @endif
                 <span class="badge {{ $user->status === 'active' ? 'badge-success' : 'badge-neutral' }}" style="font-size:.72rem;">
-                    <span class="badge-dot"></span>{{ ucfirst($user->status) }}
+                    <span class="badge-dot"></span>{{ $user->status === 'active' ? __('Active') : __('Inactive') }}
                 </span>
-                <span class="badge badge-neutral" style="font-size:.72rem;">{{ $user->role === 'client_master' ? 'Account Owner' : 'Employee' }}</span>
+                <span class="badge badge-neutral" style="font-size:.72rem;">{{ $user->role === 'client_master' ? __('Account Owner') : __('Employee') }}</span>
             </div>
         </div>
 
         @if($masterUser && $user->role === 'client_employee')
         <div style="text-align:right;min-width:160px;">
-            <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Account Owner</div>
+            <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Account Owner') }}</div>
             <div style="font-size:.86rem;font-weight:600;">{{ $masterUser->name }}</div>
             <div style="font-size:.78rem;color:var(--text-sub);">{{ $masterUser->phone }}</div>
         </div>
@@ -38,7 +38,7 @@
 
         <a href="{{ route('client.account.profile.edit') }}" class="btn-secondary" style="padding:7px 16px;font-size:.82rem;display:flex;align-items:center;gap:6px;flex-shrink:0;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-1.414A2 2 0 019.586 13z"/></svg>
-            Edit Profile
+            {{ __('Edit Profile') }}
         </a>
     </div>
 </div>
@@ -51,13 +51,13 @@
                 <svg width="17" height="17" fill="none" stroke="var(--red)" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
             <div>
-                <div style="font-size:.95rem;font-weight:700;">Password</div>
-                <div style="font-size:.76rem;color:var(--text-dim);">Change your account password</div>
+                <div style="font-size:.95rem;font-weight:700;">{{ __('Password') }}</div>
+                <div style="font-size:.76rem;color:var(--text-dim);">{{ __('Change your account password') }}</div>
             </div>
         </div>
         <a href="{{ route('client.account.password.edit') }}" class="btn-secondary" style="padding:7px 16px;font-size:.82rem;display:flex;align-items:center;gap:6px;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-1.414A2 2 0 019.586 13z"/></svg>
-            Change
+            {{ __('Change') }}
         </a>
     </div>
 </div>
@@ -70,9 +70,9 @@
                 <svg width="17" height="17" fill="none" stroke="var(--red)" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             </div>
             <div>
-                <div style="font-size:.95rem;font-weight:700;">Notifications</div>
+                <div style="font-size:.95rem;font-weight:700;">{{ __('Notifications') }}</div>
                 <div style="font-size:.76rem;color:var(--text-dim);" id="notif-label">
-                    {{ $user->notifications_enabled ? 'You are receiving notifications' : 'Notifications are disabled' }}
+                    {{ $user->notifications_enabled ? __('You are receiving notifications') : __('Notifications are disabled') }}
                 </div>
             </div>
         </div>
@@ -109,7 +109,7 @@
 
         track.style.background = enabled ? 'var(--red,#dc2626)' : '#d1d5db';
         thumb.style.left       = enabled ? '23px' : '3px';
-        label.textContent      = enabled ? 'You are receiving notifications' : 'Notifications are disabled';
+        label.textContent      = enabled ? '{{ __('You are receiving notifications') }}' : '{{ __('Notifications are disabled') }}';
 
         fetch('{{ route('client.account.notifications.toggle') }}', {
             method: 'POST',
@@ -122,7 +122,7 @@
             checkbox.checked = !enabled;
             track.style.background = !enabled ? 'var(--red,#dc2626)' : '#d1d5db';
             thumb.style.left       = !enabled ? '23px' : '3px';
-            label.textContent      = !enabled ? 'You are receiving notifications' : 'Notifications are disabled';
+            label.textContent      = !enabled ? '{{ __('You are receiving notifications') }}' : '{{ __('Notifications are disabled') }}';
         });
     });
 })();
@@ -136,13 +136,13 @@
                 <svg width="17" height="17" fill="none" stroke="var(--red)" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             </div>
             <div>
-                <div style="font-size:.95rem;font-weight:700;">Banking Details</div>
-                <div style="font-size:.76rem;color:var(--text-dim);">Bank account for settlements and payouts</div>
+                <div style="font-size:.95rem;font-weight:700;">{{ __('Banking Details') }}</div>
+                <div style="font-size:.76rem;color:var(--text-dim);">{{ __('Bank account for settlements and payouts') }}</div>
             </div>
         </div>
         <a href="{{ route('client.account.banking') }}" class="btn-secondary" style="padding:7px 16px;font-size:.82rem;display:flex;align-items:center;gap:6px;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-1.414A2 2 0 019.586 13z"/></svg>
-            Edit
+            {{ __('Edit') }}
         </a>
     </div>
 
@@ -151,13 +151,13 @@
 
         @php
         $bankRows = [
-            ['label' => 'Bank Name',          'value' => $bankDetail->bank_name,     'mono' => false],
-            ['label' => 'Account Holder',     'value' => $bankDetail->account_name,  'mono' => false],
-            ['label' => 'IBAN',               'value' => $bankDetail->iban,          'mono' => true],
-            ['label' => 'SWIFT / BIC',        'value' => $bankDetail->swift_code,    'mono' => true],
-            ['label' => 'Account Number',     'value' => $bankDetail->account_number,'mono' => true],
-            ['label' => 'CliQ Type',          'value' => $bankDetail->cliq_alias_type ? ucfirst($bankDetail->cliq_alias_type) : null, 'mono' => false],
-            ['label' => 'CliQ Alias / No.',   'value' => $bankDetail->cliq_id,       'mono' => false],
+            ['label' => __('Bank Name'),          'value' => $bankDetail->bank_name,     'mono' => false],
+            ['label' => __('Account Holder'),     'value' => $bankDetail->account_name,  'mono' => false],
+            ['label' => __('IBAN'),               'value' => $bankDetail->iban,          'mono' => true],
+            ['label' => __('SWIFT / BIC'),        'value' => $bankDetail->swift_code,    'mono' => true],
+            ['label' => __('Account Number'),     'value' => $bankDetail->account_number,'mono' => true],
+            ['label' => __('CliQ Type'),          'value' => $bankDetail->cliq_alias_type ? ucfirst($bankDetail->cliq_alias_type) : null, 'mono' => false],
+            ['label' => __('CliQ Alias / No.'),   'value' => $bankDetail->cliq_id,       'mono' => false],
         ];
         @endphp
 
@@ -172,7 +172,7 @@
 
         @if($bankDetail->notes)
         <div style="padding:10px 0;grid-column:1/-1;">
-            <div style="font-size:.72rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;">Notes</div>
+            <div style="font-size:.72rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;">{{ __('Notes') }}</div>
             <div style="font-size:.88rem;color:var(--text);">{{ $bankDetail->notes }}</div>
         </div>
         @endif
@@ -180,7 +180,7 @@
     </div>
     @else
     <div style="padding:24px 0;text-align:center;color:var(--text-dim);font-size:.88rem;">
-        No banking details on file. <a href="{{ route('client.account.banking') }}" style="color:var(--red);text-decoration:none;font-weight:600;">Add now →</a>
+        {{ __('No banking details on file.') }} <a href="{{ route('client.account.banking') }}" style="color:var(--red);text-decoration:none;font-weight:600;">{{ __('Add now →') }}</a>
     </div>
     @endif
 </div>
@@ -193,14 +193,14 @@
                 <svg width="17" height="17" fill="none" stroke="var(--red)" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             </div>
             <div>
-                <div style="font-size:.95rem;font-weight:700;">Company Information</div>
-                <div style="font-size:.76rem;color:var(--text-dim);">Business registration and contact details</div>
+                <div style="font-size:.95rem;font-weight:700;">{{ __('Company Information') }}</div>
+                <div style="font-size:.76rem;color:var(--text-dim);">{{ __('Business registration and contact details') }}</div>
             </div>
         </div>
         @if($user->role !== 'client_employee')
         <a href="{{ route('client.account.company') }}" class="btn-secondary" style="padding:7px 16px;font-size:.82rem;display:flex;align-items:center;gap:6px;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-1.414A2 2 0 019.586 13z"/></svg>
-            Edit
+            {{ __('Edit') }}
         </a>
         @endif
     </div>
@@ -209,13 +209,13 @@
 
         @php
         $companyRows = [
-            ['label' => 'Company Name',         'value' => $profile->company_name,                   'mono' => false],
-            ['label' => 'Commercial Reg. No.',  'value' => $profile->commercial_register_number,     'mono' => true],
-            ['label' => 'VAT Number',           'value' => $profile->vat_number,                     'mono' => true],
-            ['label' => 'Company Email',        'value' => $profile->email,                          'mono' => false],
-            ['label' => 'Company Phone',        'value' => $profile->company_phone,                  'mono' => false],
-            ['label' => 'City',                 'value' => $profile->city?->name,                    'mono' => false],
-            ['label' => 'Area',                 'value' => $profile->area?->name,                    'mono' => false],
+            ['label' => __('Company Name'),         'value' => $profile->company_name,                   'mono' => false],
+            ['label' => __('Commercial Reg. No.'),  'value' => $profile->commercial_register_number,     'mono' => true],
+            ['label' => __('VAT Number'),           'value' => $profile->vat_number,                     'mono' => true],
+            ['label' => __('Company Email'),        'value' => $profile->email,                          'mono' => false],
+            ['label' => __('Company Phone'),        'value' => $profile->company_phone,                  'mono' => false],
+            ['label' => __('City'),                 'value' => $profile->city?->name,                    'mono' => false],
+            ['label' => __('Area'),                 'value' => $profile->area?->name,                    'mono' => false],
         ];
         @endphp
 
@@ -230,7 +230,7 @@
 
         @if($profile->address_line1)
         <div style="padding:10px 0;grid-column:1/-1;">
-            <div style="font-size:.72rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;">Address</div>
+            <div style="font-size:.72rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;">{{ __('Address') }}</div>
             <div style="font-size:.88rem;color:var(--text);">{{ $profile->address_line1 }}</div>
         </div>
         @endif

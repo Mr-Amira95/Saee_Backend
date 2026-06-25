@@ -253,39 +253,40 @@
     {{-- ═══════════ SIDEBAR ════════════ --}}
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee" width="50" height="50" style="object-fit:contain;border-radius:7px;">
+            <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}"  alt="Sa'ee" width="50" height="50" style="object-fit:contain;border-radius:7px;">
+            <img id="logoLight" src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee" width="50" height="50" style="object-fit:contain;border-radius:7px;display:none;">
         </div>
 
         <nav class="sidebar-nav">
-            <span class="nav-label">Main</span>
+            <span class="nav-label">{{ __('Main') }}</span>
 
             <a href="{{ route('client.dashboard') }}" class="nav-item {{ request()->routeIs('client.dashboard') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                Home
+                {{ __('Home') }}
             </a>
 
             <a href="{{ route('client.orders.index') }}" class="nav-item {{ request()->routeIs('client.orders.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                Orders
+                {{ __('Orders') }}
             </a>
 
-            <span class="nav-label" style="margin-top:8px;">Support & Finance</span>
+            <span class="nav-label" style="margin-top:8px;">{{ __('Support & Finance') }}</span>
 
             <a href="{{ route('client.support.index') }}" class="nav-item {{ request()->routeIs('client.support.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                Support
+                {{ __('Support') }}
             </a>
 
             <a href="{{ route('client.finances.index') }}" class="nav-item {{ request()->routeIs('client.finances.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Finances
+                {{ __('Finances') }}
             </a>
 
-            <span class="nav-label" style="margin-top:8px;">Account</span>
+            <span class="nav-label" style="margin-top:8px;">{{ __('Account') }}</span>
 
             <a href="{{ route('client.account.index') }}" class="nav-item {{ request()->routeIs('client.account.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Account
+                {{ __('Account') }}
             </a>
         </nav>
 
@@ -294,14 +295,14 @@
                 <div class="u-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
                 <div class="u-info">
                     <div class="u-name">{{ auth()->user()->name }}</div>
-                    <div class="u-role">{{ auth()->user()->role === 'client_master' ? 'Account Owner' : 'Team Member' }}</div>
+                    <div class="u-role">{{ auth()->user()->role === 'client_master' ? __('Account Owner') : __('Team Member') }}</div>
                 </div>
             </div>
             <form method="POST" action="{{ route('client.logout') }}">
                 @csrf
                 <button type="submit" class="logout-btn">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    Sign Out
+                    {{ __('Sign Out') }}
                 </button>
             </form>
         </div>
@@ -323,7 +324,7 @@
                 @endif
 
                 {{-- Theme Switcher --}}
-                <button class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="Toggle Theme">
+                <button class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="{{ __('Toggle Theme') }}">
                     <svg id="themeMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
                     <svg id="themeSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m8.942-8.942h-2.25M4.313 12H2.063m15.122-6.938l-1.591 1.591M6.818 17.182l-1.591 1.591m12.94 0l-1.591-1.591M6.818 6.818L5.227 5.227M12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
                 </button>
@@ -337,14 +338,14 @@
 
                     <div class="notif-panel" id="notifPanel">
                         <div class="notif-head">
-                            <span class="notif-head-title">Notifications</span>
-                            <button class="notif-mark-all" onclick="markAllRead()">Mark all read</button>
+                            <span class="notif-head-title">{{ __('Notifications') }}</span>
+                            <button class="notif-mark-all" onclick="markAllRead()">{{ __('Mark all read') }}</button>
                         </div>
                         <div class="notif-list" id="notifList">
-                            <div class="notif-empty">Loading…</div>
+                            <div class="notif-empty">{{ __('Loading…') }}</div>
                         </div>
                         <div class="notif-footer">
-                            <a href="{{ route('client.notifications.index') }}">View all notifications</a>
+                            <a href="{{ route('client.notifications.index') }}">{{ __('View all notifications') }}</a>
                         </div>
                     </div>
                 </div>
@@ -397,13 +398,13 @@ function loadNotifications() {
     }).then(r => r.json()).then(data => {
         renderNotifications(data.notifications || []);
     }).catch(() => {
-        document.getElementById('notifList').innerHTML = '<div class="notif-empty">Could not load notifications.</div>';
+        document.getElementById('notifList').innerHTML = '<div class="notif-empty">{{ __("Could not load notifications.") }}</div>';
     });
 }
 
 function renderNotifications(items) {
     const list = document.getElementById('notifList');
-    if (!items.length) { list.innerHTML = '<div class="notif-empty">No notifications yet.</div>'; return; }
+    if (!items.length) { list.innerHTML = '<div class="notif-empty">{{ __("No notifications yet.") }}</div>'; return; }
     list.innerHTML = items.slice(0,10).map(n => `
         <div class="notif-item ${!n.read_at ? 'unread' : ''}" onclick="markOneRead(${n.id}, this)">
             <div class="${!n.read_at ? 'notif-dot-unread' : 'notif-dot-read'}"></div>
@@ -465,6 +466,12 @@ function updateThemeIcons() {
     if (sun && moon) {
         sun.style.display  = isLight ? 'none'  : 'block';
         moon.style.display = isLight ? 'block' : 'none';
+    }
+    const logoDark  = document.getElementById('logoDark');
+    const logoLight = document.getElementById('logoLight');
+    if (logoDark && logoLight) {
+        logoDark.style.display  = isLight ? 'none'  : 'block';
+        logoLight.style.display = isLight ? 'block' : 'none';
     }
 }
 document.addEventListener('DOMContentLoaded', updateThemeIcons);

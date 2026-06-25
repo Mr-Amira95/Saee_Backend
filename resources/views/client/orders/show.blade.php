@@ -1,12 +1,12 @@
 @extends('client.layouts.app')
 @section('title', 'Order ' . $order->order_number)
-@section('page-title', 'Order Details')
+@section('page-title', __('Order Details'))
 
 @section('content')
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
     <div style="display:flex;align-items:center;gap:12px;">
-        <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← Back</a>
+        <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">{{ __('← Back') }}</a>
         <div>
             <div style="font-family:monospace;font-size:.9rem;color:var(--red-lt);font-weight:700;">{{ $order->order_number }}</div>
             <div style="font-size:.78rem;color:var(--text-dim);">Created {{ $order->created_at->format('d M Y, H:i') }}</div>
@@ -37,7 +37,7 @@
         @if($order->status === 'pending')
         <button type="button" class="btn-danger" style="padding:7px 14px;font-size:.82rem;" onclick="document.getElementById('deleteModal').style.display='flex';">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            Delete Order
+            {{ __('Delete Order') }}
         </button>
         @endif
     </div>
@@ -48,39 +48,39 @@
     {{-- Left: Shipment & Receiver --}}
     <div style="display:flex;flex-direction:column;gap:16px;">
         <div class="card">
-            <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">Shipment Information</div>
+            <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">{{ __('Shipment Information') }}</div>
             @if($order->order_description)
             <div style="margin-bottom:14px;">
-                <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Contents / Description</div>
+                <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Contents / Description') }}</div>
                 <div style="font-size:.9rem;color:var(--text);">{{ $order->order_description }}</div>
             </div>
             @endif
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                 <div>
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Payment Type</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Payment Type') }}</div>
                     <span class="badge {{ $order->payment_type === 'cod' ? 'badge-cod' : 'badge-prepaid' }}">{{ strtoupper($order->payment_type) }}</span>
                 </div>
                 @if($order->payment_type === 'cod' && $order->order_price)
                 <div>
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">COD Amount</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('COD Amount') }}</div>
                     <div style="font-size:1.05rem;font-weight:700;color:#fbbf24;">{{ number_format($order->order_price, 2) }} JD</div>
                 </div>
                 @endif
                 @if($order->delivery_on_customer)
                 <div>
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Delivery Charges On</div>
-                    <span class="badge badge-info">Customer</span>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Delivery Charges On') }}</div>
+                    <span class="badge badge-info">{{ __('Customer') }}</span>
                 </div>
                 @if($order->delivery_customer_amount)
                 <div>
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Customer Delivery Fee</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Customer Delivery Fee') }}</div>
                     <div style="font-size:.9rem;font-weight:600;">{{ number_format($order->delivery_customer_amount, 2) }} JD</div>
                 </div>
                 @endif
                 @endif
                 @if($order->batch_number)
                 <div style="grid-column:1/-1;">
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Batch #</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Batch #') }}</div>
                     <div style="font-family:monospace;font-size:.83rem;color:var(--text-sub);">{{ $order->batch_number }}</div>
                 </div>
                 @endif
@@ -88,26 +88,26 @@
         </div>
 
         <div class="card">
-            <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">Receiver</div>
+            <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">{{ __('Receiver') }}</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                 <div>
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Name</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Name') }}</div>
                     <div style="font-size:.9rem;font-weight:600;">{{ $order->receiver_name }}</div>
                 </div>
                 <div>
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Phone</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Phone') }}</div>
                     <div style="font-size:.9rem;">{{ $order->receiver_phone }}</div>
                 </div>
                 <div>
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">City</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('City') }}</div>
                     <div style="font-size:.9rem;">{{ optional($order->city)->name }}</div>
                 </div>
                 <div>
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Area</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Area') }}</div>
                     <div style="font-size:.9rem;">{{ optional($order->area)->name }}</div>
                 </div>
                 <div style="grid-column:1/-1;">
-                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">Address</div>
+                    <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Address') }}</div>
                     <div style="font-size:.88rem;line-height:1.5;">{{ $order->address_text }}</div>
                 </div>
             </div>
@@ -115,7 +115,7 @@
 
         @if($order->notes)
         <div class="card">
-            <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Special Instructions</div>
+            <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('Special Instructions') }}</div>
             <div style="font-size:.88rem;line-height:1.6;color:var(--text-sub);">{{ $order->notes }}</div>
         </div>
         @endif
@@ -123,10 +123,10 @@
 
     {{-- Right: Tracking timeline --}}
     <div class="card">
-        <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">Tracking History</div>
+        <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;">{{ __('Tracking History') }}</div>
 
         @if($order->trackingLogs->isEmpty())
-            <div style="text-align:center;padding:24px;color:var(--text-dim);font-size:.85rem;">No tracking events yet.</div>
+            <div style="text-align:center;padding:24px;color:var(--text-dim);font-size:.85rem;">{{ __('No tracking events yet.') }}</div>
         @else
         <div style="position:relative;">
             {{-- Vertical line --}}
@@ -168,7 +168,7 @@
 
         @if($order->driver)
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr);">
-            <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Assigned Driver</div>
+            <div style="font-size:.74rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('Assigned Driver') }}</div>
             <div style="display:flex;align-items:center;gap:10px;">
                 <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--red-dark),var(--red));display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0;">{{ strtoupper(substr($order->driver->name,0,1)) }}</div>
                 <div>
@@ -185,13 +185,13 @@
 @if($order->status === 'pending')
 <div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;">
     <div style="background:#0c1230;border:1px solid var(--bdr);border-radius:16px;padding:28px 30px;max-width:400px;width:90%;animation:fu .25s both;">
-        <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">Delete Order?</h3>
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">{{ __('Delete Order?') }}</h3>
         <p style="font-size:.86rem;color:var(--text-sub);">Delete order <strong>{{ $order->order_number }}</strong>? This cannot be undone.</p>
         <div style="display:flex;gap:10px;margin-top:20px;">
-            <button class="btn-secondary" style="flex:1;" onclick="document.getElementById('deleteModal').style.display='none'">Cancel</button>
+            <button class="btn-secondary" style="flex:1;" onclick="document.getElementById('deleteModal').style.display='none'">{{ __('Cancel') }}</button>
             <form method="POST" action="{{ route('client.orders.destroy', $order) }}" style="flex:1;">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn-danger" style="width:100%;">Delete</button>
+                <button type="submit" class="btn-danger" style="width:100%;">{{ __('Delete') }}</button>
             </form>
         </div>
     </div>

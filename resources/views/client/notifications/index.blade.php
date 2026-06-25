@@ -6,13 +6,13 @@
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
-        <h1 style="font-size:1.35rem;font-weight:800;">Notifications</h1>
+        <h1 style="font-size:1.35rem;font-weight:800;">{{ __('Notifications') }}</h1>
         <p style="font-size:.82rem;color:var(--text-sub);">{{ $notifications->total() }} total &middot; {{ $unreadCount }} unread</p>
     </div>
     @if($unreadCount > 0)
     <form method="POST" action="{{ route('client.notifications.read-all') }}">
         @csrf
-        <button type="submit" class="btn-secondary" style="font-size:.82rem;padding:7px 14px;">Mark all as read</button>
+        <button type="submit" class="btn-secondary" style="font-size:.82rem;padding:7px 14px;">{{ __('Mark all as read') }}</button>
     </form>
     @endif
 </div>
@@ -33,14 +33,14 @@
         @if(!$read)
         <form method="POST" action="{{ route('client.notifications.read', $notif->id) }}" style="flex-shrink:0;">
             @csrf
-            <button type="submit" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:.75rem;padding:4px 8px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='none'">Mark read</button>
+            <button type="submit" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:.75rem;padding:4px 8px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='none'">{{ __('Mark read') }}</button>
         </form>
         @endif
     </div>
     @empty
     <div style="padding:48px;text-align:center;color:var(--text-dim);">
         <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24" style="margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-        <div style="font-size:.88rem;">No notifications yet</div>
+        <div style="font-size:.88rem;">{{ __('No notifications yet') }}</div>
     </div>
     @endforelse
 </div>

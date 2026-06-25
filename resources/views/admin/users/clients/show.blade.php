@@ -150,6 +150,31 @@
                 <span class="info-row-key">Member Since</span>
                 <span class="info-row-val">{{ $client->masterUser?->created_at?->format('d M Y') ?? '—' }}</span>
             </div>
+            <div class="info-row" style="align-items:center;">
+                <span class="info-row-key">Notifications</span>
+                <span class="info-row-val" style="display:flex;align-items:center;gap:10px;">
+                    <span id="admin-notif-label" style="font-size:.82rem;color:var(--text-dim);">
+                        {{ $client->masterUser?->notifications_enabled ? 'Enabled' : 'Disabled' }}
+                    </span>
+                    @if($client->masterUser)
+                    <label style="display:flex;align-items:center;cursor:pointer;" title="Toggle client notifications">
+                        <input type="checkbox" id="admin-notif-toggle" style="display:none;" {{ $client->masterUser->notifications_enabled ? 'checked' : '' }}>
+                        <div id="admin-notif-track" style="
+                            width:40px;height:22px;border-radius:11px;
+                            background:{{ $client->masterUser->notifications_enabled ? 'var(--red,#dc2626)' : '#4b5563' }};
+                            position:relative;transition:background .2s;flex-shrink:0;
+                        ">
+                            <div id="admin-notif-thumb" style="
+                                width:16px;height:16px;border-radius:50%;background:#fff;
+                                position:absolute;top:3px;
+                                left:{{ $client->masterUser->notifications_enabled ? '21px' : '3px' }};
+                                transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);
+                            "></div>
+                        </div>
+                    </label>
+                    @endif
+                </span>
+            </div>
         </div>
     </div>
 
@@ -399,5 +424,40 @@
     </div>
     @endif
 </div>
+
+@section('scripts')
+<script>
+(function () {
+    var toggle = document.getElementById('admin-notif-toggle');
+    if (!toggle) return;
+
+    var track = document.getElementById('admin-notif-track');
+    var thumb = document.getElementById('admin-notif-thumb');
+    var label = document.getElementById('admin-notif-label');
+
+    track.parentElement.addEventListener('click', function () {
+        var enabled = !toggle.checked;
+        toggle.checked = enabled;
+
+        track.style.background = enabled ? 'var(--red,#dc2626)' : '#4b5563';
+        thumb.style.left       = enabled ? '21px' : '3px';
+        label.textContent      = enabled ? 'Enabled' : 'Disabled';
+
+        fetch('{{ route('admin.clients.toggle-notifications', $client) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+        }).catch(function () {
+            toggle.checked = !enabled;
+            track.style.background = !enabled ? 'var(--red,#dc2626)' : '#4b5563';
+            thumb.style.left       = !enabled ? '21px' : '3px';
+            label.textContent      = !enabled ? 'Enabled' : 'Disabled';
+        });
+    });
+})();
+</script>
+@endsection
 
 @endsection

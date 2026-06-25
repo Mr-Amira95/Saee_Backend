@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\RejectionReasonController;
 use App\Http\Controllers\Api\SupportController;
+use App\Http\Controllers\Api\BankDetailController;
 use App\Http\Controllers\Api\ClientUserController;
 use App\Http\Controllers\Api\TrackOrderController;
 use App\Http\Controllers\Api\WalletController;
@@ -135,6 +136,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('orders/{order}', [OrderController::class, 'destroy'])
         ->name('api.orders.destroy');
 
+    Route::post('orders/{order}/cancel',  [OrderController::class, 'cancel'])
+        ->name('api.orders.cancel');
+
     Route::post('orders/{order}/deliver', [OrderController::class, 'deliver'])
         ->name('api.orders.deliver');
 
@@ -152,6 +156,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('driver/route/recalculate', [RouteController::class, 'recalculate'])
         ->name('api.driver.route.recalculate');
+
+    // Bank details (read: master + employee; write: master only)
+    Route::get('bank-details',  [BankDetailController::class, 'show'])->name('api.bank-details.show');
+    Route::put('bank-details',  [BankDetailController::class, 'update'])->name('api.bank-details.update');
 
     // Client user management (employees)
     Route::get('users',          [ClientUserController::class, 'index'])->name('api.users.index');

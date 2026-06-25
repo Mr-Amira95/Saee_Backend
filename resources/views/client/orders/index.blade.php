@@ -1,22 +1,22 @@
 @extends('client.layouts.app')
-@section('title', 'Orders')
-@section('page-title', 'Orders')
+@section('title', __('Orders'))
+@section('page-title', __('Orders'))
 
 @section('content')
 
 <div class="page-hd">
     <div class="page-hd-left">
-        <h1>Orders</h1>
-        <p>Manage and track all your shipments</p>
+        <h1>{{ __('Orders') }}</h1>
+        <p>{{ __('Manage and track all your shipments') }}</p>
     </div>
     <div class="page-hd-right">
         <a href="{{ route('client.orders.import') }}" class="btn-secondary">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            Import Orders
+            {{ __('Import Orders') }}
         </a>
         <a href="{{ route('client.orders.create') }}" class="btn-primary">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-            Add Order
+            {{ __('Add Order') }}
         </a>
     </div>
 </div>
@@ -26,27 +26,27 @@
 <div class="filter-bar">
     <div class="filter-search-wrap">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input name="q" type="text" class="filter-input" placeholder="Order #, receiver name, or phone…" value="{{ request('q') }}">
+        <input name="q" type="text" class="filter-input" placeholder="{{ __('Order #, receiver name, or phone…') }}" value="{{ request('q') }}">
     </div>
     <select name="status" class="filter-select">
-        <option value="">All Statuses</option>
-        <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>Pending</option>
-        <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>In Transit</option>
-        <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
-        <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>Rejected</option>
-        <option value="returned"  {{ request('status') === 'returned'  ? 'selected' : '' }}>Returned</option>
-        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+        <option value="">{{ __('All Statuses') }}</option>
+        <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>{{ __('Pending') }}</option>
+        <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>{{ __('In Transit') }}</option>
+        <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>{{ __('Delivered') }}</option>
+        <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>{{ __('Rejected') }}</option>
+        <option value="returned"  {{ request('status') === 'returned'  ? 'selected' : '' }}>{{ __('Returned') }}</option>
+        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
     </select>
     <select name="payment_type" class="filter-select">
-        <option value="">All Types</option>
-        <option value="cod"     {{ request('payment_type') === 'cod'     ? 'selected' : '' }}>COD</option>
-        <option value="prepaid" {{ request('payment_type') === 'prepaid' ? 'selected' : '' }}>Prepaid</option>
+        <option value="">{{ __('All Types') }}</option>
+        <option value="cod"     {{ request('payment_type') === 'cod'     ? 'selected' : '' }}>{{ __('COD') }}</option>
+        <option value="prepaid" {{ request('payment_type') === 'prepaid' ? 'selected' : '' }}>{{ __('Prepaid') }}</option>
     </select>
-    <input type="date" name="from" class="filter-input" style="max-width:140px;padding:8px 10px;" value="{{ request('from') }}" title="From date">
-    <input type="date" name="to"   class="filter-input" style="max-width:140px;padding:8px 10px;" value="{{ request('to') }}" title="To date">
-    <button type="submit" class="btn-primary" style="padding:8px 16px;font-size:.82rem;">Filter</button>
+    <input type="date" name="from" class="filter-input" style="max-width:140px;padding:8px 10px;" value="{{ request('from') }}" title="{{ __('From date') }}">
+    <input type="date" name="to"   class="filter-input" style="max-width:140px;padding:8px 10px;" value="{{ request('to') }}" title="{{ __('To date') }}">
+    <button type="submit" class="btn-primary" style="padding:8px 16px;font-size:.82rem;">{{ __('Filter') }}</button>
     @if(request()->anyFilled(['q','status','payment_type','from','to']))
-        <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:8px 14px;font-size:.82rem;">Clear</a>
+        <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:8px 14px;font-size:.82rem;">{{ __('Clear') }}</a>
     @endif
 </div>
 </form>
@@ -56,13 +56,13 @@
         <table>
             <thead>
                 <tr>
-                    <th>Order #</th>
-                    <th>Receiver</th>
-                    <th>Location</th>
-                    <th>Type</th>
-                    <th>COD Amount</th>
-                    <th>Status</th>
-                    <th>Date</th>
+                    <th>{{ __('Order #') }}</th>
+                    <th>{{ __('Receiver') }}</th>
+                    <th>{{ __('Location') }}</th>
+                    <th>{{ __('Type') }}</th>
+                    <th>{{ __('COD Amount') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('Date') }}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -128,8 +128,8 @@
                 @empty
                 <tr>
                     <td colspan="8" style="text-align:center;padding:40px;color:var(--text-dim);">
-                        No orders found.
-                        <a href="{{ route('client.orders.create') }}" style="color:var(--red-lt);text-decoration:none;"> Create your first order →</a>
+                        {{ __('No orders found.') }}
+                        <a href="{{ route('client.orders.create') }}" style="color:var(--red-lt);text-decoration:none;"> {{ __('Create your first order →') }}</a>
                     </td>
                 </tr>
                 @endforelse
@@ -146,13 +146,13 @@
 {{-- Delete confirmation modal --}}
 <div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;">
     <div style="background:#0c1230;border:1px solid var(--bdr);border-radius:16px;padding:28px 30px;max-width:400px;width:90%;animation:fu .25s both;">
-        <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">Delete Order?</h3>
-        <p style="font-size:.86rem;color:var(--text-sub);" id="deleteModalMsg">This action cannot be undone.</p>
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">{{ __('Delete Order?') }}</h3>
+        <p style="font-size:.86rem;color:var(--text-sub);" id="deleteModalMsg">{{ __('This action cannot be undone.') }}</p>
         <div style="display:flex;gap:10px;margin-top:20px;">
-            <button class="btn-secondary" style="flex:1;" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-secondary" style="flex:1;" onclick="closeDeleteModal()">{{ __('Cancel') }}</button>
             <form id="deleteForm" method="POST" style="flex:1;">
                 @csrf @method('DELETE')
-                <button type="submit" class="btn-danger" style="width:100%;">Delete</button>
+                <button type="submit" class="btn-danger" style="width:100%;">{{ __('Delete') }}</button>
             </form>
         </div>
     </div>

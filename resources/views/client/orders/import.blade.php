@@ -1,14 +1,14 @@
 @extends('client.layouts.app')
-@section('title', 'Import Orders')
-@section('page-title', 'Import Orders')
+@section('title', __('Import Orders'))
+@section('page-title', __('Import Orders'))
 
 @section('content')
 
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-    <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← Back</a>
+    <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">{{ __('← Back') }}</a>
     <div>
-        <h1 style="font-size:1.3rem;font-weight:800;">Import Orders</h1>
-        <p style="font-size:.82rem;color:var(--text-sub);">Upload a CSV file to create multiple orders at once</p>
+        <h1 style="font-size:1.3rem;font-weight:800;">{{ __('Import Orders') }}</h1>
+        <p style="font-size:.82rem;color:var(--text-sub);">{{ __('Upload a CSV file to create multiple orders at once') }}</p>
     </div>
 </div>
 
@@ -20,7 +20,7 @@
 
     {{-- Upload form --}}
     <div class="card">
-        <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;">Upload CSV File</div>
+        <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;">{{ __('Upload CSV File') }}</div>
 
         <form method="POST" action="{{ route('client.orders.import.submit') }}" enctype="multipart/form-data" id="importForm">
             @csrf
@@ -32,8 +32,8 @@
                 ondrop="handleDrop(event)"
                 onclick="document.getElementById('csvInput').click()">
                 <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 24 24" style="color:var(--text-dim);margin-bottom:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                <div style="font-size:.9rem;font-weight:600;color:var(--text-sub);">Drop CSV file here, or click to browse</div>
-                <div style="font-size:.78rem;color:var(--text-dim);margin-top:6px;">Maximum file size: 4 MB</div>
+                <div style="font-size:.9rem;font-weight:600;color:var(--text-sub);">{{ __('Drop CSV file here, or click to browse') }}</div>
+                <div style="font-size:.78rem;color:var(--text-dim);margin-top:6px;">{{ __('Maximum file size: 4 MB') }}</div>
                 <div id="fileNameDisplay" style="display:none;margin-top:10px;">
                     <span style="font-size:.84rem;color:var(--red-lt);font-weight:600;" id="fileNameText"></span>
                 </div>
@@ -43,22 +43,22 @@
 
             <button type="submit" class="btn-primary" style="width:100%;justify-content:center;" id="importBtn" disabled>
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                Upload & Import
+                {{ __('Upload & Import') }}
             </button>
         </form>
 
         <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;">
-            <div style="font-size:.82rem;color:var(--text-dim);">Download the template to get started:</div>
+            <div style="font-size:.82rem;color:var(--text-dim);">{{ __('Download the template to get started:') }}</div>
             <a href="{{ route('client.orders.template') }}" class="btn-secondary" style="padding:7px 14px;font-size:.81rem;">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Download Template
+                {{ __('Download Template') }}
             </a>
         </div>
     </div>
 
     {{-- Format guide --}}
     <div class="card">
-        <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">CSV Format Guide</div>
+        <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">{{ __('CSV Format Guide') }}</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
             @foreach([
                 ['order_description', 'Text', 'Optional — describe the shipment contents'],
@@ -96,9 +96,9 @@
         <table>
             <thead>
                 <tr>
-                    <th>Row</th>
-                    <th>Receiver</th>
-                    <th>Errors</th>
+                    <th>{{ __('Row') }}</th>
+                    <th>{{ __('Receiver') }}</th>
+                    <th>{{ __('Errors') }}</th>
                 </tr>
             </thead>
             <tbody>

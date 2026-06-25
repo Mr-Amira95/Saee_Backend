@@ -52,12 +52,12 @@
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div>
-        <h1 style="font-size:1.35rem;font-weight:800;">Support</h1>
-        <p style="font-size:.82rem;color:var(--text-sub);">Get help from the Saee operations team</p>
+        <h1 style="font-size:1.35rem;font-weight:800;">{{ __('Support') }}</h1>
+        <p style="font-size:.82rem;color:var(--text-sub);">{{ __('Get help from the Saee operations team') }}</p>
     </div>
     <button type="button" class="btn-primary" onclick="document.getElementById('newTicketModal').style.display='flex'">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-        Open Ticket
+        {{ __('Open Ticket') }}
     </button>
 </div>
 
@@ -65,7 +65,7 @@
     {{-- Ticket sidebar --}}
     <div class="ticket-sidebar">
         <div class="ticket-sidebar-head">
-            <h3>Tickets</h3>
+            <h3>{{ __('Tickets') }}</h3>
             <span style="font-size:.75rem;color:var(--text-dim);">{{ $tickets->count() }}</span>
         </div>
         <div class="ticket-list" id="ticketList">
@@ -82,7 +82,7 @@
                 </div>
             </a>
             @empty
-            <div style="padding:32px 16px;text-align:center;color:var(--text-dim);font-size:.84rem;">No tickets yet.</div>
+            <div style="padding:32px 16px;text-align:center;color:var(--text-dim);font-size:.84rem;">{{ __('No tickets yet.') }}</div>
             @endforelse
         </div>
     </div>
@@ -100,11 +100,11 @@
             </div>
             @if($activeTicket->status === 'open')
             <form method="POST" action="{{ route('client.support.close', $activeTicket->id) }}"
-                  onsubmit="return confirm('Close this ticket? You won\'t be able to reply after closing.')">
+                  onsubmit="return confirm('{{ __('Close this ticket? You won\'t be able to reply after closing.') }}')">
                 @csrf
                 <button type="submit" class="btn-secondary" style="padding:6px 14px;font-size:.8rem;display:flex;align-items:center;gap:6px;">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    Close Ticket
+                    {{ __('Close Ticket') }}
                 </button>
             </form>
             @endif
@@ -122,7 +122,7 @@
 
         @if($activeTicket->status === 'open')
         <div class="chat-footer">
-            <textarea class="chat-input" id="msgInput" placeholder="Type a message…" rows="1"
+            <textarea class="chat-input" id="msgInput" placeholder="{{ __('Type a message…') }}" rows="1"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
             <button class="chat-send-btn" onclick="sendMessage()">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
@@ -130,14 +130,14 @@
         </div>
         @else
         <div style="padding:14px 16px;text-align:center;font-size:.83rem;color:var(--text-dim);border-top:1px solid var(--bdr);">
-            This ticket is resolved. Open a new ticket if you need further assistance.
+            {{ __('This ticket is resolved. Open a new ticket if you need further assistance.') }}
         </div>
         @endif
 
         @else
         <div class="chat-empty">
             <svg width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-            <div>Select a ticket or open a new one</div>
+            <div>{{ __('Select a ticket or open a new one') }}</div>
         </div>
         @endif
     </div>
@@ -147,7 +147,7 @@
 <div id="newTicketModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;">
     <div style="background:#0c1230;border:1px solid var(--bdr);border-radius:16px;padding:28px 30px;max-width:480px;width:90%;animation:fu .25s both;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-            <h3 style="font-size:1rem;font-weight:700;">Open New Ticket</h3>
+            <h3 style="font-size:1rem;font-weight:700;">{{ __('Open New Ticket') }}</h3>
             <button onclick="document.getElementById('newTicketModal').style.display='none'" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px;">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -155,16 +155,16 @@
         <form method="POST" action="{{ route('client.support.store') }}">
             @csrf
             <div class="form-group">
-                <label class="form-label">Title *</label>
-                <input name="title" type="text" class="form-input" placeholder="Briefly describe your issue" required>
+                <label class="form-label">{{ __('Title *') }}</label>
+                <input name="title" type="text" class="form-input" placeholder="{{ __('Briefly describe your issue') }}" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Related Order <span style="color:var(--text-dim);font-weight:400;">(optional)</span></label>
+                <label class="form-label">{{ __('Related Order') }} <span style="color:var(--text-dim);font-weight:400;">{{ __('[optional]') }}</span></label>
                 <div style="position:relative;" id="orderDropdownWrap">
                     {{-- Selected display / trigger --}}
                     <div id="orderTrigger" onclick="toggleOrderDrop()"
                          style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--in-bg);border:1px solid var(--in-bdr);border-radius:9px;cursor:pointer;transition:border-color .2s;user-select:none;">
-                        <span id="orderTriggerLabel" style="font-size:.87rem;color:var(--text-dim);">Select an order…</span>
+                        <span id="orderTriggerLabel" style="font-size:.87rem;color:var(--text-dim);">{{ __('Select an order…') }}</span>
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--text-dim);flex-shrink:0;transition:transform .2s;" id="orderChevron"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </div>
                     <input type="hidden" name="order_id" id="orderIdInput">
@@ -173,7 +173,7 @@
                     <div id="orderDropList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#0c1230;border:1px solid var(--bdr);border-radius:10px;z-index:600;box-shadow:0 8px 32px rgba(0,0,0,.55);overflow:hidden;">
                         <div style="padding:8px 10px;border-bottom:1px solid var(--bdr);">
                             <input type="text" id="orderSearch" autocomplete="off"
-                                   placeholder="Search by ref. number, name, or phone…"
+                                   placeholder="{{ __('Search by ref. number, name, or phone…') }}"
                                    oninput="filterOrders(this.value)"
                                    style="width:100%;box-sizing:border-box;padding:7px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:var(--text);font-size:.83rem;font-family:inherit;outline:none;">
                         </div>
@@ -182,12 +182,12 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">Message *</label>
-                <textarea name="message" class="form-textarea" placeholder="Describe your issue in detail…" required></textarea>
+                <label class="form-label">{{ __('Message *') }}</label>
+                <textarea name="message" class="form-textarea" placeholder="{{ __('Describe your issue in detail…') }}" required></textarea>
             </div>
             <div style="display:flex;gap:10px;margin-top:4px;">
-                <button type="button" class="btn-secondary" style="flex:1;" onclick="document.getElementById('newTicketModal').style.display='none'">Cancel</button>
-                <button type="submit" class="btn-primary" style="flex:1;">Submit Ticket</button>
+                <button type="button" class="btn-secondary" style="flex:1;" onclick="document.getElementById('newTicketModal').style.display='none'">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-primary" style="flex:1;">{{ __('Submit Ticket') }}</button>
             </div>
         </form>
     </div>
@@ -209,7 +209,7 @@ function sendMessage() {
 
     const temp = document.createElement('div');
     temp.className = 'msg-bubble mine';
-    temp.innerHTML = `<div class="msg-inner">${escHtml(text)}</div><div class="msg-meta">You · now</div>`;
+    temp.innerHTML = `<div class="msg-inner">${escHtml(text)}</div><div class="msg-meta">{{ __('You') }} · {{ __('now') }}</div>`;
     document.getElementById('chatMessages').appendChild(temp);
     scrollToBottom();
     input.value = '';
@@ -220,7 +220,7 @@ function sendMessage() {
         body: JSON.stringify({ message: text })
     }).then(r => r.json()).then(data => {
         lastMsgId = data.id;
-        temp.querySelector('.msg-meta').textContent = `You · ${data.created_at}`;
+        temp.querySelector('.msg-meta').textContent = `{{ __('You') }} · ${data.created_at}`;
     }).catch(() => {});
 }
 
@@ -271,9 +271,9 @@ let orderDropOpen = false;
 
 function renderOrders(list) {
     const el = document.getElementById('orderOptions');
-    const none = `<div onmousedown="selectOrder('','— None —')"
+    const none = `<div onmousedown="selectOrder('','{{ __('— None —') }}')"
         style="padding:9px 14px;font-size:.83rem;color:var(--text-dim);cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);"
-        onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background=''">— None —</div>`;
+        onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background=''">{{ __('— None —') }}</div>`;
     if (!list.length) {
         el.innerHTML = none + '<div style="padding:10px 14px;font-size:.83rem;color:var(--text-dim);">No orders found</div>';
         return;
@@ -327,7 +327,7 @@ function filterOrders(q) {
 function selectOrder(id, label) {
     document.getElementById('orderIdInput').value = id;
     const lbl = document.getElementById('orderTriggerLabel');
-    lbl.textContent = label || 'Select an order…';
+    lbl.textContent = label || '{{ __('Select an order…') }}';
     lbl.style.color = id ? 'var(--text)' : 'var(--text-dim)';
     closeOrderDrop();
 }

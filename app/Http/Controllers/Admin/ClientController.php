@@ -282,6 +282,15 @@ class ClientController extends Controller
         return back()->with('success', "Invitation email resent to {$client->masterUser->email}.");
     }
 
+    public function toggleNotifications(ClientProfile $client)
+    {
+        $user = $client->masterUser;
+        $user->notifications_enabled = ! $user->notifications_enabled;
+        $user->save();
+
+        return response()->json(['notifications_enabled' => $user->notifications_enabled]);
+    }
+
     public function areas(Request $request)
     {
         $areas = \App\Models\Area::where('city_id', $request->city_id)

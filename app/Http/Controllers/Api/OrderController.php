@@ -428,6 +428,46 @@ if (! $this->canAccessOrder($user, $order)) {
         ], 201);
     }
 
+    public function cancel(Request $request, Order $order): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile || (int) $order->client_profile_id !== (int) $clientProfile->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending orders can be cancelled.',
+                'code'    => 'INVALID_STATUS_TRANSITION',
+            ], 422);
+        }
+
+        $order = $this->orderService->updateStatus($order, 'cancelled', [], $user);
+
+        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order cancelled successfully.',
+            'data'    => new OrderResource($order),
+        ]);
+    }
+
     public function destroy(Request $request, Order $order): JsonResponse
     {
         /** @var \App\Models\User $user */
