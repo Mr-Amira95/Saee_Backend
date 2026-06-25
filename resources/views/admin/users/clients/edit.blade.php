@@ -332,7 +332,7 @@
     {{-- Financial & Account Settings --}}
     <div class="form-section">
         <div class="form-section-title">Financial &amp; Account Settings</div>
-        <div class="form-grid-3">
+        <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label" for="credit_limit">Credit Limit <span class="opt">(optional)</span></label>
                 <div id="creditLimitWrap"
@@ -352,14 +352,6 @@
                 <input class="form-input @error('expiry_date') is-error @enderror" id="expiry_date" type="date" name="expiry_date"
                        value="{{ old('expiry_date', $client->expiry_date ? $client->expiry_date->format('Y-m-d') : '') }}">
                 @error('expiry_date')<span class="form-error">{{ $message }}</span>@enderror
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="status">Client Status</label>
-                <select class="form-select" id="status" name="status">
-                    <option value="active"    {{ old('status', $client->status) === 'active'    ? 'selected' : '' }}>Active</option>
-                    <option value="suspended" {{ old('status', $client->status) === 'suspended' ? 'selected' : '' }}>Suspended</option>
-                    <option value="pending_verification" {{ old('status', $client->status) === 'pending_verification' ? 'selected' : '' }}>Pending Verification</option>
-                </select>
             </div>
         </div>
     </div>

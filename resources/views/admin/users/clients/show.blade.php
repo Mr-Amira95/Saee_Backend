@@ -112,9 +112,22 @@
                 </a>
             </div>
 
-            {{-- Profile Actions (Edit, Resend, Delete) --}}
+            {{-- Profile Actions (Edit, Status Toggle, Resend, Delete) --}}
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <a href="{{ route('admin.clients.edit', $client) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Client</a>
+                <form method="POST" action="{{ route('admin.clients.toggle-status', $client) }}" style="display:inline;">
+                    @csrf
+                    @method('PATCH')
+                    @if($client->status === 'active')
+                        <button type="submit" class="btn-secondary" title="Suspend Client" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#fbbf24;border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.1);">
+                            ⏸ Suspend Client
+                        </button>
+                    @else
+                        <button type="submit" class="btn-secondary" title="Activate Client" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#4ade80;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);">
+                            ▶ Activate Client
+                        </button>
+                    @endif
+                </form>
                 <form method="POST" action="{{ route('admin.clients.resend-invitation', $client) }}" style="display:inline;">
                     @csrf
                     <button type="submit" class="btn-secondary" title="Resend invitation email" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
@@ -157,11 +170,21 @@
             </div>
             <div class="info-row">
                 <span class="info-row-key">Account Status</span>
-                <span class="info-row-val">
+                <span class="info-row-val" style="display:flex; align-items:center; gap:8px;">
                     @if($client->masterUser?->status === 'active')        <span class="badge-active">Active</span>
                     @elseif($client->masterUser?->status === 'suspended') <span class="badge-suspended">Suspended</span>
                     @else <span class="badge-pending">Pending</span>
                     @endif
+
+                    <form method="POST" action="{{ route('admin.clients.toggle-status', $client) }}" style="display:inline;">
+                        @csrf
+                        @method('PATCH')
+                        @if($client->masterUser?->status === 'active')
+                            <button type="submit" class="btn-warn-sm" style="padding: 2px 6px; font-size: 0.7rem;">Suspend</button>
+                        @else
+                            <button type="submit" class="btn-ok-sm" style="padding: 2px 6px; font-size: 0.7rem;">Activate</button>
+                        @endif
+                    </form>
                 </span>
             </div>
             <div class="info-row">
@@ -202,11 +225,21 @@
             </div>
             <div class="info-row">
                 <span class="info-row-key">Client Status</span>
-                <span class="info-row-val">
+                <span class="info-row-val" style="display:flex; align-items:center; gap:8px;">
                     @if($client->status === 'active')        <span class="badge-active">Active</span>
                     @elseif($client->status === 'suspended') <span class="badge-suspended">Suspended</span>
                     @else                                    <span class="badge-pv">Pending Verification</span>
                     @endif
+
+                    <form method="POST" action="{{ route('admin.clients.toggle-status', $client) }}" style="display:inline;">
+                        @csrf
+                        @method('PATCH')
+                        @if($client->status === 'active')
+                            <button type="submit" class="btn-warn-sm" style="padding: 2px 6px; font-size: 0.7rem;">Suspend</button>
+                        @else
+                            <button type="submit" class="btn-ok-sm" style="padding: 2px 6px; font-size: 0.7rem;">Activate</button>
+                        @endif
+                    </form>
                 </span>
             </div>
             <div class="info-row">
