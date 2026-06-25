@@ -310,14 +310,14 @@
     </div>
 </div>
 
-{{-- Custom Modal Alert Dialog --}}
-<div id="customModal" style="display: none; position: fixed; inset: 0; background: rgba(8,12,30,.8); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; opacity: 0; transition: opacity .25s ease-out;">
-    <div style="background: var(--bg-2); border: 1px solid var(--bdr-red); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.5); transform: scale(.95); transition: transform .25s ease-out;" id="customModalContent">
-        <!-- Icon -->
-        <div style="width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.5rem; font-weight: bold; border: 1px solid;"></div>
-        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; color: var(--text);" id="customModalTitle"></h3>
-        <p style="font-size: .85rem; color: var(--text-sub); line-height: 1.5; margin-bottom: 24px;" id="customModalMessage"></p>
-        <button onclick="closeCustomModal()" class="btn-primary" style="padding: 9px 24px; font-size: .84rem; width: 100%; justify-content: center; box-shadow: none;">{{ __('Ok') }}</button>
+{{-- Custom Toast Notification --}}
+<div id="customToast" style="display: none; position: fixed; bottom: 24px; {{ app()->getLocale() === 'ar' ? 'left: 24px;' : 'right: 24px;' }} z-index: 9999; align-items: center; gap: 12px; background: rgba(12, 18, 48, 0.92); border: 1px solid var(--bdr); border-radius: 12px; padding: 14px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(8px); transform: translateY(40px); opacity: 0; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease-out; max-width: 380px;">
+    <!-- Icon -->
+    <div id="customToastIcon" style="width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; flex-shrink: 0; border: 1px solid;"></div>
+    <!-- Content -->
+    <div style="flex: 1;">
+        <div id="customToastTitle" style="font-size: 0.85rem; font-weight: 700; color: var(--text);"></div>
+        <div id="customToastMessage" style="font-size: 0.78rem; color: var(--text-sub); margin-top: 2px; line-height: 1.3;"></div>
     </div>
 </div>
 @endsection
@@ -351,17 +351,17 @@ function submitAttendance(type) {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showCustomModal('Success', data.message, true, () => {
+                showToast('Success', data.message, true, () => {
                     window.location.reload();
                 });
             } else {
-                showCustomModal('Verification Failed', data.message || 'Check-in failed.', false);
+                showToast('Verification Failed', data.message || 'Check-in failed.', false);
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
         })
         .catch(err => {
-            showCustomModal('Error', 'A network error occurred. Please try again.', false);
+            showToast('Error', 'A network error occurred. Please try again.', false);
             btn.disabled = false;
             btn.textContent = originalText;
         });
@@ -400,51 +400,58 @@ if (activeTimer) {
     }, 1000);
 }
 
-/* Custom Alert Modal Functions */
-function showCustomModal(title, message, isSuccess = true, callback = null) {
-    const modal = document.getElementById('customModal');
-    const content = document.getElementById('customModalContent');
-    const titleEl = document.getElementById('customModalTitle');
-    const msgEl = document.getElementById('customModalMessage');
+/* Custom Toast Notification Functions */
+let toastTimeout = null;
+
+function showToast(title, message, isSuccess = true, callback = null) {
+    const toast = document.getElementById('customToast');
+    const titleEl = document.getElementById('customToastTitle');
+    const msgEl = document.getElementById('customToastMessage');
+    const icon = document.getElementById('customToastIcon');
     
     titleEl.textContent = title;
     msgEl.textContent = message;
     
-    const icon = modal.querySelector('div');
     if (isSuccess) {
         icon.textContent = '✓';
         icon.style.color = 'var(--success)';
         icon.style.background = 'rgba(34,197,94,.1)';
         icon.style.borderColor = 'rgba(34,197,94,.2)';
+        toast.style.borderColor = 'rgba(34,197,94,.25)';
     } else {
         icon.textContent = '✕';
         icon.style.color = '#f87171';
         icon.style.background = 'rgba(220,38,38,.1)';
         icon.style.borderColor = 'rgba(220,38,38,.2)';
+        toast.style.borderColor = 'rgba(220,38,38,.25)';
     }
     
-    modal.style.display = 'flex';
+    if (toastTimeout) {
+        clearTimeout(toastTimeout);
+    }
+    
+    toast.style.display = 'flex';
     setTimeout(() => {
-        modal.style.opacity = '1';
-        content.style.transform = 'scale(1)';
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
     }, 10);
     
-    modal.callback = callback;
+    toastTimeout = setTimeout(() => {
+        dismissToast(callback);
+    }, 3000);
 }
 
-function closeCustomModal() {
-    const modal = document.getElementById('customModal');
-    const content = document.getElementById('customModalContent');
-    
-    modal.style.opacity = '0';
-    content.style.transform = 'scale(.95)';
+function dismissToast(callback = null) {
+    const toast = document.getElementById('customToast');
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(40px)';
     
     setTimeout(() => {
-        modal.style.display = 'none';
-        if (typeof modal.callback === 'function') {
-            modal.callback();
+        toast.style.display = 'none';
+        if (typeof callback === 'function') {
+            callback();
         }
-    }, 250);
+    }, 300);
 }
 </script>
 @endsection
