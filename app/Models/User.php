@@ -60,10 +60,7 @@ class User extends Authenticatable
         return $this->hasOne(ClientProfile::class, 'master_user_id');
     }
 
-    public function adminProfile(): HasOne
-    {
-        return $this->hasOne(AdminProfile::class);
-    }
+
 
     public function clientEmployee(): HasOne
     {
