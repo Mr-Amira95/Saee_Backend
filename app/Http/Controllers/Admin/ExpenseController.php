@@ -25,7 +25,17 @@ class ExpenseController extends Controller
 
         $categories = ExpenseCategory::cases();
 
-        return view('admin.expenses.index', compact('expenses', 'categories'));
+        $totalsQuery = Expense::query()
+            ->when($request->category, fn($q, $c) => $q->where('category', $c))
+            ->when($request->from, fn($q, $d) => $q->whereDate('payment_date', '>=', $d))
+            ->when($request->to, fn($q, $d) => $q->whereDate('payment_date', '<=', $d))
+            ->selectRaw('category, SUM(amount) as total')
+            ->groupBy('category')
+            ->get();
+
+        $totals = $totalsQuery;
+
+        return view('admin.expenses.index', compact('expenses', 'categories', 'totals'));
     }
 
     public function create()
