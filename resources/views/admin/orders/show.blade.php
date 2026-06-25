@@ -95,7 +95,7 @@
             {{-- Quick status update triggers --}}
             <button class="btn-secondary" onclick="openModal('assignDriverModal')">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                {{ $order->driver_id ? 'Reassign Driver' : 'Assign Driver' }}
+                {{ $order->driver ? 'Reassign Driver' : 'Assign Driver' }}
             </button>
             <button class="btn-primary" onclick="openModal('updateStatusModal')">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
@@ -116,30 +116,20 @@
                 </div>
                 <div class="info-row">
                     <span>Receiver Name:</span>
-                    <strong>{{ $order->receiver_name }}</strong>
+                    <strong>{{ $order->receiver?->receiver_name }}</strong>
                 </div>
                 <div class="info-row">
                     <span>Receiver Phone:</span>
-                    <strong>{{ $order->receiver_phone }}</strong>
+                    <strong>{{ $order->receiver?->receiver_phone }}</strong>
                 </div>
                 <div class="info-row">
                     <span>City / Area:</span>
-                    <strong>{{ $order->city->name }} • {{ $order->area->name }}</strong>
+                    <strong>{{ $order->receiver?->city?->name }} • {{ $order->receiver?->area?->name }}</strong>
                 </div>
                 <div class="info-row">
                     <span>Address Text:</span>
-                    <strong>{{ $order->address_text }}</strong>
+                    <strong>{{ $order->receiver?->address_text }}</strong>
                 </div>
-                @if($order->address_location)
-                    <div class="info-row">
-                        <span>GPS Coordinates:</span>
-                        <strong>
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ $order->address_location }}" target="_blank" style="color: var(--red-lt);">
-                                {{ $order->address_location }} (Open Map)
-                            </a>
-                        </strong>
-                    </div>
-                @endif
                 <div class="info-row">
                     <span>Description:</span>
                     <strong>{{ $order->order_description ?: 'No description' }}</strong>
@@ -164,33 +154,33 @@
                 <div class="info-row">
                     <span>Payment Type:</span>
                     <strong>
-                        <span class="badge {{ $order->payment_type === 'cod' ? 'badge-pv' : 'badge-no' }}" style="text-transform: uppercase;">
-                            {{ $order->payment_type }}
+                        <span class="badge {{ $order->payment?->payment_type === 'cod' ? 'badge-pv' : 'badge-no' }}" style="text-transform: uppercase;">
+                            {{ $order->payment?->payment_type }}
                         </span>
                     </strong>
                 </div>
-                @if($order->payment_type === 'cod')
+                @if($order->payment?->payment_type === 'cod')
                     <div class="info-row">
                         <span>Goods Price (COD):</span>
-                        <strong style="font-size: 1.1rem; color: var(--red-lt);">{{ number_format($order->order_price, 2) }} JD</strong>
+                        <strong style="font-size: 1.1rem; color: var(--red-lt);">{{ number_format($order->payment?->order_amount ?? 0, 2) }} JD</strong>
                     </div>
                 @endif
                 <div class="info-row">
                     <span>Shipping Fee:</span>
-                    <strong>{{ number_format($order->delivery_amount, 2) }} JD ({{ $order->delivery_on_customer ? 'Paid by Customer' : 'Paid by Client' }})</strong>
+                    <strong>{{ number_format($order->payment?->client_delivery_amount ?? 0, 2) }} JD ({{ $order->payment?->delivery_on_customer ? 'Paid by Customer' : 'Paid by Client' }})</strong>
                 </div>
-                @if($order->delivery_on_customer)
+                @if($order->payment?->delivery_on_customer)
                     <div class="info-row">
                         <span>Customer Delivery Fee:</span>
-                        <strong>{{ number_format($order->delivery_customer_amount, 2) }} JD</strong>
+                        <strong>{{ number_format($order->payment?->customer_delivery_amount ?? 0, 2) }} JD</strong>
                     </div>
                 @endif
                 <div class="info-row" style="border-top: 1px solid var(--bdr); padding-top: 10px; margin-top: 10px;">
                     <span>Total Cash to Collect:</span>
                     <strong style="font-size: 1.25rem; font-weight: 800; color: #22c55e;">
                         @php
-                            $totalCollect = ($order->payment_type === 'cod' ? $order->order_price : 0) 
-                                + ($order->delivery_on_customer ? $order->delivery_customer_amount : 0);
+                            $totalCollect = ($order->payment?->payment_type === 'cod' ? (float)($order->payment?->order_amount ?? 0) : 0)
+                                + ($order->payment?->delivery_on_customer ? (float)($order->payment?->customer_delivery_amount ?? 0) : 0);
                         @endphp
                         {{ number_format($totalCollect, 2) }} JD
                     </strong>
@@ -352,7 +342,7 @@
                     <select name="driver_id" class="form-select" required style="width:100%">
                         <option value="">Select Driver</option>
                         @foreach($drivers as $driver)
-                            <option value="{{ $driver->id }}" {{ $order->driver_id == $driver->id ? 'selected' : '' }}>
+                            <option value="{{ $driver->id }}" {{ $order->driver?->id == $driver->id ? 'selected' : '' }}>
                                 {{ $driver->name }} ({{ $driver->phone }})
                             </option>
                         @endforeach
@@ -375,8 +365,8 @@
             <form action="{{ route('admin.orders.update', $order) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
-                @if($order->driver_id)
-                    <input type="hidden" name="driver_id" value="{{ $order->driver_id }}">
+                @if($order->driver)
+                    <input type="hidden" name="driver_id" value="{{ $order->driver->id }}">
                 @endif
                 
                 <div class="form-group" style="text-align: left; margin-bottom: 16px;">

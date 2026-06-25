@@ -17,6 +17,7 @@
         }
         .searchable-select {
             position: relative;
+            width: 100%;
         }
         .search-dropdown {
             position: absolute;
@@ -151,11 +152,6 @@
                     </div>
                 </div>
 
-                {{-- Shipping Price Estimator Display --}}
-                <div style="margin-top: 18px; padding: 14px; background: rgba(255,255,255,0.02); border: 1px dashed var(--bdr); border-radius: 9px; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-size: .8rem; color: var(--text-sub);">Calculated Client Shipping Charge:</div>
-                    <div id="shippingEstimate" style="font-size: 1.15rem; font-weight: 800; color: var(--red-lt);">-- JD</div>
-                </div>
             </div>
 
             {{-- 4. Receiver & Address Details --}}
@@ -384,8 +380,6 @@
             } else {
                 areaSS = new SearchableSelect(areaSelect, 'Search areas...');
             }
-
-            calculateShippingEstimate();
         });
 
         // Trigger city change on load to populate areas if old value exists
@@ -398,7 +392,6 @@
         const orderPriceGroup      = document.getElementById('orderPriceGroup');
         const deliveryOnCustomerCheck = document.getElementById('delivery_on_customer');
         const customerAmountGroup  = document.getElementById('customerAmountGroup');
-        const shippingEstimateDiv  = document.getElementById('shippingEstimate');
 
         paymentTypeSelect.addEventListener('change', function () {
             if (this.value === 'cod') {
@@ -422,43 +415,6 @@
         });
         if (deliveryOnCustomerCheck.checked) {
             deliveryOnCustomerCheck.dispatchEvent(new Event('change'));
-        }
-
-        // ── Shipping Estimate ─────────────────────────────────────────────
-        clientSelect.addEventListener('change', calculateShippingEstimate);
-
-        function calculateShippingEstimate() {
-            const clientId = clientSelect.value;
-            const cityId   = citySelect.value;
-
-            if (!clientId || !cityId) {
-                shippingEstimateDiv.textContent = '-- JD';
-                return;
-            }
-
-            shippingEstimateDiv.textContent = 'Calculating...';
-
-            fetch("{{ route('admin.orders.calculate-price') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ client_profile_id: clientId, city_id: cityId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                shippingEstimateDiv.textContent = data.success
-                    ? parseFloat(data.price).toFixed(2) + ' JD'
-                    : 'Error';
-            })
-            .catch(() => {
-                shippingEstimateDiv.textContent = 'Error';
-            });
-        }
-
-        if (clientSelect.value && citySelect.value) {
-            calculateShippingEstimate();
         }
 
         // ── Batch Number Generator ────────────────────────────────────────
