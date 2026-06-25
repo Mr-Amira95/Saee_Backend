@@ -21,7 +21,9 @@ class DashboardController extends Controller
         $activeDriversCount = DriverProfile::whereHas('user', fn($q) => $q->where('status', 'active'))->count();
         $activeClientsCount = ClientProfile::where('status', 'active')->count();
         $totalOrdersCount = Order::count();
-        $totalRevenue = Order::where('status', 'delivered')->sum('delivery_amount');
+        $totalRevenue = Order::where('status', 'delivered')
+            ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
+            ->sum('order_payments.client_delivery_amount');
 
         // 2. Status counts for Operational distribution
         $statusCounts = Order::select('status', DB::raw('count(*) as count'))
