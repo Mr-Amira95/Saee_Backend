@@ -17,11 +17,13 @@ class TrackOrderController extends Controller
 
         $q = trim($request->input('q'));
 
-        $orders = Order::with(['city', 'area', 'trackingLogs'])
+        $orders = Order::with(['receiver.city', 'receiver.area', 'trackingLogs'])
             ->where(function ($query) use ($q) {
                 $query->where('order_number', $q)
-                      ->orWhere('receiver_name', 'like', "%{$q}%")
-                      ->orWhere('receiver_phone', 'like', "%{$q}%");
+                      ->orWhereHas('receiver', fn ($rq) => $rq
+                          ->where('receiver_name', 'like', "%{$q}%")
+                          ->orWhere('receiver_phone', 'like', "%{$q}%")
+                      );
             })
             ->latest()
             ->limit(10)
@@ -41,16 +43,16 @@ class TrackOrderController extends Controller
                 'order_id'      => $order->id,
                 'order_number'  => $order->order_number,
                 'status'        => $order->status,
-                'payment_type'  => $order->payment_type,
-                'receiver_name' => $order->receiver_name,
-                'address_text'  => $order->address_text,
-                'city'          => $order->relationLoaded('city') && $order->city ? [
-                    'name'    => $order->city->name,
-                    'name_ar' => $order->city->name_ar,
+                'payment_type'  => $order->payment?->payment_type,
+                'receiver_name' => $order->receiver?->receiver_name,
+                'address_text'  => $order->receiver?->address_text,
+                'city'          => $order->receiver?->city ? [
+                    'name'    => $order->receiver->city->name,
+                    'name_ar' => $order->receiver->city->name_ar,
                 ] : null,
-                'area'          => $order->relationLoaded('area') && $order->area ? [
-                    'name'    => $order->area->name,
-                    'name_ar' => $order->area->name_ar,
+                'area'          => $order->receiver?->area ? [
+                    'name'    => $order->receiver->area->name,
+                    'name_ar' => $order->receiver->area->name_ar,
                 ] : null,
                 'tracking'      => $order->trackingLogs->map(fn ($log) => [
                     'from_status' => $log->from_status,

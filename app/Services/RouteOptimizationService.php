@@ -20,10 +20,13 @@ class RouteOptimizationService
             return $this->emptyResult($driverId);
         }
 
-        $orders = Order::where('driver_id', $driverId)
+        $orders = Order::where('driver_profile_id', $profile->id)
             ->where('status', 'picked_up')
-            ->whereNotNull('receiver_latitude')
-            ->whereNotNull('receiver_longitude')
+            ->whereHas('receiver', fn ($rq) => $rq
+                ->whereNotNull('receiver_latitude')
+                ->whereNotNull('receiver_longitude')
+            )
+            ->with('receiver')
             ->get();
 
         if ($orders->isEmpty()) {
@@ -32,30 +35,29 @@ class RouteOptimizationService
 
         $origin = "{$profile->current_latitude},{$profile->current_longitude}";
 
-        // Trivial cases — no Google API call needed
         if ($orders->count() === 1) {
             $orders->first()->route_order = 1;
             $this->persistRouteOrder($orders);
-            return $this->buildResult($orders, 0, 0, null, 0);
+            return $this->buildResult($orders, 0, 0, null, 0, $driverId);
         }
 
         if ($orders->count() === 2) {
             $orders->values()->each(fn ($o, $i) => $o->route_order = $i + 1);
             $this->persistRouteOrder($orders);
-            return $this->buildResult($orders, 0, 0, null, 0);
+            return $this->buildResult($orders, 0, 0, null, 0, $driverId);
         }
 
         if ($orders->count() <= self::CHUNK_SIZE) {
-            return $this->optimizeSingleBatch($orders, $origin);
+            return $this->optimizeSingleBatch($orders, $origin, $driverId);
         }
 
-        return $this->optimizeInBatches($orders, $origin);
+        return $this->optimizeInBatches($orders, $origin, $driverId);
     }
 
-    private function optimizeSingleBatch(Collection $orders, string $origin): array
+    private function optimizeSingleBatch(Collection $orders, string $origin, int $driverId): array
     {
         $waypoints = $orders
-            ->map(fn ($o) => "{$o->receiver_latitude},{$o->receiver_longitude}")
+            ->map(fn ($o) => "{$o->receiver->receiver_latitude},{$o->receiver->receiver_longitude}")
             ->toArray();
 
         $params   = $this->buildDirectionsRequest($origin, $origin, $waypoints);
@@ -72,10 +74,10 @@ class RouteOptimizationService
         $ordered = $this->applyWaypointOrder($orders, $waypointOrder);
         $this->persistRouteOrder($ordered);
 
-        return $this->buildResult($ordered, $totalDistance, $totalDuration, $polyline, 1);
+        return $this->buildResult($ordered, $totalDistance, $totalDuration, $polyline, 1, $driverId);
     }
 
-    private function optimizeInBatches(Collection $orders, string $driverOrigin): array
+    private function optimizeInBatches(Collection $orders, string $driverOrigin, int $driverId): array
     {
         $chunks        = $orders->chunk(self::CHUNK_SIZE);
         $totalChunks   = $chunks->count();
@@ -89,7 +91,7 @@ class RouteOptimizationService
             $isLastChunk = ($chunkIndex === $totalChunks - 1);
 
             $waypoints = $chunk
-                ->map(fn ($o) => "{$o->receiver_latitude},{$o->receiver_longitude}")
+                ->map(fn ($o) => "{$o->receiver->receiver_latitude},{$o->receiver->receiver_longitude}")
                 ->toArray();
 
             $params   = $this->buildDirectionsRequest($currentOrigin, $driverOrigin, $waypoints);
@@ -99,8 +101,6 @@ class RouteOptimizationService
             $waypointOrder = $route['waypoint_order'];
             $legs          = $route['legs'];
 
-            // For intermediate chunks, exclude the final "return-to-origin" leg
-            // so we don't double-count the travel back between chunks.
             $countedLegs = $isLastChunk
                 ? $legs
                 : array_slice($legs, 0, count($waypoints));
@@ -118,22 +118,18 @@ class RouteOptimizationService
             $ordered = $this->applyWaypointOrder($chunk, $waypointOrder, $offset);
             $allOrdered = $allOrdered->merge($ordered);
 
-            // The last stop of this chunk's optimized order becomes the next origin
             $lastStopIndex = end($waypointOrder);
             $lastOrder     = $chunk->values()->get($lastStopIndex);
-            $currentOrigin = "{$lastOrder->receiver_latitude},{$lastOrder->receiver_longitude}";
+            $currentOrigin = "{$lastOrder->receiver->receiver_latitude},{$lastOrder->receiver->receiver_longitude}";
         }
 
         $this->persistRouteOrder($allOrdered);
 
-        return $this->buildResult($allOrdered, $totalDistance, $totalDuration, $lastPolyline, $totalChunks);
+        return $this->buildResult($allOrdered, $totalDistance, $totalDuration, $lastPolyline, $totalChunks, $driverId);
     }
 
-    private function buildDirectionsRequest(
-        string $origin,
-        string $destination,
-        array $waypoints
-    ): array {
+    private function buildDirectionsRequest(string $origin, string $destination, array $waypoints): array
+    {
         $waypointStr = 'optimize:true|' . implode('|', $waypoints);
 
         return [
@@ -173,11 +169,8 @@ class RouteOptimizationService
         return $data;
     }
 
-    private function applyWaypointOrder(
-        Collection $orders,
-        array $waypointOrder,
-        int $offset = 0
-    ): Collection {
+    private function applyWaypointOrder(Collection $orders, array $waypointOrder, int $offset = 0): Collection
+    {
         $indexed = $orders->values();
         $result  = collect();
 
@@ -202,10 +195,11 @@ class RouteOptimizationService
         int $totalDistanceM,
         int $totalDurationS,
         ?string $polyline,
-        int $chunks
+        int $chunks,
+        int $driverId
     ): array {
         return [
-            'driver_id'        => $orders->first()?->driver_id,
+            'driver_id'        => $driverId,
             'total_distance_m' => $totalDistanceM,
             'total_duration_s' => $totalDurationS,
             'polyline'         => $polyline,
@@ -218,10 +212,10 @@ class RouteOptimizationService
                     'id'           => $o->id,
                     'order_number' => $o->order_number,
                     'route_order'  => $o->route_order,
-                    'latitude'     => $o->receiver_latitude,
-                    'longitude'    => $o->receiver_longitude,
-                    'receiver'     => $o->receiver_name,
-                    'address'      => $o->address_text,
+                    'latitude'     => $o->receiver?->receiver_latitude,
+                    'longitude'    => $o->receiver?->receiver_longitude,
+                    'receiver'     => $o->receiver?->receiver_name,
+                    'address'      => $o->receiver?->address_text,
                 ])
                 ->toArray(),
         ];

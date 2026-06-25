@@ -76,7 +76,7 @@ class WhatsAppService
     public function sendNotification(Order $order, string $event): ?WhatsAppLog
     {
         $variables = $this->buildOrderVariables($order, $event);
-        $result    = $this->sendTemplate($event, $order->receiver_phone, $variables, $order->id);
+        $result    = $this->sendTemplate($event, $order->receiver?->receiver_phone ?? '', $variables, $order->id);
 
         return $result['log'] ?? null;
     }
@@ -195,10 +195,10 @@ class WhatsAppService
             : '';
 
         return [
-            'customer_name'    => $order->receiver_name   ?? '',
-            'order_number'     => $order->order_number    ?? '',
-            'driver_name'      => optional($order->driver)->name  ?? '',
-            'driver_phone'     => optional($order->driver)->phone ?? '',
+            'customer_name'    => $order->receiver?->receiver_name   ?? '',
+            'order_number'     => $order->order_number              ?? '',
+            'driver_name'      => $order->driverProfile?->user?->name  ?? '',
+            'driver_phone'     => $order->driverProfile?->user?->phone ?? '',
             'location_link'    => $locationLink,
             'rejection_reason' => $rejectionReason,
         ];

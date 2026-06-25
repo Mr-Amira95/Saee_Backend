@@ -16,48 +16,25 @@ class Order extends Model
         'order_number',
         'batch_number',
         'client_profile_id',
-        'driver_id',
+        'driver_profile_id',
         'order_description',
-        'payment_type',
-        'delivery_on_customer',
-        'delivery_customer_amount',
-        'delivery_amount',
-        'order_price',
-        'receiver_name',
-        'receiver_phone',
-        'city_id',
-        'area_id',
-        'address_text',
-        'address_location',
-        'receiver_latitude',
-        'receiver_longitude',
-        'location_received_at',
         'status',
         'payment_status',
+        'route_order',
         'signature_path',
         'proof_image_path',
         'rejection_reason_id',
         'notes',
-        'route_order',
     ];
 
     protected function casts(): array
     {
         return [
-            'client_profile_id'        => 'integer',
-            'driver_id'                => 'integer',
-            'city_id'                  => 'integer',
-            'area_id'                  => 'integer',
-            'rejection_reason_id'      => 'integer',
-            'delivery_on_customer'     => 'boolean',
-            'delivery_customer_amount' => 'decimal:2',
-            'delivery_amount'          => 'decimal:2',
-            'order_price'              => 'decimal:2',
-            'receiver_latitude'        => 'decimal:8',
-            'receiver_longitude'       => 'decimal:8',
-            'location_received_at'     => 'datetime',
-            'deleted_at'               => 'datetime',
-            'route_order'              => 'integer',
+            'client_profile_id'   => 'integer',
+            'driver_profile_id'   => 'integer',
+            'rejection_reason_id' => 'integer',
+            'route_order'         => 'integer',
+            'deleted_at'          => 'datetime',
         ];
     }
 
@@ -69,7 +46,6 @@ class Order extends Model
                 $dateStr = now()->format('ymd');
                 $prefix = $clientIdStr . $dateStr;
 
-                // Find the latest order for this client today to determine sequence
                 $latestOrder = static::where('order_number', 'like', "{$prefix}%")
                     ->orderBy('order_number', 'desc')
                     ->first();
@@ -80,7 +56,7 @@ class Order extends Model
                     $sequence = 1;
                 }
 
-                $sequence = ($sequence - 1) % 9999 + 1; // Wrap sequence to 1-9999
+                $sequence = ($sequence - 1) % 9999 + 1;
                 $sequenceStr = sprintf('%04d', $sequence);
 
                 $order->order_number = $prefix . $sequenceStr;
@@ -88,25 +64,30 @@ class Order extends Model
         });
     }
 
-    // Relationships
+    // Returns the driver User model — used by blade views and legacy code
+    public function getDriverAttribute(): ?User
+    {
+        return $this->driverProfile?->user;
+    }
+
     public function clientProfile(): BelongsTo
     {
         return $this->belongsTo(ClientProfile::class);
     }
 
-    public function driver(): BelongsTo
+    public function driverProfile(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'driver_id');
+        return $this->belongsTo(DriverProfile::class);
     }
 
-    public function city(): BelongsTo
+    public function payment(): HasOne
     {
-        return $this->belongsTo(City::class);
+        return $this->hasOne(OrderPayment::class, 'order_id');
     }
 
-    public function area(): BelongsTo
+    public function receiver(): HasOne
     {
-        return $this->belongsTo(Area::class);
+        return $this->hasOne(OrderReceiver::class, 'order_id');
     }
 
     public function rejectionReason(): BelongsTo

@@ -100,6 +100,8 @@ class OrderTestSeeder extends Seeder
 
         // Clear existing orders to prevent seeder bloat
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::table('order_payments')->truncate();
+        DB::table('order_receivers')->truncate();
         DB::table('orders')->truncate();
         DB::table('order_tracking_logs')->truncate();
         DB::table('financial_ledger_entries')->truncate();

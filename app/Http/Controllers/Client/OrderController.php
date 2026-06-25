@@ -22,13 +22,13 @@ class OrderController extends Controller
         $profile = $this->getClientProfile();
 
         $query = Order::where('client_profile_id', $profile->id)
-            ->with(['city', 'area']);
+            ->with(['receiver.city', 'receiver.area']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
         if ($request->filled('payment_type')) {
-            $query->where('payment_type', $request->payment_type);
+            $query->whereHas('payment', fn ($pq) => $pq->where('payment_type', $request->payment_type));
         }
         if ($request->filled('from')) {
             $query->whereDate('created_at', '>=', $request->from);
@@ -40,8 +40,10 @@ class OrderController extends Controller
             $term = $request->q;
             $query->where(function ($q) use ($term) {
                 $q->where('order_number', 'like', "%{$term}%")
-                  ->orWhere('receiver_name', 'like', "%{$term}%")
-                  ->orWhere('receiver_phone', 'like', "%{$term}%");
+                  ->orWhereHas('receiver', fn ($rq) => $rq
+                      ->where('receiver_name', 'like', "%{$term}%")
+                      ->orWhere('receiver_phone', 'like', "%{$term}%")
+                  );
             });
         }
 
@@ -92,7 +94,7 @@ class OrderController extends Controller
 
         abort_if($order->client_profile_id !== $profile->id, 403);
 
-        $order->load(['city', 'area', 'trackingLogs.user', 'driver']);
+        $order->load(['receiver.city', 'receiver.area', 'payment', 'trackingLogs.user', 'driverProfile.user']);
 
         return view('client.orders.show', compact('order', 'profile'));
     }
@@ -209,7 +211,7 @@ class OrderController extends Controller
 
             $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
             if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
-                $rowErrors[] = "Order price must be a positive number for COD orders.";
+                $rowErrors[] = 'Order price must be a positive number for COD orders.';
             }
 
             $deliveryOnCustomer = filter_var($row['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
@@ -227,15 +229,9 @@ class OrderController extends Controller
                 $rowErrors[] = "Area ID [{$row['area_id']}] does not belong to City [{$row['city_id']}].";
             }
 
-            if (empty($row['receiver_name'])) {
-                $rowErrors[] = "Receiver name is required.";
-            }
-            if (empty($row['receiver_phone'])) {
-                $rowErrors[] = "Receiver phone is required.";
-            }
-            if (empty($row['address_text'])) {
-                $rowErrors[] = "Address text is required.";
-            }
+            if (empty($row['receiver_name']))  { $rowErrors[] = 'Receiver name is required.'; }
+            if (empty($row['receiver_phone'])) { $rowErrors[] = 'Receiver phone is required.'; }
+            if (empty($row['address_text']))   { $rowErrors[] = 'Address text is required.'; }
 
             if (! empty($rowErrors)) {
                 $hasErrors = true;
@@ -251,12 +247,12 @@ class OrderController extends Controller
             ]);
         }
 
-        $batchNumber  = 'BATCH-' . now()->format('ymd') . '-' . $profile->id . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
+        $batchNumber   = 'BATCH-' . now()->format('ymd') . '-' . $profile->id . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
         $importedCount = 0;
 
         foreach ($results as $item) {
-            $row       = $item['data'];
-            $orderData = [
+            $row = $item['data'];
+            $this->orderService->createOrder([
                 'client_profile_id'        => $profile->id,
                 'order_description'        => $row['order_description'] ?? null,
                 'payment_type'             => strtolower($row['payment_type']),
@@ -271,9 +267,7 @@ class OrderController extends Controller
                 'notes'                    => $row['notes'] ?? null,
                 'driver_id'                => null,
                 'batch_number'             => $batchNumber,
-            ];
-
-            $this->orderService->createOrder($orderData, Auth::user());
+            ], Auth::user());
             $importedCount++;
         }
 

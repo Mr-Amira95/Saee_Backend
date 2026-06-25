@@ -25,9 +25,6 @@ class BulkOrderController extends Controller
         return view('admin.orders.import');
     }
 
-    /**
-     * Download a CSV template for bulk orders.
-     */
     public function downloadTemplate()
     {
         $headers = [
@@ -42,7 +39,7 @@ class BulkOrderController extends Controller
             'city_id',
             'area_id',
             'address_text',
-            'notes'
+            'notes',
         ];
 
         $sample = [
@@ -57,10 +54,10 @@ class BulkOrderController extends Controller
             '1',
             '2',
             'King Fahd Road, Al Malaz',
-            'Deliver after 5 PM please.'
+            'Deliver after 5 PM please.',
         ];
 
-        $callback = function() use ($headers, $sample) {
+        $callback = function () use ($headers, $sample) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $headers);
             fputcsv($file, $sample);
@@ -68,17 +65,14 @@ class BulkOrderController extends Controller
         };
 
         return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv',
+            'Content-Type'        => 'text/csv',
             'Content-Disposition' => 'attachment; filename="bulk_orders_template.csv"',
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
         ]);
     }
 
-    /**
-     * Handle CSV import.
-     */
     public function import(Request $request)
     {
         $request->validate([
@@ -87,20 +81,19 @@ class BulkOrderController extends Controller
 
         $file = $request->file('csv_file');
         $path = $file->getRealPath();
-        
+
         $data = [];
         if (($handle = fopen($path, 'r')) !== false) {
             $headers = fgetcsv($handle, 1000, ',');
-            
-            // Check headers validity
+
             $expected = ['client_id', 'order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes'];
-            if (!$headers || count(array_intersect($headers, $expected)) < 5) {
+            if (! $headers || count(array_intersect($headers, $expected)) < 5) {
                 return redirect()->back()->with('error', 'Invalid CSV format. Please make sure to use the template provided.');
             }
 
             while (($row = fgetcsv($handle, 1000, ',')) !== false) {
                 if (count($headers) !== count($row)) {
-                    continue; // Skip misaligned rows
+                    continue;
                 }
                 $data[] = array_combine($headers, $row);
             }
@@ -111,112 +104,88 @@ class BulkOrderController extends Controller
             return redirect()->back()->with('error', 'The CSV file is empty.');
         }
 
-        // Validate each row
-        $results = [];
+        $results   = [];
         $hasErrors = false;
 
         foreach ($data as $index => $row) {
             $rowErrors = [];
-            $rowNum = $index + 2; // Row number in spreadsheet (1-indexed + header row)
+            $rowNum    = $index + 2;
 
-            // 1. Client Profile validation
             $clientId = filter_var($row['client_id'] ?? null, FILTER_VALIDATE_INT);
-            if (!$clientId || !ClientProfile::where('id', $clientId)->exists()) {
+            if (! $clientId || ! ClientProfile::where('id', $clientId)->exists()) {
                 $rowErrors[] = "Client ID [{$row['client_id']}] not found.";
             }
 
-            // 2. Payment Type validation
             $paymentType = strtolower($row['payment_type'] ?? '');
-            if (!in_array($paymentType, ['cod', 'prepaid'])) {
+            if (! in_array($paymentType, ['cod', 'prepaid'])) {
                 $rowErrors[] = "Payment type must be 'cod' or 'prepaid'.";
             }
 
-            // 3. Order Price validation
             $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
             if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
-                $rowErrors[] = "Order price must be a positive number for COD orders.";
+                $rowErrors[] = 'Order price must be a positive number for COD orders.';
             }
 
-            // 4. Delivery on Customer validation
             $deliveryOnCustomer = filter_var($row['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($deliveryOnCustomer === null) {
                 $rowErrors[] = "delivery_on_customer must be 'true' or 'false'.";
             }
 
-            // 5. Delivery customer amount validation
             $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
             if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
-                $rowErrors[] = "delivery_customer_amount must be a valid number.";
+                $rowErrors[] = 'delivery_customer_amount must be a valid number.';
             }
 
-            // 6. City validation
             $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
-            if (!$cityId || !City::where('id', $cityId)->exists()) {
+            if (! $cityId || ! City::where('id', $cityId)->exists()) {
                 $rowErrors[] = "City ID [{$row['city_id']}] does not exist.";
             }
 
-            // 7. Area validation
             $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
-            if (!$areaId || !Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
+            if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
                 $rowErrors[] = "Area ID [{$row['area_id']}] does not exist or does not belong to City [{$row['city_id']}].";
             }
 
-            // 8. Receiver validation
-            if (empty($row['receiver_name'])) {
-                $rowErrors[] = "Receiver name is required.";
-            }
-            if (empty($row['receiver_phone'])) {
-                $rowErrors[] = "Receiver phone is required.";
-            }
-            if (empty($row['address_text'])) {
-                $rowErrors[] = "Address text is required.";
-            }
+            if (empty($row['receiver_name']))  { $rowErrors[] = 'Receiver name is required.'; }
+            if (empty($row['receiver_phone'])) { $rowErrors[] = 'Receiver phone is required.'; }
+            if (empty($row['address_text']))   { $rowErrors[] = 'Address text is required.'; }
 
-            if (!empty($rowErrors)) {
+            if (! empty($rowErrors)) {
                 $hasErrors = true;
             }
 
-            $results[] = [
-                'row_number' => $rowNum,
-                'data' => $row,
-                'errors' => $rowErrors
-            ];
+            $results[] = ['row_number' => $rowNum, 'data' => $row, 'errors' => $rowErrors];
         }
 
-        // If validation errors exist, render the validation preview
         if ($hasErrors) {
             return view('admin.orders.import_preview', [
-                'results' => $results,
-                'has_errors' => true
+                'results'    => $results,
+                'has_errors' => true,
             ]);
         }
 
-        // Generate one batch number for this entire import session
         $firstClientId = $results[0]['data']['client_id'] ?? 'X';
         $batchNumber = 'BATCH-' . now()->format('ymd') . '-' . $firstClientId . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
 
-        // If no errors, let's create the orders!
         $importedCount = 0;
         foreach ($results as $item) {
             $rowData = $item['data'];
-            $orderData = [
-                'client_profile_id' => (int)$rowData['client_id'],
-                'order_description' => $rowData['order_description'] ?? null,
-                'payment_type' => strtolower($rowData['payment_type']),
-                'delivery_on_customer' => filter_var($rowData['delivery_on_customer'], FILTER_VALIDATE_BOOLEAN),
-                'delivery_customer_amount' => $rowData['delivery_customer_amount'] ? (float)$rowData['delivery_customer_amount'] : 0.00,
-                'order_price' => $rowData['order_price'] ? (float)$rowData['order_price'] : 0.00,
-                'receiver_name' => $rowData['receiver_name'],
-                'receiver_phone' => $rowData['receiver_phone'],
-                'city_id' => (int)$rowData['city_id'],
-                'area_id' => (int)$rowData['area_id'],
-                'address_text' => $rowData['address_text'],
-                'notes' => $rowData['notes'] ?? null,
-                'driver_id' => null,
-                'batch_number' => $batchNumber,
-            ];
-
-            $this->orderService->createOrder($orderData, Auth::user());
+            $this->orderService->createOrder([
+                'client_profile_id'        => (int) $rowData['client_id'],
+                'order_description'        => $rowData['order_description'] ?? null,
+                'payment_type'             => strtolower($rowData['payment_type']),
+                'delivery_on_customer'     => filter_var($rowData['delivery_on_customer'], FILTER_VALIDATE_BOOLEAN),
+                'delivery_customer_amount' => $rowData['delivery_customer_amount'] ? (float) $rowData['delivery_customer_amount'] : 0.00,
+                'order_price'              => $rowData['order_price'] ? (float) $rowData['order_price'] : 0.00,
+                'receiver_name'            => $rowData['receiver_name'],
+                'receiver_phone'           => $rowData['receiver_phone'],
+                'city_id'                  => (int) $rowData['city_id'],
+                'area_id'                  => (int) $rowData['area_id'],
+                'address_text'             => $rowData['address_text'],
+                'notes'                    => $rowData['notes'] ?? null,
+                'driver_id'                => null,
+                'batch_number'             => $batchNumber,
+            ], Auth::user());
             $importedCount++;
         }
 

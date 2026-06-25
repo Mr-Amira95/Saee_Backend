@@ -29,16 +29,17 @@ class OrderController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        $query = Order::with(['city', 'area', 'driver', 'rejectionReason'])
+        $query = Order::with(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'rejectionReason'])
             ->latest();
 
         $checkInAlert = null;
 
         if ($user->isDriver()) {
-            $query->where('driver_id', $user->id);
+            $driverProfile = $user->driverProfile;
+            $query->where('driver_profile_id', $driverProfile?->id);
 
             if (! $this->isDriverCheckedIn($user)) {
-                $hasHiddenOrders = Order::where('driver_id', $user->id)
+                $hasHiddenOrders = Order::where('driver_profile_id', $driverProfile?->id)
                     ->whereIn('status', ['picked_up', 'rejected'])
                     ->exists();
 
@@ -79,15 +80,15 @@ class OrderController extends Controller
         }
 
         if ($request->filled('payment_type')) {
-            $query->where('payment_type', $request->input('payment_type'));
+            $query->whereHas('payment', fn ($pq) => $pq->where('payment_type', $request->input('payment_type')));
         }
 
         if ($request->filled('city_id')) {
-            $query->where('city_id', $request->input('city_id'));
+            $query->whereHas('receiver', fn ($rq) => $rq->where('city_id', $request->input('city_id')));
         }
 
         if ($request->filled('area_id')) {
-            $query->where('area_id', $request->input('area_id'));
+            $query->whereHas('receiver', fn ($rq) => $rq->where('area_id', $request->input('area_id')));
         }
 
         if ($request->filled('from')) {
@@ -106,8 +107,10 @@ class OrderController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhere('receiver_name', 'like', "%{$search}%")
-                  ->orWhere('receiver_phone', 'like', "%{$search}%");
+                  ->orWhereHas('receiver', fn ($rq) => $rq
+                      ->where('receiver_name', 'like', "%{$search}%")
+                      ->orWhere('receiver_phone', 'like', "%{$search}%")
+                  );
             });
         }
 
@@ -132,14 +135,14 @@ class OrderController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-if (! $this->canAccessOrder($user, $order)) {
+        if (! $this->canAccessOrder($user, $order)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Order not found.',
             ], 404);
         }
 
-        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
         return response()->json([
             'success' => true,
@@ -153,7 +156,7 @@ if (! $this->canAccessOrder($user, $order)) {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (! $user->isDriver() || (int) $order->driver_id !== (int) $user->id) {
+        if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',
@@ -195,7 +198,7 @@ if (! $this->canAccessOrder($user, $order)) {
             'proof_image_path' => $proofImagePath,
         ], $user);
 
-        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
         return response()->json([
             'success' => true,
@@ -209,7 +212,7 @@ if (! $this->canAccessOrder($user, $order)) {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (! $user->isDriver() || (int) $order->driver_id !== (int) $user->id) {
+        if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',
@@ -261,7 +264,7 @@ if (! $this->canAccessOrder($user, $order)) {
             'longitude'   => $request->input('longitude'),
         ]);
 
-        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
         return response()->json([
             'success' => true,
@@ -275,7 +278,7 @@ if (! $this->canAccessOrder($user, $order)) {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (! $user->isDriver() || $order->driver_id !== $user->id) {
+        if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized.',
@@ -318,7 +321,7 @@ if (! $this->canAccessOrder($user, $order)) {
             'longitude'   => $request->input('longitude'),
         ]);
 
-        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
         return response()->json([
             'success' => true,
@@ -388,7 +391,6 @@ if (! $this->canAccessOrder($user, $order)) {
             'city_id'                  => ['required', 'integer', 'exists:cities,id'],
             'area_id'                  => ['required', 'integer', 'exists:areas,id'],
             'address_text'             => ['required', 'string'],
-            'address_location'         => ['nullable', 'string', 'max:100'],
             'notes'                    => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -411,13 +413,13 @@ if (! $this->canAccessOrder($user, $order)) {
         $order = $this->orderService->createOrder(array_merge($request->only([
             'order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount',
             'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id',
-            'address_text', 'address_location', 'notes',
+            'address_text', 'notes',
         ]), [
             'client_profile_id' => $clientProfile->id,
             'driver_id'         => null,
         ]), $user);
 
-        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
         rescue(fn () => app(SupportNotificationService::class)->notifyAdminsNewOrder($order));
 
@@ -459,7 +461,7 @@ if (! $this->canAccessOrder($user, $order)) {
 
         $order = $this->orderService->updateStatus($order, 'cancelled', [], $user);
 
-        $order->load(['city', 'area', 'driver', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
         return response()->json([
             'success' => true,
@@ -616,8 +618,8 @@ if (! $this->canAccessOrder($user, $order)) {
             ], 422);
         }
 
-        $batchNumber    = 'BATCH-' . now()->format('ymd') . '-' . $clientProfile->id . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
-        $importedCount  = 0;
+        $batchNumber   = 'BATCH-' . now()->format('ymd') . '-' . $clientProfile->id . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
+        $importedCount = 0;
 
         foreach ($rows as $row) {
             $this->orderService->createOrder([
@@ -686,7 +688,7 @@ if (! $this->canAccessOrder($user, $order)) {
     private function canAccessOrder(User $user, Order $order): bool
     {
         if ($user->isDriver()) {
-            return (int) $order->driver_id === (int) $user->id;
+            return $order->driverProfile?->user_id === $user->id;
         }
 
         if ($user->isClientMaster()) {

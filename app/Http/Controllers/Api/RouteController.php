@@ -11,13 +11,6 @@ use Illuminate\Support\Facades\Cache;
 
 class RouteController extends Controller
 {
-    /**
-     * GET /driver/route
-     *
-     * Returns the optimized delivery sequence for the authenticated driver.
-     * Reads from cache (populated by OptimizeDriverRouteJob) when fresh,
-     * falls back to DB route_order column when cache has expired.
-     */
     public function show(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
@@ -40,13 +33,14 @@ class RouteController extends Controller
             ]);
         }
 
-        // Cache miss — read from DB sorted by route_order
-        $orders = Order::where('driver_id', $user->id)
+        $driverProfile = $user->driverProfile;
+
+        $orders = Order::where('driver_profile_id', $driverProfile?->id)
             ->where('status', 'picked_up')
             ->whereNotNull('route_order')
             ->orderBy('route_order')
-            ->get(['id', 'order_number', 'route_order', 'receiver_latitude',
-                   'receiver_longitude', 'receiver_name', 'address_text']);
+            ->with('receiver')
+            ->get(['id', 'order_number', 'route_order', 'driver_profile_id']);
 
         return response()->json([
             'success' => true,
@@ -61,21 +55,15 @@ class RouteController extends Controller
                     'id'           => $o->id,
                     'order_number' => $o->order_number,
                     'route_order'  => $o->route_order,
-                    'latitude'     => $o->receiver_latitude,
-                    'longitude'    => $o->receiver_longitude,
-                    'receiver'     => $o->receiver_name,
-                    'address'      => $o->address_text,
+                    'latitude'     => $o->receiver?->receiver_latitude,
+                    'longitude'    => $o->receiver?->receiver_longitude,
+                    'receiver'     => $o->receiver?->receiver_name,
+                    'address'      => $o->receiver?->address_text,
                 ])->values(),
             ],
         ]);
     }
 
-    /**
-     * POST /driver/route/recalculate
-     *
-     * Forces immediate re-optimization bypassing the debounce lock.
-     * Drivers can recalculate their own route; admins can specify any driver.
-     */
     public function recalculate(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
@@ -95,13 +83,9 @@ class RouteController extends Controller
             ], 403);
         }
 
-        // Delete the ShouldBeUnique lock so the next dispatch is not silently dropped
         Cache::forget('laravel_unique_job:App\\Jobs\\OptimizeDriverRouteJob:driver_route_' . $driverId);
-
-        // Bust the cached result too
         Cache::forget("driver_route_{$driverId}");
 
-        // Dispatch immediately — no delay for a forced recalculation
         OptimizeDriverRouteJob::dispatch($driverId)->onQueue('default');
 
         return response()->json([

@@ -10,24 +10,28 @@ class OrderResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $payment = $this->whenLoaded('payment', fn () => $this->payment);
+        $receiver = $this->whenLoaded('receiver', fn () => $this->receiver);
+
+        $paymentType = $payment?->payment_type;
+
         return [
             'id'                       => $this->id,
             'order_number'             => $this->order_number,
             'status'                   => $this->status,
-            'payment_type'             => $this->payment_type,
-            'payment_status'           => $this->when($this->payment_type !== 'prepaid', $this->payment_status),
+            'payment_type'             => $paymentType,
+            'payment_status'           => $this->when($paymentType !== 'prepaid', $this->payment_status),
             'order_description'        => $this->order_description,
-            'delivery_on_customer'     => $this->when($this->payment_type !== 'prepaid', (bool) $this->delivery_on_customer),
-            'delivery_amount'          => $this->when($this->payment_type !== 'prepaid', (float) $this->delivery_amount),
-            'delivery_customer_amount' => $this->when((bool) $this->delivery_on_customer, $this->delivery_customer_amount !== null ? (float) $this->delivery_customer_amount : null),
+            'delivery_on_customer'     => $this->when($paymentType !== 'prepaid', $payment ? (bool) $payment->delivery_on_customer : null),
+            'delivery_amount'          => $this->when($paymentType !== 'prepaid', $payment ? (float) $payment->client_delivery_amount : null),
+            'delivery_customer_amount' => $this->when($payment && (bool) $payment->delivery_on_customer, $payment?->customer_delivery_amount !== null ? (float) $payment->customer_delivery_amount : null),
             'order_price'              => $this->when(
-                $this->payment_type !== 'prepaid',
-                $this->order_price !== null ? (float) $this->order_price : null
+                $paymentType !== 'prepaid',
+                $payment?->order_amount !== null ? (float) $payment->order_amount : null
             ),
-            'receiver_name'            => $this->receiver_name,
-            'receiver_phone'           => $this->receiver_phone,
-            'address_text'             => $this->address_text,
-            'address_location'         => $this->address_location,
+            'receiver_name'            => $receiver?->receiver_name,
+            'receiver_phone'           => $receiver?->receiver_phone,
+            'address_text'             => $receiver?->address_text,
             'notes'                    => $this->notes,
             'signature_url'            => $this->signature_path
                 ? Storage::disk('public')->url($this->signature_path)
@@ -35,19 +39,19 @@ class OrderResource extends JsonResource
             'proof_image_url'          => $this->proof_image_path
                 ? Storage::disk('public')->url($this->proof_image_path)
                 : null,
-            'city'                     => $this->whenLoaded('city', fn () => [
-                'id'      => $this->city->id,
-                'name'    => $this->city->name,
-                'name_ar' => $this->city->name_ar,
-            ]),
-            'area'                     => $this->whenLoaded('area', fn () => [
-                'id'      => $this->area->id,
-                'name'    => $this->area->name,
-                'name_ar' => $this->area->name_ar,
-            ]),
-            'driver'                   => $this->whenLoaded('driver', fn () => $this->driver ? [
-                'id'   => $this->driver->id,
-                'name' => $this->driver->name,
+            'city'                     => $this->whenLoaded('receiver', fn () => $this->receiver?->city ? [
+                'id'      => $this->receiver->city->id,
+                'name'    => $this->receiver->city->name,
+                'name_ar' => $this->receiver->city->name_ar,
+            ] : null),
+            'area'                     => $this->whenLoaded('receiver', fn () => $this->receiver?->area ? [
+                'id'      => $this->receiver->area->id,
+                'name'    => $this->receiver->area->name,
+                'name_ar' => $this->receiver->area->name_ar,
+            ] : null),
+            'driver'                   => $this->whenLoaded('driverProfile', fn () => $this->driverProfile?->user ? [
+                'id'   => $this->driverProfile->user->id,
+                'name' => $this->driverProfile->user->name,
             ] : null),
             'client_profile'           => $this->whenLoaded('clientProfile', fn () => $this->clientProfile ? [
                 'id'           => $this->clientProfile->id,

@@ -35,7 +35,7 @@
             </div>
             <div>
                 <div class="ms-val">{{ $stats['pending'] }}</div>
-                <div class="ms-lbl">Pending Collection</div>
+                <div class="ms-lbl">All Pending Orders</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -44,81 +44,136 @@
             </div>
             <div>
                 <div class="ms-val">{{ $stats['picked_up'] }}</div>
-                <div class="ms-lbl">In Transit</div>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div>
-                <div class="ms-val">{{ $stats['delivered'] }}</div>
-                <div class="ms-lbl">Delivered</div>
+                <div class="ms-lbl">All Picked Up Orders</div>
             </div>
         </div>
         <div class="mini-stat">
             <div class="mini-stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <div class="ms-val">{{ $stats['rejected'] }}</div>
+                <div class="ms-lbl">All Rejected Orders</div>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+            </div>
+            <div>
+                <div class="ms-val">{{ $stats['returned_today'] }}</div>
+                <div class="ms-lbl">Returned Orders Today</div>
+            </div>
+        </div>
+        <div class="mini-stat">
+            <div class="mini-stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m-4-6h8"/></svg>
             </div>
             <div>
                 <div class="ms-val">{{ $stats['with_driver'] }}</div>
-                <div class="ms-lbl">Cash with Drivers</div>
+                <div class="ms-lbl">All Cash with Drivers</div>
             </div>
         </div>
     </div>
 
     {{-- Filters --}}
     <div class="filter-bar">
-        <form action="{{ route('admin.orders.index') }}" method="GET" class="filter-form">
-            <div class="filter-search-wrap">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Search Order #, customer name, phone...">
+        <form action="{{ route('admin.orders.index') }}" method="GET" id="filter-form">
+
+            {{-- Row 1: Search --}}
+            <div class="filter-row">
+                <div class="filter-search-wrap" style="flex: 1;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" name="search" id="live-search" value="{{ request('search') }}" class="filter-input" placeholder="Search order #, batch #, customer name, phone...">
+                </div>
             </div>
 
-            <select name="status" class="filter-select" onchange="this.form.submit()">
-                <option value="">All Statuses</option>
-                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
-                <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>Returned</option>
-                <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-            </select>
+            {{-- Row 2: Dropdowns --}}
+            <div class="filter-row">
+                <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1;">
+                    <option value="">All Statuses</option>
+                    <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>Pending</option>
+                    <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
+                    <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
+                    <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>Rejected</option>
+                    <option value="returned"  {{ request('status') === 'returned'  ? 'selected' : '' }}>Returned</option>
+                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                </select>
 
-            <select name="payment_status" class="filter-select" onchange="this.form.submit()">
-                <option value="">All Payments</option>
-                <option value="pending" {{ request('payment_status') === 'pending' ? 'selected' : '' }}>Pending Collection</option>
-                <option value="with_driver" {{ request('payment_status') === 'with_driver' ? 'selected' : '' }}>With Driver</option>
-                <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Paid</option>
-                <option value="no_payment" {{ request('payment_status') === 'no_payment' ? 'selected' : '' }}>No Payment</option>
-            </select>
+                {{-- Searchable: Clients --}}
+                <div class="ss-wrap" style="flex:1;">
+                    <div class="ss-trigger" tabindex="0">
+                        <span class="ss-label">
+                            @php
+                                $selectedClient = $clients->firstWhere('id', request('client_profile_id'));
+                            @endphp
+                            {{ $selectedClient ? $selectedClient->company_name : 'All Clients' }}
+                        </span>
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="ss-panel">
+                        <input type="text" class="ss-search-input" placeholder="Search clients...">
+                        <div class="ss-opts">
+                            <div class="ss-opt {{ !request('client_profile_id') ? 'selected' : '' }}" data-value="">All Clients</div>
+                            @foreach($clients as $c)
+                                <div class="ss-opt {{ request('client_profile_id') == $c->id ? 'selected' : '' }}" data-value="{{ $c->id }}">{{ $c->company_name }}</div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <input type="hidden" name="client_profile_id" value="{{ request('client_profile_id') }}">
+                </div>
 
-            <select name="client_profile_id" class="filter-select" onchange="this.form.submit()">
-                <option value="">All Clients</option>
-                @foreach($clients as $c)
-                    <option value="{{ $c->id }}" {{ request('client_profile_id') == $c->id ? 'selected' : '' }}>{{ $c->company_name }}</option>
-                @endforeach
-            </select>
+                {{-- Searchable: Drivers --}}
+                <div class="ss-wrap" style="flex:1;">
+                    <div class="ss-trigger" tabindex="0">
+                        <span class="ss-label">
+                            @php
+                                $selectedDriver = $drivers->firstWhere('id', request('driver_id'));
+                            @endphp
+                            {{ $selectedDriver ? $selectedDriver->name : 'All Drivers' }}
+                        </span>
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="ss-panel">
+                        <input type="text" class="ss-search-input" placeholder="Search drivers...">
+                        <div class="ss-opts">
+                            <div class="ss-opt {{ !request('driver_id') ? 'selected' : '' }}" data-value="">All Drivers</div>
+                            @foreach($drivers as $d)
+                                <div class="ss-opt {{ request('driver_id') == $d->id ? 'selected' : '' }}" data-value="{{ $d->id }}">{{ $d->name }}</div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <input type="hidden" name="driver_id" value="{{ request('driver_id') }}">
+                </div>
 
-            <select name="driver_id" class="filter-select" onchange="this.form.submit()">
-                <option value="">All Drivers</option>
-                @foreach($drivers as $d)
-                    <option value="{{ $d->id }}" {{ request('driver_id') == $d->id ? 'selected' : '' }}>{{ $d->name }}</option>
-                @endforeach
-            </select>
+                {{-- Searchable: Cities --}}
+                <div class="ss-wrap" style="flex:1;">
+                    <div class="ss-trigger" tabindex="0">
+                        <span class="ss-label">
+                            @php
+                                $selectedCity = $cities->firstWhere('id', request('city_id'));
+                            @endphp
+                            {{ $selectedCity ? $selectedCity->name : 'All Cities' }}
+                        </span>
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="ss-panel">
+                        <input type="text" class="ss-search-input" placeholder="Search cities...">
+                        <div class="ss-opts">
+                            <div class="ss-opt {{ !request('city_id') ? 'selected' : '' }}" data-value="">All Cities</div>
+                            @foreach($cities as $city)
+                                <div class="ss-opt {{ request('city_id') == $city->id ? 'selected' : '' }}" data-value="{{ $city->id }}">{{ $city->name }}</div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <input type="hidden" name="city_id" value="{{ request('city_id') }}">
+                </div>
 
-            <select name="city_id" class="filter-select" onchange="this.form.submit()">
-                <option value="">All Cities</option>
-                @foreach($cities as $city)
-                    <option value="{{ $city->id }}" {{ request('city_id') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
-                @endforeach
-            </select>
+                @if(request()->anyFilled(['search', 'status', 'payment_status', 'client_profile_id', 'driver_id', 'city_id']))
+                    <a href="{{ route('admin.orders.index') }}" class="btn-secondary" style="padding: 8px 14px; height: 35px; display: inline-flex; align-items: center; white-space: nowrap;">Clear</a>
+                @endif
+            </div>
 
-            <input type="text" name="batch_number" value="{{ request('batch_number') }}" class="filter-input" placeholder="Batch #..." style="width: 180px; font-family: monospace;" oninput="if(!this.value) this.form.submit()">
-
-            @if(request()->anyFilled(['search', 'status', 'payment_status', 'client_profile_id', 'driver_id', 'city_id', 'batch_number']))
-                <a href="{{ route('admin.orders.index') }}" class="btn-secondary" style="padding: 8px 12px; height: 35px; display: inline-flex; align-items: center;">Clear</a>
-            @endif
         </form>
     </div>
 
@@ -153,7 +208,7 @@
     {{-- Orders Table --}}
     <div class="table-card">
 
-        {{-- Bulk Action Bar (hidden until rows are selected) --}}
+        {{-- Bulk Action Bar --}}
         <div id="bulk-bar" style="display:none; align-items:center; gap:12px; padding:12px 20px; background:rgba(59,130,246,.07); border-bottom:1px solid rgba(59,130,246,.15);">
             <svg width="16" height="16" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span id="bulk-count" style="font-size:.88rem; color:#3b82f6; font-weight:600;"></span>
@@ -177,12 +232,8 @@
                         <th>Order #</th>
                         <th>Batch #</th>
                         <th>Client</th>
-                        <th>Receiver</th>
-                        <th>Pricing / Payment</th>
-                        <th>Status</th>
-                        <th>Payment Status</th>
                         <th>Driver</th>
-                        <th>Created At</th>
+                        <th>Status</th>
                         <th style="width: 100px; text-align: center;">Actions</th>
                     </tr>
                 </thead>
@@ -205,7 +256,7 @@
                             </td>
                             <td>
                                 @if($order->batch_number)
-                                    <a href="{{ route('admin.orders.index', ['batch_number' => $order->batch_number]) }}" style="color: var(--text-sub); font-size: 0.76rem; font-family: monospace; text-decoration: none;" title="Filter by this batch">
+                                    <a href="{{ route('admin.orders.index', ['search' => $order->batch_number]) }}" style="color: var(--text-sub); font-size: 0.76rem; font-family: monospace; text-decoration: none;" title="Filter by this batch">
                                         {{ $order->batch_number }}
                                     </a>
                                 @else
@@ -216,49 +267,6 @@
                                 <div class="cell-main">{{ $order->clientProfile->company_name }}</div>
                             </td>
                             <td>
-                                <div class="cell-main">{{ $order->receiver_name }}</div>
-                                <div class="cell-sub">{{ $order->receiver_phone }} • {{ $order->city->name }}</div>
-                            </td>
-                            <td>
-                                <div class="cell-main">
-                                    @if($order->payment_type === 'cod')
-                                        COD: <strong>{{ number_format($order->order_price, 2) }} JD</strong>
-                                    @else
-                                        <span class="badge badge-no" style="font-size: .65rem; padding: 2px 6px;">Prepaid</span>
-                                    @endif
-                                </div>
-                                <div class="cell-sub">Shipping: {{ number_format($order->delivery_amount, 2) }} JD</div>
-                            </td>
-                            <td>
-                                @php
-                                    $statusClasses = [
-                                        'pending' => 'badge-pending',
-                                        'picked_up' => 'badge-info',
-                                        'delivered' => 'badge-active',
-                                        'rejected' => 'badge-suspended',
-                                        'returned' => 'badge-no',
-                                        'cancelled' => 'badge-suspended',
-                                    ];
-                                @endphp
-                                <span class="badge {{ $statusClasses[$order->status] ?? 'badge-no' }}">
-                                    <span class="badge-dot"></span>
-                                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                                </span>
-                            </td>
-                            <td>
-                                @php
-                                    $payClasses = [
-                                        'pending' => 'badge-pending',
-                                        'with_driver' => 'badge-info',
-                                        'paid' => 'badge-active',
-                                        'no_payment' => 'badge-no',
-                                    ];
-                                @endphp
-                                <span class="badge {{ $payClasses[$order->payment_status] ?? 'badge-no' }}">
-                                    {{ ucfirst(str_replace('_', ' ', $order->payment_status)) }}
-                                </span>
-                            </td>
-                            <td>
                                 @if($order->driver)
                                     <div class="cell-main">{{ $order->driver->name }}</div>
                                 @else
@@ -266,7 +274,20 @@
                                 @endif
                             </td>
                             <td>
-                                <div class="cell-sub">{{ $order->created_at->format('Y-m-d H:i') }}</div>
+                                @php
+                                    $statusClasses = [
+                                        'pending'   => 'badge-pending',
+                                        'picked_up' => 'badge-info',
+                                        'delivered' => 'badge-active',
+                                        'rejected'  => 'badge-suspended',
+                                        'returned'  => 'badge-no',
+                                        'cancelled' => 'badge-suspended',
+                                    ];
+                                @endphp
+                                <span class="badge {{ $statusClasses[$order->status] ?? 'badge-no' }}">
+                                    <span class="badge-dot"></span>
+                                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                                </span>
                             </td>
                             <td>
                                 <div class="act-btns" style="justify-content: center;">
@@ -286,7 +307,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                            <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 30px;">
                                 No orders found matching the filter criteria.
                             </td>
                         </tr>
@@ -309,6 +330,105 @@
     </div>
 
     <style>
+    /* Filter rows layout */
+    .filter-bar .filter-form,
+    .filter-bar form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+    .filter-row .filter-select {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Searchable select */
+    .ss-wrap {
+        position: relative;
+        min-width: 0;
+    }
+    .ss-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        height: 35px;
+        border: 1px solid var(--border, #ddd);
+        border-radius: 7px;
+        background: var(--card-bg, #fff);
+        cursor: pointer;
+        font-size: .875rem;
+        color: var(--text-main, #111);
+        gap: 8px;
+        user-select: none;
+        transition: border-color .15s;
+    }
+    .ss-trigger:hover,
+    .ss-wrap.open .ss-trigger {
+        border-color: #3b82f6;
+    }
+    .ss-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .ss-panel {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: var(--card-bg, #fff);
+        border: 1px solid var(--border, #ddd);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+        z-index: 200;
+        display: none;
+        overflow: hidden;
+    }
+    .ss-wrap.open .ss-panel {
+        display: block;
+    }
+    .ss-search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        border-bottom: 1px solid var(--border, #eee);
+        font-size: .875rem;
+        outline: none;
+        background: var(--card-bg, #fff);
+        color: var(--text-main, #111);
+        box-sizing: border-box;
+    }
+    .ss-opts {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .ss-opt {
+        padding: 8px 12px;
+        font-size: .875rem;
+        cursor: pointer;
+        color: var(--text-main, #111);
+        transition: background .1s;
+    }
+    .ss-opt:hover {
+        background: rgba(59, 130, 246, .07);
+    }
+    .ss-opt.selected {
+        color: #3b82f6;
+        font-weight: 600;
+    }
+    .ss-opt.ss-hidden {
+        display: none;
+    }
+
+    /* Custom checkboxes */
     .custom-cb {
         position: relative;
         display: inline-flex;
@@ -374,57 +494,113 @@
     </style>
 
     <script>
-    function openModal(id) {
-        document.getElementById(id).classList.add('open');
-    }
-    function closeModal(id) {
-        document.getElementById(id).classList.remove('open');
-    }
-    document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
-        overlay.addEventListener('click', function (e) {
+    // Modal helpers
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+        overlay.addEventListener('click', function(e) {
             if (e.target === this) closeModal(this.id);
         });
     });
 
-    (function () {
-        const selectAll   = document.getElementById('select-all');
-        const bulkBar     = document.getElementById('bulk-bar');
-        const bulkCount   = document.getElementById('bulk-count');
-        const orderIdsDiv = document.getElementById('assign-order-ids');
-        const subtitle    = document.getElementById('assign-modal-subtitle');
+    // Live search — debounce 350ms then submit
+    (function() {
+        var input = document.getElementById('live-search');
+        var timer;
+        if (!input) return;
+        input.addEventListener('input', function() {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                document.getElementById('filter-form').submit();
+            }, 350);
+        });
+    })();
+
+    // Searchable selects
+    document.querySelectorAll('.ss-wrap').forEach(function(wrap) {
+        var trigger    = wrap.querySelector('.ss-trigger');
+        var label      = wrap.querySelector('.ss-label');
+        var searchInp  = wrap.querySelector('.ss-search-input');
+        var opts       = wrap.querySelectorAll('.ss-opt');
+        var hidden     = wrap.querySelector('input[type=hidden]');
+        var form       = document.getElementById('filter-form');
+
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var isOpen = wrap.classList.contains('open');
+            // close all
+            document.querySelectorAll('.ss-wrap.open').forEach(function(w) { w.classList.remove('open'); });
+            if (!isOpen) {
+                wrap.classList.add('open');
+                searchInp.value = '';
+                opts.forEach(function(o) { o.classList.remove('ss-hidden'); });
+                searchInp.focus();
+            }
+        });
+
+        searchInp.addEventListener('input', function() {
+            var val = this.value.toLowerCase();
+            opts.forEach(function(opt) {
+                opt.classList.toggle('ss-hidden', val !== '' && !opt.textContent.toLowerCase().includes(val));
+            });
+        });
+
+        opts.forEach(function(opt) {
+            opt.addEventListener('click', function() {
+                hidden.value = this.dataset.value;
+                label.textContent = this.textContent.trim();
+                opts.forEach(function(o) { o.classList.remove('selected'); });
+                this.classList.add('selected');
+                wrap.classList.remove('open');
+                form.submit();
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!wrap.contains(e.target)) wrap.classList.remove('open');
+        });
+    });
+
+    // Bulk select
+    (function() {
+        var selectAll   = document.getElementById('select-all');
+        var bulkBar     = document.getElementById('bulk-bar');
+        var bulkCount   = document.getElementById('bulk-count');
+        var orderIdsDiv = document.getElementById('assign-order-ids');
+        var subtitle    = document.getElementById('assign-modal-subtitle');
 
         function getChecked() {
             return Array.from(document.querySelectorAll('.order-checkbox:checked'));
         }
 
         function updateBulkBar() {
-            const checked = getChecked();
-            const total   = document.querySelectorAll('.order-checkbox').length;
+            var checked = getChecked();
+            var total   = document.querySelectorAll('.order-checkbox').length;
             bulkBar.style.display = checked.length > 0 ? 'flex' : 'none';
             bulkCount.textContent = checked.length + ' order' + (checked.length > 1 ? 's' : '') + ' selected';
             selectAll.indeterminate = checked.length > 0 && checked.length < total;
             selectAll.checked = total > 0 && checked.length === total;
         }
 
-        selectAll.addEventListener('change', function () {
-            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = this.checked);
+        selectAll.addEventListener('change', function() {
+            document.querySelectorAll('.order-checkbox').forEach(function(cb) { cb.checked = selectAll.checked; });
             updateBulkBar();
         });
 
-        document.querySelectorAll('.order-checkbox').forEach(cb => {
+        document.querySelectorAll('.order-checkbox').forEach(function(cb) {
             cb.addEventListener('change', updateBulkBar);
         });
 
-        window.clearSelection = function () {
-            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = false);
+        window.clearSelection = function() {
+            document.querySelectorAll('.order-checkbox').forEach(function(cb) { cb.checked = false; });
             selectAll.checked = false;
             bulkBar.style.display = 'none';
         };
 
         function buildHiddenInputs(ids) {
             orderIdsDiv.innerHTML = '';
-            ids.forEach(function (id) {
-                const input = document.createElement('input');
+            ids.forEach(function(id) {
+                var input  = document.createElement('input');
                 input.type  = 'hidden';
                 input.name  = 'order_ids[]';
                 input.value = id;
@@ -432,14 +608,14 @@
             });
         }
 
-        window.openBulkAssign = function () {
-            const ids = getChecked().map(cb => cb.value);
+        window.openBulkAssign = function() {
+            var ids = getChecked().map(function(cb) { return cb.value; });
             buildHiddenInputs(ids);
             subtitle.textContent = ids.length + ' pending order' + (ids.length > 1 ? 's' : '') + ' will be assigned and marked as Picked Up.';
             openModal('assignDriverModal');
         };
 
-        window.openSingleAssign = function (orderId, orderLabel) {
+        window.openSingleAssign = function(orderId, orderLabel) {
             buildHiddenInputs([orderId]);
             subtitle.textContent = 'Order ' + orderLabel + ' will be assigned and marked as Picked Up.';
             openModal('assignDriverModal');

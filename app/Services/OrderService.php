@@ -3,72 +3,88 @@
 namespace App\Services;
 
 use App\Jobs\SendWhatsappMessageJob;
+use App\Models\DriverProfile;
 use App\Models\Order;
 use App\Models\OrderTrackingLog;
 use App\Models\FinancialLedgerEntry;
 use App\Models\ClientProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class OrderService
 {
     /**
      * Create a new order with calculated pricing and logs.
+     *
+     * Expects $data keys: client_profile_id, driver_id (user id, optional),
+     * order_description, payment_type, delivery_on_customer,
+     * delivery_customer_amount (if delivery_on_customer), order_price (if cod),
+     * receiver_name, receiver_phone, city_id, area_id, address_text, notes.
      */
     public function createOrder(array $data, User $actor): Order
     {
         return DB::transaction(function () use ($data, $actor) {
             $client = ClientProfile::findOrFail($data['client_profile_id']);
-            
-            // Calculate internal delivery price
-            $deliveryAmount = $client->getDeliveryPriceForCity((int)$data['city_id']);
-            
-            // Auto-calculate delivery customer amount if delivery is not on customer
+
+            // Calculate delivery fee for the client based on city rates
+            $clientDeliveryAmount = $client->getDeliveryPriceForCity((int) $data['city_id']);
+
             $deliveryOnCustomer = filter_var($data['delivery_on_customer'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            $deliveryCustomerAmount = $deliveryOnCustomer ? (float)($data['delivery_customer_amount'] ?? 0) : null;
-            
-            $hasDriver = !empty($data['driver_id']);
+            $customerDeliveryAmount = $deliveryOnCustomer ? (float) ($data['delivery_customer_amount'] ?? 0) : null;
+
+            // Resolve driver profile from user id
+            $driverProfileId = null;
+            if (!empty($data['driver_id'])) {
+                $driverProfile = DriverProfile::where('user_id', $data['driver_id'])->first();
+                $driverProfileId = $driverProfile?->id;
+            }
+
+            $hasDriver = $driverProfileId !== null;
             $initialStatus = $hasDriver ? 'picked_up' : 'pending';
 
             $order = Order::create([
-                'client_profile_id'        => $client->id,
-                'driver_id'                => $data['driver_id'] ?? null,
-                'order_description'        => $data['order_description'] ?? null,
-                'payment_type'             => $data['payment_type'],
-                'delivery_on_customer'     => $deliveryOnCustomer,
-                'delivery_customer_amount' => $deliveryCustomerAmount,
-                'delivery_amount'          => $deliveryAmount,
-                'order_price'              => $data['payment_type'] === 'cod' ? (float)$data['order_price'] : null,
-                'receiver_name'            => $data['receiver_name'],
-                'receiver_phone'           => $data['receiver_phone'],
-                'city_id'                  => (int)$data['city_id'],
-                'area_id'                  => (int)$data['area_id'],
-                'address_text'             => $data['address_text'],
-                'address_location'         => $data['address_location'] ?? null,
-                'status'                   => $initialStatus,
-                'payment_status'           => 'pending',
-                'notes'                    => $data['notes'] ?? null,
+                'client_profile_id' => $client->id,
+                'driver_profile_id' => $driverProfileId,
+                'order_description' => $data['order_description'] ?? null,
+                'status'            => $initialStatus,
+                'payment_status'    => 'pending',
+                'notes'             => $data['notes'] ?? null,
+                'batch_number'      => $data['batch_number'] ?? null,
             ]);
 
-            // Create tracking log
+            $order->payment()->create([
+                'payment_type'             => $data['payment_type'],
+                'order_amount'             => $data['payment_type'] === 'cod' ? (float) ($data['order_price'] ?? 0) : null,
+                'delivery_on_customer'     => $deliveryOnCustomer,
+                'customer_delivery_amount' => $customerDeliveryAmount,
+                'client_delivery_amount'   => $clientDeliveryAmount,
+            ]);
+
+            $order->receiver()->create([
+                'receiver_name' => $data['receiver_name'],
+                'receiver_phone' => $data['receiver_phone'],
+                'city_id'        => (int) $data['city_id'],
+                'area_id'        => (int) $data['area_id'],
+                'address_text'   => $data['address_text'],
+            ]);
+
             $this->logTracking($order->id, $actor->id, null, 'pending', 'Order created in the system.');
 
             if ($hasDriver) {
-                $driver = User::find($order->driver_id);
-                $driverName = $driver ? $driver->name : 'Driver';
+                $driverName = $driverProfile?->user?->name ?? 'Driver';
                 $this->logTracking($order->id, $actor->id, 'pending', 'picked_up', "Order assigned to driver: {$driverName} and picked up.");
             }
 
-            // Dispatch WhatsApp notification for order creation (non-blocking)
+            // Use data array directly — avoids loading the receiver relation for the job
+            $driverUser = $driverProfile?->user ?? null;
             SendWhatsappMessageJob::dispatch(
                 'order_created',
-                $order->receiver_phone,
+                $data['receiver_phone'],
                 [
-                    'customer_name' => $order->receiver_name ?? '',
-                    'order_number'  => $order->order_number  ?? '',
-                    'driver_name'   => optional($order->driver)->name  ?? '',
-                    'driver_phone'  => optional($order->driver)->phone ?? '',
+                    'customer_name' => $data['receiver_name'] ?? '',
+                    'order_number'  => $order->order_number ?? '',
+                    'driver_name'   => $driverUser?->name  ?? '',
+                    'driver_phone'  => $driverUser?->phone ?? '',
                     'location_link' => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
                 ],
                 $order->id,
@@ -80,75 +96,79 @@ class OrderService
 
     /**
      * Update order status with tracking logs and financial transactions.
+     *
+     * $extra may contain: driver_id (user id), signature_path, proof_image_path,
+     * rejection_reason_id, notes.
      */
     public function updateStatus(Order $order, string $newStatus, array $extra = [], User $actor): Order
     {
         return DB::transaction(function () use ($order, $newStatus, $extra, $actor) {
             $oldStatus = $order->status;
-            
+
             if ($oldStatus === $newStatus && !isset($extra['driver_id'])) {
-                return $order; // No change
+                return $order;
             }
 
             $order->status = $newStatus;
 
-            // Handle Driver Assignment
-            if (isset($extra['driver_id']) && $extra['driver_id'] != $order->driver_id) {
-                $oldDriverId = $order->driver_id;
-                $order->driver_id = $extra['driver_id'];
-                
-                $newDriver = User::find($order->driver_id);
-                $newDriverName = $newDriver ? $newDriver->name : 'None';
-                
-                $this->logTracking(
-                    $order->id, 
-                    $actor->id, 
-                    $oldStatus, 
-                    $newStatus, 
-                    "Order driver changed to: {$newDriverName}."
-                );
+            // Handle driver assignment (extra['driver_id'] is a user id)
+            if (isset($extra['driver_id'])) {
+                $newDriverProfile = DriverProfile::where('user_id', $extra['driver_id'])->first();
+                $newDriverProfileId = $newDriverProfile?->id;
+
+                if ($newDriverProfileId != $order->driver_profile_id) {
+                    $order->driver_profile_id = $newDriverProfileId;
+
+                    $newDriverName = $newDriverProfile?->user?->name ?? 'None';
+                    $this->logTracking(
+                        $order->id,
+                        $actor->id,
+                        $oldStatus,
+                        $newStatus,
+                        "Order driver changed to: {$newDriverName}."
+                    );
+                }
             }
 
-            // Handle specific status changes
+            $driverUserId = $order->driverProfile?->user_id;
+
             if ($newStatus === 'delivered') {
-                $order->signature_path = $extra['signature_path'] ?? null;
+                $order->signature_path   = $extra['signature_path'] ?? null;
                 $order->proof_image_path = $extra['proof_image_path'] ?? null;
                 $order->rejection_reason_id = null;
-                
-                // Determine payment status
-                if ($order->payment_type === 'cod') {
+
+                $payment = $order->payment;
+
+                if ($payment->payment_type === 'cod') {
                     $order->payment_status = 'with_driver';
-                } elseif ($order->delivery_on_customer) {
+                } elseif ($payment->delivery_on_customer) {
                     $order->payment_status = 'with_driver';
                 } else {
-                    $order->payment_status = 'no_payment'; // Prepaid, delivery paid by client
+                    $order->payment_status = 'no_payment';
                 }
 
-                // Record cash the driver physically collected from the customer
-                // 1. COD Collection: Customer paid Driver for goods
-                if ($order->payment_type === 'cod' && $order->order_price > 0) {
+                if ($payment->payment_type === 'cod' && $payment->order_amount > 0) {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $order->client_profile_id,
-                        'driver_id'         => $order->driver_id,
+                        'driver_id'         => $driverUserId,
                         'from_account'      => 'customer',
                         'to_account'        => 'driver',
-                        'amount'            => $order->order_price,
+                        'amount'            => $payment->order_amount,
                         'type'              => 'cod_collection',
                         'recorded_by'       => $actor->id,
                         'notes'             => 'COD goods price collected by driver',
                     ]);
                 }
 
-                // 2. Delivery fee collected from customer (customer pays delivery, not client)
-                if ($order->delivery_on_customer && $order->delivery_customer_amount > 0) {
+                if ($payment->delivery_on_customer && $payment->customer_delivery_amount > 0) {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $order->client_profile_id,
-                        'driver_id'         => $order->driver_id,
+                        'driver_id'         => $driverUserId,
                         'from_account'      => 'customer',
                         'to_account'        => 'driver',
-                        'amount'            => $order->delivery_customer_amount,
+                        'amount'            => $payment->customer_delivery_amount,
                         'type'              => 'delivery_collection',
                         'recorded_by'       => $actor->id,
                         'notes'             => 'Delivery fee collected from customer by driver',
@@ -160,21 +180,19 @@ class OrderService
             } elseif ($newStatus === 'rejected') {
                 $order->rejection_reason_id = $extra['rejection_reason_id'] ?? null;
                 $order->notes = $extra['notes'] ?? $order->notes;
-                
+
                 $reasonText = $order->rejectionReason ? $order->rejectionReason->reason : 'Not specified';
                 $this->logTracking($order->id, $actor->id, $oldStatus, 'rejected', "Order rejected. Reason: {$reasonText}. Notes: " . ($extra['notes'] ?? ''));
 
             } elseif ($newStatus === 'returned') {
-                // If returned, we still charge client for shipping/return shipping fee (if company policy)
-                // Let's log a shipping charge for returned orders if they had been picked up
                 if ($oldStatus === 'picked_up') {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $order->client_profile_id,
-                        'driver_id'         => $order->driver_id,
+                        'driver_id'         => $driverUserId,
                         'from_account'      => 'client',
                         'to_account'        => 'company',
-                        'amount'            => $order->delivery_amount, // or return shipping fee
+                        'amount'            => $order->payment->client_delivery_amount,
                         'type'              => 'shipping_charge',
                         'recorded_by'       => $actor->id,
                         'notes'             => 'Delivery charge for returned order ' . $order->order_number,
@@ -185,21 +203,23 @@ class OrderService
             } elseif ($newStatus === 'cancelled') {
                 $this->logTracking($order->id, $actor->id, $oldStatus, 'cancelled', 'Order cancelled.');
             } else {
-                // General status logging (picked_up, etc.)
                 $this->logTracking($order->id, $actor->id, $oldStatus, $newStatus, "Order status changed to {$newStatus}.");
             }
 
             $order->save();
 
-            // Dispatch WhatsApp notifications (non-blocking queue jobs)
+            // WhatsApp notifications
+            $receiver = $order->receiver;
+            $driverUser = $order->driverProfile?->user;
+
             if ($newStatus === 'delivered') {
                 SendWhatsappMessageJob::dispatch(
                     'order_delivered',
-                    $order->receiver_phone,
+                    $receiver->receiver_phone,
                     [
-                        'customer_name' => $order->receiver_name ?? '',
-                        'order_number'  => $order->order_number  ?? '',
-                        'driver_name'   => optional($order->driver)->name ?? '',
+                        'customer_name' => $receiver->receiver_name ?? '',
+                        'order_number'  => $order->order_number ?? '',
+                        'driver_name'   => $driverUser?->name ?? '',
                         'location_link' => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
                     ],
                     $order->id,
@@ -208,10 +228,10 @@ class OrderService
             } elseif ($newStatus === 'rejected') {
                 SendWhatsappMessageJob::dispatch(
                     'order_rejected',
-                    $order->receiver_phone,
+                    $receiver->receiver_phone,
                     [
-                        'customer_name'    => $order->receiver_name ?? '',
-                        'order_number'     => $order->order_number  ?? '',
+                        'customer_name'    => $receiver->receiver_name ?? '',
+                        'order_number'     => $order->order_number ?? '',
                         'rejection_reason' => optional($order->rejectionReason)->reason ?? ($order->notes ?? 'Not specified'),
                         'location_link'    => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
                     ],
@@ -221,12 +241,12 @@ class OrderService
             } elseif ($newStatus === 'picked_up') {
                 SendWhatsappMessageJob::dispatch(
                     'order_picked_up',
-                    $order->receiver_phone,
+                    $receiver->receiver_phone,
                     [
-                        'customer_name' => $order->receiver_name ?? '',
-                        'order_number'  => $order->order_number  ?? '',
-                        'driver_name'   => optional($order->driver)->name  ?? '',
-                        'driver_phone'  => optional($order->driver)->phone ?? '',
+                        'customer_name' => $receiver->receiver_name ?? '',
+                        'order_number'  => $order->order_number ?? '',
+                        'driver_name'   => $driverUser?->name  ?? '',
+                        'driver_phone'  => $driverUser?->phone ?? '',
                     ],
                     $order->id,
                 )->onQueue(config('whatsapp.queue', 'default'));
@@ -242,22 +262,23 @@ class OrderService
     public function settleDriverCash(User $driver, array $orderIds, User $actor, ?string $ref = null, ?string $notes = null): int
     {
         return DB::transaction(function () use ($driver, $orderIds, $actor, $ref, $notes) {
+            $driverProfile = DriverProfile::where('user_id', $driver->id)->first();
+
             $count = 0;
             $orders = Order::whereIn('id', $orderIds)
-                ->where('driver_id', $driver->id)
+                ->where('driver_profile_id', $driverProfile?->id)
                 ->where('status', 'delivered')
                 ->where('payment_status', 'with_driver')
+                ->with('payment')
                 ->get();
 
             foreach ($orders as $order) {
-                // Calculate driver collections for this order
                 $driverCollected = FinancialLedgerEntry::where('order_id', $order->id)
                     ->where('driver_id', $driver->id)
                     ->where('to_account', 'driver')
                     ->sum('amount');
 
                 if ($driverCollected > 0) {
-                    // Log Driver -> Company Settlement
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $order->client_profile_id,
@@ -271,20 +292,19 @@ class OrderService
                         'notes'             => $notes ?? 'Driver cash settled to company for order ' . $order->order_number,
                     ]);
 
-                    // Cash is now with the company. For prepaid/no-COD orders the cycle is closed → paid.
-                    // For COD orders, company still needs to payout the client → with_company.
-                    if ($order->payment_type === 'prepaid' || $order->order_price == 0) {
+                    $payment = $order->payment;
+                    if ($payment->payment_type === 'prepaid' || $payment->order_amount == 0) {
                         $order->payment_status = 'paid';
                     } else {
                         $order->payment_status = 'with_company';
                     }
                     $order->save();
-                    
+
                     $this->logTracking(
-                        $order->id, 
-                        $actor->id, 
-                        $order->status, 
-                        $order->status, 
+                        $order->id,
+                        $actor->id,
+                        $order->status,
+                        $order->status,
                         "Cash of {$driverCollected} settled from driver to company."
                     );
                     $count++;
@@ -306,6 +326,7 @@ class OrderService
                 ->where('client_profile_id', $client->id)
                 ->where('status', 'delivered')
                 ->where('payment_status', 'with_company')
+                ->with('payment')
                 ->get();
 
             $totalCod = 0;
@@ -313,13 +334,15 @@ class OrderService
             $payoutLedgerEntry = null;
 
             foreach ($orders as $order) {
-                // Shipping charge: client owes company for delivery (recorded here, not at delivery time)
-                $shippingFee = $order->delivery_on_customer ? 0 : $order->delivery_amount;
+                $payment = $order->payment;
+                $driverUserId = $order->driverProfile?->user_id;
+
+                $shippingFee = $payment->delivery_on_customer ? 0 : $payment->client_delivery_amount;
                 if ($shippingFee > 0) {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $client->id,
-                        'driver_id'         => $order->driver_id,
+                        'driver_id'         => $driverUserId,
                         'from_account'      => 'client',
                         'to_account'        => 'company',
                         'amount'            => $shippingFee,
@@ -331,15 +354,14 @@ class OrderService
                     $totalShipping += $shippingFee;
                 }
 
-                // COD payout: company pays client their goods money (reverse of customer → driver COD collection)
-                if ($order->payment_type === 'cod' && $order->order_price > 0) {
+                if ($payment->payment_type === 'cod' && $payment->order_amount > 0) {
                     $ledger = FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $client->id,
-                        'driver_id'         => $order->driver_id,
+                        'driver_id'         => $driverUserId,
                         'from_account'      => 'company',
                         'to_account'        => 'client',
-                        'amount'            => $order->order_price,
+                        'amount'            => $payment->order_amount,
                         'type'              => 'client_payout',
                         'reference_number'  => $ref,
                         'recorded_by'       => $actor->id,
@@ -350,7 +372,7 @@ class OrderService
                         $payoutLedgerEntry = $ledger;
                     }
 
-                    $totalCod += $order->order_price;
+                    $totalCod += $payment->order_amount;
                 }
 
                 $order->payment_status = 'paid';
@@ -387,23 +409,18 @@ class OrderService
 
     /**
      * Bulk-return all rejected orders and settle all delivered COD cash to company.
-     *
-     * Two things happen in one transaction:
-     * 1. Rejected orders → returned, shipping_charge ledger entry created.
-     * 2. Delivered orders with payment_status=with_driver → with_company,
-     *    driver_settlement ledger entry created (driver hands cash to Saee).
-     *
-     * Returns total number of orders affected (returned + settled).
      */
     public function confirmHandover(User $driver, ?string $notes = null): array
     {
         return DB::transaction(function () use ($driver, $notes) {
+            $driverProfile = DriverProfile::where('user_id', $driver->id)->firstOrFail();
+
             $returnedCount = 0;
             $settledCount  = 0;
 
-            // 1. Handle rejected orders → returned
-            $rejectedOrders = Order::where('driver_id', $driver->id)
+            $rejectedOrders = Order::where('driver_profile_id', $driverProfile->id)
                 ->where('status', 'rejected')
+                ->with('payment')
                 ->get();
 
             foreach ($rejectedOrders as $order) {
@@ -412,14 +429,15 @@ class OrderService
                     'payment_status' => 'no_payment',
                 ]);
 
-                if ($order->delivery_amount > 0) {
+                $clientDeliveryAmount = $order->payment->client_delivery_amount;
+                if ($clientDeliveryAmount > 0) {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $order->client_profile_id,
                         'driver_id'         => $driver->id,
                         'from_account'      => 'client',
                         'to_account'        => 'company',
-                        'amount'            => $order->delivery_amount,
+                        'amount'            => $clientDeliveryAmount,
                         'type'              => 'shipping_charge',
                         'recorded_by'       => $driver->id,
                         'notes'             => 'Delivery charge for returned order ' . $order->order_number,
@@ -435,8 +453,7 @@ class OrderService
                 $returnedCount++;
             }
 
-            // 2. Settle all delivered COD / delivery_on_customer orders still with driver → company
-            $deliveredOrders = Order::where('driver_id', $driver->id)
+            $deliveredOrders = Order::where('driver_profile_id', $driverProfile->id)
                 ->where('status', 'delivered')
                 ->where('payment_status', 'with_driver')
                 ->get();
@@ -479,9 +496,6 @@ class OrderService
         });
     }
 
-    /**
-     * Write tracking log helper.
-     */
     private function logTracking(int $orderId, int $userId, ?string $fromStatus, string $toStatus, string $description): OrderTrackingLog
     {
         return OrderTrackingLog::create([
@@ -490,7 +504,6 @@ class OrderService
             'from_status' => $fromStatus,
             'to_status'   => $toStatus,
             'description' => $description,
-            // GPS coords can be populated if available in request
             'latitude'    => request()->input('latitude'),
             'longitude'   => request()->input('longitude'),
         ]);
