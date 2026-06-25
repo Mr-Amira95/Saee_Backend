@@ -11,7 +11,7 @@
 @endsection
 
 @section('head')
-<script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
 <style>
     .legal-tabs-nav {
         display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid var(--bdr); padding-bottom: 12px;
@@ -100,6 +100,7 @@
     // Initialise CKEditor on both textareas
     CKEDITOR.replace('editor-terms', {
         height: 450,
+        versionCheck: false,
         toolbar: [
             { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'] },
             { name: 'paragraph',   items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'] },
@@ -112,6 +113,7 @@
 
     CKEDITOR.replace('editor-privacy', {
         height: 450,
+        versionCheck: false,
         toolbar: [
             { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'] },
             { name: 'paragraph',   items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'] },
