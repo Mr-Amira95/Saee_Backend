@@ -202,10 +202,17 @@ const TICKET_ID = {{ $activeTicket->id }};
 const MY_USER_ID = {{ auth()->id() }};
 let lastMsgId = {{ $activeTicket->messages->last()?->id ?? 0 }};
 
+let clientSending = false;
+
 function sendMessage() {
+    if (clientSending) return;
     const input = document.getElementById('msgInput');
     const text  = input.value.trim();
     if (!text) return;
+
+    clientSending = true;
+    const btn = document.querySelector('.chat-send-btn');
+    if (btn) btn.disabled = true;
 
     const temp = document.createElement('div');
     temp.className = 'msg-bubble mine';
@@ -221,7 +228,11 @@ function sendMessage() {
     }).then(r => r.json()).then(data => {
         lastMsgId = data.id;
         temp.querySelector('.msg-meta').textContent = `{{ __('You') }} · ${data.created_at}`;
-    }).catch(() => {});
+    }).catch(() => {})
+    .finally(() => {
+        clientSending = false;
+        if (btn) btn.disabled = false;
+    });
 }
 
 function scrollToBottom() {

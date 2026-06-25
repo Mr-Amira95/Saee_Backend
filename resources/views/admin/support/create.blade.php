@@ -309,30 +309,6 @@
                 </div>
             </div>
 
-            {{-- ── Category & Priority ── --}}
-            <div class="form-grid-2" style="margin-bottom: 20px;">
-                <div class="form-group">
-                    <label class="form-label">Category <span class="req">*</span></label>
-                    <select name="category" class="form-input" required>
-                        <option value="general"        {{ old('category') === 'general'        ? 'selected' : '' }}>General Inquiry</option>
-                        <option value="delivery_issue" {{ old('category') === 'delivery_issue' ? 'selected' : '' }}>Delivery Issue</option>
-                        <option value="financial"      {{ old('category') === 'financial'      ? 'selected' : '' }}>Financial / COD</option>
-                        <option value="complaint"      {{ old('category') === 'complaint'      ? 'selected' : '' }}>Complaint</option>
-                    </select>
-                    @error('category')<p class="form-error">{{ $message }}</p>@enderror
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Priority <span class="req">*</span></label>
-                    <select name="priority" class="form-input" required>
-                        <option value="low"    {{ old('priority') === 'low'    ? 'selected' : '' }}>Low</option>
-                        <option value="medium" {{ old('priority', 'medium') === 'medium' ? 'selected' : '' }}>Medium</option>
-                        <option value="high"   {{ old('priority') === 'high'   ? 'selected' : '' }}>High</option>
-                    </select>
-                    @error('priority')<p class="form-error">{{ $message }}</p>@enderror
-                </div>
-            </div>
-
             <div class="form-group" style="margin-bottom: 20px;">
                 <label class="form-label">Subject Title <span class="req">*</span></label>
                 <input type="text" name="title" class="form-input" placeholder="e.g. Shipping Delay Inquiry" value="{{ old('title') }}" required>

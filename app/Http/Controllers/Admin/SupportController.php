@@ -76,8 +76,6 @@ class SupportController extends Controller
             'user_id'  => 'required|exists:users,id',
             'order_id' => 'nullable|exists:orders,id',
             'title'    => 'required|string|max:255',
-            'category' => 'required|in:general,delivery_issue,financial,complaint',
-            'priority' => 'required|in:low,medium,high',
             'message'  => 'required|string',
         ]);
 
@@ -85,8 +83,6 @@ class SupportController extends Controller
             'user_id'  => $validated['user_id'],
             'order_id' => $validated['order_id'] ?? null,
             'title'    => $validated['title'],
-            'category' => $validated['category'],
-            'priority' => $validated['priority'],
             'status'   => 'open',
         ]);
 

@@ -16,8 +16,8 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 360px 1fr; gap: 20px;">
-        
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
         {{-- 1. Create Broadcast Form --}}
         <div>
             <div class="form-section" style="padding: 20px;">

@@ -226,8 +226,8 @@
             @if($ticket->status !== 'resolved')
                 <form id="publicChatForm" action="{{ route('public.support.send', $ticket->token) }}" method="POST" class="chat-form" onsubmit="handleFormSubmit(event)">
                     @csrf
-                    <input type="text" id="publicChatInput" name="message" class="chat-input" placeholder="Type your message to support desk..." autocomplete="off">
-                    <button type="submit" class="chat-send-btn">Send</button>
+                    <textarea id="publicChatInput" name="message" class="chat-input" placeholder="Type your message to support desk..." rows="1"></textarea>
+                    <button type="submit" id="publicSendBtn" class="chat-send-btn">Send</button>
                 </form>
             @else
                 <div style="text-align: center; color: var(--text-dim); font-size: .8rem; font-style: italic;">
@@ -243,12 +243,18 @@
         chatBody.scrollTop = chatBody.scrollHeight;
 
         // AJAX submit message
+        let publicSending = false;
+
         function handleFormSubmit(e) {
             e.preventDefault();
+            if (publicSending) return;
             const input = document.getElementById('publicChatInput');
             const msg = input.value.trim();
             if (!msg) return;
 
+            publicSending = true;
+            const btn = document.getElementById('publicSendBtn');
+            if (btn) btn.disabled = true;
             input.value = '';
 
             fetch("{{ route('public.support.send', $ticket->token) }}", {
@@ -265,8 +271,20 @@
                 if (data.success) {
                     appendMessage(data.message, true);
                 }
+            })
+            .catch(() => {})
+            .finally(() => {
+                publicSending = false;
+                if (btn) btn.disabled = false;
             });
         }
+
+        document.getElementById('publicChatInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleFormSubmit(e);
+            }
+        });
 
         // Append message
         function appendMessage(msg, isOutgoing) {

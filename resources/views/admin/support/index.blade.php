@@ -306,13 +306,8 @@
                     <div class="chat-window-title">
                         <h2>{{ $activeTicket->title }} (#{{ $activeTicket->ticket_number }})</h2>
                         <p>
-                            Category: <strong style="text-transform: capitalize; color: #fff;">{{ str_replace('_', ' ', $activeTicket->category) }}</strong>
-                            &bull; Priority: 
-                            <span style="font-weight: 700; color: {{ $activeTicket->priority === 'high' ? 'var(--red-lt)' : ($activeTicket->priority === 'medium' ? '#f59e0b' : '#3b82f6') }}">
-                                {{ strtoupper($activeTicket->priority) }}
-                            </span>
                             @if($activeTicket->order)
-                                &bull; Related Order: <a href="{{ route('admin.orders.show', $activeTicket->order) }}" style="color: var(--red-lt); font-weight:600">#{{ $activeTicket->order->order_number }}</a>
+                                Related Order: <a href="{{ route('admin.orders.show', $activeTicket->order) }}" style="color: var(--red-lt); font-weight:600">#{{ $activeTicket->order->order_number }}</a>
                             @endif
                         </p>
                     </div>
@@ -347,10 +342,10 @@
                 {{-- Chat Input Form --}}
                 <div class="chat-footer">
                     @if($activeTicket->status !== 'resolved')
-                        <form id="adminChatForm" action="{{ route('admin.support.send', $activeTicket) }}" method="POST" class="chat-form" onsubmit="handleFormSubmit(event)">
+                        <form id="adminChatForm" action="{{ route('admin.support.send', $activeTicket) }}" method="POST" class="chat-form">
                             @csrf
-                            <input type="text" id="adminChatInput" name="message" class="chat-input" placeholder="Type your support reply..." autocomplete="off">
-                            <button type="submit" class="chat-send-btn">Send Reply</button>
+                            <textarea id="adminChatInput" name="message" class="chat-input" placeholder="Type your support reply…" rows="1"></textarea>
+                            <button type="submit" id="adminSendBtn" class="chat-send-btn">Send Reply</button>
                         </form>
                     @else
                         <div style="text-align: center; color: var(--text-dim); font-size: .8rem; font-style: italic; padding: 10px;">
@@ -436,11 +431,18 @@
     });
 
     // AJAX form submit (optimistic append for own messages)
+    let adminSending = false;
+
     function handleFormSubmit(e) {
         e.preventDefault();
+        if (adminSending) return;
         const input   = document.getElementById('adminChatInput');
         const message = input.value.trim();
         if (!message) return;
+
+        adminSending = true;
+        const btn = document.getElementById('adminSendBtn');
+        if (btn) btn.disabled = true;
         input.value = '';
 
         fetch("{{ route('admin.support.send', $activeTicket) }}", {
@@ -453,7 +455,24 @@
             body: JSON.stringify({ message })
         })
         .then(r => r.json())
-        .then(data => { if (data.success) appendMessage(data.message, true); });
+        .then(data => { if (data.success) appendMessage(data.message, true); })
+        .catch(() => {})
+        .finally(() => {
+            adminSending = false;
+            if (btn) btn.disabled = false;
+        });
+    }
+
+    const adminForm  = document.getElementById('adminChatForm');
+    const adminInput = document.getElementById('adminChatInput');
+    if (adminForm)  adminForm.addEventListener('submit', handleFormSubmit);
+    if (adminInput) {
+        adminInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleFormSubmit(e);
+            }
+        });
     }
 
     function appendMessage(msg, isOutgoing) {
