@@ -54,6 +54,7 @@ class ProfileController extends Controller
 
         $todayAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', today())
+            ->latest('check_in_at')
             ->first();
 
         $attendanceStatus = match (true) {

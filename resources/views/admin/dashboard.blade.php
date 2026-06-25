@@ -106,32 +106,39 @@
         @php
             $todayAttendance = \App\Models\Attendance::where('user_id', auth()->id())
                 ->where('date', now()->toDateString())
+                ->latest('check_in_at')
                 ->first();
+            $todaySessionCount = \App\Models\Attendance::where('user_id', auth()->id())
+                ->where('date', now()->toDateString())
+                ->count();
         @endphp
         <div class="attendance-widget" style="background: rgba(255,255,255,.03); border: 1px solid var(--bdr); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 15px; min-width: 280px; backdrop-filter: blur(8px);">
             <div style="flex: 1; text-align: left;">
-                <div style="font-size: .68rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em;">Shift Logs</div>
+                <div style="font-size: .68rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em;">
+                    Shift Logs
+                    @if($todaySessionCount > 1)
+                        <span style="color: var(--red-lt); margin-left: 4px;">({{ $todaySessionCount }} sessions)</span>
+                    @endif
+                </div>
                 <div id="attendanceStatus" style="font-size: .84rem; font-weight: 600; margin-top: 3px; color: var(--text);">
                     @if(!$todayAttendance)
                         Not Checked In
                     @elseif(!$todayAttendance->check_out_at)
                         Working since {{ $todayAttendance->check_in_at->format('H:i') }}
                     @else
-                        Completed ({{ $todayAttendance->check_in_at->format('H:i') }} - {{ $todayAttendance->check_out_at->format('H:i') }})
+                        Last shift: {{ $todayAttendance->check_in_at->format('H:i') }} – {{ $todayAttendance->check_out_at->format('H:i') }}
                     @endif
                 </div>
                 @if($todayAttendance && !$todayAttendance->check_out_at)
                     <div id="activeTimer" style="font-size: .74rem; color: var(--red-lt); font-family: monospace; font-weight: 600; margin-top: 2px;" data-start="{{ $todayAttendance->check_in_at->toIso8601String() }}">00:00:00</div>
                 @endif
             </div>
-            
+
             <div style="display: flex; gap: 8px;">
-                @if(!$todayAttendance)
+                @if(!$todayAttendance || $todayAttendance->check_out_at)
                     <button class="btn-primary" id="dashboardCheckInBtn" onclick="submitAttendance('check-in')" style="padding: 8px 14px; font-size: .8rem; box-shadow: none;">Check In</button>
-                @elseif(!$todayAttendance->check_out_at)
-                    <button class="btn-danger" id="dashboardCheckOutBtn" onclick="submitAttendance('check-out')" style="padding: 8px 14px; font-size: .8rem;">Check Out</button>
                 @else
-                    <span class="badge badge-active" style="padding: 6px 12px; font-size: .76rem;"><span class="badge-dot"></span> Done</span>
+                    <button class="btn-danger" id="dashboardCheckOutBtn" onclick="submitAttendance('check-out')" style="padding: 8px 14px; font-size: .8rem;">Check Out</button>
                 @endif
             </div>
         </div>
@@ -147,9 +154,9 @@
             <div class="metric-icon">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             </div>
-            <span class="metric-trend">↑ 12%</span>
+            <span class="metric-trend">↑ Active</span>
         </div>
-        <div class="metric-val">{{ \App\Models\DriverProfile::whereHas('user', fn($q) => $q->where('status','active'))->count() }}</div>
+        <div class="metric-val">{{ $activeDriversCount }}</div>
         <div class="metric-lbl">Active Drivers</div>
     </div>
 
@@ -158,9 +165,9 @@
             <div class="metric-icon" style="color:#60a5fa">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </div>
-            <span class="metric-trend">↑ 8%</span>
+            <span class="metric-trend">↑ Registered</span>
         </div>
-        <div class="metric-val">{{ \App\Models\ClientProfile::where('status','active')->count() }}</div>
+        <div class="metric-val">{{ $activeClientsCount }}</div>
         <div class="metric-lbl">Client Companies</div>
     </div>
 
@@ -169,9 +176,9 @@
             <div class="metric-icon" style="color:#c084fc">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-            <span class="metric-trend">↑ 24%</span>
+            <span class="metric-trend">Total</span>
         </div>
-        <div class="metric-val">{{ \App\Models\Order::count() }}</div>
+        <div class="metric-val">{{ $totalOrdersCount }}</div>
         <div class="metric-lbl">Total Orders</div>
     </div>
 
@@ -180,10 +187,58 @@
             <div class="metric-icon" style="color:#34d399">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <span class="metric-trend">↑ 3%</span>
+            <span class="metric-trend">Delivered</span>
         </div>
-        <div class="metric-val">{{ number_format(\App\Models\Order::where('status', 'delivered')->sum('delivery_amount'), 2) }}</div>
+        <div class="metric-val">{{ number_format($totalRevenue, 2) }}</div>
         <div class="metric-lbl">Revenue (JD)</div>
+    </div>
+</div>
+
+{{-- Segmented Status Bar & Operational Distribution Card --}}
+@php
+    $totalCount = array_sum($statusCounts);
+    $getPercentage = function($status) use ($statusCounts, $totalCount) {
+        if ($totalCount === 0) return 0;
+        return (($statusCounts[$status] ?? 0) / $totalCount) * 100;
+    };
+@endphp
+<div class="panel" style="margin-bottom: 20px; animation: fu .5s .15s both;">
+    <div class="panel-head">
+        <span class="panel-title">Operational Order Status</span>
+        <span style="font-size: .72rem; color: var(--text-dim); font-weight: 500;">Live distribution across states</span>
+    </div>
+    <div style="padding: 20px 24px;">
+        <!-- Status Bar -->
+        <div style="height: 10px; display: flex; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,.04); margin-bottom: 20px;">
+            <div style="width: {{ $getPercentage('pending') }}%; background: var(--warning);" title="Pending: {{ round($getPercentage('pending'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('picked_up') }}%; background: var(--info);" title="In Transit: {{ round($getPercentage('picked_up'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('delivered') }}%; background: var(--success);" title="Delivered: {{ round($getPercentage('delivered'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('rejected') + $getPercentage('returned') }}%; background: #f87171;" title="Failed/Returned: {{ round($getPercentage('rejected') + $getPercentage('returned'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('cancelled') }}%; background: var(--text-dim);" title="Cancelled: {{ round($getPercentage('cancelled'), 1) }}%"></div>
+        </div>
+        <!-- Grid details -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
+            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
+                <span class="badge badge-pending" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>Pending</span>
+                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['pending'] ?? 0 }}</div>
+            </div>
+            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
+                <span class="badge badge-info" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>In Transit</span>
+                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['picked_up'] ?? 0 }}</div>
+            </div>
+            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
+                <span class="badge badge-success" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>Delivered</span>
+                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['delivered'] ?? 0 }}</div>
+            </div>
+            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
+                <span class="badge badge-danger" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>Returned/Failed</span>
+                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ ($statusCounts['returned'] ?? 0) + ($statusCounts['rejected'] ?? 0) }}</div>
+            </div>
+            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
+                <span class="badge badge-neutral" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>Cancelled</span>
+                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['cancelled'] ?? 0 }}</div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -193,87 +248,67 @@
     <div class="panel">
         <div class="panel-head">
             <span class="panel-title">Recent Activity</span>
-            <a href="#" class="panel-link">View all →</a>
+            <span style="font-size: .72rem; color: var(--text-dim);">Real-time events</span>
         </div>
         <div class="activity-list">
+            @forelse($recentActivities as $act)
             <div class="activity-item">
-                <div class="activity-dot" style="background:#ef4444"></div>
+                <div class="activity-dot" style="background:{{ $act['dot_color'] }}"></div>
                 <div class="activity-body">
-                    <div class="activity-msg">System <strong>initialized</strong> — database migrations completed.</div>
-                    <div class="activity-time">Just now</div>
+                    <div class="activity-msg">{!! $act['message'] !!}</div>
+                    <div class="activity-time">{{ $act['time']->diffForHumans() }}</div>
                 </div>
             </div>
-            <div class="activity-item">
-                <div class="activity-dot" style="background:#3b82f6"></div>
-                <div class="activity-body">
-                    <div class="activity-msg"><strong>Superadmin</strong> account created and seeded.</div>
-                    <div class="activity-time">{{ now()->diffForHumans() }}</div>
-                </div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-dot" style="background:#a855f7"></div>
-                <div class="activity-body">
-                    <div class="activity-msg">Permission system configured — <strong>33 permissions</strong> seeded.</div>
-                    <div class="activity-time">{{ now()->diffForHumans() }}</div>
-                </div>
-            </div>
-            <div class="activity-item">
-                <div class="activity-dot" style="background:#10b981"></div>
-                <div class="activity-body">
-                    <div class="activity-msg">Sanctum API authentication <strong>activated</strong>.</div>
-                    <div class="activity-time">{{ now()->diffForHumans() }}</div>
-                </div>
-            </div>
+            @empty
+            <div style="padding: 30px; text-align: center; color: var(--text-dim); font-size: .84rem;">No recent activities today.</div>
+            @endforelse
         </div>
     </div>
 
-    {{-- System status --}}
+    {{-- Pending action center --}}
     <div class="panel">
         <div class="panel-head">
-            <span class="panel-title">System Status</span>
-            <span style="font-size:.72rem;color:#4ade80;font-weight:600">● All Systems Operational</span>
+            <span class="panel-title">Pending Action Items</span>
+            <span class="badge badge-pending" style="font-size:.72rem;">{{ $unassignedOrdersCount + $openTicketsCount }} unresolved</span>
         </div>
-        <div class="quick-stats">
-            <div class="qs-item">
-                <div class="qs-left">
-                    <div class="qs-icon" style="background:rgba(220,38,38,.1);color:#ef4444">💻</div>
+        <div class="quick-stats" style="padding: 0;">
+            <!-- Unassigned Orders Alert -->
+            <div style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--bdr); transition: background .12s;" onmouseenter="this.style.background='rgba(255,255,255,.01)';" onmouseleave="this.style.background='transparent';">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245,158,11,.1); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink:0;">📦</div>
                     <div>
-                        <div class="qs-label">Application Server</div>
-                        <div class="qs-bar-wrap"><div class="qs-bar" style="background:#dc2626" data-target="100"></div></div>
+                        <div style="font-size: .82rem; font-weight: 600; color: var(--text);">Unassigned Shipments</div>
+                        <div style="font-size: .72rem; color: var(--text-dim);">{{ $unassignedOrdersCount }} orders waiting for courier assignments</div>
                     </div>
                 </div>
-                <div class="qs-val" style="color:#4ade80">Online</div>
+                <div>
+                    @if($unassignedOrdersCount > 0)
+                        <a href="{{ route('admin.orders.index') }}" class="btn-primary" style="padding: 5px 12px; font-size: .72rem; box-shadow: none; border-radius: 6px;">Dispatch</a>
+                    @else
+                        <span style="font-size: .72rem; color: var(--success); font-weight: 600;">● Cleared</span>
+                    @endif
+                </div>
             </div>
-            <div class="qs-item">
-                <div class="qs-left">
-                    <div class="qs-icon" style="background:rgba(59,130,246,.1);color:#60a5fa">🌐</div>
-                    <div>
-                        <div class="qs-label">Logistics APIs</div>
-                        <div class="qs-bar-wrap"><div class="qs-bar" style="background:#3b82f6" data-target="100"></div></div>
+
+            <!-- Open Support Tickets -->
+            @forelse($openTickets as $ticket)
+            <div style="padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--bdr); transition: background .12s;" onmouseenter="this.style.background='rgba(255,255,255,.01)';" onmouseleave="this.style.background='transparent';">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59,130,246,.1); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink:0;">💬</div>
+                    <div style="min-width: 0;">
+                        <div style="font-size: .82rem; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Ticket #{{ $ticket->ticket_number }}: {{ $ticket->title }}</div>
+                        <div style="font-size: .72rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            By {{ $ticket->user->name ?? 'Client' }} • {{ $ticket->updated_at->diffForHumans() }}
+                        </div>
                     </div>
                 </div>
-                <div class="qs-val" style="color:#4ade80">99.9% Uptime</div>
-            </div>
-            <div class="qs-item">
-                <div class="qs-left">
-                    <div class="qs-icon" style="background:rgba(16,185,129,.1);color:#34d399">🔑</div>
-                    <div>
-                        <div class="qs-label">Auth (Sanctum)</div>
-                        <div class="qs-bar-wrap"><div class="qs-bar" style="background:#10b981" data-target="100"></div></div>
-                    </div>
+                <div>
+                    <a href="{{ route('admin.support.index', ['ticket' => $ticket->ticket_number]) }}" class="btn-secondary" style="padding: 5px 12px; font-size: .72rem; border-radius: 6px;">Reply</a>
                 </div>
-                <div class="qs-val" style="color:#4ade80">Active</div>
             </div>
-            <div class="qs-item">
-                <div class="qs-left">
-                    <div class="qs-icon" style="background:rgba(245,158,11,.1);color:#fcd34d">🗄️</div>
-                    <div>
-                        <div class="qs-label">Database (MySQL)</div>
-                        <div class="qs-bar-wrap"><div class="qs-bar" style="background:#f59e0b" data-target="100"></div></div>
-                    </div>
-                </div>
-                <div class="qs-val" style="color:#4ade80">Connected</div>
-            </div>
+            @empty
+            <div style="padding: 30px; text-align: center; color: var(--text-dim); font-size: .84rem;">No pending support tickets. All quiet!</div>
+            @endforelse
         </div>
     </div>
 </div>
@@ -281,10 +316,6 @@
 
 @section('scripts')
 <script>
-document.querySelectorAll('.qs-bar').forEach(bar => {
-    const target = parseInt(bar.dataset.target) || 0;
-    setTimeout(() => { bar.style.width = target + '%'; }, 400);
-});
 
 /* Post Attendance Check-In / Check-Out */
 function submitAttendance(type) {

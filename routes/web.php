@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\AiConversationController;
 use App\Http\Controllers\PublicSupportController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\ServiceController;
@@ -72,7 +73,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Protected — must be authenticated admin/superadmin
     Route::middleware('admin.auth')->group(function () {
-        Route::get('dashboard', fn () => view('admin.dashboard'))->name('dashboard');
+        Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('logout',   [AuthController::class, 'logout'])->name('logout');
 
         // CMS Management
