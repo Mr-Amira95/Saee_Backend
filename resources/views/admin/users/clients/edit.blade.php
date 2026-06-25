@@ -165,17 +165,21 @@
 
 @php
     // Parse company phone and extensions
-    $companyPhoneRaw = $client->company_phone ?? '';
-    $companyPhoneParts = explode(' ', $companyPhoneRaw, 2);
-    $companyCode = $companyPhoneParts[0] ?? '+962';
-    $companyNumber = $companyPhoneParts[1] ?? '';
-    if (count($companyPhoneParts) < 2 && str_starts_with($companyPhoneRaw, '+')) {
-        if (str_starts_with($companyPhoneRaw, '+962')) {
-            $companyCode = '+962';
-            $companyNumber = substr($companyPhoneRaw, 4);
-        } elseif (str_starts_with($companyPhoneRaw, '+966')) {
-            $companyCode = '+966';
-            $companyNumber = substr($companyPhoneRaw, 4);
+    $companyCode = $client->company_phone_country_code;
+    $companyNumber = $client->company_phone ?? '';
+    if (!$companyCode) {
+        $companyPhoneRaw = $client->company_phone ?? '';
+        $companyPhoneParts = explode(' ', $companyPhoneRaw, 2);
+        $companyCode = $companyPhoneParts[0] ?? '+962';
+        $companyNumber = $companyPhoneParts[1] ?? '';
+        if (count($companyPhoneParts) < 2 && str_starts_with($companyPhoneRaw, '+')) {
+            if (str_starts_with($companyPhoneRaw, '+962')) {
+                $companyCode = '+962';
+                $companyNumber = substr($companyPhoneRaw, 4);
+            } elseif (str_starts_with($companyPhoneRaw, '+966')) {
+                $companyCode = '+966';
+                $companyNumber = substr($companyPhoneRaw, 4);
+            }
         }
     }
 @endphp

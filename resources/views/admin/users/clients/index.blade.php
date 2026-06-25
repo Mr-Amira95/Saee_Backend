@@ -192,7 +192,13 @@
                 </td>
                 <td>
                     <div class="cell-main" style="word-break:break-all;">{{ $client->masterUser->email ?? '—' }}</div>
-                    <div class="cell-sub" style="margin-top:2px;">{{ $client->company_phone ?: '—' }}</div>
+                    <div class="cell-sub" style="margin-top:2px;">
+                        @if($client->company_phone)
+                            {{ $client->company_phone_country_code ? ($client->company_phone_country_code . ' ') : '' }}{{ $client->company_phone }}
+                        @else
+                            —
+                        @endif
+                    </div>
                 </td>
                 <td>
                     <div class="cell-main">

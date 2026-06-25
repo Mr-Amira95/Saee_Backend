@@ -184,6 +184,19 @@
                 <span class="info-row-val" style="word-break:break-all;">{{ $client->email ?: '—' }}</span>
             </div>
             <div class="info-row">
+                <span class="info-row-key">Company Phone</span>
+                <span class="info-row-val">
+                    @if($client->company_phone)
+                        @if($client->company_phone_country_code)
+                            <span style="color:var(--text-dim);font-size:.8rem;margin-right:4px;">{{ $client->company_phone_country_code }}</span>
+                        @endif
+                        {{ $client->company_phone }}
+                    @else
+                        —
+                    @endif
+                </span>
+            </div>
+            <div class="info-row">
                 <span class="info-row-key">Client Status</span>
                 <span class="info-row-val">
                     @if($client->status === 'active')        <span class="badge-active">Active</span>

@@ -20,6 +20,7 @@ class ClientProfile extends Model
         'vat_number',
         'email',
         'company_phone',
+        'company_phone_country_code',
         'logo_path',
         'address_line1',
         'city_id',
