@@ -22,12 +22,29 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         $q = ClientProfile::with('masterUser', 'city', 'area')
-            ->when($request->search, fn($query, $s) =>
-                $query->where('company_name', 'like', "%$s%")
-                      ->orWhere('company_name_ar', 'like', "%$s%")
-                      ->orWhereHas('masterUser', fn($u) => $u->where('email', 'like', "%$s%"))
-            )
-            ->when($request->status, fn($query, $s) => $query->where('status', $s))
+            ->when($request->search, function($query, $s) {
+                $query->where(function($sub) use ($s) {
+                    $sub->where('company_name', 'like', "%$s%")
+                        ->orWhere('company_name_ar', 'like', "%$s%")
+                        ->orWhere('email', 'like', "%$s%")
+                        ->orWhere('company_phone', 'like', "%$s%")
+                        ->orWhere('commercial_register_number', 'like', "%$s%")
+                        ->orWhere('vat_number', 'like', "%$s%")
+                        ->orWhereHas('masterUser', function($u) use ($s) {
+                            $u->where('name', 'like', "%$s%")
+                              ->orWhere('email', 'like', "%$s%")
+                              ->orWhere('phone', 'like', "%$s%");
+                        })
+                        ->orWhereHas('city', function($c) use ($s) {
+                            $c->where('name', 'like', "%$s%")
+                              ->orWhere('name_ar', 'like', "%$s%");
+                        })
+                        ->orWhereHas('area', function($a) use ($s) {
+                            $a->where('name', 'like', "%$s%")
+                              ->orWhere('name_ar', 'like', "%$s%");
+                        });
+                });
+            })
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -148,7 +165,7 @@ class ClientController extends Controller
 
     public function show(ClientProfile $client)
     {
-        $client->load('masterUser', 'city', 'area', 'employees.user', 'attachments', 'bankDetail');
+        $client->load('masterUser', 'city', 'area', 'employees.user', 'attachments', 'bankDetail', 'deliveryPrices');
         return view('admin.users.clients.show', compact('client'));
     }
 
@@ -196,6 +213,8 @@ class ClientController extends Controller
             'cliq_id'                     => 'nullable|string|max:50',
             'cliq_alias_type'             => ['nullable', Rule::in(['alias', 'phone'])],
             'bank_notes'                  => 'nullable|string|max:500',
+            'delivery_prices'             => 'nullable|array',
+            'delivery_prices.*'           => 'nullable|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($data, $request, $client) {

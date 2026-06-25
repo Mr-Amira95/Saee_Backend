@@ -152,7 +152,18 @@
 </div>
 
 {{-- Filter bar --}}
-<div class="filter-bar" style="justify-content: flex-end;">
+<div class="filter-bar" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+    <form method="GET" action="{{ route('admin.clients.index') }}" class="filter-form" style="margin:0; flex:1; max-width:320px;" id="search-form">
+        <input
+            class="filter-search"
+            type="text"
+            name="search"
+            id="search-input"
+            value="{{ request('search') }}"
+            placeholder="Search clients..."
+            style="width:100%;"
+        >
+    </form>
     <a href="{{ route('admin.clients.create') }}" class="btn-primary">+ Add Client</a>
 </div>
 
@@ -444,5 +455,21 @@ function showSuccessToast(message) {
         }, 300);
     }, 2500);
 }
+    // Real-time search script
+    var searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        var timeout = null;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                document.getElementById('search-form').submit();
+            }, 500);
+        });
+        // Keep focus at end of input
+        searchInput.focus();
+        var val = searchInput.value;
+        searchInput.value = '';
+        searchInput.value = val;
+    }
 </script>
 @endsection

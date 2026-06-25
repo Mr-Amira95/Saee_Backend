@@ -94,36 +94,40 @@
             @endif
         </div>
 
-        {{-- Shortcut Buttons --}}
-        <div class="shortcut-buttons" style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
-            <a href="{{ route('admin.orders.index', ['client_profile_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                📦 Orders
-            </a>
-            <a href="{{ route('admin.financials.invoices', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                📄 Invoices
-            </a>
-            <a href="{{ route('admin.support.index', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                🎫 Support Tickets
-            </a>
-            <a href="{{ route('admin.financials.payout-client', $client) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                💰 Payout
-            </a>
-        </div>
-    </div>
+        {{-- Row containing Shortcuts and Main Actions together --}}
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:14px; width:100%;">
+            {{-- Shortcut Buttons --}}
+            <div class="shortcut-buttons" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a href="{{ route('admin.orders.index', ['client_profile_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                    📦 Orders
+                </a>
+                <a href="{{ route('admin.financials.invoices', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                    📄 Invoices
+                </a>
+                <a href="{{ route('admin.support.index', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                    🎫 Support Tickets
+                </a>
+                <a href="{{ route('admin.financials.payout-client', $client) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                    💰 Payout
+                </a>
+            </div>
 
-    <div class="profile-actions">
-        <a href="{{ route('admin.clients.edit', $client) }}" class="btn-primary">Edit Client</a>
-        <form method="POST" action="{{ route('admin.clients.resend-invitation', $client) }}" style="display:inline;">
-            @csrf
-            <button type="submit" class="btn-secondary" title="Resend invitation email">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                Resend Invitation
-            </button>
-        </form>
-        <button class="btn-danger"
-            onclick="confirmDelete('{{ route('admin.clients.destroy', $client) }}','{{ addslashes($client->company_name) }}')">
-            Delete
-        </button>
+            {{-- Profile Actions (Edit, Resend, Delete) --}}
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <a href="{{ route('admin.clients.edit', $client) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Client</a>
+                <form method="POST" action="{{ route('admin.clients.resend-invitation', $client) }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn-secondary" title="Resend invitation email" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        Resend Invitation
+                    </button>
+                </form>
+                <button class="btn-danger" style="font-size:.78rem;padding:6px 12px;"
+                    onclick="confirmDelete('{{ route('admin.clients.destroy', $client) }}','{{ addslashes($client->company_name) }}')">
+                    Delete
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -344,6 +348,39 @@
     </div>
 </div>
 @endif
+
+{{-- ── Delivery Rates ── --}}
+<div class="section-card">
+    <div class="section-card-hd">
+        <span class="section-card-title">Delivery Rates per Governorate</span>
+        <a href="{{ route('admin.clients.edit', $client) }}" style="font-size:.78rem;color:var(--red);text-decoration:none;">Edit Rates</a>
+    </div>
+    <div class="section-card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:12px;">
+            @foreach(\App\Models\City::where('is_active', true)->orderBy('name')->get() as $city)
+                @php
+                    $customPrice = $client->deliveryPrices->where('city_id', $city->id)->first();
+                @endphp
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--in-bg); border:1px solid var(--bdr); border-radius:10px;">
+                    <span style="font-size:.85rem; font-weight:600; color:var(--text);">
+                        @if(app()->getLocale() === 'ar')
+                            {{ $city->name_ar ?: $city->name }}
+                        @else
+                            {{ $city->name }}
+                        @endif
+                    </span>
+                    <span style="font-size:.85rem; font-weight:700; color:{{ $customPrice ? 'var(--red)' : 'var(--text-dim)' }}">
+                        @if($customPrice)
+                            {{ number_format($customPrice->delivery_price, 2) }} JD <span style="font-size:.7rem;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(220,38,38,0.1);color:var(--red);margin-left:4px;">Custom</span>
+                        @else
+                            {{ number_format($city->delivery_price, 2) }} JD <span style="font-size:.7rem;font-weight:500;color:var(--text-dim);margin-left:4px;">Default</span>
+                        @endif
+                    </span>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
 
 {{-- ── Attachments ── --}}
 @if($client->attachments->count())
