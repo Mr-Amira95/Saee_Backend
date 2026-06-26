@@ -254,18 +254,21 @@ class FinancialController extends Controller
                 ->where('from_account', 'driver')
                 ->sum('amount');
 
+            $cashHeld = $collected - $settled;
+
             return [
                 'driver'    => $driver,
                 'collected' => $collected,
                 'settled'   => $settled,
-                'balance'   => $collected - $settled,
+                'cash_held' => $cashHeld,
+                'mismatch'  => false,
             ];
         });
 
-        $totalCollected = $drivers->sum('collected');
-        $totalSettled   = $drivers->sum('settled');
-        $totalBalance   = $drivers->sum('balance');
+        $totalCollected  = $drivers->sum('collected');
+        $totalSettled    = $drivers->sum('settled');
+        $netDiscrepancy  = $drivers->sum('cash_held');
 
-        return view('admin.financials.reconciliation', compact('drivers', 'totalCollected', 'totalSettled', 'totalBalance'));
+        return view('admin.financials.reconciliation', compact('drivers', 'totalCollected', 'totalSettled', 'netDiscrepancy'));
     }
 }
