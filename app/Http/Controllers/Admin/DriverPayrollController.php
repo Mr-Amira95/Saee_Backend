@@ -6,7 +6,9 @@ use App\Enums\DriverPaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\DriverPayment;
 use App\Models\DriverProfile;
+use App\Models\Order;
 use App\Services\DriverPayrollService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -31,7 +33,22 @@ class DriverPayrollController extends Controller
     public function create(DriverProfile $driver)
     {
         $driver->load('user');
-        return view('admin.payroll.create', compact('driver'));
+
+        $periodStart  = Carbon::now()->startOfMonth();
+        $periodEnd    = Carbon::now()->endOfMonth();
+        $lastPayment  = $driver->payments()->latest('period_end')->first();
+
+        // Daily delivered order counts for the default period (for JS threshold calculation)
+        $dailyOrders = Order::where('driver_profile_id', $driver->id)
+            ->where('status', 'delivered')
+            ->whereBetween('delivered_at', [$periodStart->copy()->startOfDay(), $periodEnd->copy()->endOfDay()])
+            ->selectRaw('DATE(delivered_at) as day, COUNT(*) as cnt')
+            ->groupBy('day')
+            ->pluck('cnt', 'day');
+
+        return view('admin.payroll.create', compact(
+            'driver', 'periodStart', 'periodEnd', 'lastPayment', 'dailyOrders'
+        ));
     }
 
     public function store(Request $request, DriverProfile $driver)

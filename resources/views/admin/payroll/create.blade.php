@@ -33,13 +33,13 @@
                 <div class="form-group">
                     <label class="form-label">Period Start <span class="req">*</span></label>
                     <input type="date" name="period_start" class="form-input @error('period_start') err @enderror"
-                           value="{{ old('period_start') }}" required>
+                           value="{{ old('period_start', $periodStart->toDateString()) }}" required>
                     @error('period_start')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Period End <span class="req">*</span></label>
                     <input type="date" name="period_end" class="form-input @error('period_end') err @enderror"
-                           value="{{ old('period_end') }}" required>
+                           value="{{ old('period_end', $periodEnd->toDateString()) }}" required>
                     @error('period_end')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
             </div>
@@ -51,31 +51,41 @@
                 <div class="form-group">
                     <label class="form-label">Basic Salary <span class="req">*</span></label>
                     <input type="number" name="basic_salary" class="form-input @error('basic_salary') err @enderror"
-                           value="{{ old('basic_salary', 0) }}" step="0.01" min="0" placeholder="0.00" required
+                           value="{{ old('basic_salary', $lastPayment?->basic_salary ?? 0) }}" step="0.01" min="0" placeholder="0.00" required
                            oninput="recalc()">
                     @error('basic_salary')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Car & Gasoline Allowance <span class="req">*</span></label>
                     <input type="number" name="car_allowance" class="form-input @error('car_allowance') err @enderror"
-                           value="{{ old('car_allowance', 0) }}" step="0.01" min="0" placeholder="0.00" required
+                           value="{{ old('car_allowance', $lastPayment?->car_allowance ?? 0) }}" step="0.01" min="0" placeholder="0.00" required
                            oninput="recalc()">
                     @error('car_allowance')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Extra Orders Above Threshold</label>
-                    <input type="number" name="extra_orders_count" class="form-input @error('extra_orders_count') err @enderror"
-                           value="{{ old('extra_orders_count', 0) }}" min="0" placeholder="0"
-                           oninput="recalc()">
-                    <span style="font-size:.75rem;color:var(--text-dim);margin-top:4px;display:block;">Orders beyond the standard threshold eligible for bonus</span>
-                    @error('extra_orders_count')<span class="form-error">{{ $message }}</span>@enderror
+                    <label class="form-label">Daily Order Threshold</label>
+                    <input type="number" id="daily-threshold" class="form-input" value="0" min="0" placeholder="0"
+                           oninput="calcExtraOrders()">
+                    <span style="font-size:.75rem;color:var(--text-dim);margin-top:4px;display:block;">
+                        Orders per day above this count earn a bonus — used to auto-fill the field below
+                    </span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Bonus Per Extra Order</label>
                     <input type="number" name="extra_order_bonus" class="form-input @error('extra_order_bonus') err @enderror"
-                           value="{{ old('extra_order_bonus', 0) }}" step="0.01" min="0" placeholder="0.00"
+                           value="{{ old('extra_order_bonus', $lastPayment?->extra_order_bonus ?? 0) }}" step="0.01" min="0" placeholder="0.00"
                            oninput="recalc()">
                     @error('extra_order_bonus')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Extra Orders Above Threshold</label>
+                    <input type="number" name="extra_orders_count" id="extra-orders-count" class="form-input @error('extra_orders_count') err @enderror"
+                           value="{{ old('extra_orders_count', 0) }}" min="0" placeholder="0"
+                           oninput="recalc()">
+                    <span style="font-size:.75rem;color:var(--text-dim);margin-top:4px;display:block;">
+                        Auto-calculated from daily threshold above — or enter manually
+                    </span>
+                    @error('extra_orders_count')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Deductions</label>
@@ -128,16 +138,29 @@
 
 @section('scripts')
 <script>
+var dailyOrders = @json($dailyOrders);
+
+function calcExtraOrders() {
+    var threshold = parseInt(document.getElementById('daily-threshold').value) || 0;
+    var total = 0;
+    Object.values(dailyOrders).forEach(function(cnt) {
+        total += Math.max(0, cnt - threshold);
+    });
+    document.getElementById('extra-orders-count').value = total;
+    recalc();
+}
+
 function recalc() {
-    var basic   = parseFloat(document.querySelector('[name=basic_salary]').value)   || 0;
-    var allow   = parseFloat(document.querySelector('[name=car_allowance]').value)  || 0;
-    var extra   = parseFloat(document.querySelector('[name=extra_orders_count]').value) || 0;
-    var bonus   = parseFloat(document.querySelector('[name=extra_order_bonus]').value)  || 0;
-    var deduct  = parseFloat(document.querySelector('[name=deductions]').value)     || 0;
-    var gross   = basic + allow + (extra * bonus);
-    var net     = Math.max(0, gross - deduct);
+    var basic  = parseFloat(document.querySelector('[name=basic_salary]').value)       || 0;
+    var allow  = parseFloat(document.querySelector('[name=car_allowance]').value)      || 0;
+    var extra  = parseFloat(document.getElementById('extra-orders-count').value)       || 0;
+    var bonus  = parseFloat(document.querySelector('[name=extra_order_bonus]').value)  || 0;
+    var deduct = parseFloat(document.querySelector('[name=deductions]').value)         || 0;
+    var gross  = basic + allow + (extra * bonus);
+    var net    = Math.max(0, gross - deduct);
     document.getElementById('net-display').textContent = net.toFixed(2) + ' JD';
 }
+
 document.addEventListener('DOMContentLoaded', recalc);
 </script>
 @endsection
