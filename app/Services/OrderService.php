@@ -357,13 +357,14 @@ class OrderService
                 }
 
                 if ($payment->payment_type === 'cod' && $payment->order_amount > 0) {
+                    $customerDelivery = $payment->delivery_on_customer ? (float) ($payment->customer_delivery_amount ?? 0) : 0;
                     $ledger = FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $client->id,
                         'driver_id'         => $driverUserId,
                         'from_account'      => 'company',
                         'to_account'        => 'client',
-                        'amount'            => $payment->order_amount,
+                        'amount'            => $payment->order_amount + $customerDelivery,
                         'type'              => 'client_payout',
                         'reference_number'  => $ref,
                         'recorded_by'       => $actor->id,
