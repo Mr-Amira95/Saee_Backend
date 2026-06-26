@@ -128,9 +128,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('notifications/{id}/read',   [NotificationController::class, 'markOneRead'])->name('notifications.read-one');
 
         // Reports & Exports Center
-        Route::get('reports',                     [ReportController::class, 'index'])->name('reports.index');
-        Route::get('reports/kpis',                [ReportController::class, 'kpis'])->name('reports.kpis');
-        Route::get('reports/export/{table}',      [ReportController::class, 'export'])->name('reports.export');
+        Route::get('reports',                          [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/kpis',                     [ReportController::class, 'kpis'])->name('reports.kpis');
+        Route::get('reports/ratings',                  [ReportController::class, 'ratings'])->name('reports.ratings');
+        Route::get('reports/drivers/{driver}/kpi',     [ReportController::class, 'driverKpi'])->name('reports.driver-kpi');
+        Route::get('reports/export/{table}',           [ReportController::class, 'export'])->name('reports.export');
 
         // Users management
         Route::prefix('users')->name('')->group(function () {

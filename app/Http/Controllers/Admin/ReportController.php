@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\DriverRating;
 use App\Models\FinancialLedgerEntry;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -68,13 +69,29 @@ class ReportController extends Controller
 
         $drivers = User::where('role', 'driver')
             ->where('status', 'active')
+            ->with('driverProfile')
             ->get()
-            ->map(fn($driver) => [
-                'driver'        => $driver,
-                'rating'        => $driver->average_rating,
-                'success_rate'  => $driver->delivery_success_rate,
-                'transit_hours' => $driver->average_transit_hours,
-            ])
+            ->map(function ($driver) {
+                $profileId    = $driver->driverProfile?->id ?? 0;
+                $statusCounts = Order::where('driver_profile_id', $profileId)
+                    ->select('status', DB::raw('count(*) as count'))
+                    ->groupBy('status')
+                    ->pluck('count', 'status')
+                    ->toArray();
+
+                $delivered   = $statusCounts['delivered'] ?? 0;
+                $failed      = ($statusCounts['rejected'] ?? 0) + ($statusCounts['returned'] ?? 0);
+                $completed   = $delivered + $failed;
+                $successRate = $completed > 0 ? round(($delivered / $completed) * 100, 1) : 100.0;
+
+                return [
+                    'driver'          => $driver,
+                    'rating'          => $driver->average_rating,
+                    'success_rate'    => $successRate,
+                    'delivered_count' => $delivered,
+                    'failed_count'    => $failed,
+                ];
+            })
             ->sortByDesc('success_rate')
             ->values();
 
@@ -83,6 +100,87 @@ class ReportController extends Controller
             'starsBreakdown', 'drivers', 'totalRatings',
             'totalOrders', 'deliveredCount', 'failedCount'
         ));
+    }
+
+    /**
+     * Per-driver KPI breakdown page.
+     */
+    public function driverKpi(User $driver)
+    {
+        abort_if($driver->role !== 'driver', 404);
+
+        $profile   = $driver->driverProfile;
+        $profileId = $profile?->id ?? 0;
+
+        $statusCounts = Order::where('driver_profile_id', $profileId)
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $delivered   = $statusCounts['delivered']                                     ?? 0;
+        $failed      = ($statusCounts['rejected'] ?? 0) + ($statusCounts['returned'] ?? 0);
+        $inTransit   = ($statusCounts['picked_up'] ?? 0) + ($statusCounts['pending'] ?? 0);
+        $totalOrders = array_sum($statusCounts);
+        $completed   = $delivered + $failed;
+        $successRate = $completed > 0 ? round(($delivered / $completed) * 100, 1) : 100.0;
+        $avgRating   = round(DriverRating::where('driver_id', $driver->id)->avg('rating') ?? 0, 1);
+        $totalRatings = DriverRating::where('driver_id', $driver->id)->count();
+
+        // 30-day order trend, zero-filled
+        $rawTrend = Order::where('driver_profile_id', $profileId)
+            ->select(DB::raw("date(created_at) as date"), DB::raw("count(*) as count"))
+            ->where('created_at', '>=', now()->subDays(29)->startOfDay())
+            ->groupBy('date')
+            ->pluck('count', 'date')
+            ->toArray();
+
+        $monthlyTrend = collect();
+        for ($i = 29; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $monthlyTrend->push((object) ['date' => $date, 'count' => $rawTrend[$date] ?? 0]);
+        }
+
+        $recentRatings = DriverRating::with('order')
+            ->where('driver_id', $driver->id)
+            ->latest()
+            ->limit(15)
+            ->get();
+
+        return view('admin.reports.driver_kpi', compact(
+            'driver', 'profile', 'totalOrders', 'delivered', 'failed',
+            'inTransit', 'successRate', 'avgRating', 'totalRatings',
+            'monthlyTrend', 'recentRatings', 'statusCounts'
+        ));
+    }
+
+    /**
+     * Paginated ratings list with filters.
+     */
+    public function ratings(Request $request)
+    {
+        $query = DriverRating::with(['driver', 'order'])
+            ->latest('driver_ratings.created_at');
+
+        if ($request->filled('driver')) {
+            $query->where('driver_id', $request->driver);
+        }
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('driver_ratings.created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('driver_ratings.created_at', '<=', $request->date_to);
+        }
+
+        $ratings = $query->paginate(25)->withQueryString();
+        $drivers = User::where('role', 'driver')->orderBy('name')->get(['id', 'name']);
+        $avgAll  = round(DriverRating::avg('rating') ?? 0, 1);
+        $totalAll = DriverRating::count();
+
+        return view('admin.reports.ratings', compact('ratings', 'drivers', 'avgAll', 'totalAll'));
     }
 
     /**

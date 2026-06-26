@@ -103,6 +103,9 @@
             <a href="{{ route('admin.reports.kpis') }}" class="nav-sub-item {{ request()->routeIs('admin.reports.kpis') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('KPI Insights') }}
             </a>
+            <a href="{{ route('admin.reports.ratings') }}" class="nav-sub-item {{ request()->routeIs('admin.reports.ratings') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Ratings') }}
+            </a>
         </div>
 
         {{-- Website CMS --}}
