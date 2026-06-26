@@ -18,132 +18,123 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1.35fr 0.65fr; gap: 20px; align-items: start;">
-        
-        {{-- Left: Orders list with checkboxes --}}
-        <form action="{{ route('admin.financials.payout-client.submit', $client) }}" method="POST" id="payoutForm">
-            @csrf
-            
-            <div class="table-card">
-                <div style="padding: 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" id="selectAll" style="width: 16px; height: 16px; accent-color: var(--red);">
-                        <label for="selectAll" style="font-size: .8rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; cursor: pointer; user-select: none;">Select All Orders</label>
-                    </div>
-                    <span style="font-size: 0.75rem; color: var(--text-dim);">Only delivered COD orders needing payout are listed</span>
+    <form action="{{ route('admin.financials.payout-client.submit', $client) }}" method="POST" id="payoutForm">
+        @csrf
+
+        {{-- Orders Table --}}
+        <div class="table-card" style="margin-bottom: 20px;">
+            <div style="padding: 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="selectAll" style="width: 16px; height: 16px; accent-color: var(--red);">
+                    <label for="selectAll" style="font-size: .8rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; cursor: pointer; user-select: none;">Select All Orders</label>
                 </div>
-                
-                <div class="table-wrap">
-                    <table>
-                        <thead>
+                <span style="font-size: 0.75rem; color: var(--text-dim);">Only delivered COD orders needing payout are listed</span>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">Select</th>
+                            <th>Order #</th>
+                            <th>Receiver Info</th>
+                            <th>COD Collected</th>
+                            <th>Customer Delivery</th>
+                            <th>Net Payout</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($orders as $order)
                             <tr>
-                                <th style="width: 40px; text-align: center;">Select</th>
-                                <th>Order #</th>
-                                <th>Receiver Info</th>
-                                <th>COD Collected</th>
-                                <th>Customer Delivery</th>
-                                <th>Net Payout</th>
+                                <td style="text-align: center;">
+                                    <input type="checkbox" name="orders[]" value="{{ $order->id }}" class="order-checkbox"
+                                           data-cod="{{ $order->cod_amount }}"
+                                           data-delivery="{{ $order->customer_delivery }}"
+                                           data-net="{{ $order->net_payout }}"
+                                           style="width: 16px; height: 16px; accent-color: var(--red);">
+                                </td>
+                                <td>
+                                    <a href="{{ route('admin.orders.show', $order) }}" target="_blank" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">
+                                        #{{ $order->order_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="cell-main">{{ $order->receiver_name }}</div>
+                                    <div class="cell-sub">{{ $order->city?->name ?? '—' }}</div>
+                                </td>
+                                <td>
+                                    <strong>{{ number_format($order->cod_amount, 2) }} JD</strong>
+                                </td>
+                                <td>
+                                    @if($order->customer_delivery > 0)
+                                        <strong style="color: #22c55e;">{{ number_format($order->customer_delivery, 2) }} JD</strong>
+                                    @else
+                                        <span style="color: var(--text-dim);">—</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <strong style="color: #22c55e;">{{ number_format($order->net_payout, 2) }} JD</strong>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($orders as $order)
-                                <tr>
-                                    <td style="text-align: center;">
-                                        <input type="checkbox" name="orders[]" value="{{ $order->id }}" class="order-checkbox" 
-                                               data-cod="{{ $order->cod_amount }}"
-                                               data-delivery="{{ $order->customer_delivery }}"
-                                               data-net="{{ $order->net_payout }}"
-                                               style="width: 16px; height: 16px; accent-color: var(--red);">
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('admin.orders.show', $order) }}" target="_blank" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">
-                                            #{{ $order->order_number }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <div class="cell-main">{{ $order->receiver_name }}</div>
-                                        <div class="cell-sub">{{ $order->city?->name ?? '—' }}</div>
-                                    </td>
-                                    <td>
-                                        <strong>{{ number_format($order->cod_amount, 2) }} JD</strong>
-                                    </td>
-                                    <td>
-                                        @if($order->customer_delivery > 0)
-                                            <strong style="color: #22c55e;">{{ number_format($order->customer_delivery, 2) }} JD</strong>
-                                        @else
-                                            <span style="color: var(--text-dim);">—</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <strong style="color: #22c55e;">{{ number_format($order->net_payout, 2) }} JD</strong>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 35px;">
-                                        No pending payouts registered for this client.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                        @empty
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 35px;">
+                                    No pending payouts registered for this client.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-            
-            {{-- Hidden Submit trigger --}}
-            <div style="display: none;">
-                <input type="submit" id="hiddenSubmitBtn">
-            </div>
-        </form>
-
-        {{-- Right: Payout Panel --}}
-        <div class="form-section">
-            <div class="form-section-title">
-                Payout Settlement
-            </div>
-            
-            <div class="info-rows" style="margin-bottom: 20px;">
-                <div class="info-row">
-                    <span>Full Net Balance Due:</span>
-                    <strong>{{ number_format($netPayoutAmount, 2) }} JD</strong>
-                </div>
-                <div class="info-row" style="border-top: 1px solid var(--bdr); padding-top: 10px; margin-top: 10px;">
-                    <span>Selected COD:</span>
-                    <strong id="selectedCod">0.00 JD</strong>
-                </div>
-                <div class="info-row">
-                    <span>Customer Delivery:</span>
-                    <strong id="selectedShipping">+0.00 JD</strong>
-                </div>
-                <div class="info-row" style="border-top: 1px dashed var(--bdr); padding-top: 8px; margin-top: 8px;">
-                    <span>Net Payout Amount:</span>
-                    <strong style="font-size: 1.35rem; color: #22c55e;" id="selectedNet">0.00 JD</strong>
-                </div>
-                <div class="info-row">
-                    <span>Selected Count:</span>
-                    <strong id="selectedCount">0 orders</strong>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 14px;">
-                <label class="form-label" for="reference_number">Bank Transfer Reference</label>
-                <input type="text" form="payoutForm" name="reference_number" id="reference_number" class="form-input" placeholder="e.g. Bank Ref #TXN982173">
-            </div>
-            
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label" for="notes">Payout Notes</label>
-                <textarea form="payoutForm" name="notes" id="notes" class="form-textarea" placeholder="Optional bank accounts, transfer date, etc..."></textarea>
-            </div>
-
-            <button type="button" class="btn-primary" style="width: 100%; justify-content: center; height: 42px; background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 14px rgba(34,197,94,0.25);" id="submitButton" disabled onclick="document.getElementById('hiddenSubmitBtn').click()">
-                Confirm Payout to Client
-            </button>
-            <a href="{{ route('admin.financials.index') }}" class="btn-secondary" style="width: 100%; justify-content: center; margin-top: 8px; box-sizing: border-box;">
-                Cancel
-            </a>
         </div>
 
-    </div>
+        {{-- Payout Settlement Box --}}
+        <div class="form-section">
+            <div class="form-section-title">Payout Settlement</div>
+
+            {{-- Summary stat cards --}}
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+                <div style="background: var(--bg); border: 1px solid var(--bdr); border-radius: 10px; padding: 14px 16px;">
+                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">Total Balance Due</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--text);">{{ number_format($netPayoutAmount, 2) }} JD</div>
+                </div>
+                <div style="background: var(--bg); border: 1px solid var(--bdr); border-radius: 10px; padding: 14px 16px;">
+                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">Selected COD</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--text);" id="selectedCod">0.00 JD</div>
+                </div>
+                <div style="background: var(--bg); border: 1px solid var(--bdr); border-radius: 10px; padding: 14px 16px;">
+                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">Customer Delivery</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--text);" id="selectedShipping">+0.00 JD</div>
+                </div>
+                <div style="background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.25); border-radius: 10px; padding: 14px 16px;">
+                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">Net Payout · <span id="selectedCount">0</span> orders</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: #22c55e;" id="selectedNet">0.00 JD</div>
+                </div>
+            </div>
+
+            {{-- Form inputs --}}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="reference_number">Bank Transfer Reference</label>
+                    <input type="text" name="reference_number" id="reference_number" class="form-input" placeholder="e.g. Bank Ref #TXN982173">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="notes">Payout Notes</label>
+                    <textarea name="notes" id="notes" class="form-textarea" rows="1" placeholder="Optional bank account, transfer date, etc..." style="height: 42px; resize: none;"></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="btn-primary" style="flex: 1; justify-content: center; height: 42px; background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 14px rgba(34,197,94,.25);" id="submitButton" disabled>
+                    Confirm Payout to Client
+                </button>
+                <a href="{{ route('admin.financials.index') }}" class="btn-secondary" style="justify-content: center; height: 42px; padding: 0 24px; display: flex; align-items: center; box-sizing: border-box;">
+                    Cancel
+                </a>
+            </div>
+        </div>
+
+    </form>
 @endsection
 
 @section('scripts')
