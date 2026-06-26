@@ -294,18 +294,23 @@
         </table>
 
         {{-- Totals Summary --}}
+        @php
+            $totalCod = $orders->sum(fn($o) => (float) ($o->payment?->order_amount ?? 0));
+            $totalCustDel = $orders->sum(fn($o) => $o->payment?->delivery_on_customer ? (float) ($o->payment?->customer_delivery_amount ?? 0) : 0);
+            $totalNet = $totalCod + $totalCustDel;
+        @endphp
         <div class="inv-totals">
             <div class="inv-total-row">
                 <span style="color: var(--text-dim)">COD Collected</span>
-                <span>{{ number_format($invoice->cod_amount, 2) }} JD</span>
+                <span>{{ number_format($totalCod, 2) }} JD</span>
             </div>
             <div class="inv-total-row">
                 <span style="color: var(--text-dim)">Customer Delivery</span>
-                <span>+{{ number_format($invoice->shipping_amount, 2) }} JD</span>
+                <span>+{{ number_format($totalCustDel, 2) }} JD</span>
             </div>
             <div class="inv-total-row grand">
                 <span>Net Payout Paid</span>
-                <span>{{ number_format($invoice->net_amount, 2) }} JD</span>
+                <span>{{ number_format($totalNet, 2) }} JD</span>
             </div>
         </div>
 
