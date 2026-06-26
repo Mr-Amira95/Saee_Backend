@@ -219,12 +219,7 @@
         {{-- Header --}}
         <div class="inv-header">
             <div class="inv-logo">
-                <svg viewBox="0 0 200 200" width="36" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="100" cy="100" r="95" fill="#dc2626"/>
-                    <path d="M22,158 C38,88 90,52 172,46 L171,68 C96,74 52,108 44,165 Z" fill="white" opacity=".96"/>
-                    <path d="M40,132 C56,78 100,53 172,64 L171,83 C108,73 64,95 57,142 Z" fill="white" opacity=".89"/>
-                </svg>
-                <span class="inv-logo-text">Sa'ee Logistics</span>
+                <img src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
             </div>
             
             <div class="inv-meta">
@@ -265,26 +260,26 @@
                     <th>Recipient</th>
                     <th>City / Area</th>
                     <th>Payment Type</th>
-                    <th style="text-align: right;">Gross COD</th>
-                    <th style="text-align: right;">Shipping Fee</th>
+                    <th style="text-align: right;">COD Amount</th>
+                    <th style="text-align: right;">Customer Delivery</th>
                     <th style="text-align: right;">Net Payout</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($orders as $o)
                     @php
-                        $grossCod = $o->payment_type === 'cod' ? $o->order_price : 0;
-                        $shipping = $o->delivery_on_customer ? 0 : $o->delivery_amount;
-                        $net = $grossCod - $shipping;
+                        $codAmt      = (float) ($o->payment?->order_amount ?? 0);
+                        $custDel     = $o->payment?->delivery_on_customer ? (float) ($o->payment?->customer_delivery_amount ?? 0) : 0;
+                        $net         = $codAmt + $custDel;
                     @endphp
                     <tr>
                         <td><strong>#{{ $o->order_number }}</strong></td>
-                        <td>{{ $o->receiver_name }}</td>
+                        <td>{{ $o->receiver?->receiver_name ?? '—' }}</td>
                         <td>{{ $o->city?->name ?? '—' }} / {{ $o->area?->name ?? '—' }}</td>
-                        <td>{{ strtoupper($o->payment_type) }}</td>
-                        <td style="text-align: right;">{{ number_format($grossCod, 2) }} JD</td>
-                        <td style="text-align: right;">{{ number_format($shipping, 2) }} JD</td>
-                        <td style="text-align: right; font-weight: 600; color: {{ $net >= 0 ? '#4ade80' : '#f87171' }}">
+                        <td>{{ strtoupper($o->payment?->payment_type ?? '—') }}</td>
+                        <td style="text-align: right;">{{ number_format($codAmt, 2) }} JD</td>
+                        <td style="text-align: right;">{{ $custDel > 0 ? number_format($custDel, 2).' JD' : '—' }}</td>
+                        <td style="text-align: right; font-weight: 600; color: #4ade80;">
                             {{ number_format($net, 2) }} JD
                         </td>
                     </tr>
@@ -301,12 +296,12 @@
         {{-- Totals Summary --}}
         <div class="inv-totals">
             <div class="inv-total-row">
-                <span style="color: var(--text-dim)">Gross COD Collected</span>
+                <span style="color: var(--text-dim)">COD Collected</span>
                 <span>{{ number_format($invoice->cod_amount, 2) }} JD</span>
             </div>
             <div class="inv-total-row">
-                <span style="color: var(--text-dim)">Total Shipping Deduct</span>
-                <span>-{{ number_format($invoice->shipping_amount, 2) }} JD</span>
+                <span style="color: var(--text-dim)">Customer Delivery</span>
+                <span>+{{ number_format($invoice->shipping_amount, 2) }} JD</span>
             </div>
             <div class="inv-total-row grand">
                 <span>Net Payout Paid</span>
