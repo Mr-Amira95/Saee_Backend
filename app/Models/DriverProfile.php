@@ -33,6 +33,7 @@ class DriverProfile extends Model
     protected function casts(): array
     {
         return [
+            'user_id'                 => 'integer',
             'license_expiry_date'     => 'date',
             'car_license_expiry'      => 'date',
             'is_available'            => 'boolean',
