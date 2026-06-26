@@ -62,7 +62,7 @@
                                     </td>
                                     <td>
                                         <div class="cell-main">{{ $order->receiver_name }}</div>
-                                        <div class="cell-sub">{{ $order->city->name }}</div>
+                                        <div class="cell-sub">{{ $order->city?->name ?? '—' }}</div>
                                     </td>
                                     <td>
                                         <strong>{{ number_format($order->cod_amount, 2) }} JD</strong>
