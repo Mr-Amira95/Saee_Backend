@@ -16,6 +16,18 @@
         <h1 style="font-size:1.2rem;font-weight:700;margin:0;">New Payroll Entry — {{ $driver->user->name }}</h1>
     </div>
 
+    @if($existingThisMonth)
+    <div style="background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.35);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.1rem;">⚠️</span>
+        <div style="font-size:.88rem;color:#fde047;">
+            A payroll record already exists for this driver covering
+            <strong>{{ $existingThisMonth->period_start->format('M d') }} – {{ $existingThisMonth->period_end->format('M d, Y') }}</strong>
+            ({{ ucfirst($existingThisMonth->status->value) }}).
+            <a href="{{ route('admin.payroll.show', $existingThisMonth) }}" style="color:#fde047;text-decoration:underline;margin-left:6px;">View it →</a>
+        </div>
+    </div>
+    @endif
+
     @if($errors->any())
     <div style="background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);border-radius:10px;padding:14px 18px;margin-bottom:20px;">
         <ul style="margin:0;padding-left:18px;color:#fca5a5;font-size:.88rem;">

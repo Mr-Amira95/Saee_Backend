@@ -37,6 +37,11 @@ class DriverPayrollController extends Controller
         $periodStart = Carbon::now()->startOfMonth();
         $periodEnd   = Carbon::now()->endOfMonth();
 
+        $existingThisMonth = DriverPayment::where('driver_profile_id', $driver->id)
+            ->where('period_start', '<=', $periodEnd->toDateString())
+            ->where('period_end',   '>=', $periodStart->toDateString())
+            ->first();
+
         // Daily delivered order counts for the period (used by JS to auto-calculate extra orders)
         $dailyOrders = Order::where('driver_profile_id', $driver->id)
             ->where('status', 'delivered')
@@ -46,7 +51,7 @@ class DriverPayrollController extends Controller
             ->pluck('cnt', 'day');
 
         return view('admin.payroll.create', compact(
-            'driver', 'periodStart', 'periodEnd', 'dailyOrders'
+            'driver', 'periodStart', 'periodEnd', 'dailyOrders', 'existingThisMonth'
         ));
     }
 
@@ -64,6 +69,17 @@ class DriverPayrollController extends Controller
             'reference_number'   => 'nullable|string|max:100',
             'notes'              => 'nullable|string',
         ]);
+
+        $overlap = DriverPayment::where('driver_profile_id', $driver->id)
+            ->where('period_start', '<=', $data['period_end'])
+            ->where('period_end',   '>=', $data['period_start'])
+            ->exists();
+
+        if ($overlap) {
+            return back()->withInput()->withErrors([
+                'period_start' => 'A payroll record already exists for this driver that overlaps with the selected period.',
+            ]);
+        }
 
         $payment = $this->service->createPaymentDraft($driver, $data, auth()->user());
 
