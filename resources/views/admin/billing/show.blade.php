@@ -15,7 +15,7 @@
     <div class="page-hd">
         <div class="page-hd-left">
             <h1 style="font-family:monospace;">{{ $invoice->invoice_number }}</h1>
-            <p>{{ $invoice->clientProfile->company_name ?? $invoice->clientProfile->user->name }}
+            <p>{{ $invoice->clientProfile->company_name ?? $invoice->clientProfile->masterUser->name }}
                &nbsp;·&nbsp; {{ $invoice->period_start->format('d M Y') }} – {{ $invoice->period_end->format('d M Y') }}</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -200,11 +200,11 @@
                     </div>
                     <div class="info-row">
                         <span class="info-row-key">Contact</span>
-                        <span class="info-row-val">{{ $c->user?->name ?? '—' }}</span>
+                        <span class="info-row-val">{{ $c->masterUser?->name ?? '—' }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-row-key">Phone</span>
-                        <span class="info-row-val" style="font-family:monospace;">{{ $c->user?->phone ?? '—' }}</span>
+                        <span class="info-row-val" style="font-family:monospace;">{{ $c->masterUser?->phone ?? '—' }}</span>
                     </div>
                 </div>
             </div>

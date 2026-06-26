@@ -55,7 +55,7 @@ class ClientBillingController extends Controller
 
     public function show(ClientDeliveryInvoice $invoice)
     {
-        $invoice->load('clientProfile.user', 'orders.payment', 'createdBy');
+        $invoice->load('clientProfile.masterUser', 'orders.payment', 'createdBy');
         return view('admin.billing.show', compact('invoice'));
     }
 
