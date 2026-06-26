@@ -124,7 +124,7 @@ class AttendanceController extends Controller
             'success'       => true,
             'message'       => 'Checked out successfully.',
             'data'          => new AttendanceResource($attendance),
-            'shift_summary' => $this->buildShiftSummary($user->id, $attendance->check_in_at),
+            'shift_summary' => $this->buildShiftSummary($user->driverProfile->id, $attendance->check_in_at),
         ]);
     }
 
