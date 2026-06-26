@@ -125,7 +125,7 @@
                                         <span class="badge badge-info">{{ $data['pending_payout_count'] }} orders</span>
                                     </td>
                                     <td>
-                                        <strong style="color: #22c55e;">{{ number_format($data['net_balance_due'], 2) }} JD</strong>
+                                        <strong style="color: #22c55e;">{{ number_format($data['gross_payout_due'], 2) }} JD</strong>
                                     </td>
                                     <td>
                                         <div class="act-btns" style="justify-content: center;">
