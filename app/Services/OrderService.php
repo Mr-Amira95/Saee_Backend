@@ -186,6 +186,7 @@ class OrderService
                 $this->logTracking($order->id, $actor->id, $oldStatus, 'rejected', "Order rejected. Reason: {$reasonText}. Notes: " . ($extra['notes'] ?? ''));
 
             } elseif ($newStatus === 'returned') {
+                $order->returned_at = now();
                 if ($oldStatus === 'picked_up') {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,

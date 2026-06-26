@@ -27,6 +27,7 @@ class Order extends Model
         'rejection_reason_id',
         'notes',
         'delivered_at',
+        'returned_at',
     ];
 
     protected function casts(): array
@@ -37,6 +38,7 @@ class Order extends Model
             'rejection_reason_id' => 'integer',
             'route_order'         => 'integer',
             'delivered_at'        => 'datetime',
+            'returned_at'         => 'datetime',
             'deleted_at'          => 'datetime',
         ];
     }

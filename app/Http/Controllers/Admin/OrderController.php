@@ -155,6 +155,11 @@ class OrderController extends Controller
             'notes'               => 'nullable|string',
         ]);
 
+        // Auto-promote to picked_up when a driver is assigned to a pending order
+        if ($request->filled('driver_id') && $validated['status'] === 'pending') {
+            $validated['status'] = 'picked_up';
+        }
+
         $extra = [];
         if ($request->has('driver_id')) {
             $extra['driver_id'] = $request->input('driver_id');
@@ -173,7 +178,7 @@ class OrderController extends Controller
             }
         }
 
-        $this->orderService->updateStatus($order, $request->input('status'), $extra, Auth::user());
+        $this->orderService->updateStatus($order, $validated['status'], $extra, Auth::user());
 
         return redirect()->back()->with('success', 'Order updated successfully.');
     }

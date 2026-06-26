@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\DeliveryInvoiceStatus;
 use App\Models\ClientDeliveryInvoice;
 use App\Models\ClientProfile;
+use App\Models\FinancialLedgerEntry;
 use App\Models\Order;
 use App\Models\User;
 use Carbon\Carbon;
@@ -25,16 +26,31 @@ class ClientDeliveryBillingService
         return DB::transaction(function () use ($client, $periodStart, $periodEnd, $actor) {
             $alreadyBilledIds = DB::table('client_delivery_invoice_orders')->pluck('order_id');
 
+            $start = $periodStart->startOfDay();
+            $end   = $periodEnd->endOfDay();
+
+            // Returned order IDs that have a shipping_charge ledger entry (driver attempted delivery)
+            $returnedWithChargeIds = FinancialLedgerEntry::where('client_profile_id', $client->id)
+                ->where('type', 'shipping_charge')
+                ->pluck('order_id');
+
             $orders = Order::where('client_profile_id', $client->id)
-                ->where('status', 'delivered')
-                ->whereBetween('delivered_at', [$periodStart->startOfDay(), $periodEnd->endOfDay()])
                 ->whereNotIn('id', $alreadyBilledIds)
+                ->where(function ($q) use ($start, $end, $returnedWithChargeIds) {
+                    $q->where(function ($q) use ($start, $end) {
+                        $q->where('status', 'delivered')
+                          ->whereBetween('delivered_at', [$start, $end]);
+                    })->orWhere(function ($q) use ($start, $end, $returnedWithChargeIds) {
+                        $q->where('status', 'returned')
+                          ->whereBetween('returned_at', [$start, $end])
+                          ->whereIn('id', $returnedWithChargeIds);
+                    });
+                })
                 ->with('payment')
                 ->get()
                 ->filter(fn($o) =>
-                    $o->payment &&
-                    ! $o->payment->delivery_on_customer &&
-                    $o->payment->client_delivery_amount > 0
+                    $o->payment && $o->payment->client_delivery_amount > 0 &&
+                    ($o->status === 'returned' || ! $o->payment->delivery_on_customer)
                 );
 
             $deliveryAmount = $orders->sum(fn($o) => (float) $o->payment->client_delivery_amount);
