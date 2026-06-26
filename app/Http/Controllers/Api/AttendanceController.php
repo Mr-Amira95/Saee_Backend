@@ -131,25 +131,25 @@ class AttendanceController extends Controller
     private function buildShiftSummary(int $driverId, Carbon $checkInAt): array
     {
         $deliveredOrders = Order::with(['city', 'clientProfile', 'rejectionReason'])
-            ->where('driver_id', $driverId)
+            ->where('driver_profile_id', $driverId)
             ->where('status', 'delivered')
             ->where('updated_at', '>=', $checkInAt)
             ->get();
 
         $returnedOrders = Order::with(['city', 'clientProfile'])
-            ->where('driver_id', $driverId)
+            ->where('driver_profile_id', $driverId)
             ->where('status', 'returned')
             ->where('updated_at', '>=', $checkInAt)
             ->get();
 
         $rejectedOrders = Order::with(['city', 'clientProfile', 'rejectionReason'])
-            ->where('driver_id', $driverId)
+            ->where('driver_profile_id', $driverId)
             ->where('status', 'rejected')
             ->where('updated_at', '>=', $checkInAt)
             ->get();
 
         // Cash physically with the driver across all time (not yet settled)
-        $cashToHandover = (float) Order::where('driver_id', $driverId)
+        $cashToHandover = (float) Order::where('driver_profile_id', $driverId)
             ->where('payment_status', 'with_driver')
             ->selectRaw(
                 'COALESCE(SUM(order_price), 0)'

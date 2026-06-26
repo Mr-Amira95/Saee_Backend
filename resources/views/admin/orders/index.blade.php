@@ -70,7 +70,7 @@
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m-4-6h8"/></svg>
             </div>
             <div>
-                <div class="ms-val">{{ $stats['with_driver'] }}</div>
+                <div class="ms-val">{{ number_format($stats['with_driver'], 2) }}</div>
                 <div class="ms-lbl">All Cash with Drivers</div>
             </div>
         </div>

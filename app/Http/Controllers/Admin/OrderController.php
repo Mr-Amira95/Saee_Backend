@@ -13,6 +13,7 @@ use App\Services\OrderService;
 use App\Services\SupportNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -94,7 +95,10 @@ class OrderController extends Controller
             'picked_up'      => (clone $statsBase)->where('status', 'picked_up')->count(),
             'rejected'       => (clone $statsBase)->where('status', 'rejected')->count(),
             'returned_today' => (clone $statsBase)->where('status', 'returned')->whereDate('updated_at', today())->count(),
-            'with_driver'    => (clone $statsBase)->where('payment_status', 'with_driver')->count(),
+            'with_driver'    => (clone $statsBase)
+                ->where('payment_status', 'with_driver')
+                ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
+                ->sum(DB::raw('COALESCE(order_payments.order_amount, 0) + COALESCE(order_payments.customer_delivery_amount, 0)')),
         ];
 
         return view('admin.orders.index', compact('orders', 'clients', 'drivers', 'cities', 'stats'));
