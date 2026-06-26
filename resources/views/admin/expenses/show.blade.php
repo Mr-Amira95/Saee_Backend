@@ -20,13 +20,10 @@
             </p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
-            <form method="POST" action="{{ route('admin.expenses.destroy', $expense) }}" style="display:inline;"
-                  onsubmit="return confirm('Delete this expense?')">
-                @csrf @method('DELETE')
-                <button type="submit" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);">
-                    Delete
-                </button>
-            </form>
+            <button type="button" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);"
+                onclick="confirmDelete('{{ route('admin.expenses.destroy', $expense) }}', '{{ addslashes($expense->category->label()) }} — {{ number_format($expense->amount, 2) }} JD')">
+                Delete
+            </button>
             <a href="{{ route('admin.expenses.index') }}" class="btn-secondary">← Back</a>
         </div>
     </div>
