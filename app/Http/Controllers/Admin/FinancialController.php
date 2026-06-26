@@ -262,6 +262,10 @@ class FinancialController extends Controller
             ];
         });
 
-        return view('admin.financials.reconciliation', compact('drivers'));
+        $totalCollected = $drivers->sum('collected');
+        $totalSettled   = $drivers->sum('settled');
+        $totalBalance   = $drivers->sum('balance');
+
+        return view('admin.financials.reconciliation', compact('drivers', 'totalCollected', 'totalSettled', 'totalBalance'));
     }
 }
