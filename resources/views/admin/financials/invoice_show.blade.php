@@ -219,7 +219,7 @@
         {{-- Header --}}
         <div class="inv-header">
             <div class="inv-logo">
-                <img src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
+                <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
             </div>
             
             <div class="inv-meta">
