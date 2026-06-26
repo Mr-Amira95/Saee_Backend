@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Enums\ExpenseCategory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Expense extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'category',
         'amount',
@@ -18,8 +21,6 @@ class Expense extends Model
         'reference_number',
         'receipt_path',
         'recorded_by',
-        'approved_by',
-        'approved_at',
     ];
 
     protected function casts(): array
@@ -28,17 +29,11 @@ class Expense extends Model
             'category'     => ExpenseCategory::class,
             'amount'       => 'decimal:2',
             'payment_date' => 'date',
-            'approved_at'  => 'datetime',
         ];
     }
 
     public function recordedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
-    }
-
-    public function approvedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'approved_by');
     }
 }

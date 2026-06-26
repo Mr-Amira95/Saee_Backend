@@ -12,10 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class DriverPayrollService
 {
-    /**
-     * Create a draft DriverPayment for the given period.
-     * Counts delivered orders in the period for the bonus calculation.
-     */
     public function createPaymentDraft(
         DriverProfile $driver,
         array $data,
@@ -58,17 +54,6 @@ class DriverPayrollService
                 'recorded_by'        => $actor->id,
             ]);
         });
-    }
-
-    public function approvePayment(DriverPayment $payment, User $actor): DriverPayment
-    {
-        $payment->update([
-            'status'      => DriverPaymentStatus::Approved,
-            'approved_by' => $actor->id,
-            'approved_at' => now(),
-        ]);
-
-        return $payment->fresh();
     }
 
     public function recordPayment(

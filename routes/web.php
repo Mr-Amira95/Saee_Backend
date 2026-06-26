@@ -147,6 +147,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('drivers', DriverController::class)->names('drivers');
             Route::post('drivers/{driver}/resend-invitation', [DriverController::class, 'resendInvitation'])->name('drivers.resend-invitation');
             Route::get('drivers/{driver}/location-history',   [DriverController::class, 'locationHistory'])->name('drivers.location-history');
+            Route::get('drivers/{driver}/bank-details',       [DriverController::class, 'bankDetails'])->name('drivers.bank-details');
             Route::get('drivers-live-map',                    [DriverController::class, 'liveMap'])->name('drivers.live-map');
             Route::patch('drivers/{driver}/toggle-status',    [DriverController::class, 'toggleStatus'])->name('drivers.toggle-status');
 
@@ -179,7 +180,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('payroll/drivers/{driver}/new',         [DriverPayrollController::class, 'create'])->name('payroll.create');
         Route::post('payroll/drivers/{driver}',            [DriverPayrollController::class, 'store'])->name('payroll.store');
         Route::get('payroll/{payment}',                    [DriverPayrollController::class, 'show'])->name('payroll.show');
-        Route::post('payroll/{payment}/approve',           [DriverPayrollController::class, 'approve'])->name('payroll.approve');
         Route::post('payroll/{payment}/pay',               [DriverPayrollController::class, 'pay'])->name('payroll.pay');
         Route::delete('payroll/{payment}',                 [DriverPayrollController::class, 'destroy'])->name('payroll.destroy');
 
@@ -197,7 +197,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('expenses/create',                      [ExpenseController::class, 'create'])->name('expenses.create');
         Route::post('expenses',                            [ExpenseController::class, 'store'])->name('expenses.store');
         Route::get('expenses/{expense}',                   [ExpenseController::class, 'show'])->name('expenses.show');
-        Route::post('expenses/{expense}/approve',          [ExpenseController::class, 'approve'])->name('expenses.approve');
         Route::delete('expenses/{expense}',                [ExpenseController::class, 'destroy'])->name('expenses.destroy');
     });
 });

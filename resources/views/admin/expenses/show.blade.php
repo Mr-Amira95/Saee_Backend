@@ -20,21 +20,13 @@
             </p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
-            @if(!$expense->approved_at)
-                <form method="POST" action="{{ route('admin.expenses.approve', $expense) }}" style="display:inline;">
-                    @csrf
-                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6); box-shadow:none;">
-                        ✓ Approve
-                    </button>
-                </form>
-                <form method="POST" action="{{ route('admin.expenses.destroy', $expense) }}" style="display:inline;"
-                      onsubmit="return confirm('Delete this expense?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);">
-                        Delete
-                    </button>
-                </form>
-            @endif
+            <form method="POST" action="{{ route('admin.expenses.destroy', $expense) }}" style="display:inline;"
+                  onsubmit="return confirm('Delete this expense?')">
+                @csrf @method('DELETE')
+                <button type="submit" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);">
+                    Delete
+                </button>
+            </form>
             <a href="{{ route('admin.expenses.index') }}" class="btn-secondary">← Back</a>
         </div>
     </div>
@@ -53,15 +45,6 @@
         <div class="mini-stat">
             <div style="padding:8px 16px;">
                 <span class="badge badge-pv" style="font-size:.85rem;padding:6px 12px;">{{ $expense->category->label() }}</span>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div style="padding:8px 16px;">
-                @if($expense->approved_at)
-                    <span class="badge badge-active" style="font-size:.85rem;padding:6px 12px;">Approved</span>
-                @else
-                    <span class="badge badge-pending" style="font-size:.85rem;padding:6px 12px;">Pending Approval</span>
-                @endif
             </div>
         </div>
     </div>
@@ -128,16 +111,6 @@
                             <span class="info-row-key">Recorded At</span>
                             <span class="info-row-val">{{ $expense->created_at->format('d M Y H:i') }}</span>
                         </div>
-                        @if($expense->approvedBy)
-                        <div class="info-row">
-                            <span class="info-row-key">Approved By</span>
-                            <span class="info-row-val">{{ $expense->approvedBy->name }}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-row-key">Approved At</span>
-                            <span class="info-row-val" style="color:#22c55e;">{{ $expense->approved_at->format('d M Y H:i') }}</span>
-                        </div>
-                        @endif
                     </div>
                 </div>
             </div>

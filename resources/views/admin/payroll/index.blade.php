@@ -30,9 +30,8 @@
 
             <select name="status" class="filter-select">
                 <option value="">All Statuses</option>
-                <option value="draft"    {{ request('status') === 'draft'    ? 'selected' : '' }}>Draft</option>
-                <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                <option value="paid"     {{ request('status') === 'paid'     ? 'selected' : '' }}>Paid</option>
+                <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+                <option value="paid"  {{ request('status') === 'paid'  ? 'selected' : '' }}>Paid</option>
             </select>
 
             <button type="submit" class="btn-primary" style="box-shadow:none; padding: 8px 16px;">Filter</button>
@@ -94,8 +93,6 @@
                             <td>
                                 @if($p->status->value === 'draft')
                                     <span class="badge badge-pending">Draft</span>
-                                @elseif($p->status->value === 'approved')
-                                    <span class="badge badge-info">Approved</span>
                                 @else
                                     <span class="badge badge-active">Paid</span>
                                 @endif

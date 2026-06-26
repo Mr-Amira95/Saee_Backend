@@ -64,7 +64,6 @@
                         <th>Description</th>
                         <th>Vendor</th>
                         <th>Amount</th>
-                        <th>Status</th>
                         <th style="width: 90px; text-align: center;">Actions</th>
                     </tr>
                 </thead>
@@ -88,13 +87,6 @@
                                 <strong>{{ number_format($exp->amount, 2) }} JD</strong>
                             </td>
                             <td>
-                                @if($exp->approved_at)
-                                    <span class="badge badge-active">Approved</span>
-                                @else
-                                    <span class="badge badge-pending">Pending</span>
-                                @endif
-                            </td>
-                            <td>
                                 <div class="act-btns" style="justify-content: center;">
                                     <a href="{{ route('admin.expenses.show', $exp) }}" class="act-btn act-view" title="View">
                                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -107,7 +99,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 40px;">
+                            <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 40px;">
                                 No expenses found.
                             </td>
                         </tr>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\UserInvitationMail;
+use App\Models\DriverBankDetail;
 use App\Models\DriverProfile;
 use App\Models\User;
 use Carbon\Carbon;
@@ -62,6 +63,14 @@ class DriverController extends Controller
             'vehicle_plate'          => 'nullable|string|max:20|unique:driver_profiles,vehicle_plate',
             'car_license_expiry'     => 'nullable|date',
             'car_license_attachment' => 'nullable|image|max:10240',
+            'bank_name'              => 'nullable|string|max:100',
+            'account_name'           => 'nullable|string|max:100',
+            'account_number'         => 'nullable|string|max:30',
+            'iban'                   => 'nullable|string|max:34',
+            'swift_code'             => 'nullable|string|max:11',
+            'cliq_id'                => 'nullable|string|max:50',
+            'cliq_alias_type'        => 'nullable|in:alias,phone',
+            'bank_notes'             => 'nullable|string',
         ]);
 
         $user = DB::transaction(function () use ($data, $request) {
@@ -99,6 +108,17 @@ class DriverController extends Controller
                 'car_license_attachment' => $carLicenseAttachment,
             ]);
 
+            $profile->bankDetail()->create([
+                'bank_name'       => $data['bank_name'] ?? null,
+                'account_name'    => $data['account_name'] ?? null,
+                'account_number'  => $data['account_number'] ?? null,
+                'iban'            => $data['iban'] ?? null,
+                'swift_code'      => $data['swift_code'] ?? null,
+                'cliq_id'         => $data['cliq_id'] ?? null,
+                'cliq_alias_type' => $data['cliq_alias_type'] ?? null,
+                'notes'           => $data['bank_notes'] ?? null,
+            ]);
+
             return $user;
         });
 
@@ -110,13 +130,13 @@ class DriverController extends Controller
 
     public function show(DriverProfile $driver)
     {
-        $driver->load('user');
+        $driver->load('user', 'bankDetail');
         return view('admin.users.drivers.show', compact('driver'));
     }
 
     public function edit(DriverProfile $driver)
     {
-        $driver->load('user');
+        $driver->load('user', 'bankDetail');
         return view('admin.users.drivers.edit', compact('driver'));
     }
 
@@ -135,6 +155,14 @@ class DriverController extends Controller
             'vehicle_plate'          => ['nullable','string','max:20', Rule::unique('driver_profiles','vehicle_plate')->ignore($driver->id)],
             'car_license_expiry'     => 'nullable|date',
             'car_license_attachment' => 'nullable|image|max:10240',
+            'bank_name'              => 'nullable|string|max:100',
+            'account_name'           => 'nullable|string|max:100',
+            'account_number'         => 'nullable|string|max:30',
+            'iban'                   => 'nullable|string|max:34',
+            'swift_code'             => 'nullable|string|max:11',
+            'cliq_id'                => 'nullable|string|max:50',
+            'cliq_alias_type'        => 'nullable|in:alias,phone',
+            'bank_notes'             => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($data, $request, $driver) {
@@ -172,10 +200,29 @@ class DriverController extends Controller
                 'is_available'           => $driver->is_available,
             ]);
 
+            $driver->bankDetail()->updateOrCreate(
+                ['driver_profile_id' => $driver->id],
+                [
+                    'bank_name'       => $data['bank_name'] ?? null,
+                    'account_name'    => $data['account_name'] ?? null,
+                    'account_number'  => $data['account_number'] ?? null,
+                    'iban'            => $data['iban'] ?? null,
+                    'swift_code'      => $data['swift_code'] ?? null,
+                    'cliq_id'         => $data['cliq_id'] ?? null,
+                    'cliq_alias_type' => $data['cliq_alias_type'] ?? null,
+                    'notes'           => $data['bank_notes'] ?? null,
+                ]
+            );
+
         });
 
         return redirect()->route('admin.drivers.show', $driver)
             ->with('success', 'Driver updated successfully.');
+    }
+
+    public function bankDetails(DriverProfile $driver)
+    {
+        return response()->json($driver->bankDetail);
     }
 
     public function destroy(DriverProfile $driver)

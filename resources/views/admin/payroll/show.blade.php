@@ -19,30 +19,23 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
             @if($payment->status->value === 'draft')
-                <form method="POST" action="{{ route('admin.payroll.approve', $payment) }}" style="display:inline;">
-                    @csrf
-                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6); box-shadow:none;">
-                        ✓ Approve
-                    </button>
-                </form>
-                <form method="POST" action="{{ route('admin.payroll.destroy', $payment) }}" style="display:inline;"
-                      onsubmit="return confirm('Delete this draft?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);">
-                        Delete Draft
-                    </button>
-                </form>
-            @elseif($payment->status->value === 'approved')
                 <button type="button" class="btn-primary" onclick="document.getElementById('pay-form').style.display='block'">
                     Mark as Paid
                 </button>
+                <form method="POST" action="{{ route('admin.payroll.destroy', $payment) }}" style="display:inline;"
+                      onsubmit="return confirm('Delete this entry?')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);">
+                        Delete
+                    </button>
+                </form>
             @endif
             <a href="{{ route('admin.payroll.index') }}" class="btn-secondary">← Back</a>
         </div>
     </div>
 
     {{-- Pay form (shown on click) --}}
-    @if($payment->status->value === 'approved')
+    @if($payment->status->value === 'draft')
     <div id="pay-form" style="display:none;" class="form-section" style="margin-bottom:20px;">
         <form method="POST" action="{{ route('admin.payroll.pay', $payment) }}">
             @csrf
@@ -93,8 +86,6 @@
             <div style="padding: 8px 16px;">
                 @if($payment->status->value === 'draft')
                     <span class="badge badge-pending" style="font-size:.85rem;padding:6px 12px;">Draft</span>
-                @elseif($payment->status->value === 'approved')
-                    <span class="badge badge-info" style="font-size:.85rem;padding:6px 12px;">Approved</span>
                 @else
                     <span class="badge badge-active" style="font-size:.85rem;padding:6px 12px;">Paid</span>
                 @endif
@@ -167,16 +158,6 @@
                         <span class="info-row-key">Recorded By</span>
                         <span class="info-row-val">{{ $payment->recordedBy->name ?? '—' }}</span>
                     </div>
-                    @if($payment->approvedBy)
-                    <div class="info-row">
-                        <span class="info-row-key">Approved By</span>
-                        <span class="info-row-val">{{ $payment->approvedBy->name }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-row-key">Approved At</span>
-                        <span class="info-row-val">{{ $payment->approved_at?->format('d M Y H:i') }}</span>
-                    </div>
-                    @endif
                     @if($payment->paid_at)
                     <div class="info-row">
                         <span class="info-row-key">Paid At</span>

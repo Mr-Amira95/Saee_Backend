@@ -52,24 +52,19 @@ class DriverPayrollController extends Controller
         $payment = $this->service->createPaymentDraft($driver, $data, auth()->user());
 
         return redirect()->route('admin.payroll.show', $payment)
-            ->with('success', 'Payroll draft created successfully.');
+            ->with('success', 'Payroll entry created.');
     }
 
     public function show(DriverPayment $payment)
     {
-        $payment->load('driverProfile.user', 'recordedBy', 'approvedBy');
+        $payment->load('driverProfile.user', 'recordedBy');
         return view('admin.payroll.show', compact('payment'));
-    }
-
-    public function approve(DriverPayment $payment)
-    {
-        $this->service->approvePayment($payment, auth()->user());
-
-        return back()->with('success', 'Payment approved.');
     }
 
     public function pay(Request $request, DriverPayment $payment)
     {
+        abort_if($payment->status === DriverPaymentStatus::Paid, 403, 'Already paid.');
+
         $data = $request->validate([
             'payment_method'   => ['required', Rule::in(['bank_transfer', 'cash', 'cliq'])],
             'reference_number' => 'nullable|string|max:100',
@@ -87,11 +82,11 @@ class DriverPayrollController extends Controller
 
     public function destroy(DriverPayment $payment)
     {
-        abort_if($payment->status !== DriverPaymentStatus::Draft, 403, 'Only draft payments can be deleted.');
+        abort_if($payment->status === DriverPaymentStatus::Paid, 403, 'Paid records cannot be deleted.');
 
         $payment->delete();
 
         return redirect()->route('admin.payroll.index')
-            ->with('success', 'Draft payment deleted.');
+            ->with('success', 'Payroll entry deleted.');
     }
 }

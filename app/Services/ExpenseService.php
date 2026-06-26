@@ -6,7 +6,6 @@ use App\Models\Expense;
 use App\Models\DriverPayment;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class ExpenseService
 {
@@ -25,20 +24,6 @@ class ExpenseService
         ]);
     }
 
-    public function approveExpense(Expense $expense, User $actor): Expense
-    {
-        $expense->update([
-            'approved_by' => $actor->id,
-            'approved_at' => now(),
-        ]);
-
-        return $expense->fresh();
-    }
-
-    /**
-     * Aggregate expenses + driver payments for a given calendar month.
-     * Returns totals by category without double-counting driver salaries.
-     */
     public function getMonthlySummary(Carbon $month): array
     {
         $start = $month->copy()->startOfMonth();

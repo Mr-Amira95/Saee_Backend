@@ -25,15 +25,13 @@ class ExpenseController extends Controller
 
         $categories = ExpenseCategory::cases();
 
-        $totalsQuery = Expense::query()
+        $totals = Expense::query()
             ->when($request->category, fn($q, $c) => $q->where('category', $c))
             ->when($request->from, fn($q, $d) => $q->whereDate('payment_date', '>=', $d))
             ->when($request->to, fn($q, $d) => $q->whereDate('payment_date', '<=', $d))
             ->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->get();
-
-        $totals = $totalsQuery;
 
         return view('admin.expenses.index', compact('expenses', 'categories', 'totals'));
     }
@@ -64,26 +62,17 @@ class ExpenseController extends Controller
         $this->service->createExpense($data, auth()->user());
 
         return redirect()->route('admin.expenses.index')
-            ->with('success', 'Expense recorded successfully.');
+            ->with('success', 'Expense recorded.');
     }
 
     public function show(Expense $expense)
     {
-        $expense->load('recordedBy', 'approvedBy');
+        $expense->load('recordedBy');
         return view('admin.expenses.show', compact('expense'));
-    }
-
-    public function approve(Expense $expense)
-    {
-        $this->service->approveExpense($expense, auth()->user());
-
-        return back()->with('success', 'Expense approved.');
     }
 
     public function destroy(Expense $expense)
     {
-        abort_if($expense->approved_at !== null, 403, 'Approved expenses cannot be deleted.');
-
         $expense->delete();
 
         return redirect()->route('admin.expenses.index')

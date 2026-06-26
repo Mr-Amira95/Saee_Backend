@@ -181,6 +181,58 @@
         </div>
     </div>
 
+    {{-- Bank Details --}}
+    <div class="form-section">
+        <div class="form-section-title">Bank Details
+            <span class="opt" style="text-transform:none;font-size:.72rem;font-weight:400;">optional</span>
+        </div>
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label class="form-label" for="bank_name">Bank Name</label>
+                <input class="form-input @error('bank_name') is-error @enderror" id="bank_name" type="text" name="bank_name" value="{{ old('bank_name') }}" placeholder="e.g. Arab Bank">
+                @error('bank_name')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="account_name">Account Name</label>
+                <input class="form-input @error('account_name') is-error @enderror" id="account_name" type="text" name="account_name" value="{{ old('account_name') }}">
+                @error('account_name')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="account_number">Account Number</label>
+                <input class="form-input @error('account_number') is-error @enderror" id="account_number" type="text" name="account_number" value="{{ old('account_number') }}" style="font-family:monospace;">
+                @error('account_number')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="iban">IBAN</label>
+                <input class="form-input @error('iban') is-error @enderror" id="iban" type="text" name="iban" value="{{ old('iban') }}" style="font-family:monospace;" placeholder="JO…">
+                @error('iban')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="swift_code">SWIFT / BIC Code</label>
+                <input class="form-input @error('swift_code') is-error @enderror" id="swift_code" type="text" name="swift_code" value="{{ old('swift_code') }}" style="font-family:monospace;">
+                @error('swift_code')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="cliq_id">CliQ ID</label>
+                <div style="display:flex;gap:8px;">
+                    <select class="form-input @error('cliq_alias_type') is-error @enderror" name="cliq_alias_type" style="width:130px;flex-shrink:0;">
+                        <option value="">— Type —</option>
+                        <option value="alias" {{ old('cliq_alias_type') === 'alias' ? 'selected' : '' }}>Alias</option>
+                        <option value="phone" {{ old('cliq_alias_type') === 'phone' ? 'selected' : '' }}>Phone</option>
+                    </select>
+                    <input class="form-input @error('cliq_id') is-error @enderror" id="cliq_id" type="text" name="cliq_id" value="{{ old('cliq_id') }}" placeholder="Alias or phone number" style="flex:1;">
+                </div>
+                @error('cliq_id')<span class="form-error">{{ $message }}</span>@enderror
+                @error('cliq_alias_type')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group" style="grid-column:span 2;">
+                <label class="form-label" for="bank_notes">Notes</label>
+                <textarea class="form-input @error('bank_notes') is-error @enderror" id="bank_notes" name="bank_notes" rows="2" style="resize:vertical;">{{ old('bank_notes') }}</textarea>
+                @error('bank_notes')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+        </div>
+    </div>
+
     {{-- Attachments --}}
     <div class="form-section">
         <div class="form-section-title">Attachments

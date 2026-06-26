@@ -246,6 +246,58 @@
         </div>
     </div>
 
+    {{-- Bank Details --}}
+    <div class="info-card" style="grid-column: span 2;">
+        <div class="info-card-title">Bank Details</div>
+        @if($driver->bankDetail && array_filter($driver->bankDetail->only(['bank_name','account_name','account_number','iban','swift_code','cliq_id'])))
+        <div class="info-rows" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+            <div class="info-row" style="border-bottom:none;padding-bottom:0;">
+                <span class="info-row-key">Bank Name</span>
+                <span class="info-row-val">{{ $driver->bankDetail->bank_name ?: '—' }}</span>
+            </div>
+            <div class="info-row" style="border-bottom:none;padding-bottom:0;">
+                <span class="info-row-key">Account Name</span>
+                <span class="info-row-val">{{ $driver->bankDetail->account_name ?: '—' }}</span>
+            </div>
+            <div class="info-row" style="border-bottom:none;padding-bottom:0;">
+                <span class="info-row-key">Account Number</span>
+                <span class="info-row-val" style="font-family:monospace;">{{ $driver->bankDetail->account_number ?: '—' }}</span>
+            </div>
+            <div class="info-row" style="border-bottom:none;padding-bottom:0;">
+                <span class="info-row-key">IBAN</span>
+                <span class="info-row-val" style="font-family:monospace;font-size:.82rem;">{{ $driver->bankDetail->iban ?: '—' }}</span>
+            </div>
+            <div class="info-row" style="border-bottom:none;padding-bottom:0;">
+                <span class="info-row-key">SWIFT / BIC</span>
+                <span class="info-row-val" style="font-family:monospace;">{{ $driver->bankDetail->swift_code ?: '—' }}</span>
+            </div>
+            <div class="info-row" style="border-bottom:none;padding-bottom:0;">
+                <span class="info-row-key">CliQ ID</span>
+                <span class="info-row-val">
+                    @if($driver->bankDetail->cliq_id)
+                        {{ $driver->bankDetail->cliq_id }}
+                        @if($driver->bankDetail->cliq_alias_type)
+                            <span style="font-size:.72rem;color:var(--text-dim);margin-left:4px;">({{ ucfirst($driver->bankDetail->cliq_alias_type) }})</span>
+                        @endif
+                    @else —
+                    @endif
+                </span>
+            </div>
+        </div>
+        @if($driver->bankDetail->notes)
+            <div style="margin-top:14px;padding:10px 14px;background:var(--in-bg);border-radius:8px;font-size:.82rem;color:var(--text-sub);">
+                <span style="font-size:.7rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:.05em;display:block;margin-bottom:4px;">Notes</span>
+                {{ $driver->bankDetail->notes }}
+            </div>
+        @endif
+        @else
+        <div style="padding:14px 0;text-align:center;color:var(--text-dim);font-size:.8rem;">
+            No bank details added yet.
+            <a href="{{ route('admin.drivers.edit', $driver) }}#bank_name" style="color:var(--red-lt);margin-left:4px;">Add now →</a>
+        </div>
+        @endif
+    </div>
+
     {{-- Last Known Location --}}
     <div class="info-card" style="grid-column: span 2;">
         <div class="info-card-title">Last Known Location</div>

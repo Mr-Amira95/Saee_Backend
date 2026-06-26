@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Enums\DriverPaymentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DriverPayment extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'driver_profile_id',
         'period_start',
@@ -25,25 +28,22 @@ class DriverPayment extends Model
         'status',
         'notes',
         'recorded_by',
-        'approved_by',
-        'approved_at',
         'paid_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'period_start'  => 'date',
-            'period_end'    => 'date',
-            'basic_salary'  => 'decimal:2',
-            'car_allowance' => 'decimal:2',
+            'period_start'      => 'date',
+            'period_end'        => 'date',
+            'basic_salary'      => 'decimal:2',
+            'car_allowance'     => 'decimal:2',
             'extra_order_bonus' => 'decimal:2',
-            'gross_amount'  => 'decimal:2',
-            'deductions'    => 'decimal:2',
-            'net_amount'    => 'decimal:2',
-            'status'        => DriverPaymentStatus::class,
-            'approved_at'   => 'datetime',
-            'paid_at'       => 'datetime',
+            'gross_amount'      => 'decimal:2',
+            'deductions'        => 'decimal:2',
+            'net_amount'        => 'decimal:2',
+            'status'            => DriverPaymentStatus::class,
+            'paid_at'           => 'datetime',
         ];
     }
 
@@ -57,19 +57,9 @@ class DriverPayment extends Model
         return $this->belongsTo(User::class, 'recorded_by');
     }
 
-    public function approvedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'approved_by');
-    }
-
     public function scopeDraft($query)
     {
         return $query->where('status', DriverPaymentStatus::Draft);
-    }
-
-    public function scopeApproved($query)
-    {
-        return $query->where('status', DriverPaymentStatus::Approved);
     }
 
     public function scopePaid($query)
