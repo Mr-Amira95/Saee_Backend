@@ -156,20 +156,22 @@ class FinancialController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        $totalPayout  = 0;
-        $totalShipping = 0;
+        $totalCod              = 0;
+        $totalCustomerDelivery = 0;
 
         foreach ($orders as $order) {
             $payment = $order->payment;
-            $order->cod_amount   = $payment->order_amount;
-            $order->shipping_fee = $payment->delivery_on_customer ? 0 : $payment->client_delivery_amount;
-            $order->net_payout   = $order->cod_amount - $order->shipping_fee;
+            $order->cod_amount          = (float) ($payment->order_amount ?? 0);
+            $order->customer_delivery   = $payment->delivery_on_customer ? (float) ($payment->customer_delivery_amount ?? 0) : 0;
+            $order->net_payout          = $order->cod_amount + $order->customer_delivery;
 
-            $totalPayout   += $order->cod_amount;
-            $totalShipping += $order->shipping_fee;
+            $totalCod              += $order->cod_amount;
+            $totalCustomerDelivery += $order->customer_delivery;
         }
 
-        $netPayoutAmount = $totalPayout - $totalShipping;
+        $totalPayout     = $totalCod;
+        $totalShipping   = $totalCustomerDelivery;
+        $netPayoutAmount = $totalCod + $totalCustomerDelivery;
 
         return view('admin.financials.payout_client', compact('client', 'orders', 'totalPayout', 'totalShipping', 'netPayoutAmount'));
     }

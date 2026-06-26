@@ -41,7 +41,7 @@
                                 <th>Order #</th>
                                 <th>Receiver Info</th>
                                 <th>COD Collected</th>
-                                <th>Shipping Fee</th>
+                                <th>Customer Delivery</th>
                                 <th>Net Payout</th>
                             </tr>
                         </thead>
@@ -50,8 +50,8 @@
                                 <tr>
                                     <td style="text-align: center;">
                                         <input type="checkbox" name="orders[]" value="{{ $order->id }}" class="order-checkbox" 
-                                               data-cod="{{ $order->cod_amount }}" 
-                                               data-shipping="{{ $order->shipping_fee }}"
+                                               data-cod="{{ $order->cod_amount }}"
+                                               data-delivery="{{ $order->customer_delivery }}"
                                                data-net="{{ $order->net_payout }}"
                                                style="width: 16px; height: 16px; accent-color: var(--red);">
                                     </td>
@@ -68,11 +68,10 @@
                                         <strong>{{ number_format($order->cod_amount, 2) }} JD</strong>
                                     </td>
                                     <td>
-                                        <span style="color: var(--text-dim);">
-                                            {{ number_format($order->shipping_fee, 2) }} JD
-                                        </span>
-                                        @if($order->delivery_on_customer)
-                                            <div class="cell-sub" style="font-size: 0.65rem; color: #22c55e;">Paid by Cust.</div>
+                                        @if($order->customer_delivery > 0)
+                                            <strong style="color: #22c55e;">{{ number_format($order->customer_delivery, 2) }} JD</strong>
+                                        @else
+                                            <span style="color: var(--text-dim);">—</span>
                                         @endif
                                     </td>
                                     <td>
@@ -113,8 +112,8 @@
                     <strong id="selectedCod">0.00 JD</strong>
                 </div>
                 <div class="info-row">
-                    <span>Selected Shipping:</span>
-                    <strong id="selectedShipping" style="color: #fca5a5;">-0.00 JD</strong>
+                    <span>Customer Delivery:</span>
+                    <strong id="selectedShipping">+0.00 JD</strong>
                 </div>
                 <div class="info-row" style="border-top: 1px dashed var(--bdr); padding-top: 8px; margin-top: 8px;">
                     <span>Net Payout Amount:</span>
@@ -166,14 +165,14 @@
             checkboxes.forEach(cb => {
                 if (cb.checked) {
                     cod += parseFloat(cb.dataset.cod);
-                    shipping += parseFloat(cb.dataset.shipping);
+                    shipping += parseFloat(cb.dataset.delivery);
                     net += parseFloat(cb.dataset.net);
                     count++;
                 }
             });
 
             selectedCodSpan.textContent = cod.toFixed(2) + ' JD';
-            selectedShippingSpan.textContent = '-' + shipping.toFixed(2) + ' JD';
+            selectedShippingSpan.textContent = '+' + shipping.toFixed(2) + ' JD';
             selectedNetSpan.textContent = net.toFixed(2) + ' JD';
             selectedCountSpan.textContent = count + ' order' + (count !== 1 ? 's' : '');
             
