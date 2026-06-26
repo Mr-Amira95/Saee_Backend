@@ -337,6 +337,7 @@ class OrderService
 
             $totalCod = 0;
             $totalShipping = 0;
+            $totalCustomerDelivery = 0;
             $payoutLedgerEntry = null;
 
             foreach ($orders as $order) {
@@ -380,14 +381,16 @@ class OrderService
                     }
 
                     $totalCod += $payment->order_amount;
+                    $totalCustomerDelivery += $customerDelivery;
                 } elseif ($payment->delivery_on_customer && ($payment->customer_delivery_amount ?? 0) > 0) {
+                    $custDel = (float) $payment->customer_delivery_amount;
                     $ledger = FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $client->id,
                         'driver_id'         => $driverUserId,
                         'from_account'      => 'company',
                         'to_account'        => 'client',
-                        'amount'            => (float) $payment->customer_delivery_amount,
+                        'amount'            => $custDel,
                         'type'              => 'client_payout',
                         'reference_number'  => $ref,
                         'recorded_by'       => $actor->id,
@@ -397,6 +400,8 @@ class OrderService
                     if (!$payoutLedgerEntry) {
                         $payoutLedgerEntry = $ledger;
                     }
+
+                    $totalCustomerDelivery += $custDel;
                 }
 
                 $order->payment_status = 'paid';
@@ -419,9 +424,10 @@ class OrderService
                     'client_profile_id'      => $client->id,
                     'payout_ledger_entry_id' => $payoutLedgerEntry->id,
                     'total_orders'           => $count,
-                    'cod_amount'             => $totalCod,
-                    'shipping_amount'        => $totalShipping,
-                    'net_amount'             => $totalCod - $totalShipping,
+                    'cod_amount'                  => $totalCod,
+                    'shipping_amount'             => $totalShipping,
+                    'customer_delivery_amount'    => $totalCustomerDelivery,
+                    'net_amount'                  => $totalCod + $totalCustomerDelivery - $totalShipping,
                     'status'                 => 'paid',
                     'notes'                  => $notes ?? 'Auto-generated invoice for client payout.',
                 ]);

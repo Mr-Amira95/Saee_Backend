@@ -15,6 +15,7 @@ class Invoice extends Model
         'total_orders',
         'cod_amount',
         'shipping_amount',
+        'customer_delivery_amount',
         'net_amount',
         'status',
         'notes',
@@ -23,9 +24,10 @@ class Invoice extends Model
     protected function casts(): array
     {
         return [
-            'cod_amount'      => 'decimal:2',
-            'shipping_amount' => 'decimal:2',
-            'net_amount'      => 'decimal:2',
+            'cod_amount'               => 'decimal:2',
+            'shipping_amount'          => 'decimal:2',
+            'customer_delivery_amount' => 'decimal:2',
+            'net_amount'               => 'decimal:2',
         ];
     }
 
