@@ -67,9 +67,10 @@ class HomeController extends Controller
 
         $cashCollected = Order::where('driver_profile_id', $driverProfileId)
             ->where('payment_status', 'with_driver')
+            ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
             ->selectRaw(
-                'COALESCE(SUM(order_price), 0)'
-                . ' + COALESCE(SUM(CASE WHEN delivery_on_customer = 1 THEN delivery_customer_amount ELSE 0 END), 0)'
+                'COALESCE(SUM(order_payments.order_amount), 0)'
+                . ' + COALESCE(SUM(CASE WHEN order_payments.delivery_on_customer = 1 THEN order_payments.customer_delivery_amount ELSE 0 END), 0)'
                 . ' AS total'
             )
             ->value('total');
