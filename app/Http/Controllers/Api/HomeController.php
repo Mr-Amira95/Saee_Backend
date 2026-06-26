@@ -35,19 +35,20 @@ class HomeController extends Controller
     private function driverHome($user): JsonResponse
     {
         $today = now()->toDateString();
+        $driverProfileId = $user->driverProfile->id;
 
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('date', $today)
             ->latest('check_in_at')
             ->first();
 
-        $totalOrders = Order::where('driver_id', $user->id)
+        $totalOrders = Order::where('driver_profile_id', $driverProfileId)
             ->where('status', 'picked_up')
             ->count();
 
         $completedOrderIds = DB::table('order_tracking_logs')
             ->join('orders', 'order_tracking_logs.order_id', '=', 'orders.id')
-            ->where('orders.driver_id', $user->id)
+            ->where('orders.driver_profile_id', $driverProfileId)
             ->where('order_tracking_logs.to_status', 'delivered')
             ->whereDate('order_tracking_logs.created_at', $today)
             ->distinct()
@@ -55,7 +56,7 @@ class HomeController extends Controller
 
         $rejectedOrderIds = DB::table('order_tracking_logs')
             ->join('orders', 'order_tracking_logs.order_id', '=', 'orders.id')
-            ->where('orders.driver_id', $user->id)
+            ->where('orders.driver_profile_id', $driverProfileId)
             ->where('order_tracking_logs.to_status', 'rejected')
             ->whereDate('order_tracking_logs.created_at', $today)
             ->distinct()
@@ -64,7 +65,7 @@ class HomeController extends Controller
         $completedOrders = $completedOrderIds->count();
         $rejectedOrders  = $rejectedOrderIds->count();
 
-        $cashCollected = Order::where('driver_id', $user->id)
+        $cashCollected = Order::where('driver_profile_id', $driverProfileId)
             ->where('payment_status', 'with_driver')
             ->selectRaw(
                 'COALESCE(SUM(order_price), 0)'
@@ -76,13 +77,13 @@ class HomeController extends Controller
         $isCheckedIn = $attendance && $attendance->check_in_at && ! $attendance->check_out_at;
 
         $ordersQuery = Order::with(['city', 'area', 'rejectionReason'])
-            ->where('driver_id', $user->id)
+            ->where('driver_profile_id', $driverProfileId)
             ->where('status', 'picked_up')
             ->latest();
 
         $checkInAlert = null;
         if (! $isCheckedIn) {
-            $hasHiddenOrders = Order::where('driver_id', $user->id)
+            $hasHiddenOrders = Order::where('driver_profile_id', $driverProfileId)
                 ->whereIn('status', ['picked_up', 'rejected'])
                 ->exists();
 
