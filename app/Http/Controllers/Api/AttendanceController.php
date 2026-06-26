@@ -130,19 +130,19 @@ class AttendanceController extends Controller
 
     private function buildShiftSummary(int $driverId, Carbon $checkInAt): array
     {
-        $deliveredOrders = Order::with(['city', 'clientProfile', 'rejectionReason'])
+        $deliveredOrders = Order::with(['clientProfile', 'rejectionReason', 'payment', 'receiver'])
             ->where('driver_profile_id', $driverId)
             ->where('status', 'delivered')
             ->where('updated_at', '>=', $checkInAt)
             ->get();
 
-        $returnedOrders = Order::with(['city', 'clientProfile'])
+        $returnedOrders = Order::with(['clientProfile', 'payment', 'receiver'])
             ->where('driver_profile_id', $driverId)
             ->where('status', 'returned')
             ->where('updated_at', '>=', $checkInAt)
             ->get();
 
-        $rejectedOrders = Order::with(['city', 'clientProfile', 'rejectionReason'])
+        $rejectedOrders = Order::with(['clientProfile', 'rejectionReason', 'receiver'])
             ->where('driver_profile_id', $driverId)
             ->where('status', 'rejected')
             ->where('updated_at', '>=', $checkInAt)
@@ -151,47 +151,43 @@ class AttendanceController extends Controller
         // Cash physically with the driver across all time (not yet settled)
         $cashToHandover = (float) Order::where('driver_profile_id', $driverId)
             ->where('payment_status', 'with_driver')
-            ->selectRaw(
-                'COALESCE(SUM(order_price), 0)'
-                . ' + COALESCE(SUM(CASE WHEN delivery_on_customer = 1 THEN delivery_customer_amount ELSE 0 END), 0)'
-                . ' AS total'
-            )
-            ->value('total');
+            ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
+            ->sum(\DB::raw('COALESCE(order_payments.order_amount, 0) + COALESCE(order_payments.customer_delivery_amount, 0)'));
 
         // COD cash collected during this shift only
         $shiftCodCollected = (float) $deliveredOrders
-            ->where('payment_type', 'cod')
-            ->sum(fn ($o) => (float) $o->order_price + ($o->delivery_on_customer ? (float) $o->delivery_customer_amount : 0));
+            ->filter(fn ($o) => $o->payment?->payment_type === 'cod')
+            ->sum(fn ($o) => (float) ($o->payment?->order_amount ?? 0) + ($o->payment?->delivery_on_customer ? (float) ($o->payment?->customer_delivery_amount ?? 0) : 0));
 
         $mapOrder = fn (Order $o) => [
-            'order_number'   => $o->order_number,
-            'receiver_name'  => $o->receiver_name,
-            'receiver_phone' => $o->receiver_phone,
-            'city'           => $o->city?->name,
-            'client'         => $o->clientProfile?->company_name,
-            'payment_type'   => $o->payment_type,
-            'order_price'    => (float) $o->order_price,
-            'delivery_amount' => (float) $o->delivery_amount,
-            'payment_status' => $o->payment_status,
+            'order_number'    => $o->order_number,
+            'receiver_name'   => $o->receiver?->receiver_name,
+            'receiver_phone'  => $o->receiver?->receiver_phone,
+            'city'            => $o->city?->name,
+            'client'          => $o->clientProfile?->company_name,
+            'payment_type'    => $o->payment?->payment_type,
+            'order_price'     => (float) ($o->payment?->order_amount ?? 0),
+            'delivery_amount' => (float) ($o->payment?->customer_delivery_amount ?? 0),
+            'payment_status'  => $o->payment_status,
         ];
 
         $mapRejected = fn (Order $o) => [
             'order_number'     => $o->order_number,
-            'receiver_name'    => $o->receiver_name,
-            'receiver_phone'   => $o->receiver_phone,
+            'receiver_name'    => $o->receiver?->receiver_name,
+            'receiver_phone'   => $o->receiver?->receiver_phone,
             'city'             => $o->city?->name,
             'client'           => $o->clientProfile?->company_name,
             'rejection_reason' => $o->rejectionReason?->reason,
         ];
 
         $mapReturned = fn (Order $o) => [
-            'order_number'  => $o->order_number,
-            'receiver_name' => $o->receiver_name,
-            'receiver_phone' => $o->receiver_phone,
-            'city'          => $o->city?->name,
-            'client'        => $o->clientProfile?->company_name,
-            'payment_type'  => $o->payment_type,
-            'order_price'   => (float) $o->order_price,
+            'order_number'   => $o->order_number,
+            'receiver_name'  => $o->receiver?->receiver_name,
+            'receiver_phone' => $o->receiver?->receiver_phone,
+            'city'           => $o->city?->name,
+            'client'         => $o->clientProfile?->company_name,
+            'payment_type'   => $o->payment?->payment_type,
+            'order_price'    => (float) ($o->payment?->order_amount ?? 0),
         ];
 
         return [
