@@ -10,8 +10,8 @@ class OrderResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $payment = $this->whenLoaded('payment', fn () => $this->payment);
-        $receiver = $this->whenLoaded('receiver', fn () => $this->receiver);
+        $payment = $this->relationLoaded('payment') ? $this->payment : null;
+        $receiver = $this->relationLoaded('receiver') ? $this->receiver : null;
 
         $paymentType = $payment?->payment_type;
 
