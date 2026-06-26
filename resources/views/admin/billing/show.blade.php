@@ -200,11 +200,11 @@
                     </div>
                     <div class="info-row">
                         <span class="info-row-key">Contact</span>
-                        <span class="info-row-val">{{ $c->user->name }}</span>
+                        <span class="info-row-val">{{ $c->user?->name ?? '—' }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-row-key">Phone</span>
-                        <span class="info-row-val" style="font-family:monospace;">{{ $c->user->phone }}</span>
+                        <span class="info-row-val" style="font-family:monospace;">{{ $c->user?->phone ?? '—' }}</span>
                     </div>
                 </div>
             </div>
