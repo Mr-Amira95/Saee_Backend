@@ -87,6 +87,7 @@ class FinancialController extends Controller
                     'shipping_charges'     => $shippingCharges,
                     'payouts_made'         => $payoutsMade,
                     'net_balance_due'      => $netBalanceDue,
+                    'gross_payout_due'     => ($codCollected + $deliveryCollected) - $payoutsMade,
                     'pending_payout_count' => $pendingPayoutCount,
                 ];
             })->filter(fn ($c) => abs($c['net_balance_due']) > 0 || $c['pending_payout_count'] > 0);
@@ -94,7 +95,7 @@ class FinancialController extends Controller
         $totalDriverCash = FinancialLedgerEntry::where('to_account', 'driver')->sum('amount')
             - FinancialLedgerEntry::where('from_account', 'driver')->sum('amount');
 
-        $totalClientPayoutsDue = $clientBalances->sum('net_balance_due');
+        $totalClientPayoutsDue = $clientBalances->sum('gross_payout_due');
 
         return view('admin.financials.index', compact('driverBalances', 'clientBalances', 'totalDriverCash', 'totalClientPayoutsDue'));
     }

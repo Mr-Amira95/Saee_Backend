@@ -59,7 +59,7 @@
                                     <td>{{ $order->clientProfile->company_name }}</td>
                                     <td>
                                         <div class="cell-main">{{ $order->receiver_name }}</div>
-                                        <div class="cell-sub">{{ $order->city->name }}</div>
+                                        <div class="cell-sub">{{ $order->city?->name ?? '—' }}</div>
                                     </td>
                                     <td>
                                         <div class="cell-main">{{ $order->payment_type === 'cod' ? 'COD' : 'Prepaid' }}</div>
