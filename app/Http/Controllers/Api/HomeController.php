@@ -77,7 +77,7 @@ class HomeController extends Controller
 
         $isCheckedIn = $attendance && $attendance->check_in_at && ! $attendance->check_out_at;
 
-        $ordersQuery = Order::with(['city', 'area', 'rejectionReason'])
+        $ordersQuery = Order::with(['receiver.city', 'receiver.area', 'rejectionReason'])
             ->where('driver_profile_id', $driverProfileId)
             ->where('status', 'picked_up')
             ->latest();
@@ -148,7 +148,7 @@ class HomeController extends Controller
             ")
             ->first();
 
-        $activeOrders = Order::with(['city', 'area', 'driver'])
+        $activeOrders = Order::with(['receiver.city', 'receiver.area', 'driverProfile'])
             ->where('client_profile_id', $clientProfile->id)
             ->whereIn('status', ['pending', 'picked_up'])
             ->latest()

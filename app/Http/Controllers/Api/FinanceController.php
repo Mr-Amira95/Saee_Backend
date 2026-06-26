@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\FinanceLedgerResource;
 use App\Models\FinancialLedgerEntry;
-use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -72,20 +71,10 @@ class FinanceController extends Controller
             ->where('type', 'driver_settlement')
             ->sum('amount');
 
-        // Cash physically with the driver: COD orders delivered but not yet settled
-        $pendingOrders = Order::where('driver_id', $driverId)
-            ->where('payment_status', 'with_driver')
-            ->selectRaw(
-                'COALESCE(SUM(order_price), 0)'
-                . ' + COALESCE(SUM(CASE WHEN delivery_on_customer = 1 THEN delivery_customer_amount ELSE 0 END), 0)'
-                . ' AS total'
-            )
-            ->value('total');
-
         return [
             'total_collected' => (float) $totalCollected,
             'total_settled'   => (float) $totalSettled,
-            'pending_cash'    => (float) ($pendingOrders ?? 0),
+            'pending_cash'    => (float) max(0, $totalCollected - $totalSettled),
         ];
     }
 }
