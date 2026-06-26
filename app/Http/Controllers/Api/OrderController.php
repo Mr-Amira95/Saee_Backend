@@ -158,8 +158,13 @@ class OrderController extends Controller
 
         if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
             return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized.',
+                'success'            => false,
+                'message'            => 'Unauthorized.',
+                '_debug_user_id'     => $user->id,
+                '_debug_user_role'   => $user->role,
+                '_debug_is_driver'   => $user->isDriver(),
+                '_debug_order_dp_id' => $order->driver_profile_id,
+                '_debug_dp_user_id'  => $order->driverProfile?->user_id,
             ], 403);
         }
 
