@@ -688,7 +688,8 @@ class OrderController extends Controller
     private function canAccessOrder(User $user, Order $order): bool
     {
         if ($user->isDriver()) {
-            return $order->driverProfile?->user_id === $user->id;
+            $driverProfile = $user->driverProfile;
+            return $driverProfile && (int) $order->driver_profile_id === (int) $driverProfile->id;
         }
 
         if ($user->isClientMaster()) {
