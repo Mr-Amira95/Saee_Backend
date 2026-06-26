@@ -51,7 +51,6 @@
                         <th>Payout Date</th>
                         <th style="text-align: center;">Total Orders</th>
                         <th>Gross COD</th>
-                        <th>Shipping Fees</th>
                         <th>Customer Delivery</th>
                         <th>Net Paid Payout</th>
                         <th style="width: 100px; text-align: center;">Actions</th>
@@ -76,13 +75,6 @@
                             </td>
                             <td>{{ number_format($inv->cod_amount, 2) }} JD</td>
                             <td>
-                                @if($inv->shipping_amount > 0)
-                                    <span style="color: var(--text-dim);">-{{ number_format($inv->shipping_amount, 2) }} JD</span>
-                                @else
-                                    <span style="color: var(--text-dim);">—</span>
-                                @endif
-                            </td>
-                            <td>
                                 @if($inv->customer_delivery_amount > 0)
                                     <span style="color: #22c55e;">+{{ number_format($inv->customer_delivery_amount, 2) }} JD</span>
                                 @else
@@ -105,7 +97,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" style="text-align: center; color: var(--text-dim); padding: 40px;">
+                            <td colspan="8" style="text-align: center; color: var(--text-dim); padding: 40px;">
                                 No invoices have been created/processed yet.
                             </td>
                         </tr>
