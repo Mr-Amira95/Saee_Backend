@@ -82,7 +82,7 @@
                                 @endif
                             </td>
                             <td>
-                                <strong style="color: #22c55e;">{{ number_format($inv->net_amount, 2) }} JD</strong>
+                                <strong style="color: #22c55e;">{{ number_format($inv->cod_amount + $inv->customer_delivery_amount, 2) }} JD</strong>
                             </td>
                             <td>
                                 <div class="act-btns" style="justify-content: center;">
