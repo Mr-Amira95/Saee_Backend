@@ -280,7 +280,7 @@
                     <tr>
                         <td><strong>#{{ $o->order_number }}</strong></td>
                         <td>{{ $o->receiver_name }}</td>
-                        <td>{{ $o->city->name }} / {{ $o->area->name }}</td>
+                        <td>{{ $o->city?->name ?? '—' }} / {{ $o->area?->name ?? '—' }}</td>
                         <td>{{ strtoupper($o->payment_type) }}</td>
                         <td style="text-align: right;">{{ number_format($grossCod, 2) }} JD</td>
                         <td style="text-align: right;">{{ number_format($shipping, 2) }} JD</td>
