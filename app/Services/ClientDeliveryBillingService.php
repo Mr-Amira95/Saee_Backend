@@ -15,7 +15,7 @@ class ClientDeliveryBillingService
 {
     /**
      * Generate a draft delivery fee invoice for orders delivered in the period
-     * that have not yet been billed (delivery_on_customer = false, not in any invoice).
+     * that have not yet been billed (not in any invoice).
      */
     public function generateDraftInvoice(
         ClientProfile $client,
@@ -48,10 +48,7 @@ class ClientDeliveryBillingService
                 })
                 ->with('payment')
                 ->get()
-                ->filter(fn($o) =>
-                    $o->payment && $o->payment->client_delivery_amount > 0 &&
-                    ($o->status === 'returned' || ! $o->payment->delivery_on_customer)
-                );
+                ->filter(fn($o) => $o->payment && $o->payment->client_delivery_amount > 0);
 
             $deliveryAmount = $orders->sum(fn($o) => (float) $o->payment->client_delivery_amount);
             $net = max(0, $deliveryAmount);
