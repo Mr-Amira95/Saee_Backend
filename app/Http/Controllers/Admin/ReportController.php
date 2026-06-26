@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\DriverRating;
 use App\Models\FinancialLedgerEntry;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -19,20 +18,31 @@ class ReportController extends Controller
      */
     public function index()
     {
-        $totalOrders = Order::count();
+        $totalOrders  = Order::count();
         $statusCounts = Order::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        // 7-day orders trend for SVG chart
-        $dailyTrend = Order::select(DB::raw("date(created_at) as date"), DB::raw("count(*) as count"))
-            ->where('created_at', '>=', now()->subDays(6))
+        // 7-day trend, zero-filled so every day always has an entry
+        $rawTrend = Order::select(DB::raw("date(created_at) as date"), DB::raw("count(*) as count"))
+            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
             ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+            ->pluck('count', 'date')
+            ->toArray();
 
-        return view('admin.reports.index', compact('totalOrders', 'statusCounts', 'dailyTrend'));
+        $dailyTrend = collect();
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $dailyTrend->push((object) ['date' => $date, 'count' => $rawTrend[$date] ?? 0]);
+        }
+
+        $activeDrivers = User::where('role', 'driver')->where('status', 'active')->count();
+        $activeClients = User::where('role', 'client_master')->where('status', 'active')->count();
+
+        return view('admin.reports.index', compact(
+            'totalOrders', 'statusCounts', 'dailyTrend', 'activeDrivers', 'activeClients'
+        ));
     }
 
     /**
@@ -40,40 +50,39 @@ class ReportController extends Controller
      */
     public function kpis()
     {
-        $totalOrders = Order::count();
+        $totalOrders     = Order::count();
         $completedOrders = Order::whereIn('status', ['delivered', 'rejected', 'returned'])->count();
 
-        // return rate = (rejected + returned) / completed
-        $failedCount = Order::whereIn('status', ['rejected', 'returned'])->count();
-        $returnRate = $completedOrders > 0 ? round(($failedCount / $completedOrders) * 100, 1) : 0.0;
-
-        // success rate = delivered / completed
+        $failedCount    = Order::whereIn('status', ['rejected', 'returned'])->count();
         $deliveredCount = Order::where('status', 'delivered')->count();
-        $successRate = $completedOrders > 0 ? round(($deliveredCount / $completedOrders) * 100, 1) : 100.0;
+        $returnRate     = $completedOrders > 0 ? round(($failedCount    / $completedOrders) * 100, 1) : 0.0;
+        $successRate    = $completedOrders > 0 ? round(($deliveredCount / $completedOrders) * 100, 1) : 100.0;
 
-        // Average customer satisfaction
         $avgSatisfaction = round(DriverRating::avg('rating') ?? 5.0, 1);
-        
-        // Stars distribution
+        $totalRatings    = DriverRating::count();
+
         $starsBreakdown = DriverRating::select('rating', DB::raw('count(*) as count'))
             ->groupBy('rating')
             ->pluck('count', 'rating')
             ->toArray();
 
-        // Drivers leaderboards (with performance getters)
         $drivers = User::where('role', 'driver')
             ->where('status', 'active')
             ->get()
-            ->map(function ($driver) {
-                return [
-                    'driver' => $driver,
-                    'rating' => $driver->average_rating,
-                    'success_rate' => $driver->delivery_success_rate,
-                    'transit_hours' => $driver->average_transit_hours ?? 'N/A'
-                ];
-            })->sortByDesc('success_rate');
+            ->map(fn($driver) => [
+                'driver'        => $driver,
+                'rating'        => $driver->average_rating,
+                'success_rate'  => $driver->delivery_success_rate,
+                'transit_hours' => $driver->average_transit_hours,
+            ])
+            ->sortByDesc('success_rate')
+            ->values();
 
-        return view('admin.reports.kpis', compact('returnRate', 'successRate', 'avgSatisfaction', 'starsBreakdown', 'drivers'));
+        return view('admin.reports.kpis', compact(
+            'returnRate', 'successRate', 'avgSatisfaction',
+            'starsBreakdown', 'drivers', 'totalRatings',
+            'totalOrders', 'deliveredCount', 'failedCount'
+        ));
     }
 
     /**
