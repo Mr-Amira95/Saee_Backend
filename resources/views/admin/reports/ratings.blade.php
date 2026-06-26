@@ -26,7 +26,7 @@
     }
     .ratings-filter-bar {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) auto;
+        grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr auto;
         gap: 12px;
         align-items: end;
         background: var(--card);
@@ -37,9 +37,20 @@
         backdrop-filter: blur(8px);
         animation: fu .45s .05s both;
     }
-    @media(max-width: 768px) {
+    @media(max-width: 1024px) {
+        .ratings-filter-bar {
+            grid-template-columns: 1fr 1fr;
+        }
+        .filter-btn-group {
+            grid-column: span 2;
+        }
+    }
+    @media(max-width: 600px) {
         .ratings-filter-bar {
             grid-template-columns: 1fr;
+        }
+        .filter-btn-group {
+            grid-column: span 1;
         }
     }
     .filter-btn-group {
