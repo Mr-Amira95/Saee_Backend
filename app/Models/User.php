@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -67,9 +68,9 @@ class User extends Authenticatable
         return $this->hasOne(ClientEmployee::class);
     }
 
-    public function driverOrders(): HasMany
+    public function driverOrders(): HasManyThrough
     {
-        return $this->hasMany(Order::class, 'driver_id');
+        return $this->hasManyThrough(Order::class, DriverProfile::class);
     }
 
     public function driverLedgerEntries(): HasMany
