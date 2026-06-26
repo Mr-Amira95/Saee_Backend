@@ -322,6 +322,8 @@ class OrderService
      */
     public function payoutClient(ClientProfile $client, array $orderIds, User $actor, ?string $ref = null, ?string $notes = null): int
     {
+        $ref = $ref ?: 'PAY-' . now()->format('YmdHis') . '-C' . $client->id;
+
         return DB::transaction(function () use ($client, $orderIds, $actor, $ref, $notes) {
             $count = 0;
             $orders = Order::whereIn('id', $orderIds)
