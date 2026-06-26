@@ -230,13 +230,13 @@ class FinancialController extends Controller
                 ->whereHas('financialLedgerEntries', function ($q) use ($ref) {
                     $q->where('type', 'client_payout')->where('reference_number', $ref);
                 })
-                ->with('payment', 'receiver', 'city', 'area')
+                ->with('payment', 'receiver.city', 'receiver.area')
                 ->get();
         } else {
             $orders = Order::where('client_profile_id', $invoice->client_profile_id)
                 ->where('payment_status', 'paid')
                 ->whereDate('updated_at', $invoice->created_at->toDateString())
-                ->with('payment', 'receiver', 'city', 'area')
+                ->with('payment', 'receiver.city', 'receiver.area')
                 ->get();
         }
 

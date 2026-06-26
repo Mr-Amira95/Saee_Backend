@@ -275,7 +275,7 @@
                     <tr>
                         <td><strong>#{{ $o->order_number }}</strong></td>
                         <td>{{ $o->receiver?->receiver_name ?? '—' }}</td>
-                        <td>{{ $o->city?->name ?? '—' }} / {{ $o->area?->name ?? '—' }}</td>
+                        <td>{{ $o->receiver?->city?->name ?? '—' }} / {{ $o->receiver?->area?->name ?? '—' }}</td>
                         <td>{{ strtoupper($o->payment?->payment_type ?? '—') }}</td>
                         <td style="text-align: right;">{{ number_format($codAmt, 2) }} JD</td>
                         <td style="text-align: right;">{{ $custDel > 0 ? number_format($custDel, 2).' JD' : '—' }}</td>
