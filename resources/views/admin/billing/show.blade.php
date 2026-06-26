@@ -193,7 +193,7 @@
             </div>
             <div style="padding:16px;">
                 <div class="info-rows">
-                    @with($c = $invoice->clientProfile)
+                    @php $c = $invoice->clientProfile @endphp
                     <div class="info-row">
                         <span class="info-row-key">Business Name</span>
                         <span class="info-row-val">{{ $c->company_name ?? '—' }}</span>
@@ -206,7 +206,6 @@
                         <span class="info-row-key">Phone</span>
                         <span class="info-row-val" style="font-family:monospace;">{{ $c->user->phone }}</span>
                     </div>
-                    @endwith
                 </div>
             </div>
         </div>
