@@ -77,7 +77,7 @@ class FinancialController extends Controller
 
                 $pendingPayoutCount = Order::where('client_profile_id', $client->id)
                     ->where('status', 'delivered')
-                    ->whereHas('payment', fn ($pq) => $pq->where('payment_type', 'cod'))
+                    ->whereHas('payment', fn ($pq) => $pq->where('payment_type', 'cod')->orWhere('delivery_on_customer', true))
                     ->whereIn('payment_status', ['with_driver', 'with_company'])
                     ->count();
 
@@ -150,7 +150,7 @@ class FinancialController extends Controller
     {
         $orders = Order::where('client_profile_id', $client->id)
             ->where('status', 'delivered')
-            ->whereHas('payment', fn ($pq) => $pq->where('payment_type', 'cod'))
+            ->whereHas('payment', fn ($pq) => $pq->where('payment_type', 'cod')->orWhere('delivery_on_customer', true))
             ->where('payment_status', 'with_company')
             ->with('payment')
             ->orderBy('updated_at', 'desc')

@@ -295,7 +295,9 @@ class OrderService
                     ]);
 
                     $payment = $order->payment;
-                    if ($payment->payment_type === 'prepaid' || $payment->order_amount == 0) {
+                    if ($payment->delivery_on_customer) {
+                        $order->payment_status = 'with_company';
+                    } elseif ($payment->payment_type === 'prepaid' || $payment->order_amount == 0) {
                         $order->payment_status = 'paid';
                     } else {
                         $order->payment_status = 'with_company';
@@ -378,6 +380,23 @@ class OrderService
                     }
 
                     $totalCod += $payment->order_amount;
+                } elseif ($payment->delivery_on_customer && ($payment->customer_delivery_amount ?? 0) > 0) {
+                    $ledger = FinancialLedgerEntry::create([
+                        'order_id'          => $order->id,
+                        'client_profile_id' => $client->id,
+                        'driver_id'         => $driverUserId,
+                        'from_account'      => 'company',
+                        'to_account'        => 'client',
+                        'amount'            => (float) $payment->customer_delivery_amount,
+                        'type'              => 'client_payout',
+                        'reference_number'  => $ref,
+                        'recorded_by'       => $actor->id,
+                        'notes'             => $notes ?? 'Delivery fee payout to client for order ' . $order->order_number,
+                    ]);
+
+                    if (!$payoutLedgerEntry) {
+                        $payoutLedgerEntry = $ledger;
+                    }
                 }
 
                 $order->payment_status = 'paid';
