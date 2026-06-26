@@ -394,7 +394,7 @@
             background-repeat: no-repeat; background-position: right 11px center;
             padding-right: 32px;
         }
-        .form-select option { background: #0c1230; }
+        .form-select option, select.form-input option { background: #0c1230; }
         .form-textarea { resize: vertical; min-height: 80px; }
         .form-error { font-size: .73rem; color: #f87171; }
         .form-hint  { font-size: .73rem; color: var(--text-dim); }
@@ -584,7 +584,8 @@
         html.light-theme .icon-btn { background: rgba(15, 23, 42, 0.04); border-color: var(--bdr); }
         html.light-theme .icon-btn:hover { background: rgba(15, 23, 42, 0.07); }
         html.light-theme .sidebar-user { background: rgba(15, 23, 42, 0.02); }
-        html.light-theme .form-select option { background: #ffffff; color: #0f172a; }
+        html.light-theme .form-select option,
+        html.light-theme select.form-input option { background: #ffffff; color: #0f172a; }
         html.light-theme #notifDropdown { background: #ffffff; color: #0f172a; border-color: var(--bdr); }
         html.light-theme #notifDropdown span { color: var(--text-sub) !important; }
         html.light-theme #notifList a div { color: #0f172a !important; }

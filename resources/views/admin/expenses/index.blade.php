@@ -20,9 +20,16 @@
     </div>
 
     {{-- Filter bar --}}
-    <div class="filter-bar">
-        <form action="{{ route('admin.expenses.index') }}" method="GET" class="filter-form">
-            <select name="category" class="filter-select">
+    <div class="filter-bar" style="flex-wrap:nowrap;gap:8px;">
+        <div class="filter-search-wrap" style="min-width:160px;max-width:220px;flex-shrink:0;">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" id="tableSearch" class="filter-input" placeholder="Search..." autocomplete="off">
+        </div>
+
+        <form action="{{ route('admin.expenses.index') }}" method="GET" style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;flex:1;">
+            <select name="category" class="filter-select" style="flex-shrink:0;">
                 <option value="">All Categories</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat->value }}" {{ request('category') === $cat->value ? 'selected' : '' }}>
@@ -31,11 +38,11 @@
                 @endforeach
             </select>
 
-            <input type="date" name="from" class="filter-input" value="{{ request('from') }}" placeholder="From">
-            <input type="date" name="to"   class="filter-input" value="{{ request('to') }}"   placeholder="To">
+            <input type="date" name="from" class="filter-input" style="width:auto;min-width:130px;padding-left:12px;flex-shrink:0;" value="{{ request('from') }}">
+            <input type="date" name="to"   class="filter-input" style="width:auto;min-width:130px;padding-left:12px;flex-shrink:0;" value="{{ request('to') }}">
 
-            <button type="submit" class="btn-primary" style="box-shadow:none; padding: 8px 16px;">Filter</button>
-            <a href="{{ route('admin.expenses.index') }}" class="btn-secondary" style="padding: 8px 16px;">Reset</a>
+            <button type="submit" class="btn-primary" style="box-shadow:none;padding:8px 16px;white-space:nowrap;flex-shrink:0;">Filter</button>
+            <a href="{{ route('admin.expenses.index') }}" class="btn-secondary" style="padding:8px 16px;white-space:nowrap;flex-shrink:0;">Reset</a>
         </form>
     </div>
 
@@ -46,7 +53,7 @@
         <div class="mini-stat">
             <div>
                 <div class="ms-val">{{ number_format($t->total, 2) }} JD</div>
-                <div class="ms-lbl">{{ \App\Enums\ExpenseCategory::from($t->category)->label() }}</div>
+                <div class="ms-lbl">{{ $t->category->label() }}</div>
             </div>
         </div>
         @endforeach
@@ -115,4 +122,15 @@
             </div>
         @endif
     </div>
+@endsection
+
+@section('scripts')
+<script>
+document.getElementById('tableSearch').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('tbody tr').forEach(function (row) {
+        row.style.display = !q || row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+</script>
 @endsection
