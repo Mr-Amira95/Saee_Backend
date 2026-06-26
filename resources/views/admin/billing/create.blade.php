@@ -40,13 +40,13 @@
                 <div class="form-group">
                     <label class="form-label">Period Start <span class="req">*</span></label>
                     <input type="date" name="period_start" class="form-input @error('period_start') err @enderror"
-                           value="{{ old('period_start') }}" required>
+                           value="{{ old('period_start', now()->startOfMonth()->toDateString()) }}" required>
                     @error('period_start')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Period End <span class="req">*</span></label>
                     <input type="date" name="period_end" class="form-input @error('period_end') err @enderror"
-                           value="{{ old('period_end') }}" required>
+                           value="{{ old('period_end', now()->endOfMonth()->toDateString()) }}" required>
                     @error('period_end')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
             </div>
