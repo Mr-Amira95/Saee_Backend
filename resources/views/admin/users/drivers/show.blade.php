@@ -247,10 +247,10 @@
     </div>
 
     {{-- Bank Details --}}
-    <div class="info-card" style="grid-column: span 2;">
+    <div class="info-card">
         <div class="info-card-title">Bank Details</div>
         @if($driver->bankDetail && array_filter($driver->bankDetail->only(['bank_name','account_name','account_number','iban','swift_code','cliq_id'])))
-        <div class="info-rows" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div class="info-rows" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
             <div class="info-row" style="border-bottom:none;padding-bottom:0;">
                 <span class="info-row-key">Bank Name</span>
                 <span class="info-row-val">{{ $driver->bankDetail->bank_name ?: '—' }}</span>
