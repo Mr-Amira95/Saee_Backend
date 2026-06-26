@@ -34,11 +34,10 @@ class DriverPayrollController extends Controller
     {
         $driver->load('user');
 
-        $periodStart  = Carbon::now()->startOfMonth();
-        $periodEnd    = Carbon::now()->endOfMonth();
-        $lastPayment  = $driver->payments()->latest('period_end')->first();
+        $periodStart = Carbon::now()->startOfMonth();
+        $periodEnd   = Carbon::now()->endOfMonth();
 
-        // Daily delivered order counts for the default period (for JS threshold calculation)
+        // Daily delivered order counts for the period (used by JS to auto-calculate extra orders)
         $dailyOrders = Order::where('driver_profile_id', $driver->id)
             ->where('status', 'delivered')
             ->whereBetween('delivered_at', [$periodStart->copy()->startOfDay(), $periodEnd->copy()->endOfDay()])
@@ -47,7 +46,7 @@ class DriverPayrollController extends Controller
             ->pluck('cnt', 'day');
 
         return view('admin.payroll.create', compact(
-            'driver', 'periodStart', 'periodEnd', 'lastPayment', 'dailyOrders'
+            'driver', 'periodStart', 'periodEnd', 'dailyOrders'
         ));
     }
 

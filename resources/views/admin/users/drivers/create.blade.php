@@ -246,6 +246,42 @@
         @error('attachment_labels.*')<span class="form-error">{{ $message }}</span>@enderror
     </div>
 
+    {{-- Salary Settings --}}
+    <div class="form-section">
+        <div class="form-section-title">Salary Settings</div>
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label class="form-label" for="basic_salary">Basic Salary</label>
+                <input class="form-input @error('basic_salary') is-error @enderror" id="basic_salary" type="number"
+                       name="basic_salary" value="{{ old('basic_salary', 0) }}"
+                       step="0.01" min="0" placeholder="0.00">
+                @error('basic_salary')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="car_allowance">Car & Gasoline Allowance</label>
+                <input class="form-input @error('car_allowance') is-error @enderror" id="car_allowance" type="number"
+                       name="car_allowance" value="{{ old('car_allowance', 0) }}"
+                       step="0.01" min="0" placeholder="0.00">
+                @error('car_allowance')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="daily_order_threshold">Daily Order Threshold</label>
+                <input class="form-input @error('daily_order_threshold') is-error @enderror" id="daily_order_threshold" type="number"
+                       name="daily_order_threshold" value="{{ old('daily_order_threshold', 0) }}"
+                       min="0" placeholder="0">
+                <span style="font-size:.75rem;color:var(--text-dim);margin-top:4px;display:block;">Orders per day above this count earn a bonus</span>
+                @error('daily_order_threshold')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="bonus_per_extra_order">Bonus Per Extra Order</label>
+                <input class="form-input @error('bonus_per_extra_order') is-error @enderror" id="bonus_per_extra_order" type="number"
+                       name="bonus_per_extra_order" value="{{ old('bonus_per_extra_order', 0) }}"
+                       step="0.01" min="0" placeholder="0.00">
+                @error('bonus_per_extra_order')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+        </div>
+    </div>
+
     <div class="form-actions">
         <a href="{{ route('admin.drivers.index') }}" class="btn-secondary">Cancel</a>
         <button type="submit" class="btn-primary">Create Driver</button>

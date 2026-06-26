@@ -51,20 +51,20 @@
                 <div class="form-group">
                     <label class="form-label">Basic Salary <span class="req">*</span></label>
                     <input type="number" name="basic_salary" class="form-input @error('basic_salary') err @enderror"
-                           value="{{ old('basic_salary', $lastPayment?->basic_salary ?? 0) }}" step="0.01" min="0" placeholder="0.00" required
+                           value="{{ old('basic_salary', $driver->basic_salary) }}" step="0.01" min="0" placeholder="0.00" required
                            oninput="recalc()">
                     @error('basic_salary')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Car & Gasoline Allowance <span class="req">*</span></label>
                     <input type="number" name="car_allowance" class="form-input @error('car_allowance') err @enderror"
-                           value="{{ old('car_allowance', $lastPayment?->car_allowance ?? 0) }}" step="0.01" min="0" placeholder="0.00" required
+                           value="{{ old('car_allowance', $driver->car_allowance) }}" step="0.01" min="0" placeholder="0.00" required
                            oninput="recalc()">
                     @error('car_allowance')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Daily Order Threshold</label>
-                    <input type="number" id="daily-threshold" class="form-input" value="0" min="0" placeholder="0"
+                    <input type="number" id="daily-threshold" class="form-input" value="{{ $driver->daily_order_threshold }}" min="0" placeholder="0"
                            oninput="calcExtraOrders()">
                     <span style="font-size:.75rem;color:var(--text-dim);margin-top:4px;display:block;">
                         Orders per day above this count earn a bonus — used to auto-fill the field below
@@ -73,7 +73,7 @@
                 <div class="form-group">
                     <label class="form-label">Bonus Per Extra Order</label>
                     <input type="number" name="extra_order_bonus" class="form-input @error('extra_order_bonus') err @enderror"
-                           value="{{ old('extra_order_bonus', $lastPayment?->extra_order_bonus ?? 0) }}" step="0.01" min="0" placeholder="0.00"
+                           value="{{ old('extra_order_bonus', $driver->bonus_per_extra_order) }}" step="0.01" min="0" placeholder="0.00"
                            oninput="recalc()">
                     @error('extra_order_bonus')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
@@ -161,6 +161,9 @@ function recalc() {
     document.getElementById('net-display').textContent = net.toFixed(2) + ' JD';
 }
 
-document.addEventListener('DOMContentLoaded', recalc);
+document.addEventListener('DOMContentLoaded', function() {
+    calcExtraOrders();
+    recalc();
+});
 </script>
 @endsection

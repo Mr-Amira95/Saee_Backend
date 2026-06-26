@@ -63,6 +63,10 @@ class DriverController extends Controller
             'vehicle_plate'          => 'nullable|string|max:20|unique:driver_profiles,vehicle_plate',
             'car_license_expiry'     => 'nullable|date',
             'car_license_attachment' => 'nullable|image|max:10240',
+            'basic_salary'           => 'nullable|numeric|min:0',
+            'car_allowance'          => 'nullable|numeric|min:0',
+            'daily_order_threshold'  => 'nullable|integer|min:0',
+            'bonus_per_extra_order'  => 'nullable|numeric|min:0',
             'bank_name'              => 'nullable|string|max:100',
             'account_name'           => 'nullable|string|max:100',
             'account_number'         => 'nullable|string|max:30',
@@ -106,6 +110,10 @@ class DriverController extends Controller
                 'vehicle_plate'          => $data['vehicle_plate'] ?? null,
                 'car_license_expiry'     => $data['car_license_expiry'] ?? null,
                 'car_license_attachment' => $carLicenseAttachment,
+                'basic_salary'           => $data['basic_salary'] ?? 0,
+                'car_allowance'          => $data['car_allowance'] ?? 0,
+                'daily_order_threshold'  => $data['daily_order_threshold'] ?? 0,
+                'bonus_per_extra_order'  => $data['bonus_per_extra_order'] ?? 0,
             ]);
 
             $profile->bankDetail()->create([
@@ -155,6 +163,10 @@ class DriverController extends Controller
             'vehicle_plate'          => ['nullable','string','max:20', Rule::unique('driver_profiles','vehicle_plate')->ignore($driver->id)],
             'car_license_expiry'     => 'nullable|date',
             'car_license_attachment' => 'nullable|image|max:10240',
+            'basic_salary'           => 'nullable|numeric|min:0',
+            'car_allowance'          => 'nullable|numeric|min:0',
+            'daily_order_threshold'  => 'nullable|integer|min:0',
+            'bonus_per_extra_order'  => 'nullable|numeric|min:0',
             'bank_name'              => 'nullable|string|max:100',
             'account_name'           => 'nullable|string|max:100',
             'account_number'         => 'nullable|string|max:30',
@@ -197,6 +209,10 @@ class DriverController extends Controller
                 'vehicle_plate'          => $data['vehicle_plate'] ?? null,
                 'car_license_expiry'     => $data['car_license_expiry'] ?? null,
                 'car_license_attachment' => $carLicenseAttachment,
+                'basic_salary'           => $data['basic_salary'] ?? 0,
+                'car_allowance'          => $data['car_allowance'] ?? 0,
+                'daily_order_threshold'  => $data['daily_order_threshold'] ?? 0,
+                'bonus_per_extra_order'  => $data['bonus_per_extra_order'] ?? 0,
                 'is_available'           => $driver->is_available,
             ]);
 
