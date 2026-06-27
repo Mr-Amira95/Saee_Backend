@@ -15,7 +15,7 @@ class DashboardController extends Controller
 
         $activeOrders = Order::where('client_profile_id', $profile->id)
             ->whereIn('status', ['pending', 'picked_up'])
-            ->with(['city', 'area'])
+            ->with(['receiver.city', 'receiver.area'])
             ->latest()
             ->take(20)
             ->get();
