@@ -344,7 +344,7 @@ class OrderService
                 $payment = $order->payment;
                 $driverUserId = $order->driverProfile?->user_id;
 
-                $shippingFee = $payment->delivery_on_customer ? 0 : $payment->client_delivery_amount;
+                $shippingFee = (float) ($payment->client_delivery_amount ?? 0);
                 if ($shippingFee > 0) {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
