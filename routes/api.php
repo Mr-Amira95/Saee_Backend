@@ -81,10 +81,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('profile', [ProfileController::class, 'show'])
         ->name('api.profile.show');
 
-    Route::put('profile/company',  [ProfileController::class, 'updateCompany'])
+    Route::match(['put', 'post'], 'profile/company',  [ProfileController::class, 'updateCompany'])
         ->name('api.profile.company.update');
 
-    Route::put('profile/personal', [ProfileController::class, 'updatePersonal'])
+    Route::match(['put', 'post'], 'profile/personal', [ProfileController::class, 'updatePersonal'])
         ->name('api.profile.personal.update');
 
     Route::get('wallet', [WalletController::class, 'index'])
