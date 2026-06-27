@@ -63,9 +63,10 @@ class ReportController extends Controller
             $dailyTrend->push((object) ['date' => $date, 'count' => $rawTrend[$date] ?? 0]);
         }
 
-        // City breakdown
+        // City breakdown (city_id lives on order_receivers, not orders)
         $cityBreakdown = (clone $base)
-            ->join('cities', 'orders.city_id', '=', 'cities.id')
+            ->join('order_receivers', 'orders.id', '=', 'order_receivers.order_id')
+            ->join('cities', 'order_receivers.city_id', '=', 'cities.id')
             ->select(
                 'cities.name as city_name',
                 DB::raw('count(*) as total'),
