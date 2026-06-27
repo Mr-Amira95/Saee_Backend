@@ -6,6 +6,11 @@
 
 <h1 style="font-size:1.35rem;font-weight:800;margin-bottom:16px;">{{ __('Financials') }}</h1>
 
+<div class="tabs-container" style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--bdr);padding-bottom:12px;">
+    <a href="{{ route('client.financials.index') }}" style="font-size:.87rem;font-weight:600;color:{{ request()->routeIs('client.financials.index') ? 'var(--red-lt)' : 'var(--text-sub)' }};text-decoration:none;padding:6px 12px;border-radius:6px;background:{{ request()->routeIs('client.financials.index') ? 'rgba(220,38,38,.08)' : 'transparent' }};border:1px solid {{ request()->routeIs('client.financials.index') ? 'var(--bdr-red)' : 'transparent' }};transition:all .15s;">{{ __('Transactions') }}</a>
+    <a href="{{ route('client.financials.invoices') }}" style="font-size:.87rem;font-weight:600;color:{{ request()->routeIs('client.financials.invoices') ? 'var(--red-lt)' : 'var(--text-sub)' }};text-decoration:none;padding:6px 12px;border-radius:6px;background:{{ request()->routeIs('client.financials.invoices') ? 'rgba(220,38,38,.08)' : 'transparent' }};border:1px solid {{ request()->routeIs('client.financials.invoices') ? 'var(--bdr-red)' : 'transparent' }};transition:all .15s;">{{ __('Invoices') }}</a>
+</div>
+
 {{-- Summary cards --}}
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px;">
     <div class="card">

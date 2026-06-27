@@ -6,6 +6,11 @@
 
 <h1 style="font-size:1.35rem;font-weight:800;margin-bottom:16px;">{{ __('Invoices') }}</h1>
 
+<div class="tabs-container" style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--bdr);padding-bottom:12px;">
+    <a href="{{ route('client.financials.index') }}" style="font-size:.87rem;font-weight:600;color:{{ request()->routeIs('client.financials.index') ? 'var(--red-lt)' : 'var(--text-sub)' }};text-decoration:none;padding:6px 12px;border-radius:6px;background:{{ request()->routeIs('client.financials.index') ? 'rgba(220,38,38,.08)' : 'transparent' }};border:1px solid {{ request()->routeIs('client.financials.index') ? 'var(--bdr-red)' : 'transparent' }};transition:all .15s;">{{ __('Transactions') }}</a>
+    <a href="{{ route('client.financials.invoices') }}" style="font-size:.87rem;font-weight:600;color:{{ request()->routeIs('client.financials.invoices') ? 'var(--red-lt)' : 'var(--text-sub)' }};text-decoration:none;padding:6px 12px;border-radius:6px;background:{{ request()->routeIs('client.financials.invoices') ? 'rgba(220,38,38,.08)' : 'transparent' }};border:1px solid {{ request()->routeIs('client.financials.invoices') ? 'var(--bdr-red)' : 'transparent' }};transition:all .15s;">{{ __('Invoices') }}</a>
+</div>
+
 <div class="card" style="padding:0;overflow:hidden;">
     @if($invoices->count())
     <div class="table-wrap">
@@ -23,7 +28,7 @@
             </thead>
             <tbody>
                 @foreach($invoices as $inv)
-                <tr>
+                <tr style="cursor:pointer;" onclick="window.location='{{ route('client.financials.invoices.show', $inv) }}'">
                     <td style="font-family:monospace;font-size:.83rem;color:var(--red-lt);">{{ $inv->invoice_number }}</td>
                     <td style="color:var(--text-dim);font-size:.82rem;white-space:nowrap;">{{ $inv->created_at->format('d M Y') }}</td>
                     <td style="font-size:.86rem;">{{ $inv->total_orders ?? '—' }}</td>

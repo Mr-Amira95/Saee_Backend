@@ -260,6 +260,7 @@ Route::prefix('client')->name('client.')->group(function () {
         // Financials (read-only overview for client)
         Route::get('financials', [ClientFinanceController::class, 'index'])->name('financials.index');
         Route::get('financials/invoices', [ClientFinanceController::class, 'invoices'])->name('financials.invoices');
+        Route::get('financials/invoices/{invoice}', [ClientFinanceController::class, 'showInvoice'])->name('financials.invoices.show');
 
         // Billing (read-only delivery invoices for client)
         Route::get('billing', [ClientPortalBillingController::class, 'index'])->name('billing.index');

@@ -1,0 +1,308 @@
+@extends('client.layouts.app')
+
+@section('title', __('Invoice') . ' ' . $invoice->invoice_number)
+@section('page-title', __('Invoice Detail'))
+
+@section('head')
+<style>
+    .invoice-card {
+        background: var(--card);
+        border: 1px solid var(--bdr);
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        max-width: 800px;
+        margin: 0 auto;
+        color: var(--text);
+    }
+    
+    .inv-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid var(--bdr);
+        padding-bottom: 30px;
+        margin-bottom: 30px;
+    }
+
+    .inv-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .inv-meta {
+        text-align: right;
+    }
+
+    .inv-meta h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--red-lt);
+        letter-spacing: -.03em;
+        margin-bottom: 8px;
+    }
+
+    .inv-meta p {
+        font-size: .83rem;
+        color: var(--text-sub);
+        margin-top: 3px;
+    }
+
+    .inv-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 40px;
+    }
+
+    .inv-bill-title {
+        font-size: .7rem;
+        font-weight: 700;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        margin-bottom: 12px;
+        border-bottom: 1px solid var(--bdr);
+        padding-bottom: 6px;
+    }
+
+    .inv-bill-text {
+        font-size: .86rem;
+        color: var(--text-sub);
+        line-height: 1.6;
+    }
+
+    .inv-bill-text strong {
+        color: var(--text);
+        font-size: 1rem;
+    }
+
+    .inv-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+    }
+
+    .inv-table th {
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid var(--bdr);
+        padding: 12px;
+        font-size: .75rem;
+        font-weight: 700;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    .inv-table td {
+        padding: 12px;
+        border-bottom: 1px solid var(--bdr);
+        font-size: .83rem;
+        color: var(--text-sub);
+    }
+
+    .inv-table tr:hover td {
+        background: rgba(255, 255, 255, 0.01);
+    }
+
+    .inv-totals {
+        width: 300px;
+        margin-left: auto;
+        margin-bottom: 30px;
+    }
+
+    .inv-total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: .85rem;
+        border-bottom: 1px solid var(--bdr);
+    }
+
+    .inv-total-row.grand {
+        border-top: 1px solid var(--text-dim);
+        border-bottom: none;
+        padding-top: 12px;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #22c55e;
+    }
+
+    .inv-footer {
+        border-top: 1px solid var(--bdr);
+        padding-top: 20px;
+        font-size: .78rem;
+        color: var(--text-dim);
+        text-align: center;
+    }
+
+    /* Print styling overrides */
+    @media print {
+        body {
+            background: #fff !important;
+            color: #000 !important;
+        }
+        .shell, .topbar, .sidebar, .page-hd, .btn-secondary, .logout-btn {
+            display: none !important;
+        }
+        .main, .content {
+            padding: 0 !important;
+            overflow: visible !important;
+            background: transparent !important;
+        }
+        .invoice-card {
+            box-shadow: none !important;
+            border: none !important;
+            background: #fff !important;
+            color: #000 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+        }
+        .inv-logo-text, .inv-bill-text strong, .inv-table td {
+            color: #000 !important;
+        }
+        .inv-table th {
+            background: #f1f5f9 !important;
+            border-bottom: 2px solid #cbd5e1 !important;
+            color: #475569 !important;
+        }
+        .inv-table td {
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        .inv-total-row {
+            color: #000 !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        .inv-total-row.grand {
+            color: #16a34a !important;
+            border-top: 2px solid #475569 !important;
+        }
+    }
+</style>
+@endsection
+
+@section('content')
+    {{-- Top Controls --}}
+    <div class="page-hd" style="max-width: 800px; margin: 0 auto 18px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="page-hd-left">
+            <h1>{{ __('Invoice Detail') }}</h1>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button onclick="window.print()" class="btn-primary" style="background: linear-gradient(135deg, #475569, #1e293b); box-shadow: none; display: flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: .83rem;">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                {{ __('Print Invoice') }}
+            </button>
+            <a href="{{ route('client.financials.invoices') }}" class="btn-secondary" style="padding: 8px 14px; font-size: .83rem; text-decoration: none; display: inline-flex; align-items: center;">{{ __('Back to Invoices') }}</a>
+        </div>
+    </div>
+
+    {{-- Printable Card --}}
+    <div class="invoice-card">
+        {{-- Header --}}
+        <div class="inv-header">
+            <div class="inv-logo">
+                <img id="logoDarkPrint" src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
+            </div>
+            
+            <div class="inv-meta">
+                <h2>{{ $invoice->invoice_number }}</h2>
+                <p>{{ __('Date') }}: {{ $invoice->created_at->format('d M Y') }}</p>
+                <p>{{ __('Status') }}: <span style="text-transform:uppercase; font-weight:700; color:#4ade80">{{ __($invoice->status) }}</span></p>
+            </div>
+        </div>
+
+        {{-- Client details --}}
+        <div class="inv-grid">
+            <div>
+                <div class="inv-bill-title">{{ __('Billed To (Merchant)') }}</div>
+                <div class="inv-bill-text">
+                    <strong>{{ $invoice->clientProfile->company_name }}</strong><br>
+                    {{ __('Merchant ID') }}: #{{ $invoice->clientProfile->id }}<br>
+                    {{ __('Email') }}: {{ $invoice->clientProfile->email ?? 'N/A' }}<br>
+                    {{ __('Address') }}: {{ $invoice->clientProfile->address_line1 ?? 'N/A' }}, {{ $invoice->clientProfile->city->name ?? '' }}
+                </div>
+            </div>
+            <div>
+                <div class="inv-bill-title">{{ __('Payment Information') }}</div>
+                <div class="inv-bill-text">
+                    {{ __('Method') }}: Direct Transfer / Payout Cash<br>
+                    {{ __('Reference Number') }}: {{ $invoice->payoutLedgerEntry->reference_number ?? 'N/A' }}<br>
+                    {{ __('Ledger Ref ID') }}: #{{ $invoice->payout_ledger_entry_id }}<br>
+                    {{ __('Recorded By') }}: {{ $invoice->payoutLedgerEntry->recordedBy->name ?? 'System' }}
+                </div>
+            </div>
+        </div>
+
+        {{-- Linked Orders breakdown --}}
+        <div class="inv-bill-title">{{ __('Order Breakdown List') }}</div>
+        <table class="inv-table">
+            <thead>
+                <tr>
+                    <th>{{ __('Order Number') }}</th>
+                    <th>{{ __('Recipient') }}</th>
+                    <th>{{ __('City / Area') }}</th>
+                    <th>{{ __('Payment Type') }}</th>
+                    <th style="text-align: right;">{{ __('COD Amount') }}</th>
+                    <th style="text-align: right;">{{ __('Customer Delivery') }}</th>
+                    <th style="text-align: right;">{{ __('Net Payout') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($orders as $o)
+                    @php
+                        $codAmt      = (float) ($o->payment?->order_amount ?? 0);
+                        $custDel     = $o->payment?->delivery_on_customer ? (float) ($o->payment?->customer_delivery_amount ?? 0) : 0;
+                        $net         = $codAmt + $custDel;
+                    @endphp
+                    <tr>
+                        <td><strong>#{{ $o->order_number }}</strong></td>
+                        <td>{{ $o->receiver?->receiver_name ?? '—' }}</td>
+                        <td>{{ $o->receiver?->city?->name ?? '—' }} / {{ $o->receiver?->area?->name ?? '—' }}</td>
+                        <td>{{ strtoupper($o->payment?->payment_type ?? '—') }}</td>
+                        <td style="text-align: right;">{{ number_format($codAmt, 2) }} JD</td>
+                        <td style="text-align: right;">{{ $custDel > 0 ? number_format($custDel, 2).' JD' : '—' }}</td>
+                        <td style="text-align: right; font-weight: 600; color: #4ade80;">
+                            {{ number_format($net, 2) }} JD
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                            {{ __('No orders found linked to this invoice reference transaction.') }}
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+
+        {{-- Totals Summary --}}
+        @php
+            $totalCod = $orders->sum(fn($o) => (float) ($o->payment?->order_amount ?? 0));
+            $totalCustDel = $orders->sum(fn($o) => $o->payment?->delivery_on_customer ? (float) ($o->payment?->customer_delivery_amount ?? 0) : 0);
+            $totalNet = $totalCod + $totalCustDel;
+        @endphp
+        <div class="inv-totals">
+            <div class="inv-total-row">
+                <span style="color: var(--text-dim)">{{ __('COD Collected') }}</span>
+                <span>{{ number_format($totalCod, 2) }} JD</span>
+            </div>
+            <div class="inv-total-row">
+                <span style="color: var(--text-dim)">{{ __('Customer Delivery') }}</span>
+                <span>+{{ number_format($totalCustDel, 2) }} JD</span>
+            </div>
+            <div class="inv-total-row grand">
+                <span>{{ __('Net Payout Paid') }}</span>
+                <span>{{ number_format($totalNet, 2) }} JD</span>
+            </div>
+        </div>
+
+        {{-- Footer notes --}}
+        <div class="inv-footer">
+            <p>{{ __("Thank you for choosing Sa'ee Logistics. For any inquiries, please contact our support system.") }}</p>
+            <p style="margin-top: 8px; font-size: 0.7rem; color: var(--text-dim)">{{ __('Generated on') }} {{ now()->toDateTimeString() }}</p>
+        </div>
+    </div>
+@endsection
