@@ -300,6 +300,7 @@
         .field-wrap:focus-within .field-icon { color: rgba(220,38,38,.55); }
 
         input[type="email"],
+        input[type="tel"],
         input[type="password"],
         input[type="text"] {
             width: 100%; padding: 13px 44px;
@@ -424,6 +425,25 @@
             .card { padding: 32px 22px; border-radius: 16px; }
             .card h1 { font-size: 1.5rem; }
         }
+
+        /* Phone country-code picker */
+        .phone-wrap { display:flex; align-items:stretch; border:1px solid var(--input-bdr); border-radius:11px; background:var(--input-bg); transition:border-color .2s,box-shadow .2s; position:relative; overflow:visible; }
+        .phone-wrap:focus-within { border-color:rgba(220,38,38,.4); background:rgba(220,38,38,.025); box-shadow:0 0 0 3px rgba(220,38,38,.07),0 0 18px rgba(220,38,38,.04); }
+        .phone-wrap.has-error { border-color:rgba(220,38,38,.45) !important; }
+        .country-btn { display:flex; align-items:center; gap:5px; padding:0 9px 0 12px; background:none; border:none; border-right:1px solid var(--input-bdr); color:rgba(255,255,255,.75); cursor:pointer; font-family:'Inter',sans-serif; font-size:.82rem; font-weight:500; white-space:nowrap; transition:background .2s; border-radius:11px 0 0 11px; }
+        .country-btn:hover,.country-btn.open { background:rgba(255,255,255,.045); }
+        .country-flag { font-size:1rem; line-height:1; }
+        .country-chevron { opacity:.4; transition:transform .2s; margin-left:2px; }
+        .country-btn.open .country-chevron { transform:rotate(180deg); }
+        .phone-wrap input[type="tel"] { background:transparent !important; border:none !important; box-shadow:none !important; border-radius:0 11px 11px 0 !important; padding-left:12px !important; padding-right:12px !important; width:auto !important; flex:1; min-width:0; }
+        .country-dropdown { position:absolute; top:calc(100% + 5px); left:0; width:215px; background:#0d0f22; border:1px solid rgba(255,255,255,.1); border-radius:11px; z-index:999; box-shadow:0 10px 28px rgba(0,0,0,.65); display:none; max-height:252px; overflow-y:auto; }
+        .country-dropdown.open { display:block; }
+        .country-option { display:flex; align-items:center; gap:8px; padding:9px 12px; cursor:pointer; font-size:.81rem; color:rgba(255,255,255,.68); transition:background .15s; }
+        .country-option:hover { background:rgba(255,255,255,.06); color:#fff; }
+        .country-option.active { background:rgba(220,38,38,.1); color:#fff; }
+        .country-option .opt-flag { font-size:.95rem; flex-shrink:0; }
+        .country-option .opt-name { flex:1; }
+        .country-option .opt-dial { color:rgba(255,255,255,.38); font-size:.78rem; flex-shrink:0; }
     </style>
 </head>
 <body>
@@ -493,20 +513,31 @@
             <form method="POST" action="{{ route('admin.login') }}" id="loginForm" novalidate>
                 @csrf
 
-                {{-- Email --}}
+                {{-- Phone --}}
                 <div class="field f1">
-                    <label class="field-label" for="email">Email Address</label>
-                    <div class="field-wrap">
-                        <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>
-                        <input
-                            id="email" name="email" type="email"
-                            value="{{ old('email') }}"
-                            placeholder="admin@saee.com"
-                            autocomplete="email" autofocus
-                            class="{{ $errors->has('email') ? 'has-error' : '' }}"
-                        >
+                    <label class="field-label" for="phoneLocal">Phone Number</label>
+                    <div class="field-wrap phone-wrap{{ $errors->has('phone') ? ' has-error' : '' }}">
+                        <button type="button" class="country-btn" id="countryBtn" aria-label="Select country code">
+                            <span class="country-flag" id="countryFlag">🇯🇴</span>
+                            <span class="country-dial" id="countryDial">+962</span>
+                            <svg class="country-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div class="country-dropdown" id="countryDropdown">
+                            <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">Jordan</span><span class="opt-dial">+962</span></div>
+                            <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">Saudi Arabia</span><span class="opt-dial">+966</span></div>
+                            <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">UAE</span><span class="opt-dial">+971</span></div>
+                            <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">Kuwait</span><span class="opt-dial">+965</span></div>
+                            <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">Qatar</span><span class="opt-dial">+974</span></div>
+                            <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">Bahrain</span><span class="opt-dial">+973</span></div>
+                            <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">Oman</span><span class="opt-dial">+968</span></div>
+                            <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">Egypt</span><span class="opt-dial">+20</span></div>
+                            <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">Palestine</span><span class="opt-dial">+970</span></div>
+                            <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">Lebanon</span><span class="opt-dial">+961</span></div>
+                            <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">Iraq</span><span class="opt-dial">+964</span></div>
+                            <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">Syria</span><span class="opt-dial">+963</span></div>
+                        </div>
+                        <input id="phoneLocal" type="tel" placeholder="7xxxxxxxx" autocomplete="tel" autofocus>
+                        <input type="hidden" name="phone" id="phoneHidden">
                     </div>
                 </div>
 
@@ -632,11 +663,40 @@
         eyeIcon.innerHTML = isText ? eyeOpen : eyeClosed;
     });
 
-    /* ── Submit loading state ───────────────────────── */
+    /* ── Country code dropdown ──────────────────────── */
+    const countryBtn      = document.getElementById('countryBtn');
+    const countryDropdown = document.getElementById('countryDropdown');
+    const countryFlag     = document.getElementById('countryFlag');
+    const countryDial     = document.getElementById('countryDial');
+
+    countryBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        countryBtn.classList.toggle('open');
+        countryDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+        countryBtn.classList.remove('open');
+        countryDropdown.classList.remove('open');
+    });
+    countryDropdown.querySelectorAll('.country-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            countryDropdown.querySelectorAll('.country-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            countryFlag.textContent = opt.dataset.flag;
+            countryDial.textContent = opt.dataset.dial;
+            countryBtn.classList.remove('open');
+            countryDropdown.classList.remove('open');
+        });
+    });
+
+    /* ── Submit: combine dial + local, then load ────── */
     const form      = document.getElementById('loginForm');
     const submitBtn = document.getElementById('submitBtn');
 
     form.addEventListener('submit', () => {
+        let local = document.getElementById('phoneLocal').value.trim();
+        if (local.startsWith('0')) local = local.slice(1);
+        document.getElementById('phoneHidden').value = countryDial.textContent + local;
         submitBtn.classList.add('loading');
     });
 })();

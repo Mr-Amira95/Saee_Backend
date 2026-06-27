@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\LegalContentController;
 use App\Http\Controllers\PublicCmsController;
 use App\Http\Controllers\Client\AuthController as ClientAuthController;
+use App\Http\Controllers\Portal\AuthController as PortalAuthController;
 use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\SupportController as ClientSupportController;
@@ -63,16 +64,18 @@ Route::get('/set-password',         [SetPasswordController::class, 'show'])->nam
 Route::post('/set-password',        [SetPasswordController::class, 'store'])->name('set-password.store');
 Route::get('/set-password/success', [SetPasswordController::class, 'success'])->name('set-password.success');
 
+// ─── Unified Portal (login & forgot-password for all roles) ───────────────────
+Route::prefix('portal')->name('portal.')->group(function () {
+    Route::middleware('portal.guest')->group(function () {
+        Route::get('login',            [PortalAuthController::class, 'showLogin'])->name('login');
+        Route::post('login',           [PortalAuthController::class, 'login']);
+        Route::get('forgot-password',  [PortalAuthController::class, 'showForgotPassword'])->name('forgot-password');
+        Route::post('forgot-password', [PortalAuthController::class, 'sendResetLink'])->name('forgot-password.send');
+    });
+});
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->group(function () {
-
-    // Guest-only (not already logged in as admin)
-    Route::middleware('admin.guest')->group(function () {
-        Route::get('login',            [AuthController::class, 'showLogin'])->name('login');
-        Route::post('login',           [AuthController::class, 'login']);
-        Route::get('forgot-password',  [AuthController::class, 'showForgotPassword'])->name('forgot-password');
-        Route::post('forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
-    });
 
     // Protected — must be authenticated admin/superadmin
     Route::middleware('admin.auth')->group(function () {
@@ -205,16 +208,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // ─── Client Portal ────────────────────────────────────────────────────────────
 Route::prefix('client')->name('client.')->group(function () {
-
-    // Guest-only
-    Route::middleware('client.guest')->group(function () {
-        Route::get('login',                        [ClientAuthController::class, 'showLogin'])->name('login');
-        Route::post('login',                       [ClientAuthController::class, 'login']);
-        Route::get('forgot-password',              [ClientAuthController::class, 'showForgotPassword'])->name('forgot-password');
-        Route::post('forgot-password/request',     [ClientAuthController::class, 'requestCode'])->name('forgot-password.request');
-        Route::post('forgot-password/verify',      [ClientAuthController::class, 'verifyCode'])->name('forgot-password.verify');
-        Route::post('forgot-password/reset',       [ClientAuthController::class, 'resetPassword'])->name('forgot-password.reset');
-    });
 
     // Authenticated clients
     Route::middleware('client.auth')->group(function () {

@@ -25,12 +25,29 @@
             @csrf
 
             <div class="field f1">
-                <label class="field-label" for="phone1">{{ __('Phone Number') }}</label>
-                <div class="field-wrap">
-                    <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                    </svg>
-                    <input id="phone1" name="phone" type="tel" value="{{ old('phone', session('_fp_phone')) }}" placeholder="{{ __('07xxxxxxxx') }}" autocomplete="tel" autofocus>
+                <label class="field-label" for="fpPhoneLocal">{{ __('Phone Number') }}</label>
+                <div class="field-wrap phone-wrap">
+                    <button type="button" class="country-btn" id="fpCountryBtn" aria-label="{{ __('Select country code') }}">
+                        <span class="country-flag" id="fpCountryFlag">🇯🇴</span>
+                        <span class="country-dial" id="fpCountryDial">+962</span>
+                        <svg class="country-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div class="country-dropdown" id="fpCountryDropdown">
+                        <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">Jordan</span><span class="opt-dial">+962</span></div>
+                        <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">Saudi Arabia</span><span class="opt-dial">+966</span></div>
+                        <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">UAE</span><span class="opt-dial">+971</span></div>
+                        <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">Kuwait</span><span class="opt-dial">+965</span></div>
+                        <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">Qatar</span><span class="opt-dial">+974</span></div>
+                        <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">Bahrain</span><span class="opt-dial">+973</span></div>
+                        <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">Oman</span><span class="opt-dial">+968</span></div>
+                        <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">Egypt</span><span class="opt-dial">+20</span></div>
+                        <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">Palestine</span><span class="opt-dial">+970</span></div>
+                        <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">Lebanon</span><span class="opt-dial">+961</span></div>
+                        <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">Iraq</span><span class="opt-dial">+964</span></div>
+                        <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">Syria</span><span class="opt-dial">+963</span></div>
+                    </div>
+                    <input id="fpPhoneLocal" type="tel" placeholder="{{ __('7xxxxxxxx') }}" autocomplete="tel" autofocus>
+                    <input type="hidden" name="phone" id="fpPhoneHidden">
                 </div>
             </div>
 
@@ -122,9 +139,47 @@
 
 @push('scripts')
 <script>
+// Country code dropdown for forgot-password step 1
+(function () {
+    const btn      = document.getElementById('fpCountryBtn');
+    const dropdown = document.getElementById('fpCountryDropdown');
+    const flagEl   = document.getElementById('fpCountryFlag');
+    const dialEl   = document.getElementById('fpCountryDial');
+    if (!btn) return;
+
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+        btn.classList.toggle('open');
+        dropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+        btn.classList.remove('open');
+        dropdown.classList.remove('open');
+    });
+    dropdown.querySelectorAll('.country-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            dropdown.querySelectorAll('.country-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            flagEl.textContent = opt.dataset.flag;
+            dialEl.textContent = opt.dataset.dial;
+            btn.classList.remove('open');
+            dropdown.classList.remove('open');
+        });
+    });
+
+    const form1 = document.getElementById('form1');
+    if (form1) {
+        form1.addEventListener('submit', () => {
+            let local = document.getElementById('fpPhoneLocal').value.trim();
+            if (local.startsWith('0')) local = local.slice(1);
+            document.getElementById('fpPhoneHidden').value = dialEl.textContent + local;
+        });
+    }
+})();
+
 ['form1','form2','form3'].forEach(id => {
     const form = document.getElementById(id);
-    if (form) form.addEventListener('submit', (e) => {
+    if (form) form.addEventListener('submit', () => {
         const btn = form.querySelector('button[type=submit]');
         if (btn) btn.classList.add('loading');
     });

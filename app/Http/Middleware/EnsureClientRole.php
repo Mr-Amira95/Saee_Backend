@@ -12,7 +12,7 @@ class EnsureClientRole
     public function handle(Request $request, Closure $next): Response
     {
         if (! Auth::check() || ! in_array(Auth::user()->role, ['client_master', 'client_employee'])) {
-            return redirect()->route('client.login');
+            return redirect()->route('portal.login');
         }
 
         return $next($request);

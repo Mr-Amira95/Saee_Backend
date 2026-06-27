@@ -12,7 +12,7 @@ class EnsureAdminRole
     public function handle(Request $request, Closure $next): Response
     {
         if (! Auth::check() || ! in_array(Auth::user()->role, ['admin', 'superadmin'])) {
-            return redirect()->route('admin.login');
+            return redirect()->route('portal.login');
         }
 
         return $next($request);
