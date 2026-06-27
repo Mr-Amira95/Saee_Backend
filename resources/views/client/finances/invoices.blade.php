@@ -11,8 +11,47 @@
         </div>
     </div>
 
+    {{-- Statistics --}}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px;animation:fu .5s both;">
+        {{-- COD Collected --}}
+        <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <div style="width:32px;height:32px;border-radius:9px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="15" height="15" fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('COD Collected') }}</span>
+            </div>
+            <div style="font-size:1.8rem;font-weight:800;color:#22c55e;line-height:1;margin-bottom:5px;">{{ number_format($codCollected, 2) }} <span style="font-size:1rem;font-weight:600;">JD</span></div>
+            <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Total cash on delivery collections') }}</div>
+        </div>
+
+        {{-- Customer Delivery --}}
+        <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <div style="width:32px;height:32px;border-radius:9px;background:rgba(96,165,250,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="15" height="15" fill="none" stroke="#60a5fa" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <span style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('Customer Delivery') }}</span>
+            </div>
+            <div style="font-size:1.8rem;font-weight:800;color:#60a5fa;line-height:1;margin-bottom:5px;">{{ number_format($customerDelivery, 2) }} <span style="font-size:1rem;font-weight:600;">JD</span></div>
+            <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Total delivery paid by customer') }}</div>
+        </div>
+
+        {{-- Shipping Charges --}}
+        <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <div style="width:32px;height:32px;border-radius:9px;background:rgba(248,113,113,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="15" height="15" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                </div>
+                <span style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('Shipping Charges') }}</span>
+            </div>
+            <div style="font-size:1.8rem;font-weight:800;color:#f87171;line-height:1;margin-bottom:5px;">{{ number_format($shippingCharges, 2) }} <span style="font-size:1rem;font-weight:600;">JD</span></div>
+            <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Total shipping fees deducted') }}</div>
+        </div>
+    </div>
+
     {{-- Filter bar --}}
-    <div class="filter-bar">
+    <div class="filter-bar" style="margin-bottom: 20px;">
         <form action="{{ route('client.financials.invoices') }}" method="GET" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;">
             <div class="filter-search-wrap">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -21,8 +60,11 @@
                 <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="{{ __('Search by invoice number…') }}">
             </div>
             
+            <input type="date" name="from" value="{{ request('from') }}" class="filter-input" style="max-width:145px;" title="{{ __('From Date') }}">
+            <input type="date" name="to" value="{{ request('to') }}" class="filter-input" style="max-width:145px;" title="{{ __('To Date') }}">
+
             <button type="submit" class="btn-primary" style="box-shadow:none; padding: 8px 16px;">{{ __('Filter') }}</button>
-            @if(request()->filled('search'))
+            @if(request()->anyFilled(['search', 'from', 'to']))
                 <a href="{{ route('client.financials.invoices') }}" class="btn-secondary" style="padding: 8px 16px; text-decoration:none;">{{ __('Reset') }}</a>
             @endif
         </form>

@@ -11,37 +11,6 @@ use Illuminate\View\View;
 
 class FinanceController extends Controller
 {
-    public function index(Request $request): View
-    {
-        $profile = $this->getClientProfile();
-
-        $ledgerQuery = FinancialLedgerEntry::where('client_profile_id', $profile->id)
-            ->with('order');
-
-        if ($request->filled('type')) {
-            $ledgerQuery->where('type', $request->type);
-        }
-        if ($request->filled('from')) {
-            $ledgerQuery->whereDate('created_at', '>=', $request->from);
-        }
-        if ($request->filled('to')) {
-            $ledgerQuery->whereDate('created_at', '<=', $request->to);
-        }
-
-        $ledger = $ledgerQuery->latest()->paginate(20)->withQueryString();
-
-        $baseQuery = FinancialLedgerEntry::where('client_profile_id', $profile->id);
-        $codCollected    = (float) (clone $baseQuery)->where('type', 'cod_collection')->sum('amount');
-        $shippingCharges = (float) (clone $baseQuery)->where('type', 'shipping_charge')->sum('amount');
-        $payoutsReceived = (float) (clone $baseQuery)->where('type', 'client_payout')->sum('amount');
-        $netBalanceDue   = $codCollected - $shippingCharges - $payoutsReceived;
-
-        return view('client.finances.index', compact(
-            'profile', 'ledger',
-            'codCollected', 'shippingCharges', 'payoutsReceived', 'netBalanceDue'
-        ));
-    }
-
     public function invoices(Request $request): View
     {
         $profile = $this->getClientProfile();
@@ -53,11 +22,29 @@ class FinanceController extends Controller
             $query->where('invoice_number', 'like', "%{$search}%");
         }
 
+        if ($request->filled('from')) {
+            $query->whereDate('created_at', '>=', $request->input('from'));
+        }
+        if ($request->filled('to')) {
+            $query->whereDate('created_at', '<=', $request->input('to'));
+        }
+
+        // Calculate statistics based on filtered query
+        $statsQuery = clone $query;
+        $codCollected    = (float) $statsQuery->sum('cod_amount');
+        $customerDelivery = (float) $statsQuery->sum('customer_delivery_amount');
+        $shippingCharges = (float) $statsQuery->sum('shipping_amount');
+
         $invoices = $query->latest()
             ->paginate(20)
             ->withQueryString();
 
-        return view('client.finances.invoices', compact('invoices'));
+        return view('client.finances.invoices', compact(
+            'invoices',
+            'codCollected',
+            'customerDelivery',
+            'shippingCharges'
+        ));
     }
 
     public function showInvoice(Invoice $invoice): View

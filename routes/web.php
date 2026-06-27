@@ -254,11 +254,7 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::post('notifications/read-all', [ClientNotificationController::class, 'markAllRead'])->name('notifications.read-all');
         Route::get('notifications/unread', [ClientNotificationController::class, 'unreadCount'])->name('notifications.unread');
 
-        // Finances
-        Route::get('finances', [ClientFinanceController::class, 'index'])->name('finances.index');
-
         // Financials (read-only overview for client)
-        Route::get('financials', [ClientFinanceController::class, 'index'])->name('financials.index');
         Route::get('financials/invoices', [ClientFinanceController::class, 'invoices'])->name('financials.invoices');
         Route::get('financials/invoices/{invoice}', [ClientFinanceController::class, 'showInvoice'])->name('financials.invoices.show');
 
