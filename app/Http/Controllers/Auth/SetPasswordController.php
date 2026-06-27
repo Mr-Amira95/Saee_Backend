@@ -11,10 +11,10 @@ use App\Models\User;
 
 class SetPasswordController extends Controller
 {
-    public function show(Request $request)
+    public function show(Request $request, string $token = null)
     {
         return view('auth.set-password', [
-            'token' => $request->query('token'),
+            'token' => $token ?? $request->query('token'),
             'email' => $request->query('email'),
         ]);
     }

@@ -64,6 +64,9 @@ Route::get('/set-password',         [SetPasswordController::class, 'show'])->nam
 Route::post('/set-password',        [SetPasswordController::class, 'store'])->name('set-password.store');
 Route::get('/set-password/success', [SetPasswordController::class, 'success'])->name('set-password.success');
 
+// Required by Password::sendResetLink() to build the reset URL in the email
+Route::get('/password/reset/{token}', [SetPasswordController::class, 'show'])->name('password.reset');
+
 // ─── Unified Portal (login & forgot-password for all roles) ───────────────────
 Route::prefix('portal')->name('portal.')->group(function () {
     Route::middleware('portal.guest')->group(function () {
