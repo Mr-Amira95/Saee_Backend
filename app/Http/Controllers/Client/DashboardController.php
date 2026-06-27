@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Client;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
@@ -15,7 +15,7 @@ class DashboardController extends Controller
 
         $activeOrders = Order::where('client_profile_id', $profile->id)
             ->whereIn('status', ['pending', 'picked_up'])
-            ->with(['receiver.city', 'receiver.area'])
+            ->with(['receiver.city', 'receiver.area', 'payment'])
             ->latest()
             ->take(20)
             ->get();
@@ -33,7 +33,7 @@ class DashboardController extends Controller
         // 14-day orders trend for SVG chart
         $dailyTrend = Order::where('client_profile_id', $profile->id)
             ->where('created_at', '>=', now()->subDays(13)->startOfDay())
-            ->select(DB::raw("date(created_at) as date"), DB::raw("count(*) as count"))
+            ->select(DB::raw('date(created_at) as date'), DB::raw('count(*) as count'))
             ->groupBy('date')
             ->orderBy('date')
             ->get()
@@ -59,10 +59,12 @@ class DashboardController extends Controller
             $orders = Order::where('client_profile_id', $profile->id)
                 ->where(function ($q) use ($query) {
                     $q->where('order_number', $query)
-                      ->orWhere('receiver_name', 'like', "%{$query}%")
-                      ->orWhere('receiver_phone', 'like', "%{$query}%");
+                        ->orWhereHas('receiver', function ($sub) use ($query) {
+                            $sub->where('receiver_name', 'like', "%{$query}%")
+                                ->orWhere('receiver_phone', 'like', "%{$query}%");
+                        });
                 })
-                ->with(['city', 'area', 'trackingLogs'])
+                ->with(['receiver.city', 'receiver.area', 'trackingLogs', 'payment'])
                 ->latest()
                 ->take(10)
                 ->get();

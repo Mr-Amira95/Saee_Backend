@@ -253,15 +253,15 @@
                     <span style="font-size:.78rem;font-weight:700;color:var(--text-dim);font-family:monospace;">{{ $order->order_number }}</span>
                     <span class="badge {{ $st['class'] }}"><span class="badge-dot"></span>{{ $st['label'] }}</span>
                 </div>
-                <div style="font-size:.93rem;font-weight:600;color:var(--text);margin-bottom:4px;">{{ $order->receiver_name }}</div>
+                <div style="font-size:.93rem;font-weight:600;color:var(--text);margin-bottom:4px;">{{ $order->receiver?->receiver_name }}</div>
                 <div style="font-size:.8rem;color:var(--text-dim);margin-bottom:10px;">
-                    {{ optional($order->city)->name }}{{ $order->area ? ', ' . $order->area->name : '' }}
+                    {{ $order->receiver?->city?->name }}{{ $order->receiver?->area ? ', ' . $order->receiver->area->name : '' }}
                 </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(255,255,255,.04);">
                     <div>
-                        @if($order->payment_type === 'cod')
+                        @if(($order->payment?->payment_type ?? 'prepaid') === 'cod')
                             <span style="font-size:.8rem;color:var(--text-dim);">{{ __('COD') }}</span>
-                            <span style="font-size:.95rem;font-weight:700;color:#fbbf24;margin-left:5px;">{{ number_format($order->order_price, 2) }} JD</span>
+                            <span style="font-size:.95rem;font-weight:700;color:#fbbf24;margin-left:5px;">{{ number_format($order->payment?->order_price ?? 0, 2) }} JD</span>
                         @else
                             <span class="badge badge-prepaid">{{ __('Prepaid') }}</span>
                         @endif

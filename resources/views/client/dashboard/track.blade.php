@@ -69,14 +69,14 @@
                     <tr>
                         <td><span style="font-family:monospace;font-size:.82rem;color:var(--red-lt);">{{ $order->order_number }}</span></td>
                         <td>
-                            <div class="cell-main">{{ $order->receiver_name }}</div>
-                            <div class="cell-sub">{{ $order->receiver_phone }}</div>
+                            <div class="cell-main">{{ $order->receiver?->receiver_name }}</div>
+                            <div class="cell-sub">{{ $order->receiver?->receiver_phone }}</div>
                         </td>
                         <td>
-                            <div class="cell-main">{{ optional($order->city)->name }}</div>
-                            <div class="cell-sub">{{ optional($order->area)->name }}</div>
+                            <div class="cell-main">{{ $order->receiver?->city?->name }}</div>
+                            <div class="cell-sub">{{ $order->receiver?->area?->name }}</div>
                         </td>
-                        <td><span class="badge {{ $order->payment_type === 'cod' ? 'badge-cod' : 'badge-prepaid' }}">{{ strtoupper($order->payment_type) }}</span></td>
+                        <td><span class="badge {{ ($order->payment?->payment_type ?? 'prepaid') === 'cod' ? 'badge-cod' : 'badge-prepaid' }}">{{ strtoupper($order->payment?->payment_type ?? 'prepaid') }}</span></td>
                         <td><span class="badge {{ $statusClass }}"><span class="badge-dot"></span>{{ $statusLabel }}</span></td>
                         <td><span style="font-size:.8rem;color:var(--text-dim);">{{ $order->created_at->format('d M Y') }}</span></td>
                         <td>
