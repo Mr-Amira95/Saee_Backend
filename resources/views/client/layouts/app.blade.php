@@ -294,6 +294,13 @@
 
             <span class="nav-label" style="margin-top:8px;">{{ __('Account') }}</span>
 
+            @if(auth()->user()->isClientMaster())
+            <a href="{{ route('client.users.index') }}" class="nav-item {{ request()->routeIs('client.users.*') ? 'active' : '' }}">
+                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                {{ __('Team') }}
+            </a>
+            @endif
+
             <a href="{{ route('client.account.index') }}" class="nav-item {{ request()->routeIs('client.account.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ __('Account') }}
