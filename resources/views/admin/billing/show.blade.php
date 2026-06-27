@@ -234,8 +234,8 @@
                                 <div class="cell-main" style="font-family:monospace;font-size:.82rem;">{{ $order->order_number ?? '#'.$order->id }}</div>
                             </td>
                             <td>
-                                <div class="cell-main">{{ $order->recipient_name }}</div>
-                                <div class="cell-sub">{{ $order->recipient_phone }}</div>
+                                <div class="cell-main">{{ $order->receiver?->receiver_name ?? '—' }}</div>
+                                <div class="cell-sub">{{ $order->receiver?->receiver_phone ?? '—' }}</div>
                             </td>
                             <td>{{ $order->delivered_at?->format('d M Y') ?? '—' }}</td>
                             <td style="text-align:right;font-weight:600;">
