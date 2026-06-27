@@ -314,12 +314,13 @@
                     
                     <div style="display:flex; gap: 8px;">
 @if($activeTicket->status !== 'resolved')
-                            <form action="{{ route('admin.support.resolve', $activeTicket) }}" method="POST">
+                            <form id="resolveForm" action="{{ route('admin.support.resolve', $activeTicket) }}" method="POST" style="display:none;">
                                 @csrf
-                                <button type="submit" class="btn-danger" style="padding: 6px 12px; font-size:.78rem">
-                                    Resolve Ticket
-                                </button>
                             </form>
+                            <button type="button" class="btn-danger" style="padding: 6px 12px; font-size:.78rem"
+                                onclick="document.getElementById('resolveConfirmModal').style.display='flex'">
+                                Resolve Ticket
+                            </button>
                         @else
                             <span class="badge badge-active" style="padding: 6px 12px; font-size: .78rem;">
                                 <span class="badge-dot"></span> Resolved
@@ -362,6 +363,19 @@
             @endif
         </div>
 
+    </div>
+
+    {{-- Resolve Confirmation Modal --}}
+    <div id="resolveConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;">
+        <div style="background:#0c1230;border:1px solid var(--bdr);border-radius:16px;padding:28px 30px;max-width:400px;width:90%;text-align:center;">
+            <div style="font-size:2.2rem;margin-bottom:14px;">✅</div>
+            <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">Resolve this ticket?</h3>
+            <p style="font-size:.84rem;color:var(--text-sub);margin-bottom:24px;line-height:1.6;">The client will be notified that their issue has been resolved. They won't be able to reply until the ticket is reopened.</p>
+            <div style="display:flex;gap:10px;">
+                <button type="button" class="btn-secondary" style="flex:1;" onclick="document.getElementById('resolveConfirmModal').style.display='none'">Cancel</button>
+                <button type="button" class="btn-danger" style="flex:1;" onclick="document.getElementById('resolveForm').submit()">Yes, Resolve</button>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -492,6 +506,10 @@
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 @endif
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') document.getElementById('resolveConfirmModal').style.display = 'none';
+    });
 })();
 </script>
 @endsection

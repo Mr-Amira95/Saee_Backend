@@ -312,13 +312,13 @@
 
                     <div style="display:flex; gap: 8px;">
                         @if($activeTicket->status !== 'resolved')
-                            <form method="POST" action="{{ route('client.support.close', $activeTicket->id) }}"
-                                  onsubmit="return confirm('{{ __('Close this ticket? You won\'t be able to reply after closing.') }}')">
+                            <form id="closeTicketForm" method="POST" action="{{ route('client.support.close', $activeTicket->id) }}" style="display:none;">
                                 @csrf
-                                <button type="submit" class="btn-danger" style="padding: 6px 12px; font-size:.78rem">
-                                    {{ __('Close Ticket') }}
-                                </button>
                             </form>
+                            <button type="button" class="btn-danger" style="padding: 6px 12px; font-size:.78rem"
+                                onclick="document.getElementById('closeConfirmModal').style.display='flex'">
+                                {{ __('Close Ticket') }}
+                            </button>
                         @else
                             <span class="badge badge-active" style="padding: 6px 12px; font-size: .78rem;">
                                 <span class="badge-dot"></span> {{ __('Resolved') }}
@@ -362,6 +362,19 @@
             @endif
         </div>
 
+    </div>
+
+    {{-- Close Ticket Confirmation Modal --}}
+    <div id="closeConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;">
+        <div style="background:#0c1230;border:1px solid var(--bdr);border-radius:16px;padding:28px 30px;max-width:400px;width:90%;text-align:center;">
+            <div style="font-size:2.2rem;margin-bottom:14px;">🔒</div>
+            <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">{{ __('Close this ticket?') }}</h3>
+            <p style="font-size:.84rem;color:var(--text-sub);margin-bottom:24px;line-height:1.6;">{{ __('Once closed, you won\'t be able to send more replies. Open a new ticket if you need further help.') }}</p>
+            <div style="display:flex;gap:10px;">
+                <button type="button" class="btn-secondary" style="flex:1;" onclick="document.getElementById('closeConfirmModal').style.display='none'">{{ __('Cancel') }}</button>
+                <button type="button" class="btn-danger" style="flex:1;" onclick="document.getElementById('closeTicketForm').submit()">{{ __('Yes, Close') }}</button>
+            </div>
+        </div>
     </div>
 
     {{-- New Ticket Modal --}}
@@ -505,6 +518,7 @@ setInterval(() => {
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
         document.getElementById('newTicketModal').style.display = 'none';
+        document.getElementById('closeConfirmModal').style.display = 'none';
         closeOrderDrop();
     }
 });
