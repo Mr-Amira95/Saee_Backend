@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Mail\UserInvitationMail;
 use App\Models\Area;
 use App\Models\City;
 use App\Models\ClientEmployee;
 use App\Models\ClientProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class ClientUserManagementTest extends TestCase
@@ -70,13 +72,9 @@ class ClientUserManagementTest extends TestCase
         $response->assertViewIs('client.users.index');
     }
 
-    public function test_master_user_can_create_user(): void
+    public function test_master_user_can_create_user_with_password(): void
     {
-        $response = $this->actingAs($this->masterUser)
-            ->get(route('client.users.create'));
-
-        $response->assertStatus(200);
-        $response->assertViewIs('client.users.create');
+        Mail::fake();
 
         $payload = [
             'name' => 'John Doe',
@@ -106,6 +104,48 @@ class ClientUserManagementTest extends TestCase
             'client_profile_id' => $this->clientProfile->id,
             'job_title' => 'Manager',
         ]);
+
+        Mail::assertSent(UserInvitationMail::class, function ($mail) use ($user) {
+            return $mail->user->id === $user->id;
+        });
+    }
+
+    public function test_master_user_can_create_user_without_password_and_triggers_invitation(): void
+    {
+        Mail::fake();
+
+        $payload = [
+            'name' => 'Jane Doe',
+            'email' => 'jane@example.com',
+            'phone' => '0797654321',
+            'job_title' => 'Assistant',
+        ];
+
+        $response = $this->actingAs($this->masterUser)
+            ->post(route('client.users.store'), $payload);
+
+        $response->assertRedirect(route('client.users.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'Jane Doe',
+            'email' => 'jane@example.com',
+            'phone' => '0797654321',
+            'role' => 'client_employee',
+        ]);
+
+        $user = User::where('email', 'jane@example.com')->first();
+        $this->assertNotNull($user->password); // Random password is set
+
+        $this->assertDatabaseHas('client_employees', [
+            'user_id' => $user->id,
+            'client_profile_id' => $this->clientProfile->id,
+            'job_title' => 'Assistant',
+        ]);
+
+        Mail::assertSent(UserInvitationMail::class, function ($mail) use ($user) {
+            return $mail->user->id === $user->id;
+        });
     }
 
     public function test_master_user_can_edit_and_update_user(): void

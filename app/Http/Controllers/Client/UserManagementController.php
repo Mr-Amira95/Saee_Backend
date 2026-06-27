@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Mail\UserInvitationMail;
 use App\Models\ClientEmployee;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -40,9 +44,9 @@ class UserManagementController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'job_title' => ['nullable', 'string', 'max:100'],
         ]);
 
@@ -50,9 +54,9 @@ class UserManagementController extends Controller
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email ?: null,
+            'email' => $request->email,
             'phone' => $request->phone,
-            'password' => $request->password,
+            'password' => $request->password ?: Str::random(40),
             'role' => 'client_employee',
             'status' => 'active',
         ]);
@@ -63,6 +67,9 @@ class UserManagementController extends Controller
             'job_title' => $request->job_title ?: null,
             'status' => 'active',
         ]);
+
+        $token = Password::createToken($user);
+        Mail::to($user->email)->send(new UserInvitationMail($user, $token));
 
         return redirect()->route('client.users.index')
             ->with('success', __('User created successfully.'));
@@ -84,14 +91,14 @@ class UserManagementController extends Controller
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'job_title' => ['nullable', 'string', 'max:100'],
         ]);
 
         $user->name = $request->name;
-        $user->email = $request->email ?: null;
+        $user->email = $request->email;
         $user->phone = $request->phone;
         if ($request->filled('password')) {
             $user->password = $request->password;
