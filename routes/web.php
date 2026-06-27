@@ -228,6 +228,8 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::post('orders/import',           [ClientOrderController::class, 'import'])->name('orders.import.submit');
         Route::get('orders/create',            [ClientOrderController::class, 'create'])->name('orders.create');
         Route::post('orders',                  [ClientOrderController::class, 'store'])->name('orders.store');
+        Route::get('orders/{order}/edit',      [ClientOrderController::class, 'edit'])->name('orders.edit');
+        Route::patch('orders/{order}',         [ClientOrderController::class, 'update'])->name('orders.update');
         Route::get('orders/{order}',           [ClientOrderController::class, 'show'])->name('orders.show');
         Route::delete('orders/{order}',        [ClientOrderController::class, 'destroy'])->name('orders.destroy');
         Route::get('orders',                   [ClientOrderController::class, 'index'])->name('orders.index');

@@ -107,6 +107,76 @@ class OrderController extends Controller
             ->with('success', "Order #{$order->order_number} created successfully.");
     }
 
+    public function edit(Order $order): View
+    {
+        $profile = $this->getClientProfile();
+        abort_if($order->client_profile_id !== $profile->id, 403);
+        abort_if($order->status !== 'pending', 403, 'Only pending orders can be edited.');
+
+        $order->load(['receiver', 'payment']);
+
+        $cities = City::where('is_active', true)
+            ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+
+        return view('client.orders.edit', compact('order', 'cities'));
+    }
+
+    public function update(Request $request, Order $order): RedirectResponse
+    {
+        $profile = $this->getClientProfile();
+        abort_if($order->client_profile_id !== $profile->id, 403);
+        abort_if($order->status !== 'pending', 403, 'Only pending orders can be edited.');
+
+        $validated = $request->validate([
+            'order_description'        => ['nullable', 'string', 'max:1000'],
+            'payment_type'             => ['required', 'in:cod,prepaid'],
+            'order_price'              => ['required_if:payment_type,cod', 'nullable', 'numeric', 'min:0'],
+            'delivery_on_customer'     => ['nullable', 'boolean'],
+            'delivery_customer_amount' => ['required_if:delivery_on_customer,1', 'nullable', 'numeric', 'min:0'],
+            'receiver_name'            => ['required', 'string', 'max:255'],
+            'receiver_phone'           => ['required', 'string', 'max:20'],
+            'city_id'                  => ['required', 'exists:cities,id'],
+            'area_id'                  => ['required', 'exists:areas,id'],
+            'address_text'             => ['required', 'string', 'max:1000'],
+            'address_location'         => ['nullable', 'string', 'max:255'],
+            'notes'                    => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $deliveryOnCustomer = $request->boolean('delivery_on_customer');
+
+        // Recalculate client delivery fee if city changed
+        $cityChanged = $order->receiver->city_id != (int) $validated['city_id'];
+        $clientDeliveryAmount = $cityChanged
+            ? $profile->getDeliveryPriceForCity((int) $validated['city_id'])
+            : $order->payment->client_delivery_amount;
+
+        $order->update([
+            'order_description' => $validated['order_description'] ?? null,
+            'notes'             => $validated['notes'] ?? null,
+        ]);
+
+        $order->payment->update([
+            'payment_type'             => $validated['payment_type'],
+            'order_amount'             => $validated['payment_type'] === 'cod' ? (float) ($validated['order_price'] ?? 0) : null,
+            'delivery_on_customer'     => $deliveryOnCustomer,
+            'customer_delivery_amount' => $deliveryOnCustomer ? (float) ($validated['delivery_customer_amount'] ?? 0) : null,
+            'client_delivery_amount'   => $clientDeliveryAmount,
+        ]);
+
+        $order->receiver->update([
+            'receiver_name'  => $validated['receiver_name'],
+            'receiver_phone' => $validated['receiver_phone'],
+            'city_id'        => (int) $validated['city_id'],
+            'area_id'        => (int) $validated['area_id'],
+            'address_text'   => $validated['address_text'],
+        ]);
+
+        return redirect()->route('client.orders.show', $order)
+            ->with('success', "Order #{$order->order_number} updated successfully.");
+    }
+
     public function show(Order $order): View
     {
         $profile = $this->getClientProfile();
@@ -143,7 +213,7 @@ class OrderController extends Controller
         return view('client.orders.import', compact('cities'));
     }
 
-    public function downloadTemplate(): Response
+    public function downloadTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         $headers = [
             'order_description',
