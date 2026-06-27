@@ -22,6 +22,8 @@ use App\Http\Controllers\Api\TrackOrderController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\WhatsAppWebhookController;
+use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Public\LegalController;
 use Illuminate\Support\Facades\Route;
 
@@ -179,6 +181,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('users',         [ClientUserController::class, 'store'])->name('api.users.store');
     Route::put('users/{employee}',    [ClientUserController::class, 'update'])->name('api.users.update');
     Route::delete('users/{employee}', [ClientUserController::class, 'destroy'])->name('api.users.destroy');
+
+    // Client invoices
+    Route::get('client/invoices', [InvoiceController::class, 'index'])->name('api.client.invoices.index');
+    Route::get('client/invoices/{invoice}', [InvoiceController::class, 'show'])->name('api.client.invoices.show');
+
+    // Client delivery billing invoices
+    Route::get('client/billing', [BillingController::class, 'index'])->name('api.client.billing.index');
+    Route::get('client/billing/{invoice}', [BillingController::class, 'show'])->name('api.client.billing.show');
+    Route::post('client/billing/{invoice}/pay', [BillingController::class, 'pay'])->name('api.client.billing.pay');
 
     Route::get('support', [SupportController::class, 'index'])
         ->name('api.support.index');
