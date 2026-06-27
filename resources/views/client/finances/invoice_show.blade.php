@@ -1,26 +1,26 @@
 @extends('client.layouts.app')
 
-@section('title', __('Invoice') . ' ' . $invoice->invoice_number)
-@section('page-title', __('Invoice Detail'))
+@section('title', 'Invoice ' . $invoice->invoice_number)
+@section('page-title', 'Invoice Detail')
 
 @section('head')
 <style>
     .invoice-card {
-        background: var(--card);
+        background: #0c1230;
         border: 1px solid var(--bdr);
         border-radius: 16px;
         padding: 40px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
         max-width: 800px;
         margin: 0 auto;
-        color: var(--text);
+        color: #fff;
     }
     
     .inv-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        border-bottom: 2px solid var(--bdr);
+        border-bottom: 2px solid rgba(255, 255, 255, 0.05);
         padding-bottom: 30px;
         margin-bottom: 30px;
     }
@@ -29,6 +29,14 @@
         display: flex;
         align-items: center;
         gap: 12px;
+    }
+
+    .inv-logo-text {
+        font-size: 1.25rem;
+        font-weight: 800;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: #fff;
     }
 
     .inv-meta {
@@ -63,7 +71,7 @@
         text-transform: uppercase;
         letter-spacing: .08em;
         margin-bottom: 12px;
-        border-bottom: 1px solid var(--bdr);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
         padding-bottom: 6px;
     }
 
@@ -74,7 +82,7 @@
     }
 
     .inv-bill-text strong {
-        color: var(--text);
+        color: #fff;
         font-size: 1rem;
     }
 
@@ -86,7 +94,7 @@
 
     .inv-table th {
         background: rgba(255, 255, 255, 0.02);
-        border-bottom: 1px solid var(--bdr);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         padding: 12px;
         font-size: .75rem;
         font-weight: 700;
@@ -97,7 +105,7 @@
 
     .inv-table td {
         padding: 12px;
-        border-bottom: 1px solid var(--bdr);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         font-size: .83rem;
         color: var(--text-sub);
     }
@@ -117,11 +125,11 @@
         justify-content: space-between;
         padding: 8px 0;
         font-size: .85rem;
-        border-bottom: 1px solid var(--bdr);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
 
     .inv-total-row.grand {
-        border-top: 1px solid var(--text-dim);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         border-bottom: none;
         padding-top: 12px;
         font-size: 1.15rem;
@@ -130,7 +138,7 @@
     }
 
     .inv-footer {
-        border-top: 1px solid var(--bdr);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
         padding-top: 20px;
         font-size: .78rem;
         color: var(--text-dim);
@@ -143,7 +151,7 @@
             background: #fff !important;
             color: #000 !important;
         }
-        .shell, .topbar, .sidebar, .page-hd, .btn-secondary, .logout-btn {
+        .shell, .topbar, .sidebar, .page-hd, .breadcrumb, .btn-secondary, .logout-btn {
             display: none !important;
         }
         .main, .content {
@@ -184,18 +192,18 @@
 
 @section('content')
     {{-- Top Controls --}}
-    <div class="page-hd" style="max-width: 800px; margin: 0 auto 18px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="page-hd" style="max-width: 800px; margin: 0 auto 18px;">
         <div class="page-hd-left">
             <h1>{{ __('Invoice Detail') }}</h1>
         </div>
-        <div style="display: flex; gap: 8px;">
-            <button onclick="window.print()" class="btn-primary" style="background: linear-gradient(135deg, #475569, #1e293b); box-shadow: none; display: flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: .83rem;">
+        <div>
+            <button onclick="window.print()" class="btn-primary" style="background: linear-gradient(135deg, #475569, #1e293b); box-shadow: none;">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
                 {{ __('Print Invoice') }}
             </button>
-            <a href="{{ route('client.financials.invoices') }}" class="btn-secondary" style="padding: 8px 14px; font-size: .83rem; text-decoration: none; display: inline-flex; align-items: center;">{{ __('Back to Invoices') }}</a>
+            <a href="{{ route('client.financials.invoices') }}" class="btn-secondary">{{ __('Back to Invoices') }}</a>
         </div>
     </div>
 
@@ -204,7 +212,7 @@
         {{-- Header --}}
         <div class="inv-header">
             <div class="inv-logo">
-                <img id="logoDarkPrint" src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
+                <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
             </div>
             
             <div class="inv-meta">
