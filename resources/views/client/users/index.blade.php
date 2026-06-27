@@ -13,7 +13,7 @@
 </div>
 
 @if(session('success'))
-    <div class="alert alert-success" style="margin-bottom:16px;">{{ session('success') }}</div>
+    <div class="flash flash-ok" style="margin-bottom:16px;">{{ session('success') }}</div>
 @endif
 
 <div class="card" style="padding:0;overflow:hidden;">
@@ -42,7 +42,13 @@
                             <span style="font-weight:600;">{{ $employee->user->name }}</span>
                         </div>
                     </td>
-                    <td style="color:var(--text-sub);font-size:.85rem;">{{ $employee->user->phone ?? '—' }}</td>
+                    <td style="color:var(--text-sub);font-size:.85rem;">
+                        @if($employee->user->phone)
+                            {{ ($employee->user->phone_country_code ?? '+962') . ' ' . $employee->user->phone }}
+                        @else
+                            —
+                        @endif
+                    </td>
                     <td style="color:var(--text-sub);font-size:.85rem;">{{ $employee->user->email ?? '—' }}</td>
                     <td style="font-size:.85rem;">{{ $employee->job_title ?? '—' }}</td>
                     <td>
@@ -55,7 +61,7 @@
                         <a href="{{ route('client.users.edit', $employee->id) }}" class="btn-secondary" style="font-size:.78rem;padding:5px 12px;text-decoration:none;display:inline-block;">
                             {{ __('Edit') }}
                         </a>
-                        <form method="POST" action="{{ route('client.users.destroy', $employee->id) }}" style="display:inline;" onsubmit="return confirm('{{ __('Remove this user? This action cannot be undone.') }}')">
+                        <form method="POST" action="{{ route('client.users.destroy', $employee->id) }}" style="display:inline;" onsubmit="return confirm('{{ __('Are you sure you want to delete this user? This action cannot be undone.') }}')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn-danger" style="font-size:.78rem;padding:5px 12px;">{{ __('Remove') }}</button>

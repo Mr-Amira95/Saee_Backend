@@ -55,24 +55,7 @@
             @error('job_title') <div class="form-error">{{ $message }}</div> @enderror
         </div>
 
-        <div style="background:rgba(255,255,255,0.02);padding:16px;border-radius:10px;border:1px solid var(--bdr);margin-top:20px;margin-bottom:10px;">
-            <div style="font-size:0.85rem;font-weight:700;margin-bottom:4px;color:var(--text);">{{ __('Change Password (Optional)') }}</div>
-            <p style="font-size:0.75rem;color:var(--text-sub);margin-bottom:14px;">
-                {{ __('Leave blank if you do not want to change the employee\'s password.') }}
-            </p>
-            
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label" for="password">{{ __('New Password') }}</label>
-                    <input id="password" type="password" name="password" class="form-input {{ $errors->has('password') ? 'has-error' : '' }}" placeholder="••••••••">
-                    @error('password') <div class="form-error">{{ $message }}</div> @enderror
-                </div>
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label" for="password_confirmation">{{ __('Confirm New Password') }}</label>
-                    <input id="password_confirmation" type="password" name="password_confirmation" class="form-input" placeholder="••••••••">
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <div style="display:flex;gap:10px;max-width:650px;">

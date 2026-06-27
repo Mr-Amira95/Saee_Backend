@@ -46,7 +46,6 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'job_title' => ['nullable', 'string', 'max:100'],
         ]);
 
@@ -56,7 +55,7 @@ class UserManagementController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'password' => $request->password ?: Str::random(40),
+            'password' => Str::random(40),
             'role' => 'client_employee',
             'status' => 'active',
         ]);
@@ -93,16 +92,12 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'job_title' => ['nullable', 'string', 'max:100'],
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
         $user->phone = $request->phone;
-        if ($request->filled('password')) {
-            $user->password = $request->password;
-        }
         $user->save();
 
         $employee->job_title = $request->job_title ?: null;

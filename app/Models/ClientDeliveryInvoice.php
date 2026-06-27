@@ -31,14 +31,16 @@ class ClientDeliveryInvoice extends Model
     protected function casts(): array
     {
         return [
-            'period_start'    => 'date',
-            'period_end'      => 'date',
-            'due_date'        => 'date',
+            'client_profile_id' => 'integer',
+            'created_by' => 'integer',
+            'period_start' => 'date',
+            'period_end' => 'date',
+            'due_date' => 'date',
             'delivery_amount' => 'decimal:2',
             'discount_amount' => 'decimal:2',
-            'net_amount'      => 'decimal:2',
-            'status'          => DeliveryInvoiceStatus::class,
-            'paid_at'         => 'datetime',
+            'net_amount' => 'decimal:2',
+            'status' => DeliveryInvoiceStatus::class,
+            'paid_at' => 'datetime',
         ];
     }
 

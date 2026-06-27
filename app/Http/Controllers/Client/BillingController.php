@@ -25,7 +25,7 @@ class BillingController extends Controller
     {
         $profile = $this->getClientProfile();
 
-        abort_if($invoice->client_profile_id !== $profile->id, 403);
+        abort_if((int) $invoice->client_profile_id !== $profile->id, 403);
 
         $invoice->load('orders.payment', 'orders.receiver.city');
 

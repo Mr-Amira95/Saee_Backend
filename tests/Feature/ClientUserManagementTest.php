@@ -72,45 +72,7 @@ class ClientUserManagementTest extends TestCase
         $response->assertViewIs('client.users.index');
     }
 
-    public function test_master_user_can_create_user_with_password(): void
-    {
-        Mail::fake();
-
-        $payload = [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'phone' => '0791234567',
-            'password' => 'Password123',
-            'password_confirmation' => 'Password123',
-            'job_title' => 'Manager',
-        ];
-
-        $response = $this->actingAs($this->masterUser)
-            ->post(route('client.users.store'), $payload);
-
-        $response->assertRedirect(route('client.users.index'));
-        $response->assertSessionHas('success');
-
-        $this->assertDatabaseHas('users', [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'phone' => '0791234567',
-            'role' => 'client_employee',
-        ]);
-
-        $user = User::where('email', 'john@example.com')->first();
-        $this->assertDatabaseHas('client_employees', [
-            'user_id' => $user->id,
-            'client_profile_id' => $this->clientProfile->id,
-            'job_title' => 'Manager',
-        ]);
-
-        Mail::assertSent(UserInvitationMail::class, function ($mail) use ($user) {
-            return $mail->user->id === $user->id;
-        });
-    }
-
-    public function test_master_user_can_create_user_without_password_and_triggers_invitation(): void
+    public function test_master_user_can_create_user_and_sends_invitation(): void
     {
         Mail::fake();
 
