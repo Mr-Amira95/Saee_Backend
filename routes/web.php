@@ -41,6 +41,7 @@ use App\Http\Controllers\Client\FinanceController as ClientFinanceController;
 use App\Http\Controllers\Client\AccountController as ClientAccountController;
 use App\Http\Controllers\Client\BankingDetailsController as ClientBankingController;
 use App\Http\Controllers\Client\CompanyController as ClientCompanyController;
+use App\Http\Controllers\Client\ReportController as ClientReportController;
 
 Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'ar'])) {
@@ -250,6 +251,10 @@ Route::prefix('client')->name('client.')->group(function () {
 
         // Finances
         Route::get('finances', [ClientFinanceController::class, 'index'])->name('finances.index');
+
+        // Reports
+        Route::get('reports',        [ClientReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/export', [ClientReportController::class, 'export'])->name('reports.export');
 
         // Helper: areas for a city (used by create/edit forms)
         Route::get('api/areas', function (\Illuminate\Http\Request $request) {
