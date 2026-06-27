@@ -79,13 +79,34 @@ class AuthController extends Controller
 
     public function sendResetLink(Request $request): RedirectResponse
     {
-        $request->validate(['email' => ['required', 'email']]);
+        $request->validate(['phone' => ['required', 'string']]);
 
-        $status = Password::sendResetLink($request->only('email'));
+        $submitted  = trim($request->input('phone'));
+        $digits     = preg_replace('/\D/', '', $submitted);
+        $candidates = array_unique(array_filter([$submitted, $digits]));
+        for ($strip = 1; $strip <= 3; $strip++) {
+            if (\strlen($digits) > $strip + 7) {
+                $local        = substr($digits, $strip);
+                $candidates[] = $local;
+                $candidates[] = '0' . $local;
+            }
+        }
+
+        $user = User::whereIn('phone', $candidates)->first();
+
+        if (! $user) {
+            return back()->withErrors(['phone' => 'No account was found with that phone number.']);
+        }
+
+        if (! $user->email) {
+            return back()->withErrors(['phone' => 'No email address is linked to this account. Please contact support.']);
+        }
+
+        $status = Password::sendResetLink(['email' => $user->email]);
 
         return $status === Password::ResetLinkSent
-            ? back()->with('status', 'A password reset link has been sent to your email address.')
-            : back()->withErrors(['email' => __($status)]);
+            ? back()->with('status', 'A password reset link has been sent to the email address on file.')
+            : back()->withErrors(['phone' => __($status)]);
     }
 
     private function redirectByRole(User $user): RedirectResponse
