@@ -131,7 +131,7 @@
         </div>
         <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.04); display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: .74rem; color: var(--text-dim);">{{ __('Status: Active') }}</span>
-            <a href="{{ route('client.finances.index') }}" class="btn-primary" style="padding: 6px 14px; font-size: .78rem; box-shadow: none; border-radius: 8px;">
+            <a href="{{ route('client.financials.invoices') }}" class="btn-primary" style="padding: 6px 14px; font-size: .78rem; box-shadow: none; border-radius: 8px;">
                 {{ __('Statement Details') }}
             </a>
         </div>
