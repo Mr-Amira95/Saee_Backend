@@ -137,6 +137,8 @@ class ProfileController extends Controller
                 'company_name'                    => $clientProfile->company_name,
                 'company_name_ar'                 => $clientProfile->company_name_ar,
                 'email'                           => $clientProfile->email,
+                'company_phone'                   => $clientProfile->company_phone,
+                'company_phone_country_code'      => $clientProfile->company_phone_country_code,
                 'commercial_register_number'      => $clientProfile->commercial_register_number,
                 'commercial_register_verified_at' => $clientProfile->commercial_register_verified_at?->toDateTimeString(),
                 'vat_number'                      => $clientProfile->vat_number,
@@ -187,7 +189,15 @@ class ProfileController extends Controller
             ], 404);
         }
 
-        $data = $request->validate([
+        $input = [];
+        foreach ($request->all() as $key => $value) {
+            $input[\Illuminate\Support\Str::snake($key)] = $value;
+        }
+        foreach ($request->allFiles() as $key => $value) {
+            $input[\Illuminate\Support\Str::snake($key)] = $value;
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($input, [
             'company_name'                => ['sometimes', 'string', 'max:255'],
             'company_name_ar'             => ['sometimes', 'nullable', 'string', 'max:255'],
             'email'                       => ['sometimes', 'nullable', 'email', 'max:255'],
@@ -201,11 +211,13 @@ class ProfileController extends Controller
             'logo'                        => ['sometimes', 'nullable', 'image', 'max:2048'],
         ]);
 
-        if ($request->hasFile('logo')) {
+        $data = $validator->validate();
+
+        if (isset($data['logo']) && $data['logo'] instanceof \Illuminate\Http\UploadedFile) {
             if ($clientProfile->logo_path) {
                 Storage::disk('public')->delete($clientProfile->logo_path);
             }
-            $data['logo_path'] = $request->file('logo')->store('logos', 'public');
+            $data['logo_path'] = $data['logo']->store('logos', 'public');
         }
 
         unset($data['logo']);
