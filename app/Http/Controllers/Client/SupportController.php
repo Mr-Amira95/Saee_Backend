@@ -16,6 +16,13 @@ use Illuminate\View\View;
 
 class SupportController extends Controller
 {
+    private function authorizeTicket(SupportTicket $ticket): void
+    {
+        $profile = $this->getClientProfile();
+        $profileUserIds = $profile->employees()->pluck('user_id')->push($profile->master_user_id);
+        abort_if(! $profileUserIds->contains($ticket->user_id), 403);
+    }
+
     public function index(Request $request): View
     {
         $profile = $this->getClientProfile();
@@ -101,7 +108,7 @@ class SupportController extends Controller
 
     public function sendMessage(Request $request, SupportTicket $ticket): RedirectResponse|JsonResponse
     {
-        abort_if($ticket->user_id !== Auth::id(), 403);
+        $this->authorizeTicket($ticket);
 
         $request->validate(['message' => ['required', 'string', 'max:2000']]);
 
@@ -133,7 +140,7 @@ class SupportController extends Controller
 
     public function close(SupportTicket $ticket): RedirectResponse
     {
-        abort_if($ticket->user_id !== Auth::id(), 403);
+        $this->authorizeTicket($ticket);
         abort_if($ticket->status === 'resolved', 422);
 
         $ticket->update(['status' => 'resolved']);
@@ -143,7 +150,7 @@ class SupportController extends Controller
 
     public function getMessages(Request $request, SupportTicket $ticket): JsonResponse
     {
-        abort_if($ticket->user_id !== Auth::id(), 403);
+        $this->authorizeTicket($ticket);
 
         $messages = $ticket->messages()
             ->when($request->filled('after'), fn ($q) => $q->where('id', '>', $request->after))

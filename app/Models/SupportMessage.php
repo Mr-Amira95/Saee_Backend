@@ -18,7 +18,8 @@ class SupportMessage extends Model
     protected function casts(): array
     {
         return [
-            'is_read' => 'boolean',
+            'sender_id' => 'integer',
+            'is_read'   => 'boolean',
         ];
     }
 
