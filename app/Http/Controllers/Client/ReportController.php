@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Client;
 
 use App\Models\Order;
-use App\Models\OrderPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -15,12 +14,13 @@ class ReportController extends Controller
         $profile = $this->getClientProfile();
 
         // Date range defaults: last 30 days
-        $from = $request->filled('from') ? $request->from : now()->subDays(29)->toDateString();
-        $to   = $request->filled('to')   ? $request->to   : now()->toDateString();
+        $from = $request->filled('from') ? $request->input('from') : now()->subDays(29)->toDateString();
+        $to   = $request->filled('to')   ? $request->input('to')   : now()->toDateString();
 
-        $base = Order::where('client_profile_id', $profile->id)
-            ->whereDate('created_at', '>=', $from)
-            ->whereDate('created_at', '<=', $to);
+        // Always qualify orders.created_at so JOIN queries remain unambiguous
+        $base = Order::where('orders.client_profile_id', $profile->id)
+            ->whereDate('orders.created_at', '>=', $from)
+            ->whereDate('orders.created_at', '<=', $to);
 
         // Status counts
         $statusCounts = (clone $base)
@@ -37,7 +37,7 @@ class ReportController extends Controller
         $completed = $delivered + $returned;
         $successRate = $completed > 0 ? round(($delivered / $completed) * 100, 1) : 0.0;
 
-        // COD & delivery amounts
+        // COD & delivery amounts (JOIN is now safe — all wheres are already qualified)
         $financials = (clone $base)
             ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
             ->select(
@@ -51,7 +51,7 @@ class ReportController extends Controller
 
         // Daily trend (zero-filled)
         $rawTrend = (clone $base)
-            ->select(DB::raw('date(created_at) as date'), DB::raw('count(*) as count'))
+            ->select(DB::raw('date(orders.created_at) as date'), DB::raw('count(*) as count'))
             ->groupBy('date')
             ->pluck('count', 'date')
             ->toArray();
