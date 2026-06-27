@@ -1,14 +1,53 @@
 @extends('client.layouts.app')
-@section('title', __('Import Orders'))
-@section('page-title', __('Import Orders'))
+@section('title', 'Bulk Import Orders')
+@section('page-title', 'Bulk Import Orders')
+
+@push('styles')
+<style>
+    .form-wrap { max-width: 100%; }
+    .form-section {
+        background: var(--card);
+        border: 1px solid var(--bdr);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 18px;
+        backdrop-filter: blur(8px);
+    }
+    .form-section-title {
+        font-size: .8rem;
+        font-weight: 700;
+        color: var(--text-sub);
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--bdr);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-section-title svg { color: var(--red-lt); opacity: .7; }
+    .form-actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; padding-top: 4px; }
+    .info-rows { display: flex; flex-direction: column; gap: 10px; }
+    .info-row  { display: flex; align-items: flex-start; gap: 12px; font-size: .84rem; color: var(--text-sub); }
+</style>
+@endpush
 
 @section('content')
 
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-    <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">{{ __('← Back') }}</a>
-    <div>
-        <h1 style="font-size:1.3rem;font-weight:800;">{{ __('Import Orders') }}</h1>
-        <p style="font-size:.82rem;color:var(--text-sub);">{{ __('Upload a CSV file to create multiple orders at once') }}</p>
+<div class="page-hd">
+    <div class="page-hd-left" style="display:flex;align-items:center;gap:10px;">
+        <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← Back</a>
+        <div>
+            <h1>Bulk Import Orders</h1>
+            <p>Upload a CSV file containing multiple orders to import them instantly.</p>
+        </div>
+    </div>
+    <div class="page-hd-right">
+        <a href="{{ route('client.orders.template') }}" class="btn-primary">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Download CSV Template
+        </a>
     </div>
 </div>
 
@@ -16,140 +55,151 @@
     <div class="flash flash-err">{{ session('error') }}</div>
 @endif
 
-<div class="grid-2" style="align-items:start;">
+<div class="form-wrap">
 
-    {{-- Upload form --}}
-    <div class="card">
-        <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;">{{ __('Upload CSV File') }}</div>
+    {{-- Upload Form --}}
+    <div class="form-section">
+        <div class="form-section-title">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            Upload CSV File
+        </div>
 
-        <form method="POST" action="{{ route('client.orders.import.submit') }}" enctype="multipart/form-data" id="importForm">
+        <form action="{{ route('client.orders.import.submit') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            <div id="dropzone"
-                style="border:2px dashed rgba(255,255,255,.1);border-radius:12px;padding:36px 24px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:18px;"
-                ondragover="event.preventDefault();this.style.borderColor='rgba(220,38,38,.4)';"
-                ondragleave="this.style.borderColor='rgba(255,255,255,.1)';"
-                ondrop="handleDrop(event)"
-                onclick="document.getElementById('csvInput').click()">
-                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 24 24" style="color:var(--text-dim);margin-bottom:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                <div style="font-size:.9rem;font-weight:600;color:var(--text-sub);">{{ __('Drop CSV file here, or click to browse') }}</div>
-                <div style="font-size:.78rem;color:var(--text-dim);margin-top:6px;">{{ __('Maximum file size: 4 MB') }}</div>
-                <div id="fileNameDisplay" style="display:none;margin-top:10px;">
-                    <span style="font-size:.84rem;color:var(--red-lt);font-weight:600;" id="fileNameText"></span>
+            <div style="padding: 30px; border: 2px dashed var(--bdr); border-radius: 12px; text-align: center; background: rgba(255,255,255,0.01); transition: border-color 0.2s;" id="dropzone">
+                <input type="file" name="csv_file" id="csv_file" style="display: none;" accept=".csv,.txt" required>
+                <div style="font-size: 2.2rem; color: var(--text-dim); margin-bottom: 12px;">
+                    <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="display: inline-block;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
+                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px;">
+                    Drag and drop your template CSV here, or <span style="color: var(--red-lt); cursor: pointer;" onclick="document.getElementById('csv_file').click()">browse</span>
+                </div>
+                <div style="font-size: 0.76rem; color: var(--text-dim);" id="file-name-display">Only CSV format is supported. Max file size: 4MB.</div>
             </div>
 
-            <input type="file" id="csvInput" name="csv_file" accept=".csv,.txt" style="display:none;" onchange="onFileSelect(this)">
-
-            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;" id="importBtn" disabled>
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                {{ __('Upload & Import') }}
-            </button>
+            <div class="form-actions" style="margin-top: 18px;">
+                <a href="{{ route('client.orders.index') }}" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary" id="submitBtn" disabled>Upload and Parse</button>
+            </div>
         </form>
+    </div>
 
-        <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;">
-            <div style="font-size:.82rem;color:var(--text-dim);">{{ __('Download the template to get started:') }}</div>
-            <a href="{{ route('client.orders.template') }}" class="btn-secondary" style="padding:7px 14px;font-size:.81rem;">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                {{ __('Download Template') }}
-            </a>
+    {{-- Reference: Cities & Areas --}}
+    <div class="form-section" style="background: rgba(12, 18, 48, 0.5);">
+        <div class="form-section-title" style="color: var(--text-sub);">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Cities &amp; Areas Reference — use these IDs in <code>city_id</code> and <code>area_id</code>
         </div>
-    </div>
-
-    {{-- Format guide --}}
-    <div class="card">
-        <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">{{ __('CSV Format Guide') }}</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-            @foreach([
-                ['order_description', 'Text', 'Optional — describe the shipment contents'],
-                ['payment_type', 'cod / prepaid', 'Required'],
-                ['delivery_on_customer', 'true / false', 'Whether delivery fee is charged to receiver'],
-                ['delivery_customer_amount', 'Number', 'Required if delivery_on_customer is true'],
-                ['order_price', 'Number', 'Required for COD orders'],
-                ['receiver_name', 'Text', 'Required'],
-                ['receiver_phone', 'Text', 'Required'],
-                ['city_id', 'Number', 'City ID (see admin for IDs)'],
-                ['area_id', 'Number', 'Area ID (must belong to the city)'],
-                ['address_text', 'Text', 'Required — full delivery address'],
-                ['notes', 'Text', 'Optional — special instructions'],
-            ] as [$col, $type, $desc])
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);">
-                <code style="font-size:.74rem;background:rgba(255,255,255,.04);padding:2px 7px;border-radius:5px;flex-shrink:0;color:var(--red-lt);">{{ $col }}</code>
-                <div>
-                    <span style="font-size:.76rem;font-weight:600;color:var(--text-sub);">{{ $type }}</span>
-                    <div style="font-size:.75rem;color:var(--text-dim);">{{ $desc }}</div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</div>
-
-{{-- Validation errors table --}}
-@if(isset($has_errors) && $has_errors && isset($results))
-<div class="card" style="margin-top:20px;">
-    <div style="font-size:.88rem;font-weight:700;color:#f87171;margin-bottom:14px;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        Validation Errors — Fix these issues and re-upload
-    </div>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>{{ __('Row') }}</th>
-                    <th>{{ __('Receiver') }}</th>
-                    <th>{{ __('Errors') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($results as $result)
-                @if(!empty($result['errors']))
-                <tr>
-                    <td style="color:var(--text-dim);">Row {{ $result['row_number'] }}</td>
-                    <td>{{ $result['data']['receiver_name'] ?? '—' }}</td>
-                    <td>
-                        <ul style="margin:0;padding-left:16px;">
-                            @foreach($result['errors'] as $err)
-                            <li style="font-size:.81rem;color:#fca5a5;margin-bottom:2px;">{{ $err }}</li>
+        <div style="max-height: 220px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--bdr);">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                <thead>
+                    <tr style="position: sticky; top: 0; background: var(--card);">
+                        <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 80px;">City ID</th>
+                        <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">City Name</th>
+                        <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 90px;">Area ID</th>
+                        <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">Area Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($cities as $city)
+                        @if($city->areas->isEmpty())
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt);">{{ $city->id }}</td>
+                                <td style="padding: 7px 14px; color: var(--text); font-weight: 600;">{{ $city->name }}</td>
+                                <td colspan="2" style="padding: 7px 14px; color: var(--text-dim); font-style: italic;">No areas</td>
+                            </tr>
+                        @else
+                            @foreach($city->areas as $loop2 => $area)
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                    @if($loop2 === 0)
+                                        <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt); vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ $city->id }}</td>
+                                        <td style="padding: 7px 14px; color: var(--text); font-weight: 600; vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ $city->name }}</td>
+                                    @endif
+                                    <td style="padding: 7px 14px; color: var(--text-dim); padding-left: 20px;">{{ $area->id }}</td>
+                                    <td style="padding: 7px 14px; color: var(--text);">{{ $area->name }}</td>
+                                </tr>
                             @endforeach
-                        </ul>
-                    </td>
-                </tr>
-                @endif
-                @endforeach
-            </tbody>
-        </table>
+                        @endif
+                    @endforeach
+                    @if($cities->isEmpty())
+                        <tr><td colspan="4" style="padding: 14px; color: var(--text-dim); text-align: center;">No active cities found.</td></tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    {{-- Template Formatting Guidelines --}}
+    <div class="form-section" style="background: rgba(12, 18, 48, 0.5);">
+        <div class="form-section-title" style="color: var(--text-sub);">
+            Template Formatting Guidelines
+        </div>
+        <div class="info-rows">
+            <div class="info-row">
+                <span style="font-weight: 700; color: var(--text); width: 220px;">payment_type</span>
+                <strong>Must be either <code>cod</code> or <code>prepaid</code> (lowercase).</strong>
+            </div>
+            <div class="info-row">
+                <span style="font-weight: 700; color: var(--text); width: 220px;">delivery_on_customer</span>
+                <strong>Use <code>true</code> if the customer pays the delivery fee, or <code>false</code> if it is charged to you.</strong>
+            </div>
+            <div class="info-row">
+                <span style="font-weight: 700; color: var(--text); width: 220px;">order_price</span>
+                <strong>The amount driver should collect from customer for COD goods. Leave as <code>0.00</code> for prepaid orders.</strong>
+            </div>
+            <div class="info-row">
+                <span style="font-weight: 700; color: var(--text); width: 220px;">city_id &amp; area_id</span>
+                <strong>Must match database IDs. Make sure the <code>area_id</code> belongs to the specified <code>city_id</code>, otherwise the import will show errors.</strong>
+            </div>
+        </div>
+    </div>
+
 </div>
-@endif
 
 @endsection
 
 @push('scripts')
 <script>
-function onFileSelect(input) {
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        document.getElementById('fileNameText').textContent = file.name;
-        document.getElementById('fileNameDisplay').style.display = 'block';
-        document.getElementById('importBtn').disabled = false;
-    }
-}
+    const fileInput = document.getElementById('csv_file');
+    const submitBtn = document.getElementById('submitBtn');
+    const dropzone  = document.getElementById('dropzone');
+    const fileNameDisplay = document.getElementById('file-name-display');
 
-function handleDrop(e) {
-    e.preventDefault();
-    document.getElementById('dropzone').style.borderColor = 'rgba(255,255,255,.1)';
-    const files = e.dataTransfer.files;
-    if (files && files[0]) {
-        document.getElementById('csvInput').files = files;
-        onFileSelect(document.getElementById('csvInput'));
-    }
-}
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files.length > 0) {
+            const file = this.files[0];
+            fileNameDisplay.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            fileNameDisplay.style.color = '#3b82f6';
+            submitBtn.disabled = false;
+            dropzone.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+        } else {
+            fileNameDisplay.textContent = 'Only CSV format is supported. Max file size: 4MB.';
+            fileNameDisplay.style.color = 'var(--text-dim)';
+            submitBtn.disabled = true;
+            dropzone.style.borderColor = 'var(--bdr)';
+        }
+    });
 
-document.getElementById('importForm').addEventListener('submit', () => {
-    const btn = document.getElementById('importBtn');
-    btn.disabled = true;
-    btn.style.opacity = '.6';
-});
+    dropzone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        this.style.borderColor = 'var(--red-lt)';
+        this.style.background = 'rgba(220, 38, 38, 0.02)';
+    });
+
+    dropzone.addEventListener('dragleave', function () {
+        this.style.borderColor = 'var(--bdr)';
+        this.style.background = 'rgba(255, 255, 255, 0.01)';
+    });
+
+    dropzone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.style.borderColor = 'var(--bdr)';
+        this.style.background = 'rgba(255, 255, 255, 0.01)';
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            fileInput.dispatchEvent(new Event('change'));
+        }
+    });
 </script>
 @endpush

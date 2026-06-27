@@ -21,6 +21,57 @@
     </div>
 </div>
 
+{{-- Statistics --}}
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px;animation:fu .5s both;">
+    {{-- Pending orders --}}
+    <div class="card" style="padding:18px 20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="15" height="15" fill="none" stroke="#fbbf24" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <span style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('Pending Orders') }}</span>
+        </div>
+        <div style="font-size:2rem;font-weight:800;color:#fbbf24;line-height:1;margin-bottom:5px;">{{ number_format($stats['pending']) }}</div>
+        <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Pending, in transit & rejected') }}</div>
+    </div>
+
+    {{-- Delivered orders --}}
+    <div class="card" style="padding:18px 20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="15" height="15" fill="none" stroke="#4ade80" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <span style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('Delivered') }}</span>
+        </div>
+        <div style="font-size:2rem;font-weight:800;color:#4ade80;line-height:1;margin-bottom:5px;">{{ number_format($stats['delivered']) }}</div>
+        <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Successfully delivered') }}</div>
+    </div>
+
+    {{-- Returned orders --}}
+    <div class="card" style="padding:18px 20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:rgba(148,163,184,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="15" height="15" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+            </div>
+            <span style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('Returned') }}</span>
+        </div>
+        <div style="font-size:2rem;font-weight:800;color:#94a3b8;line-height:1;margin-bottom:5px;">{{ number_format($stats['returned']) }}</div>
+        <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Returned to sender') }}</div>
+    </div>
+
+    {{-- Pending cash --}}
+    <div class="card" style="padding:18px 20px;border-color:var(--bdr-red);background:rgba(220,38,38,.04);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:rgba(220,38,38,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="15" height="15" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <span style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('Pending Cash') }}</span>
+        </div>
+        <div style="font-size:1.7rem;font-weight:800;color:#f87171;line-height:1;margin-bottom:5px;">{{ number_format($stats['pending_cash'], 2) }} <span style="font-size:1rem;font-weight:600;">JD</span></div>
+        <div style="font-size:.72rem;color:var(--text-dim);">{{ __('With driver or company') }}</div>
+    </div>
+</div>
+
 {{-- Filters --}}
 <form method="GET" action="{{ route('client.orders.index') }}">
 <div class="filter-bar">
@@ -58,9 +109,8 @@
                 <tr>
                     <th>{{ __('Order #') }}</th>
                     <th>{{ __('Receiver') }}</th>
-                    <th>{{ __('Location') }}</th>
-                    <th>{{ __('Type') }}</th>
                     <th>{{ __('COD Amount') }}</th>
+                    <th>{{ __('Del. Fee') }}</th>
                     <th>{{ __('Status') }}</th>
                     <th>{{ __('Date') }}</th>
                     <th></th>
@@ -69,6 +119,8 @@
             <tbody>
                 @forelse($orders as $order)
                 @php
+                    $payment = $order->payment;
+                    $receiver = $order->receiver;
                     $statusClass = match($order->status) {
                         'pending'   => 'badge-pending',
                         'picked_up' => 'badge-info',
@@ -95,17 +147,19 @@
                         @endif
                     </td>
                     <td>
-                        <div class="cell-main">{{ $order->receiver_name }}</div>
-                        <div class="cell-sub">{{ $order->receiver_phone }}</div>
+                        <div class="cell-main">{{ optional($receiver)->receiver_name }}</div>
+                        <div class="cell-sub">{{ optional($receiver)->receiver_phone }}</div>
                     </td>
                     <td>
-                        <div class="cell-main">{{ optional($order->city)->name }}</div>
-                        <div class="cell-sub">{{ optional($order->area)->name }}</div>
+                        @if(optional($payment)->payment_type === 'cod' && optional($payment)->order_amount)
+                            <span style="font-weight:700;color:#fbbf24;">{{ number_format($payment->order_amount, 2) }} JD</span>
+                        @else
+                            <span style="color:var(--text-dim);">—</span>
+                        @endif
                     </td>
-                    <td><span class="badge {{ $order->payment_type === 'cod' ? 'badge-cod' : 'badge-prepaid' }}">{{ strtoupper($order->payment_type) }}</span></td>
                     <td>
-                        @if($order->payment_type === 'cod' && $order->order_price)
-                            <span style="font-weight:700;color:#fbbf24;">{{ number_format($order->order_price, 2) }} JD</span>
+                        @if(optional($payment)->delivery_on_customer && optional($payment)->customer_delivery_amount)
+                            <span style="font-weight:600;color:#60a5fa;">{{ number_format($payment->customer_delivery_amount, 2) }} JD</span>
                         @else
                             <span style="color:var(--text-dim);">—</span>
                         @endif
@@ -127,7 +181,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" style="text-align:center;padding:40px;color:var(--text-dim);">
+                    <td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">
                         {{ __('No orders found.') }}
                         <a href="{{ route('client.orders.create') }}" style="color:var(--red-lt);text-decoration:none;"> {{ __('Create your first order →') }}</a>
                     </td>

@@ -168,7 +168,7 @@
                 @endif
                 <div class="info-row">
                     <span>Shipping Fee:</span>
-                    <strong>{{ number_format($order->payment?->client_delivery_amount ?? 0, 2) }} JD ({{ $order->payment?->delivery_on_customer ? 'Paid by Customer' : 'Paid by Client' }})</strong>
+                    <strong>{{ number_format($order->payment?->client_delivery_amount ?? 0, 2) }} JD</strong>
                 </div>
                 @if($order->payment?->delivery_on_customer)
                     <div class="info-row">

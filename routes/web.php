@@ -222,6 +222,8 @@ Route::prefix('client')->name('client.')->group(function () {
 
         // Orders
         Route::get('orders/import/template',   [ClientOrderController::class, 'downloadTemplate'])->name('orders.template');
+        Route::get('orders/import/review',     [ClientOrderController::class, 'showReview'])->name('orders.import.review');
+        Route::post('orders/import/confirm',   [ClientOrderController::class, 'storeConfirmed'])->name('orders.import.confirm');
         Route::get('orders/import',            [ClientOrderController::class, 'showImport'])->name('orders.import');
         Route::post('orders/import',           [ClientOrderController::class, 'import'])->name('orders.import.submit');
         Route::get('orders/create',            [ClientOrderController::class, 'create'])->name('orders.create');

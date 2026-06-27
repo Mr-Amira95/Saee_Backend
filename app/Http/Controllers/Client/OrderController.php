@@ -21,8 +21,23 @@ class OrderController extends Controller
     {
         $profile = $this->getClientProfile();
 
-        $query = Order::where('client_profile_id', $profile->id)
-            ->with(['receiver.city', 'receiver.area']);
+        $clientId = $profile->id;
+
+        $stats = [
+            'pending'   => Order::where('client_profile_id', $clientId)->whereIn('status', ['pending', 'picked_up', 'rejected'])->count(),
+            'delivered' => Order::where('client_profile_id', $clientId)->where('status', 'delivered')->count(),
+            'returned'  => Order::where('client_profile_id', $clientId)->where('status', 'returned')->count(),
+            'pending_cash' => Order::where('client_profile_id', $clientId)
+                ->whereIn('payment_status', ['with_driver', 'with_company'])
+                ->whereNotIn('status', ['returned', 'cancelled'])
+                ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
+                ->where('order_payments.payment_type', 'cod')
+                ->selectRaw('COALESCE(SUM(order_payments.order_amount + IF(order_payments.delivery_on_customer = 1, COALESCE(order_payments.customer_delivery_amount, 0), 0)), 0) as total')
+                ->value('total') ?? 0,
+        ];
+
+        $query = Order::where('client_profile_id', $clientId)
+            ->with(['receiver', 'payment']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -49,12 +64,15 @@ class OrderController extends Controller
 
         $orders = $query->latest()->paginate(20)->withQueryString();
 
-        return view('client.orders.index', compact('orders', 'profile'));
+        return view('client.orders.index', compact('orders', 'profile', 'stats'));
     }
 
     public function create(): View
     {
-        $cities = City::where('is_active', true)->orderBy('name')->get();
+        $cities = City::where('is_active', true)
+            ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
+            ->orderBy('name')
+            ->get();
 
         return view('client.orders.create', compact('cities'));
     }
@@ -74,6 +92,7 @@ class OrderController extends Controller
             'city_id'                  => ['required', 'exists:cities,id'],
             'area_id'                  => ['required', 'exists:areas,id'],
             'address_text'             => ['required', 'string', 'max:1000'],
+            'address_location'         => ['nullable', 'string', 'max:255'],
             'notes'                    => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -116,7 +135,12 @@ class OrderController extends Controller
 
     public function showImport(): View
     {
-        return view('client.orders.import');
+        $cities = City::where('is_active', true)
+            ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+
+        return view('client.orders.import', compact('cities'));
     }
 
     public function downloadTemplate(): Response
@@ -165,15 +189,14 @@ class OrderController extends Controller
         ]);
     }
 
-    public function import(Request $request): RedirectResponse|View
+    public function import(Request $request)
     {
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt|max:4096',
         ]);
 
-        $profile = $this->getClientProfile();
-        $path    = $request->file('csv_file')->getRealPath();
-        $data    = [];
+        $path = $request->file('csv_file')->getRealPath();
+        $data = [];
 
         if (($handle = fopen($path, 'r')) !== false) {
             $headers = fgetcsv($handle, 1000, ',');
@@ -181,7 +204,7 @@ class OrderController extends Controller
             $expected = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes'];
 
             if (! $headers || count(array_intersect($headers, $expected)) < 5) {
-                return redirect()->back()->with('error', 'Invalid CSV format. Please use the provided template.');
+                return redirect()->back()->with('error', 'Invalid CSV format. Please make sure to use the template provided.');
             }
 
             while (($row = fgetcsv($handle, 1000, ',')) !== false) {
@@ -219,6 +242,11 @@ class OrderController extends Controller
                 $rowErrors[] = "delivery_on_customer must be 'true' or 'false'.";
             }
 
+            $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
+            if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
+                $rowErrors[] = 'delivery_customer_amount must be a valid number.';
+            }
+
             $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
             if (! $cityId || ! City::where('id', $cityId)->exists()) {
                 $rowErrors[] = "City ID [{$row['city_id']}] does not exist.";
@@ -226,7 +254,7 @@ class OrderController extends Controller
 
             $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
             if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
-                $rowErrors[] = "Area ID [{$row['area_id']}] does not belong to City [{$row['city_id']}].";
+                $rowErrors[] = "Area ID [{$row['area_id']}] does not exist or does not belong to City [{$row['city_id']}].";
             }
 
             if (empty($row['receiver_name']))  { $rowErrors[] = 'Receiver name is required.'; }
@@ -241,43 +269,76 @@ class OrderController extends Controller
         }
 
         if ($hasErrors) {
-            return view('client.orders.import', [
-                'results'    => $results,
-                'has_errors' => true,
-            ]);
+            $cities = City::where('is_active', true)
+                ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
+                ->orderBy('name')
+                ->get();
+
+            return view('client.orders.import_preview', compact('results', 'cities'));
         }
 
-        $batchNumber   = 'BATCH-' . now()->format('ymd') . '-' . $profile->id . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
-        $importedCount = 0;
+        session(['client_import_pending_rows' => array_column($results, 'data')]);
 
-        foreach ($results as $item) {
-            $row = $item['data'];
+        return redirect()->route('client.orders.import.review');
+    }
+
+    public function showReview(): View|RedirectResponse
+    {
+        $rows = session('client_import_pending_rows');
+
+        if (empty($rows)) {
+            return redirect()->route('client.orders.import');
+        }
+
+        $cities = City::where('is_active', true)
+            ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+
+        return view('client.orders.import_confirm', compact('rows', 'cities'));
+    }
+
+    public function storeConfirmed(Request $request): RedirectResponse
+    {
+        $rows    = $request->input('rows', []);
+        $profile = $this->getClientProfile();
+
+        if (empty($rows)) {
+            return redirect()->route('client.orders.import')->with('error', 'No order data found. Please re-upload your file.');
+        }
+
+        $batchNumber = 'BATCH-' . now()->format('ymd') . '-' . $profile->id . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
+
+        foreach ($rows as $rowData) {
             $this->orderService->createOrder([
                 'client_profile_id'        => $profile->id,
-                'order_description'        => $row['order_description'] ?? null,
-                'payment_type'             => strtolower($row['payment_type']),
-                'delivery_on_customer'     => filter_var($row['delivery_on_customer'], FILTER_VALIDATE_BOOLEAN),
-                'delivery_customer_amount' => $row['delivery_customer_amount'] ? (float) $row['delivery_customer_amount'] : 0.00,
-                'order_price'              => $row['order_price'] ? (float) $row['order_price'] : 0.00,
-                'receiver_name'            => $row['receiver_name'],
-                'receiver_phone'           => $row['receiver_phone'],
-                'city_id'                  => (int) $row['city_id'],
-                'area_id'                  => (int) $row['area_id'],
-                'address_text'             => $row['address_text'],
-                'notes'                    => $row['notes'] ?? null,
+                'order_description'        => $rowData['order_description'] ?? null,
+                'payment_type'             => strtolower($rowData['payment_type']),
+                'delivery_on_customer'     => filter_var($rowData['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN),
+                'delivery_customer_amount' => isset($rowData['delivery_customer_amount']) ? (float) $rowData['delivery_customer_amount'] : 0.00,
+                'order_price'              => isset($rowData['order_price']) ? (float) $rowData['order_price'] : 0.00,
+                'receiver_name'            => $rowData['receiver_name'],
+                'receiver_phone'           => $rowData['receiver_phone'],
+                'city_id'                  => (int) $rowData['city_id'],
+                'area_id'                  => (int) $rowData['area_id'],
+                'address_text'             => $rowData['address_text'],
+                'notes'                    => $rowData['notes'] ?? null,
                 'driver_id'                => null,
                 'batch_number'             => $batchNumber,
             ], Auth::user());
-            $importedCount++;
         }
+
+        session()->forget('client_import_pending_rows');
+
+        $count = count($rows);
 
         rescue(fn () => app(SupportNotificationService::class)->notifyAdminsOrdersImported(
             $profile->company_name,
-            $importedCount,
+            $count,
             $batchNumber,
         ));
 
         return redirect()->route('client.orders.index')
-            ->with('success', "Successfully imported {$importedCount} orders. Batch: {$batchNumber}");
+            ->with('success', "Successfully imported {$count} orders. Batch: {$batchNumber}");
     }
 }
