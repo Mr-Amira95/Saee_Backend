@@ -133,6 +133,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('orders/{order}', [OrderController::class, 'show'])
         ->name('api.orders.show');
 
+    Route::put('orders/{order}', [OrderController::class, 'update'])
+        ->name('api.orders.update');
+
     Route::delete('orders/{order}', [OrderController::class, 'destroy'])
         ->name('api.orders.destroy');
 

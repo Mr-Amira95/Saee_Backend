@@ -430,6 +430,104 @@ class OrderController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, Order $order): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only client accounts can edit orders.',
+            ], 403);
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile || (int) $order->client_profile_id !== (int) $clientProfile->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending orders can be edited.',
+                'code'    => 'INVALID_STATUS_TRANSITION',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'order_description'        => ['nullable', 'string', 'max:1000'],
+            'payment_type'             => ['required', 'in:cod,prepaid'],
+            'order_price'              => ['nullable', 'numeric', 'min:0'],
+            'delivery_on_customer'     => ['nullable', 'boolean'],
+            'delivery_customer_amount' => ['nullable', 'numeric', 'min:0'],
+            'receiver_name'            => ['required', 'string', 'max:255'],
+            'receiver_phone'           => ['required', 'string', 'max:20'],
+            'city_id'                  => ['required', 'integer', 'exists:cities,id'],
+            'area_id'                  => ['required', 'integer', 'exists:areas,id'],
+            'address_text'             => ['required', 'string', 'max:1000'],
+            'notes'                    => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($validated['payment_type'] === 'cod' && ! $request->filled('order_price')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors'  => ['order_price' => ['Order price is required for COD orders.']],
+            ], 422);
+        }
+
+        $deliveryOnCustomer = $request->boolean('delivery_on_customer');
+
+        if ($deliveryOnCustomer && ! $request->filled('delivery_customer_amount')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors'  => ['delivery_customer_amount' => ['Delivery customer amount is required when delivery is on customer.']],
+            ], 422);
+        }
+
+        $order->load(['payment', 'receiver']);
+
+        $cityChanged = $order->receiver->city_id !== (int) $validated['city_id'];
+        $clientDeliveryAmount = $cityChanged
+            ? $clientProfile->getDeliveryPriceForCity((int) $validated['city_id'])
+            : $order->payment->client_delivery_amount;
+
+        $order->update([
+            'order_description' => $validated['order_description'] ?? null,
+            'notes'             => $validated['notes'] ?? null,
+        ]);
+
+        $order->payment->update([
+            'payment_type'             => $validated['payment_type'],
+            'order_amount'             => $validated['payment_type'] === 'cod' ? (float) ($validated['order_price'] ?? 0) : null,
+            'delivery_on_customer'     => $deliveryOnCustomer,
+            'customer_delivery_amount' => $deliveryOnCustomer ? (float) ($validated['delivery_customer_amount'] ?? 0) : null,
+            'client_delivery_amount'   => $clientDeliveryAmount,
+        ]);
+
+        $order->receiver->update([
+            'receiver_name'  => $validated['receiver_name'],
+            'receiver_phone' => $validated['receiver_phone'],
+            'city_id'        => (int) $validated['city_id'],
+            'area_id'        => (int) $validated['area_id'],
+            'address_text'   => $validated['address_text'],
+        ]);
+
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order updated successfully.',
+            'data'    => new OrderResource($order),
+        ]);
+    }
+
     public function cancel(Request $request, Order $order): JsonResponse
     {
         /** @var \App\Models\User $user */
