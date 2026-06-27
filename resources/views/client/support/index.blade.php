@@ -43,8 +43,11 @@
     .chat-send-btn { width: 38px; height: 38px; border-radius: 9px; background: var(--red); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; transition: opacity .15s; flex-shrink: 0; }
     .chat-send-btn:hover { opacity: .85; }
     .chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-dim); gap: 10px; }
-    .status-open     { color: #4ade80; background: rgba(34,197,94,.1); }
-    .status-resolved { color: #94a3b8; background: rgba(148,163,184,.1); }
+    .status-open        { color: #4ade80; background: rgba(34,197,94,.1); }
+    .status-in_progress { color: #f59e0b; background: rgba(245,158,11,.1); }
+    .status-resolved    { color: #94a3b8; background: rgba(148,163,184,.1); }
+    .toast-notif { position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--bdr);color:var(--text);padding:12px 18px;border-radius:10px;font-size:.84rem;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:9999;animation:toastIn .2s ease; }
+    @keyframes toastIn { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:translateY(0); } }
 </style>
 @endpush
 
@@ -78,7 +81,7 @@
                 </div>
                 <div class="ticket-title">{{ $ticket->title }}</div>
                 <div class="ticket-sender">
-                    <span class="badge {{ $ticket->status === 'open' ? 'status-open' : 'status-resolved' }}" style="font-size:.67rem;padding:2px 7px;">{{ ucfirst($ticket->status) }}</span>
+                    <span class="badge status-{{ $ticket->status }}" style="font-size:.67rem;padding:2px 7px;">{{ ucfirst(str_replace('_',' ',$ticket->status)) }}</span>
                 </div>
             </a>
             @empty
@@ -95,10 +98,10 @@
                 <h4>{{ $activeTicket->title }}</h4>
                 <div class="chat-head-meta">
                     {{ $activeTicket->ticket_number }} &middot;
-                    <span class="badge {{ $activeTicket->status === 'open' ? 'status-open' : 'status-resolved' }}" style="font-size:.68rem;padding:2px 7px;">{{ ucfirst($activeTicket->status) }}</span>
+                    <span class="badge status-{{ $activeTicket->status }}" style="font-size:.68rem;padding:2px 7px;">{{ ucfirst(str_replace('_',' ',$activeTicket->status)) }}</span>
                 </div>
             </div>
-            @if($activeTicket->status === 'open')
+            @if($activeTicket->status !== 'resolved')
             <form method="POST" action="{{ route('client.support.close', $activeTicket->id) }}"
                   onsubmit="return confirm('{{ __('Close this ticket? You won\'t be able to reply after closing.') }}')">
                 @csrf
@@ -120,7 +123,7 @@
             @endforeach
         </div>
 
-        @if($activeTicket->status === 'open')
+        @if($activeTicket->status !== 'resolved')
         <div class="chat-footer">
             <textarea class="chat-input" id="msgInput" placeholder="{{ __('Type a message…') }}" rows="1"
                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
@@ -243,6 +246,14 @@ scrollToBottom();
 
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
 
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast-notif';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+}
+
 // Poll for new messages
 setInterval(() => {
     fetch(`{{ route('client.support.messages', ['ticket' => $activeTicket->id]) }}?after=${lastMsgId}`, {
@@ -250,17 +261,22 @@ setInterval(() => {
     }).then(r => r.json()).then(msgs => {
         if (!msgs.length) return;
         const container = document.getElementById('chatMessages');
+        let hasNew = false;
         msgs.forEach(m => {
+            lastMsgId = Math.max(lastMsgId, m.id);
             if (m.sender_id !== MY_USER_ID) {
                 const el = document.createElement('div');
                 el.className = 'msg-bubble theirs';
                 el.dataset.id = m.id;
                 el.innerHTML = `<div class="msg-inner">${escHtml(m.message)}</div><div class="msg-meta">${escHtml(m.sender_name)} · ${m.created_at}</div>`;
                 container.appendChild(el);
-                lastMsgId = m.id;
+                hasNew = true;
             }
         });
-        scrollToBottom();
+        if (hasNew) {
+            scrollToBottom();
+            showToast('{{ __('New message from support') }}');
+        }
     }).catch(() => {});
 }, 4000);
 @endif
