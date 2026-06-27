@@ -38,6 +38,7 @@ use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\SupportController as ClientSupportController;
 use App\Http\Controllers\Client\NotificationController as ClientNotificationController;
 use App\Http\Controllers\Client\FinanceController as ClientFinanceController;
+use App\Http\Controllers\Client\BillingController as ClientPortalBillingController;
 use App\Http\Controllers\Client\AccountController as ClientAccountController;
 use App\Http\Controllers\Client\BankingDetailsController as ClientBankingController;
 use App\Http\Controllers\Client\CompanyController as ClientCompanyController;
@@ -251,6 +252,14 @@ Route::prefix('client')->name('client.')->group(function () {
 
         // Finances
         Route::get('finances', [ClientFinanceController::class, 'index'])->name('finances.index');
+
+        // Financials (read-only overview for client)
+        Route::get('financials',          [ClientFinanceController::class, 'index'])->name('financials.index');
+        Route::get('financials/invoices', [ClientFinanceController::class, 'invoices'])->name('financials.invoices');
+
+        // Billing (read-only delivery invoices for client)
+        Route::get('billing',           [ClientPortalBillingController::class, 'index'])->name('billing.index');
+        Route::get('billing/{invoice}', [ClientPortalBillingController::class, 'show'])->name('billing.show');
 
         // Reports
         Route::get('reports',        [ClientReportController::class, 'index'])->name('reports.index');

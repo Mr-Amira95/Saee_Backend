@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\SupportController;
 use App\Http\Controllers\Api\BankDetailController;
 use App\Http\Controllers\Api\ClientUserController;
 use App\Http\Controllers\Api\TrackOrderController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\WhatsAppWebhookController;
 use App\Http\Controllers\Public\LegalController;
@@ -78,6 +79,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('profile', [ProfileController::class, 'show'])
         ->name('api.profile.show');
 
+    Route::put('profile/company',  [ProfileController::class, 'updateCompany'])
+        ->name('api.profile.company.update');
+
+    Route::put('profile/personal', [ProfileController::class, 'updatePersonal'])
+        ->name('api.profile.personal.update');
+
     Route::get('wallet', [WalletController::class, 'index'])
         ->name('api.wallet.index');
 
@@ -116,6 +123,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('finances', [FinanceController::class, 'index'])
         ->name('api.finances.index');
+
+    Route::get('reports', [ReportController::class, 'index'])
+        ->name('api.reports.index');
 
     // Orders — static/action routes MUST come before the {order} wildcard
     Route::get('orders/import/template', [OrderController::class, 'downloadImportTemplate'])

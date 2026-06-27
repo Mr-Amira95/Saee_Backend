@@ -9,6 +9,7 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -161,6 +162,109 @@ class ProfileController extends Controller
             'success' => true,
             'message' => 'Profile retrieved successfully.',
             'data'    => $data,
+        ]);
+    }
+
+    public function updateCompany(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only the account owner can update company details.',
+            ], 403);
+        }
+
+        $clientProfile = $user->clientProfile;
+
+        if (! $clientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Client profile not found.',
+                'code'    => 'CLIENT_PROFILE_NOT_FOUND',
+            ], 404);
+        }
+
+        $data = $request->validate([
+            'company_name'                => ['sometimes', 'string', 'max:255'],
+            'company_name_ar'             => ['sometimes', 'nullable', 'string', 'max:255'],
+            'email'                       => ['sometimes', 'nullable', 'email', 'max:255'],
+            'company_phone'               => ['sometimes', 'nullable', 'string', 'max:20'],
+            'company_phone_country_code'  => ['sometimes', 'nullable', 'string', 'max:10'],
+            'vat_number'                  => ['sometimes', 'nullable', 'string', 'max:50'],
+            'commercial_register_number'  => ['sometimes', 'nullable', 'string', 'max:100'],
+            'address_line1'               => ['sometimes', 'nullable', 'string', 'max:500'],
+            'city_id'                     => ['sometimes', 'nullable', 'integer', 'exists:cities,id'],
+            'area_id'                     => ['sometimes', 'nullable', 'integer', 'exists:areas,id'],
+            'logo'                        => ['sometimes', 'nullable', 'image', 'max:2048'],
+        ]);
+
+        if ($request->hasFile('logo')) {
+            if ($clientProfile->logo_path) {
+                Storage::disk('public')->delete($clientProfile->logo_path);
+            }
+            $data['logo_path'] = $request->file('logo')->store('logos', 'public');
+        }
+
+        unset($data['logo']);
+
+        $clientProfile->update($data);
+        $clientProfile->refresh();
+
+        $logoUrl = $clientProfile->logo_path
+            ? $this->storageUrl($clientProfile->logo_path)
+            : null;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Company details updated successfully.',
+            'data'    => [
+                'id'                         => $clientProfile->id,
+                'company_name'               => $clientProfile->company_name,
+                'company_name_ar'            => $clientProfile->company_name_ar,
+                'email'                      => $clientProfile->email,
+                'company_phone'              => $clientProfile->company_phone,
+                'company_phone_country_code' => $clientProfile->company_phone_country_code,
+                'vat_number'                 => $clientProfile->vat_number,
+                'commercial_register_number' => $clientProfile->commercial_register_number,
+                'address_line1'              => $clientProfile->address_line1,
+                'city_id'                    => $clientProfile->city_id,
+                'area_id'                    => $clientProfile->area_id,
+                'logo_url'                   => $logoUrl,
+            ],
+        ]);
+    }
+
+    public function updatePersonal(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This endpoint is only available for client accounts.',
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'name'                => ['sometimes', 'string', 'max:255'],
+            'email'               => ['sometimes', 'nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone'               => ['sometimes', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'phone_country_code'  => ['sometimes', 'nullable', 'string', 'max:10'],
+        ]);
+
+        $user->update($data);
+        $user->refresh();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Personal information updated successfully.',
+            'data'    => [
+                'user' => new UserResource($user),
+            ],
         ]);
     }
 

@@ -1,166 +1,92 @@
 @extends('client.layouts.app')
-@section('title', __('Finances'))
-@section('page-title', __('Finances'))
-
-@push('styles')
-<style>
-    .fin-tabs { display:flex; gap:0; border-bottom:1px solid var(--bdr); margin-bottom:20px; }
-    .fin-tab  { padding:10px 20px; font-size:.86rem; font-weight:600; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; transition:color .15s,border-color .15s; text-decoration:none; }
-    .fin-tab:hover { color:var(--text-sub); }
-    .fin-tab.active { color:var(--text); border-bottom-color:var(--red); }
-    .fin-panel { display:none; }
-    .fin-panel.active { display:block; }
-    .ledger-type-credit { color:#4ade80; }
-    .ledger-type-debit  { color:#f87171; }
-</style>
-@endpush
+@section('title', __('Financials'))
+@section('page-title', __('Financials'))
 
 @section('content')
 
-<h1 style="font-size:1.35rem;font-weight:800;margin-bottom:16px;">{{ __('Finances') }}</h1>
+<h1 style="font-size:1.35rem;font-weight:800;margin-bottom:16px;">{{ __('Financials') }}</h1>
 
-{{-- Balance card --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px;">
+{{-- Summary cards --}}
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px;">
+    <div class="card">
+        <div style="font-size:.74rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('COD Collected') }}</div>
+        <div style="font-size:1.8rem;font-weight:800;color:var(--text);">{{ number_format($codCollected, 2) }} <span style="font-size:.95rem;font-weight:600;color:var(--text-sub);">JD</span></div>
+        <div style="font-size:.79rem;color:var(--text-dim);margin-top:6px;">{{ __('Cash on delivery received') }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size:.74rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('Shipping Charges') }}</div>
+        <div style="font-size:1.8rem;font-weight:800;color:#f87171;">{{ number_format($shippingCharges, 2) }} <span style="font-size:.95rem;font-weight:600;color:var(--text-sub);">JD</span></div>
+        <div style="font-size:.79rem;color:var(--text-dim);margin-top:6px;">{{ __('Delivery fees deducted') }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size:.74rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('Payouts Received') }}</div>
+        <div style="font-size:1.8rem;font-weight:800;color:#4ade80;">{{ number_format($payoutsReceived, 2) }} <span style="font-size:.95rem;font-weight:600;color:var(--text-sub);">JD</span></div>
+        <div style="font-size:.79rem;color:var(--text-dim);margin-top:6px;">{{ __('Transferred to you') }}</div>
+    </div>
     <div class="card" style="background:linear-gradient(135deg,rgba(220,38,38,.12),rgba(220,38,38,.04));">
-        <div style="font-size:.74rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('Wallet Balance') }}</div>
-        <div style="font-size:2rem;font-weight:800;color:{{ $balance >= 0 ? '#4ade80' : '#f87171' }};">{{ number_format($balance, 2) }} <span style="font-size:1rem;font-weight:600;color:var(--text-sub);">JD</span></div>
-        <div style="font-size:.79rem;color:var(--text-dim);margin-top:6px;">{{ __('Available to transfer') }}</div>
-    </div>
-    <div class="card">
-        <div style="font-size:.74rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('Credit Limit') }}</div>
-        <div style="font-size:2rem;font-weight:800;color:var(--text);">{{ number_format($creditLimit, 2) }} <span style="font-size:1rem;font-weight:600;color:var(--text-sub);">JD</span></div>
-        <div style="font-size:.79rem;color:var(--text-dim);margin-top:6px;">{{ __('Maximum outstanding balance') }}</div>
-    </div>
-    <div class="card">
-        <div style="font-size:.74rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('Total Invoiced') }}</div>
-        <div style="font-size:2rem;font-weight:800;color:var(--text);">{{ $invoices->total() }}</div>
-        <div style="font-size:.79rem;color:var(--text-dim);margin-top:6px;">{{ __('Invoices issued') }}</div>
+        <div style="font-size:.74rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">{{ __('Net Balance Due') }}</div>
+        <div style="font-size:1.8rem;font-weight:800;color:{{ $netBalanceDue >= 0 ? '#4ade80' : '#f87171' }};">{{ number_format($netBalanceDue, 2) }} <span style="font-size:.95rem;font-weight:600;color:var(--text-sub);">JD</span></div>
+        <div style="font-size:.79rem;color:var(--text-dim);margin-top:6px;">{{ __('Pending payout to you') }}</div>
     </div>
 </div>
 
-{{-- Tabs --}}
-<div class="fin-tabs">
-    <a href="#ledger"   class="fin-tab active" onclick="switchTab('ledger',event)">{{ __('Transactions') }}</a>
-    <a href="#invoices" class="fin-tab"         onclick="switchTab('invoices',event)">{{ __('Invoices') }}</a>
-</div>
+{{-- Filters --}}
+<form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+    <select name="type" class="form-control" style="width:auto;" onchange="this.form.submit()">
+        <option value="">{{ __('All Types') }}</option>
+        <option value="cod_collection"   {{ request('type') === 'cod_collection'   ? 'selected' : '' }}>{{ __('COD Collection') }}</option>
+        <option value="delivery_collection" {{ request('type') === 'delivery_collection' ? 'selected' : '' }}>{{ __('Delivery Collection') }}</option>
+        <option value="shipping_charge"  {{ request('type') === 'shipping_charge'  ? 'selected' : '' }}>{{ __('Shipping Charge') }}</option>
+        <option value="client_payout"    {{ request('type') === 'client_payout'    ? 'selected' : '' }}>{{ __('Payout') }}</option>
+    </select>
+    <input type="date" name="from" class="form-control" style="width:auto;" value="{{ request('from') }}" placeholder="{{ __('From') }}">
+    <input type="date" name="to"   class="form-control" style="width:auto;" value="{{ request('to') }}"   placeholder="{{ __('To') }}">
+    <button type="submit" class="btn-secondary">{{ __('Filter') }}</button>
+    @if(request()->hasAny(['type','from','to']))
+        <a href="{{ route('client.financials.index') }}" class="btn-secondary">{{ __('Clear') }}</a>
+    @endif
+</form>
 
-{{-- Ledger panel --}}
-<div class="fin-panel active" id="panel-ledger">
-    <div class="card" style="padding:0;overflow:hidden;">
-        @if($ledger->count())
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>{{ __('Date') }}</th>
-                        <th>{{ __('Description') }}</th>
-                        <th>{{ __('Type') }}</th>
-                        <th>{{ __('Amount') }}</th>
-                        <th>{{ __('Balance After') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($ledger as $entry)
-                    <tr>
-                        <td style="color:var(--text-dim);font-size:.82rem;white-space:nowrap;">{{ $entry->created_at->format('d M Y') }}</td>
-                        <td style="font-size:.86rem;">{{ $entry->description ?? ucfirst(str_replace('_',' ',$entry->entry_type)) }}</td>
-                        <td>
-                            <span class="badge {{ $entry->amount >= 0 ? 'badge-success' : 'badge-danger' }}" style="font-size:.72rem;">
-                                {{ $entry->amount >= 0 ? __('Credit') : __('Debit') }}
-                            </span>
-                        </td>
-                        <td class="{{ $entry->amount >= 0 ? 'ledger-type-credit' : 'ledger-type-debit' }}" style="font-weight:700;white-space:nowrap;">
-                            {{ $entry->amount >= 0 ? '+' : '' }}{{ number_format($entry->amount, 2) }} JD
-                        </td>
-                        <td style="font-size:.85rem;white-space:nowrap;">{{ number_format($entry->balance_after ?? 0, 2) }} JD</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        @else
-        <div style="padding:48px;text-align:center;color:var(--text-dim);font-size:.87rem;">{{ __('No transactions yet.') }}</div>
-        @endif
+{{-- Transactions table --}}
+<div class="card" style="padding:0;overflow:hidden;">
+    @if($ledger->count())
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ __('Date') }}</th>
+                    <th>{{ __('Type') }}</th>
+                    <th>{{ __('Order') }}</th>
+                    <th style="text-align:right;">{{ __('Amount') }}</th>
+                    <th>{{ __('Ref') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($ledger as $entry)
+                <tr>
+                    <td style="color:var(--text-dim);font-size:.82rem;white-space:nowrap;">{{ $entry->created_at->format('d M Y') }}</td>
+                    <td>
+                        <span class="badge {{ in_array($entry->type, ['cod_collection','delivery_collection']) ? 'badge-success' : ($entry->type === 'client_payout' ? 'badge-pending' : 'badge-neutral') }}" style="font-size:.72rem;">
+                            {{ ucwords(str_replace('_', ' ', $entry->type)) }}
+                        </span>
+                    </td>
+                    <td style="font-size:.83rem;color:var(--text-sub);">{{ optional($entry->order)->order_number ?? '—' }}</td>
+                    <td style="font-weight:700;white-space:nowrap;text-align:right;color:{{ in_array($entry->type, ['shipping_charge']) ? '#f87171' : '#4ade80' }};">
+                        {{ number_format($entry->amount, 2) }} JD
+                    </td>
+                    <td style="font-size:.8rem;color:var(--text-dim);">{{ $entry->reference_number ?? '—' }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
-    @if($ledger->hasPages())
-    <div style="margin-top:16px;">{{ $ledger->appends(['tab'=>'ledger'])->links() }}</div>
+    @else
+    <div style="padding:48px;text-align:center;color:var(--text-dim);font-size:.87rem;">{{ __('No transactions yet.') }}</div>
     @endif
 </div>
 
-{{-- Invoices panel --}}
-<div class="fin-panel" id="panel-invoices">
-    <div class="card" style="padding:0;overflow:hidden;">
-        @if($invoices->count())
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>{{ __('Invoice #') }}</th>
-                        <th>{{ __('Date') }}</th>
-                        <th>{{ __('Amount') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th>{{ __('Download') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($invoices as $inv)
-                    <tr>
-                        <td style="font-family:monospace;font-size:.83rem;color:var(--red-lt);">{{ $inv->invoice_number }}</td>
-                        <td style="color:var(--text-dim);font-size:.82rem;white-space:nowrap;">{{ $inv->created_at->format('d M Y') }}</td>
-                        <td style="font-weight:700;white-space:nowrap;">{{ number_format($inv->amount ?? 0, 2) }} JD</td>
-                        <td>
-                            @php
-                                $sc = match($inv->status ?? 'issued') {
-                                    'paid'   => 'badge-success',
-                                    'void'   => 'badge-neutral',
-                                    default  => 'badge-pending',
-                                };
-                                $statusLabel = match($inv->status ?? 'issued') {
-                                    'paid'  => __('Paid'),
-                                    'void'  => __('Void'),
-                                    default => __('Issued'),
-                                };
-                            @endphp
-                            <span class="badge {{ $sc }}" style="font-size:.72rem;">{{ $statusLabel }}</span>
-                        </td>
-                        <td>
-                            @if(!empty($inv->file_path))
-                            <a href="{{ asset('storage/'.$inv->file_path) }}" target="_blank" class="btn-secondary" style="padding:4px 10px;font-size:.76rem;">
-                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                {{ __('PDF') }}
-                            </a>
-                            @else
-                            <span style="font-size:.78rem;color:var(--text-dim);">—</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        @else
-        <div style="padding:48px;text-align:center;color:var(--text-dim);font-size:.87rem;">{{ __('No invoices issued yet.') }}</div>
-        @endif
-    </div>
-    @if($invoices->hasPages())
-    <div style="margin-top:16px;">{{ $invoices->appends(['tab'=>'invoices'])->links() }}</div>
-    @endif
-</div>
+@if($ledger->hasPages())
+<div style="margin-top:16px;">{{ $ledger->links() }}</div>
+@endif
 
 @endsection
-
-@push('scripts')
-<script>
-function switchTab(name, e) {
-    e.preventDefault();
-    document.querySelectorAll('.fin-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.fin-panel').forEach(p => p.classList.remove('active'));
-    e.currentTarget.classList.add('active');
-    document.getElementById('panel-' + name).classList.add('active');
-}
-
-// Activate tab from URL hash on load
-const hash = location.hash.replace('#','');
-if (hash === 'invoices') switchTab('invoices', {preventDefault:()=>{}, currentTarget: document.querySelector('.fin-tab:nth-child(2)')});
-</script>
-@endpush
