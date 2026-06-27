@@ -46,8 +46,14 @@ class FinanceController extends Controller
     {
         $profile = $this->getClientProfile();
 
-        $invoices = Invoice::where('client_profile_id', $profile->id)
-            ->latest()
+        $query = Invoice::where('client_profile_id', $profile->id);
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('invoice_number', 'like', "%{$search}%");
+        }
+
+        $invoices = $query->latest()
             ->paginate(20)
             ->withQueryString();
 
