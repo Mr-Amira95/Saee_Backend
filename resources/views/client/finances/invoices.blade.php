@@ -37,17 +37,6 @@
             <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Total delivery paid by customer') }}</div>
         </div>
 
-        {{-- Shipping Charges --}}
-        <div class="card" style="padding:18px 20px;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <div style="width:32px;height:32px;border-radius:9px;background:rgba(248,113,113,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="15" height="15" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                </div>
-                <span style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('Shipping Charges') }}</span>
-            </div>
-            <div style="font-size:1.8rem;font-weight:800;color:#f87171;line-height:1;margin-bottom:5px;">{{ number_format($shippingCharges, 2) }} <span style="font-size:1rem;font-weight:600;">JD</span></div>
-            <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Total shipping fees deducted') }}</div>
-        </div>
     </div>
 
     {{-- Filter bar --}}

@@ -261,6 +261,7 @@ Route::prefix('client')->name('client.')->group(function () {
         // Billing (read-only delivery invoices for client)
         Route::get('billing', [ClientPortalBillingController::class, 'index'])->name('billing.index');
         Route::get('billing/{invoice}', [ClientPortalBillingController::class, 'show'])->name('billing.show');
+        Route::post('billing/{invoice}/pay', [ClientPortalBillingController::class, 'pay'])->name('billing.pay');
 
         // Reports
         Route::get('reports', [ClientReportController::class, 'index'])->name('reports.index');

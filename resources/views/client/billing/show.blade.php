@@ -12,11 +12,43 @@
                &nbsp;·&nbsp; {{ \Carbon\Carbon::parse($invoice->period_start)->format('d M Y') }} – {{ \Carbon\Carbon::parse($invoice->period_end)->format('d M Y') }}</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
+            @php $sv = $invoice->status->value ?? $invoice->status; @endphp
+            @if($sv === 'issued' || $sv === 'overdue')
+                <button type="button" class="btn-primary" onclick="document.getElementById('pay-form').style.display='block'">
+                    {{ __('Record Payment') }}
+                </button>
+            @endif
             <a href="{{ route('client.billing.index') }}" class="btn-secondary">← {{ __('Back') }}</a>
         </div>
     </div>
 
-    @php $sv = $invoice->status->value ?? $invoice->status; @endphp
+    {{-- Pay form (shown on click) --}}
+    @if($sv === 'issued' || $sv === 'overdue')
+    <div id="pay-form" style="display:none; background:var(--card); border:1px solid var(--bdr); border-radius:12px; padding:20px; margin-bottom:20px;">
+        <form method="POST" action="{{ route('client.billing.pay', $invoice) }}">
+            @csrf
+            <div class="form-section-title" style="font-size:1rem; font-weight:700; color:var(--text); margin-bottom:15px;">{{ __('Record Payment') }}</div>
+            <div class="form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:15px;">
+                <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                    <label class="form-label" style="font-size:.78rem; color:var(--text-sub); font-weight:500;">{{ __('Payment Method') }} <span class="req" style="color:var(--red-lt);">*</span></label>
+                    <select name="payment_method" class="form-input" required style="padding:10px; border-radius:8px; border:1px solid var(--in-bdr); background:var(--in-bg); color:var(--text); font-size:.85rem; outline:none;">
+                        <option value="bank_transfer">{{ __('Bank Transfer') }}</option>
+                        <option value="cash">{{ __('Cash') }}</option>
+                        <option value="cliq">{{ __('CliQ') }}</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                    <label class="form-label" style="font-size:.78rem; color:var(--text-sub); font-weight:500;">{{ __('Reference Number') }}</label>
+                    <input type="text" name="reference_number" class="form-input" placeholder="{{ __('Optional') }}" style="padding:10px; border-radius:8px; border:1px solid var(--in-bdr); background:var(--in-bg); color:var(--text); font-size:.85rem; outline:none;">
+                </div>
+            </div>
+            <div class="form-actions" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="btn-secondary" onclick="document.getElementById('pay-form').style.display='none'">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-primary">{{ __('Confirm Payment') }}</button>
+            </div>
+        </form>
+    </div>
+    @endif
 
     {{-- Stats --}}
     <div class="mini-stats" style="margin-bottom:18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px;">
