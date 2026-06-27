@@ -45,8 +45,9 @@ class SupportController extends Controller
         }
 
         $orders = Order::where('client_profile_id', $profile->id)
+            ->with('receiver:order_id,receiver_name,receiver_phone')
             ->orderByDesc('created_at')
-            ->get(['id', 'order_number', 'receiver_name', 'receiver_phone', 'status']);
+            ->get(['id', 'order_number', 'status']);
 
         return view('client.support.index', compact('tickets', 'activeTicket', 'profile', 'orders'));
     }

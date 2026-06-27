@@ -274,7 +274,7 @@ document.addEventListener('keydown', e => {
 
 // Searchable order dropdown
 @php
-$ordersJson = $orders->map(fn($o) => ['id' => $o->id, 'number' => $o->order_number, 'receiver' => $o->receiver_name ?? '', 'phone' => $o->receiver_phone ?? '', 'status' => $o->status]);
+$ordersJson = $orders->map(fn($o) => ['id' => $o->id, 'number' => $o->order_number, 'receiver' => $o->receiver?->receiver_name ?? '', 'phone' => $o->receiver?->receiver_phone ?? '', 'status' => $o->status]);
 @endphp
 const ORDERS = @json($ordersJson);
 
