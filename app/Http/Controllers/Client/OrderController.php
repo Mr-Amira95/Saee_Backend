@@ -31,7 +31,6 @@ class OrderController extends Controller
                 ->whereIn('payment_status', ['with_driver', 'with_company'])
                 ->whereNotIn('status', ['returned', 'cancelled'])
                 ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
-                ->where('order_payments.payment_type', 'cod')
                 ->selectRaw('COALESCE(SUM(order_payments.order_amount + IF(order_payments.delivery_on_customer = 1, COALESCE(order_payments.customer_delivery_amount, 0), 0)), 0) as total')
                 ->value('total') ?? 0,
         ];
