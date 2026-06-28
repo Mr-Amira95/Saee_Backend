@@ -280,7 +280,12 @@
                 @forelse($tickets as $t)
                     <a href="{{ route('admin.support.index', ['ticket' => $t->ticket_number]) }}" class="ticket-item {{ $activeTicket && $activeTicket->id === $t->id ? 'active' : '' }}" data-ticket-id="{{ $t->id }}">
                         <div class="ticket-item-hd">
-                            <span class="ticket-no">{{ $t->ticket_number }}</span>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span class="ticket-no">{{ $t->ticket_number }}</span>
+                                @if(isset($t->unread_messages_count) && $t->unread_messages_count > 0)
+                                    <span class="sidebar-badge" style="background: var(--red); font-size: .62rem; padding: 1px 4px; min-width: 14px; line-height: 10px;">{{ $t->unread_messages_count }}</span>
+                                @endif
+                            </div>
                             <span class="ticket-time">{{ $t->updated_at->diffForHumans() }}</span>
                         </div>
                         <div class="ticket-title">{{ $t->title }}</div>

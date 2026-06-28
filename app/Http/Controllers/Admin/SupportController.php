@@ -19,7 +19,14 @@ class SupportController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SupportTicket::with('user', 'order');
+        $query = SupportTicket::with('user', 'order')
+            ->withCount(['messages as unread_messages_count' => fn($q) => $q
+                ->where('is_read', false)
+                ->where(function($query) {
+                    $query->whereNull('sender_id')
+                          ->orWhereHas('sender', fn($sq) => $sq->whereNotIn('role', ['admin', 'superadmin']));
+                })
+            ]);
 
         if ($request->filled('client_id')) {
             $clientId = $request->input('client_id');
@@ -92,7 +99,7 @@ class SupportController extends Controller
             'sender_id'         => Auth::id(),
             'sender_name'       => Auth::user()->name . ' (Operations)',
             'message'           => $validated['message'],
-            'is_read'           => true,
+            'is_read'           => false,
         ]);
 
         broadcast(new SupportMessageSent($message));
@@ -116,7 +123,7 @@ class SupportController extends Controller
             'sender_id'         => Auth::id(),
             'sender_name'       => Auth::user()->name . ' (Operations)',
             'message'           => $request->input('message'),
-            'is_read'           => true,
+            'is_read'           => false,
         ]);
 
         broadcast(new SupportMessageSent($message));

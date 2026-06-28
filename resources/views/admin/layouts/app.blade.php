@@ -161,6 +161,23 @@
             animation: dot-p 2s infinite;
         }
         @keyframes dot-p { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+        .sidebar-badge {
+            background: var(--red);
+            color: #fff;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            line-height: 14px;
+            display: inline-block;
+            margin-left: 6px;
+        }
+        html[dir="rtl"] .sidebar-badge {
+            margin-left: 0;
+            margin-right: 6px;
+        }
 
         /* ─── Content ────────────────────────────────────── */
         .content { flex: 1; overflow-y: auto; padding: 24px 26px; }

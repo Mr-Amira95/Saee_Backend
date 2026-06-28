@@ -278,7 +278,12 @@
                     <a href="{{ route('client.support.index', ['ticket' => $ticket->id]) }}"
                        class="ticket-item {{ $activeTicket && $activeTicket->id === $ticket->id ? 'active' : '' }}">
                         <div class="ticket-item-hd">
-                            <span class="ticket-no">{{ $ticket->ticket_number }}</span>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span class="ticket-no">{{ $ticket->ticket_number }}</span>
+                                @if(isset($ticket->unread_messages_count) && $ticket->unread_messages_count > 0)
+                                    <span class="sidebar-badge" style="background: var(--red); font-size: .62rem; padding: 1px 4px; min-width: 14px; line-height: 10px;">{{ $ticket->unread_messages_count }}</span>
+                                @endif
+                            </div>
                             <span class="ticket-time">{{ $ticket->updated_at->diffForHumans() }}</span>
                         </div>
                         <div class="ticket-title">{{ $ticket->title }}</div>

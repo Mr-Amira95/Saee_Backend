@@ -88,6 +88,23 @@
         .icon-btn { width: 35px; height: 35px; border-radius: 9px; background: rgba(255,255,255,.04); border: 1px solid var(--bdr); display: flex; align-items: center; justify-content: center; color: var(--text-sub); cursor: pointer; transition: background .13s, color .13s; position: relative; text-decoration: none; }
         .icon-btn:hover { background: rgba(255,255,255,.07); color: var(--text); }
         .notif-badge { position: absolute; top: -4px; right: -4px; background: var(--red); color: white; font-size: .6rem; font-weight: 700; border-radius: 100px; padding: 1px 4px; min-width: 16px; text-align: center; line-height: 14px; box-shadow: 0 0 0 2px var(--sidebar); }
+        .sidebar-badge {
+            background: var(--red);
+            color: #fff;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            line-height: 14px;
+            display: inline-block;
+            margin-left: 6px;
+        }
+        html[dir="rtl"] .sidebar-badge {
+            margin-left: 0;
+            margin-right: 6px;
+        }
 
         /* ── Content ─────────────────────────────────────── */
         .content { flex: 1; overflow-y: auto; padding: 24px 26px; }
@@ -309,7 +326,10 @@
                     <rect x="20" y="10" width="3" height="6" rx="1.5" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 14c0 3 2.5 5 5.5 5" />
                 </svg>
-                {{ __('Support') }}
+                <span style="flex: 1;">{{ __('Support') }}</span>
+                @if(isset($unreadSupportMessagesCount) && $unreadSupportMessagesCount > 0)
+                    <span class="sidebar-badge">{{ $unreadSupportMessagesCount }}</span>
+                @endif
             </a>
 
 

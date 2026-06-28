@@ -29,6 +29,10 @@ class SupportController extends Controller
         $userId  = Auth::id();
 
         $tickets = SupportTicket::where('user_id', $userId)
+            ->withCount(['messages as unread_messages_count' => fn ($q) => $q
+                ->where('is_read', false)
+                ->where('sender_id', '!=', $userId)
+            ])
             ->with(['messages' => fn ($q) => $q->latest()->take(1)])
             ->latest()
             ->get();
@@ -151,6 +155,11 @@ class SupportController extends Controller
     public function getMessages(Request $request, SupportTicket $ticket): JsonResponse
     {
         $this->authorizeTicket($ticket);
+
+        // Mark admin/others' messages as read when loading them
+        $ticket->messages()
+            ->where('sender_id', '!=', Auth::id())
+            ->update(['is_read' => true]);
 
         $messages = $ticket->messages()
             ->when($request->filled('after'), fn ($q) => $q->where('id', '>', $request->after))
