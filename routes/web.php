@@ -187,6 +187,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('orders/import/upload', [BulkOrderController::class, 'import'])->name('orders.import.upload');
         Route::get('orders/import/review', [BulkOrderController::class, 'showReview'])->name('orders.import.review');
         Route::post('orders/import/confirm', [BulkOrderController::class, 'storeConfirmed'])->name('orders.import.confirm');
+        Route::get('orders/import-image', [BulkOrderController::class, 'showImportImage'])->name('orders.import-image');
+        Route::post('orders/import-image', [BulkOrderController::class, 'importImage'])->name('orders.import-image.upload');
         Route::post('orders/calculate-price', [OrderController::class, 'calculatePrice'])->name('orders.calculate-price');
         Route::post('orders/assign-driver', [OrderController::class, 'assignDriver'])->name('orders.assign-driver');
         Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
@@ -247,6 +249,8 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::post('orders/import/confirm', [ClientOrderController::class, 'storeConfirmed'])->name('orders.import.confirm');
         Route::get('orders/import', [ClientOrderController::class, 'showImport'])->name('orders.import');
         Route::post('orders/import', [ClientOrderController::class, 'import'])->name('orders.import.submit');
+        Route::get('orders/import-image', [ClientOrderController::class, 'showImportImage'])->name('orders.import-image');
+        Route::post('orders/import-image', [ClientOrderController::class, 'importImage'])->name('orders.import-image.submit');
         Route::get('orders/export', [ClientOrderController::class, 'export'])->name('orders.export');
         Route::get('orders/print-all', [ClientOrderController::class, 'printAll'])->name('orders.print-all');
         Route::get('orders/{order}/print', [ClientOrderController::class, 'printOrder'])->name('orders.print');

@@ -11,6 +11,8 @@ use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Services\OpenAIService;
+
 class BulkOrderController extends Controller
 {
     protected $orderService;
@@ -18,6 +20,133 @@ class BulkOrderController extends Controller
     public function __construct(OrderService $orderService)
     {
         $this->orderService = $orderService;
+    }
+
+    public function showImportImage()
+    {
+        $clients = ClientProfile::where('status', 'active')->orderBy('company_name')->get(['id', 'company_name']);
+        $cities  = City::where('is_active', true)
+            ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.orders.import_image', compact('clients', 'cities'));
+    }
+
+    public function importImage(Request $request, OpenAIService $openAIService)
+    {
+        $request->validate([
+            'image' => 'required|image|max:10240',
+        ]);
+
+        $imagePath = $request->file('image')->getRealPath();
+
+        try {
+            $parsedOrders = $openAIService->parseImageForOrders($imagePath);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'AI Processing failed: ' . $e->getMessage());
+        }
+
+        if (empty($parsedOrders)) {
+            return redirect()->back()->with('error', 'No order details could be extracted from the image.');
+        }
+
+        // Fetch clients, cities, areas to map names to IDs
+        $clientsList = ClientProfile::where('status', 'active')->get(['id', 'company_name']);
+        $citiesList  = City::where('is_active', true)->with('areas')->get();
+
+        $rows = [];
+        $errors = [];
+        $hasErrors = false;
+
+        foreach ($parsedOrders as $index => $o) {
+            // Attempt to resolve client_id
+            $clientId = null;
+            if (!empty($o['client_id_or_name'])) {
+                $clientName = strtolower(trim($o['client_id_or_name']));
+                $matchedClient = $clientsList->first(function ($c) use ($clientName) {
+                    return str_contains(strtolower($c->company_name), $clientName) ||
+                           str_contains($clientName, strtolower($c->company_name));
+                });
+                if ($matchedClient) {
+                    $clientId = $matchedClient->id;
+                }
+            }
+
+            // Attempt to resolve city_id
+            $cityId = null;
+            if (!empty($o['city_name'])) {
+                $cityName = strtolower(trim($o['city_name']));
+                $matchedCity = $citiesList->first(function ($c) use ($cityName) {
+                    return str_contains(strtolower($c->name), $cityName) ||
+                           str_contains(strtolower($c->name_ar), $cityName) ||
+                           str_contains($cityName, strtolower($c->name)) ||
+                           str_contains($cityName, strtolower($c->name_ar));
+                });
+                if ($matchedCity) {
+                    $cityId = $matchedCity->id;
+                }
+            }
+
+            // Attempt to resolve area_id
+            $areaId = null;
+            if ($cityId && !empty($o['area_name'])) {
+                $areaName = strtolower(trim($o['area_name']));
+                $cityObj = $citiesList->firstWhere('id', $cityId);
+                if ($cityObj) {
+                    $matchedArea = $cityObj->areas->first(function ($a) use ($areaName) {
+                        return str_contains(strtolower($a->name), $areaName) ||
+                               str_contains(strtolower($a->name_ar), $areaName) ||
+                               str_contains($areaName, strtolower($a->name)) ||
+                               str_contains($areaName, strtolower($a->name_ar));
+                    });
+                    if ($matchedArea) {
+                        $areaId = $matchedArea->id;
+                    }
+                }
+            }
+
+            // Construct row formatted as expected by BulkOrderController@validateImportRow
+            $row = [
+                'client_profile_id'        => $clientId,
+                'client_id'                => $clientId,
+                'order_description'        => $o['order_description'] ?? '',
+                'payment_type'             => strtolower($o['payment_type'] ?? 'cod'),
+                'delivery_on_customer'     => filter_var($o['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false',
+                'delivery_customer_amount' => number_format((float)($o['delivery_customer_amount'] ?? 0.00), 2, '.', ''),
+                'order_price'              => number_format((float)($o['order_price'] ?? 0.00), 2, '.', ''),
+                'receiver_name'            => $o['receiver_name'] ?? '',
+                'receiver_phone'           => $o['receiver_phone'] ?? '',
+                'city_id'                  => $cityId,
+                'area_id'                  => $areaId,
+                'address_text'             => $o['address_text'] ?? '',
+                'notes'                    => $o['notes'] ?? '',
+                'delivery_shift'           => strtolower($o['delivery_shift'] ?? 'doesnt_matter'),
+            ];
+
+            // Normalize delivery_shift
+            if (!in_array($row['delivery_shift'], ['doesnt_matter', 'before_12pm', 'after_12pm'])) {
+                $row['delivery_shift'] = 'doesnt_matter';
+            }
+
+            $rowErrors = $this->validateImportRow($row);
+            if (!empty($rowErrors)) {
+                $hasErrors = true;
+                $errors[$index] = $rowErrors;
+            }
+
+            $rows[$index] = $row;
+        }
+
+        session(['import_pending_rows' => $rows]);
+        session(['import_errors' => $errors]);
+
+        if ($hasErrors) {
+            return redirect()->route('admin.orders.import.review')
+                ->with('error', 'AI parsed the image, but some details need manual selection or correction.');
+        }
+
+        return redirect()->route('admin.orders.import.review');
     }
 
     public function showImport()
