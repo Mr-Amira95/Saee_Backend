@@ -197,7 +197,7 @@ PROMPT;
                 $q->where('order_number', $refNum)
                   ->orWhere('batch_number', $refNum);
             })
-            ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(5)])
+            ->with(['receiver', 'payment', 'trackingLogs' => fn ($q) => $q->latest()->limit(5)])
             ->first();
 
             if ($order) {
@@ -219,11 +219,11 @@ PROMPT;
             if ($clientProfileId !== null) {
                 $query->where('client_profile_id', $clientProfileId);
             }
-            $orders = $query->where(function ($q) use ($digits, $short) {
+            $orders = $query->whereHas('receiver', function ($q) use ($digits, $short) {
                 $q->where('receiver_phone', 'LIKE', "%{$digits}%")
                   ->orWhere('receiver_phone', 'LIKE', "%{$short}%");
             })
-            ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(3)])
+            ->with(['receiver', 'payment', 'trackingLogs' => fn ($q) => $q->latest()->limit(3)])
             ->latest()
             ->limit(5)
             ->get();
@@ -243,11 +243,13 @@ PROMPT;
             if ($clientProfileId !== null) {
                 $query->where('client_profile_id', $clientProfileId);
             }
-            $orders = $query->where('receiver_name', 'LIKE', "%{$name}%")
-                ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(3)])
-                ->latest()
-                ->limit(5)
-                ->get();
+            $orders = $query->whereHas('receiver', function ($q) use ($name) {
+                $q->where('receiver_name', 'LIKE', "%{$name}%");
+            })
+            ->with(['receiver', 'payment', 'trackingLogs' => fn ($q) => $q->latest()->limit(3)])
+            ->latest()
+            ->limit(5)
+            ->get();
 
             if ($orders->isNotEmpty()) {
                 return $this->formatMultipleOrdersContext($orders, "name \"{$name}\"");
@@ -327,11 +329,11 @@ PROMPT;
         $lines = [
             "Order Number: {$order->order_number}",
             "Current Status: {$order->status}",
-            "Receiver Name: {$order->receiver_name}",
-            "Receiver Phone: {$order->receiver_phone}",
-            "Payment Type: {$order->payment_type}",
+            "Receiver Name: {$order->receiver?->receiver_name}",
+            "Receiver Phone: {$order->receiver?->receiver_phone}",
+            "Payment Type: {$order->payment?->payment_type}",
             "Payment Status: {$order->payment_status}",
-            "Delivery Amount: {$order->delivery_amount}",
+            "Delivery Amount: " . ($order->payment?->client_delivery_amount ?? $order->payment?->customer_delivery_amount ?? 'N/A'),
         ];
 
         if ($order->notes) {
