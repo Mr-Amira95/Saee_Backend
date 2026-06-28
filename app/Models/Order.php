@@ -78,6 +78,11 @@ class Order extends Model
         return $this->driverProfile?->user;
     }
 
+    public function getDriverIdAttribute(): ?int
+    {
+        return $this->driverProfile?->user_id;
+    }
+
     public function clientProfile(): BelongsTo
     {
         return $this->belongsTo(ClientProfile::class);

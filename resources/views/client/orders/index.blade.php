@@ -94,6 +94,7 @@
     <select name="status" class="filter-select">
         <option value="">{{ __('All Statuses') }}</option>
         <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>{{ __('Pending') }}</option>
+        <option value="assigned"  {{ request('status') === 'assigned'  ? 'selected' : '' }}>{{ __('Assigned') }}</option>
         <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>{{ __('In Transit') }}</option>
         <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>{{ __('Delivered') }}</option>
         <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>{{ __('Rejected') }}</option>
@@ -135,6 +136,7 @@
                     $receiver = $order->receiver;
                     $statusClass = match($order->status) {
                         'pending'   => 'badge-pending',
+                        'assigned'  => 'badge-info',
                         'picked_up' => 'badge-info',
                         'delivered' => 'badge-success',
                         'rejected'  => 'badge-danger',
@@ -144,6 +146,7 @@
                     };
                     $statusLabel = match($order->status) {
                         'pending'   => 'Pending',
+                        'assigned'  => 'Assigned',
                         'picked_up' => 'In Transit',
                         'delivered' => 'Delivered',
                         'rejected'  => 'Rejected',

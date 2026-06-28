@@ -35,6 +35,7 @@
     $receiver = $order->receiver;
     $statusClass = match($order->status) {
         'pending'   => 'badge-pending',
+        'assigned'  => 'badge-info',
         'picked_up' => 'badge-info',
         'delivered' => 'badge-success',
         'rejected'  => 'badge-danger',
@@ -44,6 +45,7 @@
     };
     $statusLabel = match($order->status) {
         'pending'   => 'Pending',
+        'assigned'  => 'Assigned',
         'picked_up' => 'In Transit',
         'delivered' => 'Delivered',
         'rejected'  => 'Rejected',

@@ -166,6 +166,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('driver/confirm-handover', [OrderController::class, 'confirmHandover'])
         ->name('api.driver.confirm-handover');
 
+    Route::post('driver/pickup', [OrderController::class, 'pickup'])
+        ->name('api.driver.pickup');
+
     Route::get('driver/route',              [RouteController::class, 'show'])
         ->name('api.driver.route.show');
 

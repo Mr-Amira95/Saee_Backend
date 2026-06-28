@@ -40,14 +40,14 @@ class OrderController extends Controller
 
             if (! $this->isDriverCheckedIn($user)) {
                 $hasHiddenOrders = Order::where('driver_profile_id', $driverProfile?->id)
-                    ->whereIn('status', ['picked_up', 'rejected'])
+                    ->whereIn('status', ['assigned', 'picked_up', 'rejected'])
                     ->exists();
 
                 if ($hasHiddenOrders) {
                     $checkInAlert = 'You have pending orders. Please check in to view your orders.';
                 }
 
-                $query->where('status', '!=', 'picked_up');
+                $query->whereNotIn('status', ['assigned', 'picked_up']);
             }
         } elseif ($user->isClientMaster()) {
             $clientProfile = $user->clientProfile;
@@ -791,6 +791,65 @@ class OrderController extends Controller
             'Content-Type'        => 'text/csv',
             'Content-Disposition' => 'attachment; filename="orders_import_template.csv"',
             'Cache-Control'       => 'no-cache',
+        ]);
+    }
+
+    public function pickup(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isDriver()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        if (! $this->isDriverCheckedIn($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not checked in. Please check in to perform this action.',
+                'code'    => 'NOT_CHECKED_IN',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'order_ids'   => 'required|array|min:1',
+            'order_ids.*' => 'integer|exists:orders,id',
+        ]);
+
+        $driverProfile = $user->driverProfile;
+
+        // Fetch the active orders assigned to this driver with 'assigned' status
+        $orders = Order::where('driver_profile_id', $driverProfile?->id)
+            ->whereIn('id', $validated['order_ids'])
+            ->where('status', 'assigned')
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No valid assigned orders found for pickup.',
+                'code'    => 'NO_ORDERS_FOUND',
+            ], 404);
+        }
+
+        $pickedUpCount = 0;
+        foreach ($orders as $order) {
+            $this->orderService->updateStatus(
+                $order,
+                'picked_up',
+                [],
+                $user
+            );
+            $pickedUpCount++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully picked up {$pickedUpCount} orders.",
+            'picked_up_count' => $pickedUpCount,
         ]);
     }
 

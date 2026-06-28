@@ -40,7 +40,7 @@ class OrderService
             }
 
             $hasDriver = $driverProfileId !== null;
-            $initialStatus = $hasDriver ? 'picked_up' : 'pending';
+            $initialStatus = $hasDriver ? 'assigned' : 'pending';
 
             $order = Order::create([
                 'client_profile_id' => $client->id,
@@ -73,7 +73,7 @@ class OrderService
 
             if ($hasDriver) {
                 $driverName = $driverProfile?->user?->name ?? 'Driver';
-                $this->logTracking($order->id, $actor->id, 'pending', 'picked_up', "Order assigned to driver: {$driverName} and picked up.");
+                $this->logTracking($order->id, $actor->id, 'pending', 'assigned', "Order assigned to driver: {$driverName}.");
             }
 
             // Use data array directly — avoids loading the receiver relation for the job

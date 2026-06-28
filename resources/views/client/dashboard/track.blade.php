@@ -51,6 +51,7 @@
                     @php
                         $statusClass = match($order->status) {
                             'pending'   => 'badge-pending',
+                            'assigned'  => 'badge-info',
                             'picked_up' => 'badge-info',
                             'delivered' => 'badge-success',
                             'rejected'  => 'badge-danger',
@@ -58,6 +59,7 @@
                         };
                         $statusLabel = match($order->status) {
                             'pending'   => __('Pending'),
+                            'assigned'  => __('Assigned'),
                             'picked_up' => __('In Transit'),
                             'delivered' => __('Delivered'),
                             'rejected'  => __('Rejected'),

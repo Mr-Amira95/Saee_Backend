@@ -103,6 +103,7 @@
                 <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1; min-width:0;">
                     <option value="">All Statuses</option>
                     <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>Pending</option>
+                    <option value="assigned"  {{ request('status') === 'assigned'  ? 'selected' : '' }}>Assigned</option>
                     <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
                     <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
                     <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>Rejected</option>
@@ -281,6 +282,7 @@
                                 @php
                                     $statusClasses = [
                                         'pending'   => 'badge-pending',
+                                        'assigned'  => 'badge-info',
                                         'picked_up' => 'badge-info',
                                         'delivered' => 'badge-active',
                                         'rejected'  => 'badge-suspended',

@@ -9,8 +9,8 @@ class OrderObserver
 {
     public function created(Order $order): void
     {
-        // An order created already assigned to a driver and in picked_up state
-        if ($order->driver_id && $order->status === 'picked_up') {
+        // An order created already assigned to a driver
+        if ($order->driver_id && in_array($order->status, ['assigned', 'picked_up'], true)) {
             $this->dispatch($order->driver_id);
         }
     }
@@ -31,15 +31,18 @@ class OrderObserver
         $newStatus = $order->status;
         $oldStatus = $order->getOriginal('status');
 
-        $becamePickedUp  = $statusChanged && $newStatus === 'picked_up';
-        $leftPickedUp    = $statusChanged
-            && $oldStatus === 'picked_up'
+        $isActiveNew = in_array($newStatus, ['assigned', 'picked_up'], true);
+        $isActiveOld = in_array($oldStatus, ['assigned', 'picked_up'], true);
+
+        $becameActive  = $statusChanged && $isActiveNew;
+        $leftActive    = $statusChanged
+            && $isActiveOld
             && in_array($newStatus, ['delivered', 'rejected', 'cancelled', 'returned'], true);
 
-        // Driver was reassigned while order is still active
-        $reassignedPickedUp = $driverChanged && $newStatus === 'picked_up';
+        // Driver was reassigned while order is still active under this driver
+        $reassignedActive = $driverChanged && $isActiveNew;
 
-        if ($becamePickedUp || $leftPickedUp || $reassignedPickedUp) {
+        if ($becameActive || $leftActive || $reassignedActive) {
             $this->dispatch($order->driver_id);
 
             // Also re-optimize the previous driver's route when an order is reassigned

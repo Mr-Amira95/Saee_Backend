@@ -37,6 +37,7 @@ class OrderController extends Controller
 
         $stats = [
             'pending'        => (clone $statsBase)->where('status', 'pending')->count(),
+            'assigned'       => (clone $statsBase)->where('status', 'assigned')->count(),
             'picked_up'      => (clone $statsBase)->where('status', 'picked_up')->count(),
             'rejected'       => (clone $statsBase)->where('status', 'rejected')->count(),
             'returned_today' => (clone $statsBase)->where('status', 'returned')->whereDate('updated_at', today())->count(),
@@ -237,15 +238,15 @@ class OrderController extends Controller
 
         // Status or driver update
         $validated = $request->validate([
-            'status'              => 'required|in:pending,picked_up,delivered,rejected,returned,cancelled',
+            'status'              => 'required|in:pending,assigned,picked_up,delivered,rejected,returned,cancelled',
             'driver_id'           => 'nullable|exists:users,id',
             'rejection_reason_id' => 'nullable|required_if:status,rejected|exists:rejection_reasons,id',
             'notes'               => 'nullable|string',
         ]);
 
-        // Auto-promote to picked_up when a driver is assigned to a pending order
-        if ($request->filled('driver_id') && $validated['status'] === 'pending') {
-            $validated['status'] = 'picked_up';
+        // Auto-promote to assigned when a driver is assigned to a pending or assigned order
+        if ($request->filled('driver_id') && ($validated['status'] === 'pending' || $validated['status'] === 'assigned')) {
+            $validated['status'] = 'assigned';
         }
 
         $extra = [];
@@ -295,14 +296,14 @@ class OrderController extends Controller
         ]);
 
         $orders = Order::whereIn('id', $validated['order_ids'])
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'assigned'])
             ->get();
 
         $assignedOrderIds = [];
         foreach ($orders as $order) {
             $this->orderService->updateStatus(
                 $order,
-                'picked_up',
+                'assigned',
                 ['driver_id' => $validated['driver_id']],
                 Auth::user()
             );
