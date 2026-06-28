@@ -1,7 +1,8 @@
 <aside class="sidebar">
     {{-- Logo --}}
     <div class="sidebar-logo">
-        <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;">
+        <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;">
+        <img id="logoLight" src="{{ asset('saee_logo_logo.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;display:none;">
         <span class="sidebar-logo-text">Admin</span>
     </div>
 

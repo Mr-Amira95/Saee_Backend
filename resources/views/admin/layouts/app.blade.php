@@ -791,6 +791,12 @@ function updateThemeIcons() {
             moon.style.display = 'none';
         }
     }
+    const logoDark  = document.getElementById('logoDark');
+    const logoLight = document.getElementById('logoLight');
+    if (logoDark && logoLight) {
+        logoDark.style.display  = isLight ? 'none'  : '';
+        logoLight.style.display = isLight ? ''      : 'none';
+    }
 }
 
 // Call on load to align icons
