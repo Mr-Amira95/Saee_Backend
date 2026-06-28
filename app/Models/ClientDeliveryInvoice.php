@@ -26,6 +26,8 @@ class ClientDeliveryInvoice extends Model
         'status',
         'notes',
         'created_by',
+        'qr_attachment_path',
+        'electronic_invoice_number',
     ];
 
     protected function casts(): array

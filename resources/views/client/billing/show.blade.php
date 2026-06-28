@@ -133,10 +133,24 @@
                         <span class="info-row-val" style="color:#22c55e; font-weight:600; font-size:.85rem;">{{ \Carbon\Carbon::parse($invoice->paid_at)->format('d M Y H:i') }}</span>
                     </div>
                     @endif
+                    @if($invoice->electronic_invoice_number)
+                    <div class="info-row" style="display:flex; justify-content:space-between;">
+                        <span class="info-row-key" style="color:var(--text-dim); font-size:.8rem;">{{ __('Electronic Invoice #') }}</span>
+                        <span class="info-row-val" style="font-weight:600; font-size:.85rem;">{{ $invoice->electronic_invoice_number }}</span>
+                    </div>
+                    @endif
                     @if($invoice->notes)
                     <div class="info-row" style="display:block; border-top:1px solid var(--bdr); padding-top:10px; margin-top:5px;">
                         <span class="info-row-key" style="color:var(--text-dim); font-size:.8rem; display:block; margin-bottom:5px;">{{ __('Notes') }}</span>
                         <div style="font-size:.82rem;color:var(--text-sub); line-height:1.4;">{{ $invoice->notes }}</div>
+                    </div>
+                    @endif
+                    @if($invoice->qr_attachment_path)
+                    <div class="info-row" style="display:block; border-top:1px solid var(--bdr); padding-top:10px; margin-top:5px;">
+                        <span class="info-row-key" style="color:var(--text-dim); font-size:.8rem; display:block; margin-bottom:5px;">{{ __('QR Code Invoice') }}</span>
+                        <div style="background: white; padding: 10px; border-radius: 8px; display: inline-block;">
+                            <img src="{{ asset('storage/' . $invoice->qr_attachment_path) }}" alt="QR Code" style="max-height: 150px; width: auto; display: block; object-fit: contain;">
+                        </div>
                     </div>
                     @endif
                 </div>

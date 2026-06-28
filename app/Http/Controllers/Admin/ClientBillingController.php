@@ -37,10 +37,18 @@ class ClientBillingController extends Controller
     public function store(Request $request, ClientProfile $client)
     {
         $data = $request->validate([
-            'period_start' => 'required|date',
-            'period_end'   => 'required|date|after_or_equal:period_start',
-            'notes'        => 'nullable|string',
+            'period_start'               => 'required|date',
+            'period_end'                 => 'required|date|after_or_equal:period_start',
+            'discount_amount'            => 'nullable|numeric|min:0',
+            'electronic_invoice_number'  => 'nullable|string|max:100',
+            'qr_attachment'              => 'nullable|image|max:2048',
+            'notes'                      => 'nullable|string',
         ]);
+
+        $qrPath = null;
+        if ($request->hasFile('qr_attachment')) {
+            $qrPath = $request->file('qr_attachment')->store('qr-attachments', 'public');
+        }
 
         $invoice = $this->service->generateDraftInvoice(
             $client,
@@ -48,6 +56,16 @@ class ClientBillingController extends Controller
             Carbon::parse($data['period_end']),
             auth()->user()
         );
+
+        $discount = (float) ($data['discount_amount'] ?? 0);
+
+        $invoice->update([
+            'discount_amount'            => $discount,
+            'net_amount'                 => max(0, $invoice->delivery_amount - $discount),
+            'electronic_invoice_number'  => $data['electronic_invoice_number'] ?? null,
+            'qr_attachment_path'        => $qrPath,
+            'notes'                      => $data['notes'] ?? $invoice->notes,
+        ]);
 
         return redirect()->route('admin.billing.show', $invoice)
             ->with('success', "Draft invoice created with {$invoice->billable_orders} billable orders.");

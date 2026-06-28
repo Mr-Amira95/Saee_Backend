@@ -31,7 +31,7 @@
         that have a delivery fee charged to the client (delivery_on_customer = false) and are not yet billed.
     </div>
 
-    <form method="POST" action="{{ route('admin.billing.store', $client) }}">
+    <form method="POST" action="{{ route('admin.billing.store', $client) }}" enctype="multipart/form-data">
         @csrf
 
         <div class="form-section">
@@ -53,13 +53,24 @@
         </div>
 
         <div class="form-section">
-            <div class="form-section-title">Optional Adjustments</div>
+            <div class="form-section-title">Optional Adjustments & Electronic Invoice Details</div>
             <div class="form-grid-2">
                 <div class="form-group">
                     <label class="form-label">Discount Amount</label>
                     <input type="number" name="discount_amount" class="form-input @error('discount_amount') err @enderror"
                            value="{{ old('discount_amount', 0) }}" step="0.01" min="0" placeholder="0.00">
                     @error('discount_amount')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Electronic Invoice Number</label>
+                    <input type="text" name="electronic_invoice_number" class="form-input @error('electronic_invoice_number') err @enderror"
+                           value="{{ old('electronic_invoice_number') }}" placeholder="e.g. e-inv-123456">
+                    @error('electronic_invoice_number')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">QR Image Attachment</label>
+                    <input type="file" name="qr_attachment" class="form-input @error('qr_attachment') err @enderror" accept="image/*">
+                    @error('qr_attachment')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Notes <span class="opt">(optional)</span></label>

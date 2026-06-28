@@ -176,10 +176,24 @@
                         <span class="info-row-key">Created By</span>
                         <span class="info-row-val">{{ $invoice->createdBy->name ?? '—' }}</span>
                     </div>
+                    @if($invoice->electronic_invoice_number)
+                    <div class="info-row">
+                        <span class="info-row-key">Electronic Invoice #</span>
+                        <span class="info-row-val" style="font-weight:600;">{{ $invoice->electronic_invoice_number }}</span>
+                    </div>
+                    @endif
                     @if($invoice->notes)
                     <div class="info-row" style="display:block;">
                         <span class="info-row-key">Notes</span>
                         <div style="margin-top:6px;font-size:.85rem;color:var(--text-sub);">{{ $invoice->notes }}</div>
+                    </div>
+                    @endif
+                    @if($invoice->qr_attachment_path)
+                    <div class="info-row" style="display:block; border-top: 1px solid var(--bdr); padding-top: 12px; margin-top: 8px;">
+                        <span class="info-row-key" style="margin-bottom:8px; display:block;">QR Code Invoice</span>
+                        <div style="background: white; padding: 10px; border-radius: 8px; display: inline-block;">
+                            <img src="{{ asset('storage/' . $invoice->qr_attachment_path) }}" alt="QR Code" style="max-height: 150px; width: auto; display: block; object-fit: contain;">
+                        </div>
                     </div>
                     @endif
                 </div>
