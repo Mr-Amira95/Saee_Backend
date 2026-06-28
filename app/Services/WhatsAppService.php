@@ -17,6 +17,7 @@ class WhatsAppService
      * @param  string  $phone      Recipient phone number.
      * @param  array   $variables  Map of placeholder names to replacement values.
      * @param  int|null $orderId   Optional order ID for audit logging.
+     * @param  string  $languageCode  Language code (default: 'en_US').
      * @return array{success: bool, log?: WhatsAppLog, error?: string}
      */
     public function sendTemplate(
@@ -24,6 +25,7 @@ class WhatsAppService
         string $phone,
         array  $variables = [],
         ?int   $orderId   = null,
+        string $languageCode = 'en_US'
     ): array {
         // 1. Validate phone
         if (empty(trim($phone))) {
@@ -38,16 +40,36 @@ class WhatsAppService
             return ['success' => false, 'error' => "Template [{$event}] not found."];
         }
 
-        // 3. Replace {{placeholders}}
-        $message = $this->replacePlaceholders($template->template_body, $variables);
-
-        // 4. Normalise phone to international format required by Meta (e.g. 962792856567)
+        // 3. Normalise phone to international format required by Meta (e.g. 962792856567)
         $normalizedPhone = $this->normalizePhone($phone);
 
-        // 5. Send via provider
+        // 4. Send via provider
+        $provider = config('whatsapp.provider', 'meta');
+
+        if ($provider === 'meta') {
+            // Parse placeholders from the template body in order to match Meta's positional parameters ({{1}}, {{2}}, etc.)
+            preg_match_all('/\{\{([^}]+)\}\}/', $template->template_body, $matches);
+            $placeholderNames = $matches[1] ?? [];
+
+            $parameters = [];
+            foreach ($placeholderNames as $name) {
+                $parameters[] = $variables[trim($name)] ?? '';
+            }
+
+            return $this->sendStructuredTemplate(
+                $normalizedPhone,
+                $event, // Meta template name must match event name
+                $languageCode,
+                $parameters,
+                $orderId
+            );
+        }
+
+        // Fallback for non-meta providers
+        $message = $this->replacePlaceholders($template->template_body, $variables);
         $apiResult = $this->sendRawMessage($normalizedPhone, $message);
 
-        // 5. Log to database
+        // Log to database
         $status = $apiResult['success'] ? 'sent' : 'failed';
         $log = WhatsAppLog::create([
             'order_id' => $orderId,

@@ -17,6 +17,9 @@
     .timeline-item:last-child { margin-bottom:0; }
     .timeline-icon { position:absolute; left:-32px; top:2px; width:20px; height:20px; border-radius:50%; background:var(--bg-2); border:2px solid var(--text-dim); z-index:2; display:flex; align-items:center; justify-content:center; }
     .timeline-item.active .timeline-icon { border-color:var(--red-lt); background:var(--red-lt); box-shadow:0 0 10px var(--red-glow); }
+    .timeline-item.status-delivered.active .timeline-icon { border-color:#4ade80; background:#4ade80; box-shadow:0 0 10px rgba(74,222,128,.4); }
+    .timeline-item.status-rejected.active .timeline-icon,
+    .timeline-item.status-cancelled.active .timeline-icon { border-color:#f87171; background:#f87171; box-shadow:0 0 10px rgba(248,113,113,.4); }
     .timeline-item.completed .timeline-icon { border-color:var(--success); background:var(--success); }
     .timeline-time { font-size:.72rem; color:var(--text-dim); font-weight:600; }
     .timeline-title { font-size:.86rem; font-weight:700; color:var(--text); margin-top:2px; }
@@ -204,7 +207,7 @@
         @else
         <div class="timeline">
             @foreach($order->trackingLogs as $log)
-            <div class="timeline-item {{ $loop->first ? 'active' : 'completed' }}">
+            <div class="timeline-item {{ $loop->first ? 'active' : 'completed' }} status-{{ $log->to_status }}">
                 <div class="timeline-icon">
                     @if($log->to_status === 'delivered')
                         <svg width="10" height="10" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -215,7 +218,11 @@
                     @endif
                 </div>
                 <div class="timeline-time">{{ $log->created_at->format('d M Y, H:i') }}</div>
-                <div class="timeline-title">Status: <span style="color:var(--red-lt);">{{ ucfirst(str_replace('_', ' ', $log->to_status)) }}</span></div>
+                <div class="timeline-title">Status: 
+                    <span style="color: {{ $log->to_status === 'delivered' ? '#4ade80' : (in_array($log->to_status, ['rejected', 'cancelled', 'returned']) ? '#f87171' : 'var(--red-lt)') }};">
+                        {{ ucfirst(str_replace('_', ' ', $log->to_status)) }}
+                    </span>
+                </div>
                 <div class="timeline-desc">{{ $log->description }}</div>
                 @if($log->user)
                 <div class="timeline-user">Updated by: {{ $log->user->name }}</div>

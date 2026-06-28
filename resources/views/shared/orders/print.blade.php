@@ -267,10 +267,15 @@
                 </div>
             </div>
 
-            {{-- Barcode --}}
-            <div class="barcode-wrap">
-                <div class="mock-barcode">||| | |||| || | || |||| | ||</div>
-                <div class="barcode-text">*{{ $order->order_number }}*</div>
+            {{-- Barcode / QR Code Wrap --}}
+            <div class="barcode-wrap" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; margin-bottom: 20px;">
+                <div style="text-align: left;">
+                    <div class="mock-barcode" style="font-size: 22px;">||| | |||| || | || |||| | ||</div>
+                    <div class="barcode-text" style="margin-top: 3px;">*{{ $order->order_number }}*</div>
+                </div>
+                <div style="background: white; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; display: inline-flex;">
+                    {!! QrCode::size(55)->generate($order->order_number) !!}
+                </div>
             </div>
 
             {{-- Parties Grid --}}
@@ -284,7 +289,7 @@
                     </div>
                     <div class="info-row">
                         <div class="info-label">Phone:</div>
-                        <div class="info-value">{{ $order->clientProfile?->phone ?? 'N/A' }}</div>
+                        <div class="info-value">{{ $order->clientProfile?->company_phone ?? $order->clientProfile?->masterUser?->phone ?? 'N/A' }}</div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Batch No:</div>
