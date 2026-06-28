@@ -153,6 +153,17 @@
 
         @media (max-width: 1024px) { .brand { display: none; } .form-side { flex: 1; } html, body { overflow: auto; } }
         @media (max-width: 480px) { .form-side { padding: 24px 18px; } .card { padding: 32px 22px; border-radius: 16px; } .card h1 { font-size: 1.5rem; } }
+
+        /* ─── RTL Directional Overrides ──────────────────── */
+        html[dir="rtl"] .brand { border-left: 1px solid rgba(220,38,38,0.08); border-right: none; }
+        html[dir="rtl"] .brand-inner { transform: translateX(36px); }
+        html[dir="rtl"] .field-icon { right: 14px; left: auto; }
+        html[dir="rtl"] .pwd-btn { left: 13px; right: auto; }
+        html[dir="rtl"] .country-btn { padding: 0 12px 0 9px; border-left: 1px solid var(--input-bdr); border-right: none; border-radius: 0 11px 11px 0; }
+        html[dir="rtl"] .phone-wrap input[type="tel"] { border-radius: 11px 0 0 11px !important; }
+        html[dir="rtl"] .country-dropdown { right: 0; left: auto; }
+        html[dir="rtl"] .country-chevron { margin-right: 2px; margin-left: 0; }
+        html[dir="rtl"] .btn:hover .btn-arrow { transform: translateX(-4px); }
     </style>
 </head>
 <body>
@@ -193,9 +204,9 @@
                 <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee" width="44" height="44" style="object-fit:contain;border-radius:10px;">
             </div>
 
-            <span class="badge"><span class="badge-dot"></span>Logistics Portal</span>
-            <h1>Welcome back</h1>
-            <p class="sub">Sign in to your account</p>
+            <span class="badge"><span class="badge-dot"></span>{{ __('Logistics Portal') }}</span>
+            <h1>{{ __('Welcome back') }}</h1>
+            <p class="sub">{{ __('Sign in to your account') }}</p>
 
             @if ($errors->any())
                 <div class="alert alert-err">{{ $errors->first() }}</div>
@@ -209,26 +220,26 @@
 
                 {{-- Phone --}}
                 <div class="field f1">
-                    <label class="field-label" for="phoneLocal">Phone Number</label>
+                    <label class="field-label" for="phoneLocal">{{ __('Phone Number') }}</label>
                     <div class="field-wrap phone-wrap{{ $errors->has('phone') ? ' has-error' : '' }}">
-                        <button type="button" class="country-btn" id="countryBtn" aria-label="Select country code">
+                        <button type="button" class="country-btn" id="countryBtn" aria-label="{{ __('Select country code') }}">
                             <span class="country-flag" id="countryFlag">🇯🇴</span>
                             <span class="country-dial" id="countryDial">+962</span>
                             <svg class="country-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div class="country-dropdown" id="countryDropdown">
-                            <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">Jordan</span><span class="opt-dial">+962</span></div>
-                            <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">Saudi Arabia</span><span class="opt-dial">+966</span></div>
-                            <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">UAE</span><span class="opt-dial">+971</span></div>
-                            <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">Kuwait</span><span class="opt-dial">+965</span></div>
-                            <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">Qatar</span><span class="opt-dial">+974</span></div>
-                            <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">Bahrain</span><span class="opt-dial">+973</span></div>
-                            <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">Oman</span><span class="opt-dial">+968</span></div>
-                            <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">Egypt</span><span class="opt-dial">+20</span></div>
-                            <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">Palestine</span><span class="opt-dial">+970</span></div>
-                            <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">Lebanon</span><span class="opt-dial">+961</span></div>
-                            <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">Iraq</span><span class="opt-dial">+964</span></div>
-                            <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">Syria</span><span class="opt-dial">+963</span></div>
+                            <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">{{ __('Jordan') }}</span><span class="opt-dial">+962</span></div>
+                            <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">{{ __('Saudi Arabia') }}</span><span class="opt-dial">+966</span></div>
+                            <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">{{ __('UAE') }}</span><span class="opt-dial">+971</span></div>
+                            <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">{{ __('Kuwait') }}</span><span class="opt-dial">+965</span></div>
+                            <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">{{ __('Qatar') }}</span><span class="opt-dial">+974</span></div>
+                            <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">{{ __('Bahrain') }}</span><span class="opt-dial">+973</span></div>
+                            <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">{{ __('Oman') }}</span><span class="opt-dial">+968</span></div>
+                            <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">{{ __('Egypt') }}</span><span class="opt-dial">+20</span></div>
+                            <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">{{ __('Palestine') }}</span><span class="opt-dial">+970</span></div>
+                            <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">{{ __('Lebanon') }}</span><span class="opt-dial">+961</span></div>
+                            <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">{{ __('Iraq') }}</span><span class="opt-dial">+964</span></div>
+                            <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">{{ __('Syria') }}</span><span class="opt-dial">+963</span></div>
                         </div>
                         <input id="phoneLocal" type="tel" placeholder="7xxxxxxxx" autocomplete="tel" autofocus>
                         <input type="hidden" name="phone" id="phoneHidden">
@@ -237,13 +248,13 @@
 
                 {{-- Password --}}
                 <div class="field f2">
-                    <label class="field-label" for="password">Password</label>
+                    <label class="field-label" for="password">{{ __('Password') }}</label>
                     <div class="field-wrap">
                         <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
                         <input id="password" name="password" type="password" placeholder="••••••••••" autocomplete="current-password">
-                        <button type="button" class="pwd-btn" id="pwdToggle" aria-label="Toggle password">
+                        <button type="button" class="pwd-btn" id="pwdToggle" aria-label="{{ __('Toggle password') }}">
                             <svg id="eyeIcon" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -255,21 +266,21 @@
                 <div class="extras f3">
                     <label class="check-wrap">
                         <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
-                        Remember me
+                        {{ __('Remember me') }}
                     </label>
-                    <a href="{{ route('portal.forgot-password') }}" class="forgot">Forgot password?</a>
+                    <a href="{{ route('portal.forgot-password') }}" class="forgot">{{ __('Forgot password?') }}</a>
                 </div>
 
                 <button type="submit" class="btn f4" id="submitBtn">
                     <div class="spinner"></div>
-                    <span class="btn-text">Sign In</span>
+                    <span class="btn-text">{{ __('Sign In') }}</span>
                     <svg class="btn-arrow" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                     </svg>
                 </button>
             </form>
 
-            <p class="card-footer f5">&copy; {{ date('Y') }} Sa'ee LogisticsServices. All rights reserved.</p>
+            <p class="card-footer f5">&copy; {{ date('Y') }} Sa'ee LogisticsServices. {{ __('All rights reserved.') }}</p>
         </div>
     </div>
 

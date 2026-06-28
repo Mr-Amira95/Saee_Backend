@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Set — Sa'ee Logistics</title>
+    <title>{{ __('Password Set') }} — Sa'ee Logistics</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,8 +35,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
     </div>
-    <h1>You're all set!</h1>
-    <p>Your password has been created and your Sa'ee Logistics account is now active. You can close this window.</p>
+    <h1>{{ __('You\'re all set!') }}</h1>
+    <p>{{ __('Your password has been created and your Sa\'ee Logistics account is now active. You can close this window.') }}</p>
 </div>
 </body>
 </html>

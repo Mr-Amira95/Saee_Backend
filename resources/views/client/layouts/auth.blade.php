@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="ltr">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -131,6 +131,16 @@
         .country-option .opt-flag { font-size:.95rem; flex-shrink:0; }
         .country-option .opt-name { flex:1; }
         .country-option .opt-dial { color:rgba(255,255,255,.38); font-size:.78rem; flex-shrink:0; }
+
+        /* ─── RTL Directional Overrides ──────────────────── */
+        html[dir="rtl"] .brand { border-left: 1px solid rgba(220,38,38,0.08); border-right: none; }
+        html[dir="rtl"] .brand-inner { transform: translateX(36px); }
+        html[dir="rtl"] .field-icon { right: 14px; left: auto; }
+        html[dir="rtl"] .pwd-btn { left: 13px; right: auto; }
+        html[dir="rtl"] .country-btn { padding: 0 12px 0 9px; border-left: 1px solid var(--input-bdr); border-right: none; border-radius: 0 11px 11px 0; }
+        html[dir="rtl"] .phone-wrap input[type="tel"] { border-radius: 11px 0 0 11px !important; }
+        html[dir="rtl"] .country-dropdown { right: 0; left: auto; }
+        html[dir="rtl"] .country-chevron { margin-right: 2px; margin-left: 0; }
     </style>
 </head>
 <body>
@@ -148,13 +158,13 @@
         <div class="brand-inner">
             <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee" style="width:280px;max-width:100%;filter:drop-shadow(0 4px 24px rgba(0,0,0,.45));">
             <div>
-                <p class="brand-headline">Your Business,<br><em>Delivered.</em></p>
-                <p class="brand-sub">SAEE CLIENT PORTAL</p>
+                <p class="brand-headline">{{ __('Your Business,') }}<br><em>{{ __('Delivered.') }}</em></p>
+                <p class="brand-sub">{{ __('SAEE CLIENT PORTAL') }}</p>
             </div>
             <div class="pills">
-                <span class="pill"><span class="pill-dot"></span> Track Orders</span>
-                <span class="pill"><span class="pill-dot"></span> Manage Shipments</span>
-                <span class="pill"><span class="pill-dot"></span> Real-time Updates</span>
+                <span class="pill"><span class="pill-dot"></span> {{ __('Track Orders') }}</span>
+                <span class="pill"><span class="pill-dot"></span> {{ __('Manage Shipments') }}</span>
+                <span class="pill"><span class="pill-dot"></span> {{ __('Real-time Updates') }}</span>
             </div>
         </div>
     </div>

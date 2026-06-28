@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print Order Waybills</title>
+    <title>{{ __('Print Order Waybills') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -244,11 +244,16 @@
                 break-after: avoid;
             }
         }
+
+        /* ─── RTL Directional Overrides ──────────────────── */
+        html[dir="rtl"] .waybill-title { text-align: left; }
+        html[dir="rtl"] .company-info { text-align: right; flex-direction: row-reverse; }
+        html[dir="rtl"] .finance-summary { margin-right: 0; margin-left: auto; }
     </style>
 </head>
 <body>
 
-    <button onclick="window.print()" class="no-print-btn">Print Now</button>
+    <button onclick="window.print()" class="no-print-btn">{{ __('Print Now') }}</button>
 
     @foreach($orders as $order)
     <div class="print-page">
@@ -264,9 +269,9 @@
                     </div>
                 </div>
                 <div class="waybill-title">
-                    <h2>DELIVERY WAYBILL</h2>
+                    <h2>{{ __('DELIVERY WAYBILL') }}</h2>
                     <div class="order-no">#{{ $order->order_number }}</div>
-                    <div class="order-date">Date: {{ $order->created_at?->format('Y-m-d H:i') }}</div>
+                    <div class="order-date">{{ __('Date:') }} {{ $order->created_at?->format('Y-m-d H:i') }}</div>
                 </div>
             </div>
 
@@ -282,40 +287,40 @@
             <div class="parties-grid">
                 {{-- Sender --}}
                 <div class="info-card">
-                    <h3>Sender (Client)</h3>
+                    <h3>{{ __('Sender (Client)') }}</h3>
                     <div class="info-row">
-                        <div class="info-label">Company:</div>
+                        <div class="info-label">{{ __('Company:') }}</div>
                         <div class="info-value">{{ $order->clientProfile?->company_name ?? 'N/A' }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Phone:</div>
+                        <div class="info-label">{{ __('Phone:') }}</div>
                         <div class="info-value">{{ $order->clientProfile?->company_phone ?? $order->clientProfile?->masterUser?->phone ?? 'N/A' }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Batch No:</div>
+                        <div class="info-label">{{ __('Batch No:') }}</div>
                         <div class="info-value">{{ $order->batch_number ?? 'N/A' }}</div>
                     </div>
                 </div>
 
                 {{-- Receiver --}}
                 <div class="info-card">
-                    <h3>Receiver (Customer)</h3>
+                    <h3>{{ __('Receiver (Customer)') }}</h3>
                     <div class="info-row">
-                        <div class="info-label">Name:</div>
+                        <div class="info-label">{{ __('Name:') }}</div>
                         <div class="info-value">{{ $order->receiver?->receiver_name }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Phone:</div>
+                        <div class="info-label">{{ __('Phone:') }}</div>
                         <div class="info-value">{{ $order->receiver?->receiver_phone }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Destination:</div>
+                        <div class="info-label">{{ __('Destination:') }}</div>
                         <div class="info-value">
                             {{ $order->receiver?->city?->name ?? 'N/A' }} - {{ $order->receiver?->area?->name ?? 'N/A' }}
                         </div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Address:</div>
+                        <div class="info-label">{{ __('Address:') }}</div>
                         <div class="info-value">{{ $order->receiver?->address_text }}</div>
                     </div>
                 </div>
@@ -323,36 +328,36 @@
 
             {{-- Shipment Details --}}
             <div class="shipment-details">
-                <h3>Shipment Specifications</h3>
+                <h3>{{ __('Shipment Specifications') }}</h3>
                 <div class="details-grid">
                     <div>
                         <div class="info-row">
-                            <div class="info-label">Description:</div>
-                            <div class="info-value">{{ $order->order_description ?? 'No description' }}</div>
+                            <div class="info-label">{{ __('Description:') }}</div>
+                            <div class="info-value">{{ $order->order_description ?? __('No description') }}</div>
                         </div>
                         <div class="info-row">
-                            <div class="info-label">Shift:</div>
+                            <div class="info-label">{{ __('Shift:') }}</div>
                             <div class="info-value">
                                 @if($order->delivery_shift === 'before_12pm')
-                                    Before 12 PM (Morning)
+                                    {{ __('Before 12 PM (Morning)') }}
                                 @elseif($order->delivery_shift === 'after_12pm')
-                                    After 12 PM (Evening)
+                                    {{ __('After 12 PM (Evening)') }}
                                 @else
-                                    Doesn't Matter
+                                    {{ __('Doesn\'t Matter') }}
                                 @endif
                             </div>
                         </div>
                     </div>
                     <div>
                         <div class="info-row">
-                            <div class="info-label">Payment:</div>
+                            <div class="info-label">{{ __('Payment:') }}</div>
                             <div class="info-value" style="text-transform: uppercase; font-weight: bold;">
                                 {{ $order->payment?->payment_type ?? 'N/A' }}
                             </div>
                         </div>
                         <div class="info-row">
-                            <div class="info-label">Notes:</div>
-                            <div class="info-value">{{ $order->notes ?? 'None' }}</div>
+                            <div class="info-label">{{ __('Notes:') }}</div>
+                            <div class="info-value">{{ $order->notes ?? __('None') }}</div>
                         </div>
                     </div>
                 </div>
@@ -361,15 +366,15 @@
             {{-- Finance Summary --}}
             <div class="finance-summary">
                 <div class="finance-row">
-                    <span>Order Price:</span>
+                    <span>{{ __('Order Price:') }}</span>
                     <span>{{ number_format($order->payment?->order_amount ?? 0, 2) }} JOD</span>
                 </div>
                 <div class="finance-row">
-                    <span>Delivery Charge:</span>
+                    <span>{{ __('Delivery Charge:') }}</span>
                     <span>{{ number_format($order->payment?->customer_delivery_amount ?? 0, 2) }} JOD</span>
                 </div>
                 <div class="finance-row">
-                    <span>Total Cash to Collect:</span>
+                    <span>{{ __('Total Cash to Collect:') }}</span>
                     <span class="finance-val highlight">
                         @if(($order->payment?->payment_type ?? 'cod') === 'cod')
                             {{ number_format(($order->payment?->order_amount ?? 0) + ($order->payment?->customer_delivery_amount ?? 0), 2) }} JOD
@@ -385,11 +390,11 @@
         <div class="signatures">
             <div class="sig-block">
                 <div class="sig-line"></div>
-                <div class="sig-label">Courier Signature &amp; Date</div>
+                <div class="sig-label">{{ __('Courier Signature & Date') }}</div>
             </div>
             <div class="sig-block">
                 <div class="sig-line"></div>
-                <div class="sig-label">Receiver Signature &amp; Date</div>
+                <div class="sig-label">{{ __('Receiver Signature & Date') }}</div>
             </div>
         </div>
     </div>

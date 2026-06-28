@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Sa'ee Logistics — Customer Portal</title>
+    <title>{{ __('Sa\'ee Logistics — Customer Portal') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -263,6 +263,11 @@
         .rating-stars label:active {
             transform: scale(.9);
         }
+
+        /* ─── RTL Directional Overrides ──────────────────── */
+        html[dir="rtl"] .order-card { text-align: right; }
+        html[dir="rtl"] .driver-info { flex-direction: row-reverse; }
+        html[dir="rtl"] .rating-stars { flex-direction: row; }
     </style>
 </head>
 <body>
@@ -282,32 +287,32 @@
         {{-- Dynamic Header --}}
         @if(in_array($order->status, ['delivered', 'rejected']))
             <div class="header">
-                <h1>Rate Your Delivery</h1>
-                <p>We value your feedback. Please rate your delivery agent, {{ $order->driver->name ?? 'our driver' }}.</p>
+                <h1>{{ __('Rate Your Delivery') }}</h1>
+                <p>{{ __('We value your feedback. Please rate your delivery agent,') }} {{ $order->driver->name ?? __('our driver') }}.</p>
             </div>
         @else
             <div class="header">
-                <h1>Delivery Location Sharing</h1>
-                <p>Please share your exact GPS location so our delivery driver can reach you quickly.</p>
+                <h1>{{ __('Delivery Location Sharing') }}</h1>
+                <p>{{ __('Please share your exact GPS location so our delivery driver can reach you quickly.') }}</p>
             </div>
         @endif
 
         {{-- Order Summary Card --}}
         <div class="order-card">
             <div class="order-row">
-                <span class="order-lbl">Order Number:</span>
+                <span class="order-lbl">{{ __('Order Number:') }}</span>
                 <span class="order-val">#{{ $order->order_number }}</span>
             </div>
             <div class="order-row">
-                <span class="order-lbl">Recipient:</span>
+                <span class="order-lbl">{{ __('Recipient:') }}</span>
                 <span class="order-val">{{ $order->receiver_name }}</span>
             </div>
             <div class="order-row">
-                <span class="order-lbl">City / Area:</span>
+                <span class="order-lbl">{{ __('City / Area:') }}</span>
                 <span class="order-val">{{ $order->city->name }} / {{ $order->area->name }}</span>
             </div>
             <div class="order-row">
-                <span class="order-lbl">Address:</span>
+                <span class="order-lbl">{{ __('Address:') }}</span>
                 <span class="order-val">{{ $order->address_text }}</span>
             </div>
             @if($order->driver)
@@ -316,9 +321,9 @@
                     <div class="driver-avatar">{{ strtoupper(substr($order->driver->name,0,2)) }}</div>
                     <div class="driver-details">
                         <div class="driver-name">{{ $order->driver->name }}</div>
-                        <div class="driver-phone">Delivery Agent</div>
+                        <div class="driver-phone">{{ __('Delivery Agent') }}</div>
                     </div>
-                    <a href="tel:{{ $order->driver->phone }}" class="call-btn">Call Driver</a>
+                    <a href="tel:{{ $order->driver->phone }}" class="call-btn">{{ __('Call Driver') }}</a>
                 </div>
             </div>
             @endif
@@ -335,9 +340,9 @@
                                 {!! $i <= $order->driverRating->rating ? '&#9733;' : '&#9734;' !!}
                             @endfor
                         </div>
-                        <h3>Feedback Submitted!</h3>
+                        <h3>{{ __('Feedback Submitted!') }}</h3>
                         <p style="margin-top:8px;font-size:.82rem;color:var(--text-sub)">
-                            You rated our driver {{ $order->driverRating->rating }} out of 5 stars.
+                            {{ __('You rated our driver') }} {{ $order->driverRating->rating }} {{ __('out of 5 stars.') }}
                             @if($order->driverRating->comment)
                                 <br><em style="display:block;margin-top:8px;color:#fff;font-style:normal;background:rgba(255,255,255,.03);padding:8px;border-radius:6px;">"{{ $order->driverRating->comment }}"</em>
                             @endif
@@ -353,15 +358,15 @@
                         <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star">&#9733;</label>
                     </div>
                     
-                    <div style="margin-bottom:18px; display:flex; flex-direction:column; gap:6px; text-align:left;">
-                        <label style="font-size:.7rem; font-weight:700; color:var(--text-sub); text-transform:uppercase; letter-spacing:.05em;" for="comment">Comments (Optional)</label>
-                        <textarea id="comment" placeholder="Describe your experience with our driver..." style="width:100%; min-height:80px; background:var(--in-bg); border:1px solid var(--bdr); border-radius:9px; padding:10px; color:var(--text); font-family:inherit; font-size:.84rem; outline:none; resize:vertical; transition:border-color .2s;"></textarea>
+                    <div style="margin-bottom:18px; display:flex; flex-direction:column; gap:6px; text-align:{{ app()->getLocale() === 'ar' ? 'right' : 'left' }};">
+                        <label style="font-size:.7rem; font-weight:700; color:var(--text-sub); text-transform:uppercase; letter-spacing:.05em;" for="comment">{{ __('Comments (Optional)') }}</label>
+                        <textarea id="comment" placeholder="{{ __('Describe your experience with our driver...') }}" style="width:100%; min-height:80px; background:var(--in-bg); border:1px solid var(--bdr); border-radius:9px; padding:10px; color:var(--text); font-family:inherit; font-size:.84rem; outline:none; resize:vertical; transition:border-color .2s;"></textarea>
                     </div>
 
                     <button class="btn-share" id="submitRatingBtn" onclick="submitRating()">
-                        Submit Feedback
+                        {{ __('Submit Feedback') }}
                     </button>
-                    <div class="status-msg info" id="statusMsg">Your feedback helps us monitor and improve driver delivery quality.</div>
+                    <div class="status-msg info" id="statusMsg">{{ __('Your feedback helps us monitor and improve driver delivery quality.') }}</div>
                 @endif
             @else
                 {{-- Location Sharing --}}
@@ -370,18 +375,41 @@
                 </div>
                 <button class="btn-share" id="shareBtn" onclick="requestLocation()">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12.432 0c1.34 0 2.01.67 2.01 2.01v4.302c3.086.536 5.432 3.216 5.432 6.488s-2.346 5.952-5.432 6.488v2.702c0 1.34-.67 2.01-2.01 2.01h-.864c-1.34 0-2.01-.67-2.01-2.01v-2.702c-3.086-.536-5.432-3.216-5.432-6.488s2.346-5.952 5.432-6.488v-4.302c0-1.34.67-2.01 2.01-2.01h.864zM12 10a2 2 0 100 4 2 2 0 000-4z"/></svg>
-                    Share My Location
+                    {{ __('Share My Location') }}
                 </button>
-                <div class="status-msg info" id="statusMsg">We only use this to ensure prompt delivery of your package.</div>
+                <div class="status-msg info" id="statusMsg">{{ __('We only use this to ensure prompt delivery of your package.') }}</div>
             @endif
         </div>
 
         <div class="footer">
-            Powered by Sa'ee Logistics System
+            {{ __('Powered by Sa\'ee Logistics System') }}
         </div>
     </div>
 
     <script>
+        /* Blade-to-JS translation map */
+        const _t = {
+            'Please select a star rating first.': '{{ __("Please select a star rating first.") }}',
+            'Submitting...': '{{ __("Submitting...") }}',
+            'Recording your review...': '{{ __("Recording your review...") }}',
+            'Submit Feedback': '{{ __("Submit Feedback") }}',
+            'Failed to submit rating.': '{{ __("Failed to submit rating.") }}',
+            'Network error. Please try again.': '{{ __("Network error. Please try again.") }}',
+            'Feedback Received!': '{{ __("Feedback Received!") }}',
+            'Thank you for rating our delivery agent. Your review has been saved successfully.': '{{ __("Thank you for rating our delivery agent. Your review has been saved successfully.") }}',
+            'Locating...': '{{ __("Locating...") }}',
+            'Requesting browser location permission...': '{{ __("Requesting browser location permission...") }}',
+            'Share My Location': '{{ __("Share My Location") }}',
+            'Location permission denied. Please allow location access in your browser settings to share.': '{{ __("Location permission denied. Please allow location access in your browser settings to share.") }}',
+            'Location information is unavailable. Please try again.': '{{ __("Location information is unavailable. Please try again.") }}',
+            'The request to get user location timed out. Please try again.': '{{ __("The request to get user location timed out. Please try again.") }}',
+            'An unknown error occurred.': '{{ __("An unknown error occurred.") }}',
+            'Saving coordinates to our secure system...': '{{ __("Saving coordinates to our secure system...") }}',
+            'Failed to update location.': '{{ __("Failed to update location.") }}',
+            'Coordinates Received!': '{{ __("Coordinates Received!") }}',
+            'Thank you for sharing your coordinates. Our delivery agent has been notified and will proceed to your location.': '{{ __("Thank you for sharing your coordinates. Our delivery agent has been notified and will proceed to your location.") }}',
+        };
+
         /* Submit Driver Rating */
         function submitRating() {
             const star = document.querySelector('input[name="rating"]:checked');
@@ -390,14 +418,14 @@
             const submitBtn = document.getElementById('submitRatingBtn');
 
             if (!star) {
-                showError('Please select a star rating first.');
+                showError(_t['Please select a star rating first.']);
                 return;
             }
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `Submitting...`;
+            submitBtn.innerHTML = `${_t['Submitting...']} `;
             status.className = 'status-msg info';
-            status.textContent = 'Recording your review...';
+            status.textContent = _t['Recording your review...'];
 
             fetch(window.location.pathname, {
                 method: 'POST',
@@ -413,14 +441,14 @@
                     showRatingSuccess(star.value, comment);
                 } else {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = `Submit Feedback`;
-                    showError(data.message || 'Failed to submit rating.');
+                    submitBtn.innerHTML = `${_t['Submit Feedback']}`;
+                    showError(data.message || _t['Failed to submit rating.']);
                 }
             })
             .catch(err => {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = `Submit Feedback`;
-                showError('Network error. Please try again.');
+                submitBtn.innerHTML = `${_t['Submit Feedback']}`;
+                showError(_t['Network error. Please try again.']);
             });
         }
 
@@ -433,9 +461,9 @@
             actionBox.innerHTML = `
                 <div class="status-msg success" style="display:block;">
                     <div style="font-size: 2.2rem; color: #fbbf24; margin-bottom: 12px; letter-spacing: 2px;">${starsHtml}</div>
-                    <h3>Feedback Received!</h3>
+                    <h3>${_t['Feedback Received!']}</h3>
                     <p style="margin-top:8px;font-size:.82rem;color:var(--text-sub)">
-                        Thank you for rating our delivery agent. Your review has been saved successfully.
+                        ${_t['Thank you for rating our delivery agent. Your review has been saved successfully.']}
                         \${comment ? `<br><em style="display:block;margin-top:8px;color:#fff;font-style:normal;background:rgba(255,255,255,.03);padding:8px;border-radius:6px;">"\${comment}"</em>` : ''}
                     </p>
                 </div>
@@ -448,14 +476,14 @@
             const status = document.getElementById('statusMsg');
 
             if (!navigator.geolocation) {
-                showError('Geolocation is not supported by your browser. Please copy and share your coordinates manually.');
+                showError('{{ __("Geolocation is not supported by your browser. Please copy and share your coordinates manually.") }}');
                 return;
             }
 
             btn.disabled = true;
-            btn.innerHTML = `<svg style="animation: spin 1s linear infinite" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18"/></svg> Locating...`;
+            btn.innerHTML = `<svg style="animation: spin 1s linear infinite" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18"/></svg> ${_t['Locating...']} `;
             status.className = 'status-msg info';
-            status.textContent = 'Requesting browser location permission...';
+            status.textContent = _t['Requesting browser location permission...'];
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -465,20 +493,20 @@
                 },
                 (error) => {
                     btn.disabled = false;
-                    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12.432 0c1.34 0 2.01.67 2.01 2.01v4.302c3.086.536 5.432 3.216 5.432 6.488s-2.346 5.952-5.432 6.488v2.702c0 1.34-.67 2.01-2.01 2.01h-.864c-1.34 0-2.01-.67-2.01-2.01v-2.702c-3.086-.536-5.432-3.216-5.432-6.488s2.346-5.952 5.432-6.488v-4.302c0-1.34.67-2.01 2.01-2.01h.864zM12 10a2 2 0 100 4 2 2 0 000-4z"/></svg> Share My Location`;
-                    
+                    btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12.432 0c1.34 0 2.01.67 2.01 2.01v4.302c3.086.536 5.432 3.216 5.432 6.488s-2.346 5.952-5.432 6.488v2.702c0 1.34-.67 2.01-2.01 2.01h-.864c-1.34 0-2.01-.67-2.01-2.01v-2.702c-3.086-.536-5.432-3.216-5.432-6.488s2.346-5.952 5.432-6.488v-4.302c0-1.34.67-2.01 2.01-2.01h.864zM12 10a2 2 0 100 4 2 2 0 000-4z"/></svg> ${_t['Share My Location']}`;
+
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
-                            showError('Location permission denied. Please allow location access in your browser settings to share.');
+                            showError(_t['Location permission denied. Please allow location access in your browser settings to share.']);
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            showError('Location information is unavailable. Please try again.');
+                            showError(_t['Location information is unavailable. Please try again.']);
                             break;
                         case error.TIMEOUT:
-                            showError('The request to get user location timed out. Please try again.');
+                            showError(_t['The request to get user location timed out. Please try again.']);
                             break;
                         default:
-                            showError('An unknown error occurred.');
+                            showError(_t['An unknown error occurred.']);
                             break;
                     }
                 },
@@ -489,7 +517,7 @@
         function submitLocation(lat, lng) {
             const status = document.getElementById('statusMsg');
             status.className = 'status-msg info';
-            status.textContent = 'Saving coordinates to our secure system...';
+            status.textContent = _t['Saving coordinates to our secure system...'];
 
             fetch(window.location.pathname, {
                 method: 'POST',
@@ -504,11 +532,11 @@
                 if (data.success) {
                     showSuccess();
                 } else {
-                    showError(data.message || 'Failed to update location.');
+                    showError(data.message || _t['Failed to update location.']);
                 }
             })
             .catch(err => {
-                showError('Network error. Please try again.');
+                showError(_t['Network error. Please try again.']);
             });
         }
 
@@ -525,8 +553,8 @@
                     <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <h3>Coordinates Received!</h3>
-                    <p style="margin-top:8px;font-size:.82rem;color:var(--text-sub)">Thank you for sharing your coordinates. Our delivery agent has been notified and will proceed to your location.</p>
+                    <h3>${_t['Coordinates Received!']}</h3>
+                    <p style="margin-top:8px;font-size:.82rem;color:var(--text-sub)">${_t['Thank you for sharing your coordinates. Our delivery agent has been notified and will proceed to your location.']}</p>
                 </div>
             `;
         }

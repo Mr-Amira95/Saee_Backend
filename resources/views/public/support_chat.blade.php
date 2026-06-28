@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Sa'ee Logistics — Customer Support Desk</title>
+    <title>{{ __('Sa\'ee Logistics — Customer Support Desk') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -185,6 +185,14 @@
         .chat-send-btn:hover {
             opacity: .95;
         }
+
+        /* ─── RTL Directional Overrides ──────────────────── */
+        html[dir="rtl"] .msg-wrap.outgoing { align-self: flex-start; }
+        html[dir="rtl"] .msg-wrap.incoming { align-self: flex-end; }
+        html[dir="rtl"] .incoming .msg-bubble { border-top-left-radius: 12px; border-top-right-radius: 2px; }
+        html[dir="rtl"] .outgoing .msg-bubble { border-top-right-radius: 12px; border-top-left-radius: 2px; }
+        html[dir="rtl"] .msg-wrap.outgoing .msg-sender { text-align: left; }
+        html[dir="rtl"] .msg-wrap.outgoing .msg-time { text-align: left; }
     </style>
 </head>
 <body>
@@ -202,10 +210,10 @@
         <div class="chat-header">
             <h1>{{ $ticket->title }}</h1>
             <p>
-                Ticket: <strong>#{{ $ticket->ticket_number }}</strong> &bull; 
-                Status: <span style="font-weight:700; color: {{ $ticket->status === 'resolved' ? '#4ade80' : '#fcd34d' }}">{{ strtoupper(str_replace('_',' ',$ticket->status)) }}</span>
+                {{ __('Ticket:') }} <strong>#{{ $ticket->ticket_number }}</strong> &bull;
+                {{ __('Status:') }} <span style="font-weight:700; color: {{ $ticket->status === 'resolved' ? '#4ade80' : '#fcd34d' }}">{{ strtoupper(str_replace('_',' ',$ticket->status)) }}</span>
                 @if($ticket->order)
-                    &bull; Order: #{{ $ticket->order->order_number }}
+                    &bull; {{ __('Order:') }} #{{ $ticket->order->order_number }}
                 @endif
             </p>
         </div>
@@ -226,12 +234,12 @@
             @if($ticket->status !== 'resolved')
                 <form id="publicChatForm" action="{{ route('public.support.send', $ticket->token) }}" method="POST" class="chat-form" onsubmit="handleFormSubmit(event)">
                     @csrf
-                    <textarea id="publicChatInput" name="message" class="chat-input" placeholder="Type your message to support desk..." rows="1"></textarea>
-                    <button type="submit" id="publicSendBtn" class="chat-send-btn">Send</button>
+                    <textarea id="publicChatInput" name="message" class="chat-input" placeholder="{{ __('Type your message to support desk...') }}" rows="1"></textarea>
+                    <button type="submit" id="publicSendBtn" class="chat-send-btn">{{ __('Send') }}</button>
                 </form>
             @else
                 <div style="text-align: center; color: var(--text-dim); font-size: .8rem; font-style: italic;">
-                    This ticket has been marked as resolved by Sa'ee Admin.
+                    {{ __('This ticket has been marked as resolved by Sa\'ee Admin.') }}
                 </div>
             @endif
         </div>

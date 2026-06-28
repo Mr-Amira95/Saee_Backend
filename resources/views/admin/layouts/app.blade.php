@@ -875,10 +875,20 @@ function toggleNotifDropdown(e) {
     // Position relative to the bell button, escaping any stacking context
     const rect = bell.getBoundingClientRect();
     const dropW = 320;
-    let left = rect.right - dropW;
-    if (left < 8) left = 8;
+    const isRtl = document.documentElement.dir === 'rtl';
     dropdown.style.top  = (rect.bottom + 8) + 'px';
-    dropdown.style.left = left + 'px';
+    if (isRtl) {
+        // In RTL layouts align from the left edge of the bell button
+        let leftPos = rect.left;
+        if (leftPos + dropW > window.innerWidth - 8) leftPos = window.innerWidth - dropW - 8;
+        dropdown.style.left  = leftPos + 'px';
+        dropdown.style.right = 'auto';
+    } else {
+        let left = rect.right - dropW;
+        if (left < 8) left = 8;
+        dropdown.style.left  = left + 'px';
+        dropdown.style.right = 'auto';
+    }
     dropdown.style.display = 'block';
 }
 

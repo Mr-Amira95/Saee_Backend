@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Set Your Password — Sa'ee Logistics</title>
+    <title>{{ __('Set Your Password') }} — Sa'ee Logistics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -128,6 +128,11 @@
         .req-item.met { color: #4ade80; }
         .req-icon { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 9px; transition: background .2s; }
         .req-item.met .req-icon { background: #4ade80; border-color: #4ade80; color: #052e16; }
+
+        /* ─── RTL Directional Overrides ──────────────────── */
+        html[dir="rtl"] .field-icon { right: 14px; left: auto; }
+        html[dir="rtl"] .pwd-btn { left: 12px; right: auto; }
+        html[dir="rtl"] .field-input { padding: 12px 44px 12px 44px; }
     </style>
 </head>
 <body>
@@ -149,11 +154,11 @@
 
         {{-- Badge --}}
         <div style="text-align:center; margin-bottom:20px;">
-            <span class="badge"><span class="badge-dot"></span>Account Setup</span>
+            <span class="badge"><span class="badge-dot"></span>{{ __('Account Setup') }}</span>
         </div>
 
-        <h1 style="text-align:center;">Set Your Password</h1>
-        <p class="sub" style="text-align:center;">Create a strong password to activate your Sa'ee Logistics account.</p>
+        <h1 style="text-align:center;">{{ __('Set Your Password') }}</h1>
+        <p class="sub" style="text-align:center;">{{ __('Create a strong password to activate your Sa\'ee Logistics account.') }}</p>
 
         {{-- Errors --}}
         @if($errors->any())
@@ -170,7 +175,7 @@
 
             {{-- Email (display only) --}}
             <div class="field">
-                <label class="field-label">Email Address</label>
+                <label class="field-label">{{ __('Email Address') }}</label>
                 <div class="field-wrap">
                     <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     <input class="field-input" type="email" value="{{ $email }}" readonly style="cursor:default;opacity:.6;padding-right:14px;">
@@ -179,26 +184,26 @@
 
             {{-- Password --}}
             <div class="field">
-                <label class="field-label" for="password">New Password</label>
+                <label class="field-label" for="password">{{ __('New Password') }}</label>
                 <div class="field-wrap">
                     <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    <input class="field-input @error('password') has-error @enderror" type="password" id="password" name="password" placeholder="Minimum 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
+                    <input class="field-input @error('password') has-error @enderror" type="password" id="password" name="password" placeholder="{{ __('Minimum 8 characters') }}" autocomplete="new-password" oninput="checkStrength(this.value)">
                     <button type="button" class="pwd-btn" onclick="togglePwd('password','eye1')">
                         <svg id="eye1" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
                 </div>
                 <div class="strength-wrap">
                     <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
-                    <div class="strength-label" id="strengthLabel">Enter a password</div>
+                    <div class="strength-label" id="strengthLabel">{{ __('Enter a password') }}</div>
                 </div>
             </div>
 
             {{-- Confirm password --}}
             <div class="field">
-                <label class="field-label" for="password_confirmation">Confirm Password</label>
+                <label class="field-label" for="password_confirmation">{{ __('Confirm Password') }}</label>
                 <div class="field-wrap">
                     <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    <input class="field-input" type="password" id="password_confirmation" name="password_confirmation" placeholder="Repeat your password" autocomplete="new-password">
+                    <input class="field-input" type="password" id="password_confirmation" name="password_confirmation" placeholder="{{ __('Repeat your password') }}" autocomplete="new-password">
                     <button type="button" class="pwd-btn" onclick="togglePwd('password_confirmation','eye2')">
                         <svg id="eye2" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
@@ -207,16 +212,16 @@
 
             {{-- Requirements --}}
             <div class="reqs">
-                <div class="reqs-title">Password Requirements</div>
-                <div class="req-item" id="req-len"><span class="req-icon">✓</span> At least 8 characters</div>
-                <div class="req-item" id="req-upper"><span class="req-icon">✓</span> One uppercase letter</div>
-                <div class="req-item" id="req-num"><span class="req-icon">✓</span> One number</div>
-                <div class="req-item" id="req-special"><span class="req-icon">✓</span> One special character</div>
+                <div class="reqs-title">{{ __('Password Requirements') }}</div>
+                <div class="req-item" id="req-len"><span class="req-icon">✓</span> {{ __('At least 8 characters') }}</div>
+                <div class="req-item" id="req-upper"><span class="req-icon">✓</span> {{ __('At least one uppercase letter') }}</div>
+                <div class="req-item" id="req-num"><span class="req-icon">✓</span> {{ __('At least one number') }}</div>
+                <div class="req-item" id="req-special"><span class="req-icon">✓</span> {{ __('At least one special character') }}</div>
             </div>
 
             <button class="btn" type="submit" style="margin-top:24px;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                Activate Account
+                {{ __('Activate Account') }}
             </button>
         </form>
 
@@ -251,12 +256,20 @@ function checkStrength(val) {
     const fill  = document.getElementById('strengthFill');
     const label = document.getElementById('strengthLabel');
 
+    const _trans = {
+        'Enter a password': '{{ __("Enter a password") }}',
+        'Weak': '{{ __("Weak") }}',
+        'Fair': '{{ __("Fair") }}',
+        'Good': '{{ __("Good") }}',
+        'Strong': '{{ __("Strong") }}'
+    };
+
     const map = {
-        0: { w: '0%',   bg: 'transparent',  txt: 'Enter a password' },
-        1: { w: '25%',  bg: '#ef4444',       txt: 'Weak' },
-        2: { w: '50%',  bg: '#f59e0b',       txt: 'Fair' },
-        3: { w: '75%',  bg: '#3b82f6',       txt: 'Good' },
-        4: { w: '100%', bg: '#22c55e',       txt: 'Strong' },
+        0: { w: '0%',   bg: 'transparent',  txt: _trans['Enter a password'] },
+        1: { w: '25%',  bg: '#ef4444',       txt: _trans['Weak'] },
+        2: { w: '50%',  bg: '#f59e0b',       txt: _trans['Fair'] },
+        3: { w: '75%',  bg: '#3b82f6',       txt: _trans['Good'] },
+        4: { w: '100%', bg: '#22c55e',       txt: _trans['Strong'] },
     };
     fill.style.width      = map[score].w;
     fill.style.background = map[score].bg;

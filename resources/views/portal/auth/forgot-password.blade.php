@@ -100,6 +100,14 @@
         @keyframes fu { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 480px) { .card { padding: 32px 22px; border-radius: 16px; } }
+
+        /* ─── RTL Directional Overrides ──────────────────── */
+        html[dir="rtl"] .field-icon { right: 14px; left: auto; }
+        html[dir="rtl"] .country-btn { padding: 0 12px 0 9px; border-left: 1px solid var(--in-bdr); border-right: none; border-radius: 0 11px 11px 0; }
+        html[dir="rtl"] .phone-wrap input[type="tel"] { border-radius: 11px 0 0 11px !important; }
+        html[dir="rtl"] .country-dropdown { right: 0; left: auto; }
+        html[dir="rtl"] .country-chevron { margin-right: 2px; margin-left: 0; }
+        html[dir="rtl"] .back:hover svg { transform: translateX(4px); }
     </style>
 </head>
 <body>
@@ -115,15 +123,15 @@
             <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee" width="42" height="42" style="object-fit:contain;border-radius:10px;">
         </div>
 
-        <h1 class="f1">Reset your password</h1>
-        <p class="desc f1">Enter your phone number and we'll send a reset link to the email address on file.</p>
+        <h1 class="f1">{{ __('Reset your password') }}</h1>
+        <p class="desc f1">{{ __('Enter your phone number and we\'ll send a reset link to the email address on file.') }}</p>
 
         @if ($errors->any())
             <div class="alert alert-err">{{ $errors->first() }}</div>
         @endif
         @if (session('status'))
             <div class="alert alert-ok">
-                <strong>Email sent!</strong> {{ session('status') }}
+                <strong>{{ __('Email sent!') }}</strong> {{ session('status') }}
             </div>
         @endif
 
@@ -131,26 +139,26 @@
             @csrf
 
             <div class="field f2">
-                <label class="field-label" for="fpPhoneLocal">Phone Number</label>
+                <label class="field-label" for="fpPhoneLocal">{{ __('Phone Number') }}</label>
                 <div class="field-wrap phone-wrap">
-                    <button type="button" class="country-btn" id="fpCountryBtn" aria-label="Select country code">
+                    <button type="button" class="country-btn" id="fpCountryBtn" aria-label="{{ __('Select country code') }}">
                         <span class="country-flag" id="fpCountryFlag">🇯🇴</span>
                         <span class="country-dial" id="fpCountryDial">+962</span>
                         <svg class="country-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div class="country-dropdown" id="fpCountryDropdown">
-                        <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">Jordan</span><span class="opt-dial">+962</span></div>
-                        <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">Saudi Arabia</span><span class="opt-dial">+966</span></div>
-                        <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">UAE</span><span class="opt-dial">+971</span></div>
-                        <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">Kuwait</span><span class="opt-dial">+965</span></div>
-                        <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">Qatar</span><span class="opt-dial">+974</span></div>
-                        <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">Bahrain</span><span class="opt-dial">+973</span></div>
-                        <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">Oman</span><span class="opt-dial">+968</span></div>
-                        <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">Egypt</span><span class="opt-dial">+20</span></div>
-                        <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">Palestine</span><span class="opt-dial">+970</span></div>
-                        <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">Lebanon</span><span class="opt-dial">+961</span></div>
-                        <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">Iraq</span><span class="opt-dial">+964</span></div>
-                        <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">Syria</span><span class="opt-dial">+963</span></div>
+                        <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">{{ __('Jordan') }}</span><span class="opt-dial">+962</span></div>
+                        <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">{{ __('Saudi Arabia') }}</span><span class="opt-dial">+966</span></div>
+                        <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">{{ __('UAE') }}</span><span class="opt-dial">+971</span></div>
+                        <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">{{ __('Kuwait') }}</span><span class="opt-dial">+965</span></div>
+                        <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">{{ __('Qatar') }}</span><span class="opt-dial">+974</span></div>
+                        <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">{{ __('Bahrain') }}</span><span class="opt-dial">+973</span></div>
+                        <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">{{ __('Oman') }}</span><span class="opt-dial">+968</span></div>
+                        <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">{{ __('Egypt') }}</span><span class="opt-dial">+20</span></div>
+                        <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">{{ __('Palestine') }}</span><span class="opt-dial">+970</span></div>
+                        <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">{{ __('Lebanon') }}</span><span class="opt-dial">+961</span></div>
+                        <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">{{ __('Iraq') }}</span><span class="opt-dial">+964</span></div>
+                        <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">{{ __('Syria') }}</span><span class="opt-dial">+963</span></div>
                     </div>
                     <input id="fpPhoneLocal" type="tel" placeholder="7xxxxxxxx" autocomplete="tel" autofocus>
                     <input type="hidden" name="phone" id="fpPhoneHidden">
@@ -159,7 +167,7 @@
 
             <button type="submit" class="btn f3" id="submitBtn">
                 <div class="spinner"></div>
-                <span class="btn-text">Send Reset Link</span>
+                <span class="btn-text">{{ __('Send Reset Link') }}</span>
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="transition:transform .2s">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                 </svg>
@@ -172,7 +180,7 @@
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
-            Back to Sign In
+            {{ __('Back to Sign In') }}
         </a>
 
         <p class="footer">&copy; {{ date('Y') }} Sa'ee LogisticsServices</p>
