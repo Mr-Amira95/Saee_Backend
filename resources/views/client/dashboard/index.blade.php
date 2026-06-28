@@ -135,7 +135,14 @@
                  onmouseenter="this.style.borderColor='rgba(245,158,11,0.4)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 24px rgba(245,158,11,0.06)';" 
                  onmouseleave="this.style.borderColor='var(--bdr)'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
                 <div>
-                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(245,158,11,0.12); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 16px;">🎫</div>
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(245,158,11,0.12); color: #fbbf24; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12c0-4.97 4.03-9 9-9s9 4.03 9 9" />
+                            <rect x="1" y="10" width="3" height="6" rx="1.5" />
+                            <rect x="20" y="10" width="3" height="6" rx="1.5" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 14c0 3 2.5 5 5.5 5" />
+                        </svg>
+                    </div>
                     <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text); margin-bottom: 6px;">{{ __('Support Center') }}</h3>
                     <p style="font-size: .8rem; color: var(--text-dim); line-height: 1.4;">{{ __('Need help? Submit support tickets or chat with agents about delivery issues.') }}</p>
                 </div>

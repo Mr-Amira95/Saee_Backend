@@ -303,7 +303,12 @@
             <span class="nav-label" style="margin-top:8px;">{{ __('Support & Finance') }}</span>
 
             <a href="{{ route('client.support.index') }}" class="nav-item {{ request()->routeIs('client.support.*') ? 'active' : '' }}">
-                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12c0-4.97 4.03-9 9-9s9 4.03 9 9" />
+                    <rect x="1" y="10" width="3" height="6" rx="1.5" />
+                    <rect x="20" y="10" width="3" height="6" rx="1.5" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 14c0 3 2.5 5 5.5 5" />
+                </svg>
                 {{ __('Support') }}
             </a>
 

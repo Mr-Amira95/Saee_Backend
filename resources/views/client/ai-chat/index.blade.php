@@ -308,7 +308,7 @@
 </style>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
     const sessionId = "{{ $sessionId }}";
     const chatMessages = document.getElementById('chatMessages');
@@ -437,4 +437,4 @@
         loadHistory();
     });
 </script>
-@endsection
+@endpush
