@@ -277,28 +277,142 @@
         transform: scale(1.03);
     }
 
-    /* Typing loading animation */
-    .typing-indicator {
+    /* Custom SA'EE Delivery Loader */
+    .typing-loader .msg-bubble {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .saee-delivery-loader {
         display: flex;
-        gap: 4px;
-        padding: 8px 12px;
+        flex-direction: column;
         align-items: center;
+        padding: 16px 20px;
+        width: 220px;
+        background: rgba(10, 12, 28, 0.75);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.12);
+        overflow: hidden;
+        margin-top: 4px;
+        animation: msg-slide 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
     }
 
-    .typing-indicator span {
-        width: 6px;
-        height: 6px;
-        background: rgba(255, 255, 255, 0.5);
+    /* Delivery Van */
+    .delivery-van {
+        position: relative;
+        width: 60px;
+        height: 35px;
+        margin-bottom: 8px;
+        animation: van-bounce 0.5s infinite ease-in-out alternate;
+    }
+
+    .van-body {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 25px;
+        background: #ef4444; /* SA'EE Red */
+        border-radius: 6px 12px 4px 4px;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+    }
+
+    .van-window {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 14px;
+        height: 10px;
+        background: #0f172a;
+        border-radius: 0 6px 0 0;
+    }
+
+    .van-stripe {
+        position: absolute;
+        bottom: 6px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #ffffff;
+    }
+
+    .van-wheel {
+        position: absolute;
+        bottom: 2px;
+        width: 10px;
+        height: 10px;
+        background: #1e293b;
+        border: 2px solid #ffffff;
         border-radius: 50%;
-        animation: typing-bounce 1.4s infinite both;
+        animation: wheel-spin 0.4s infinite linear;
     }
 
-    .typing-indicator span:nth-child(2) { animation-delay: .2s; }
-    .typing-indicator span:nth-child(3) { animation-delay: .4s; }
+    .front-wheel {
+        right: 8px;
+    }
 
-    @keyframes typing-bounce {
-        0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-        40% { transform: scale(1); opacity: 1; }
+    .back-wheel {
+        left: 8px;
+    }
+
+    /* Road */
+    .delivery-road {
+        position: relative;
+        width: 120px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+
+    .road-dash {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 200%;
+        height: 100%;
+        background: linear-gradient(to right, 
+            transparent 0%, transparent 20%, 
+            rgba(255, 255, 255, 0.6) 20%, rgba(255, 255, 255, 0.6) 40%, 
+            transparent 40%, transparent 60%, 
+            rgba(255, 255, 255, 0.6) 60%, rgba(255, 255, 255, 0.6) 80%,
+            transparent 80%, transparent 100%
+        );
+        animation: road-move 0.7s infinite linear;
+    }
+
+    /* Text */
+    .delivery-text {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-align: center;
+        animation: text-pulse 1s infinite ease-in-out alternate;
+    }
+
+    /* Keyframes */
+    @keyframes van-bounce {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-4px); }
+    }
+
+    @keyframes wheel-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes road-move {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    @keyframes text-pulse {
+        0% { opacity: 0.5; }
+        100% { opacity: 1; }
     }
 
     @keyframes msg-slide {
@@ -371,10 +485,21 @@
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
         bubble.innerHTML = `
-            <div class="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
+            <div class="saee-delivery-loader">
+                <div class="delivery-van">
+                    <div class="van-body">
+                        <div class="van-window"></div>
+                        <div class="van-stripe"></div>
+                    </div>
+                    <div class="van-wheel back-wheel"></div>
+                    <div class="van-wheel front-wheel"></div>
+                </div>
+                <div class="delivery-road">
+                    <div class="road-dash"></div>
+                </div>
+                <div class="delivery-text">
+                    ${formatMarkdown("**SA'EE AI** is delivering your answer...")}
+                </div>
             </div>`;
         
         loaderDiv.appendChild(bubble);

@@ -94,11 +94,9 @@
     <select name="status" class="filter-select">
         <option value="">{{ __('All Statuses') }}</option>
         <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>{{ __('Pending') }}</option>
-        <option value="assigned"  {{ request('status') === 'assigned'  ? 'selected' : '' }}>{{ __('Assigned') }}</option>
-        <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>{{ __('In Transit') }}</option>
+        <option value="in_transit" {{ request('status') === 'in_transit' ? 'selected' : '' }}>{{ __('In Transit') }}</option>
         <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>{{ __('Delivered') }}</option>
-        <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>{{ __('Rejected') }}</option>
-        <option value="returned"  {{ request('status') === 'returned'  ? 'selected' : '' }}>{{ __('Returned') }}</option>
+        <option value="returned_failed" {{ request('status') === 'returned_failed' ? 'selected' : '' }}>{{ __('Returned/Failed') }}</option>
         <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
     </select>
     <select name="payment_type" class="filter-select">

@@ -259,6 +259,22 @@
 
     .toast-notif { position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--bdr);color:var(--text);padding:12px 18px;border-radius:10px;font-size:.84rem;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:9999;animation:toastIn .2s ease; }
     @keyframes toastIn { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:translateY(0); } }
+
+    /* Empty state centering */
+    .empty-state {
+        margin: auto !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px;
+        max-width: 420px;
+        color: var(--text-dim);
+    }
+    .empty-state svg { opacity: .65; margin-bottom: 14px; }
+    .empty-state h3  { font-size: 1.15rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+    .empty-state p   { font-size: .83rem; line-height: 1.6; }
 </style>
 @endpush
 

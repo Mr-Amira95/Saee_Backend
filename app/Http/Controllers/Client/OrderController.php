@@ -649,7 +649,13 @@ class OrderController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            if ($request->status === 'in_transit') {
+                $query->whereIn('status', ['assigned', 'picked_up']);
+            } elseif ($request->status === 'returned_failed') {
+                $query->whereIn('status', ['returned', 'rejected']);
+            } else {
+                $query->where('status', $request->status);
+            }
         }
         if ($request->filled('payment_type')) {
             $query->whereHas('payment', fn ($pq) => $pq->where('payment_type', $request->payment_type));

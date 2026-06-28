@@ -13,10 +13,8 @@ class BillingController extends Controller
         $profile = $this->getClientProfile();
 
         $invoices = ClientDeliveryInvoice::where('client_profile_id', $profile->id)
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
             ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->paginate(20);
 
         return view('client.billing.index', compact('invoices'));
     }

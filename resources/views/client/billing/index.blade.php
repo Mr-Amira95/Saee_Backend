@@ -6,20 +6,6 @@
 
 <h1 style="font-size:1.35rem;font-weight:800;margin-bottom:16px;">{{ __('Billing') }}</h1>
 
-{{-- Status filter --}}
-<form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
-    <select name="status" class="form-control" style="width:auto;" onchange="this.form.submit()">
-        <option value="">{{ __('All Statuses') }}</option>
-        <option value="draft"     {{ request('status') === 'draft'     ? 'selected' : '' }}>{{ __('Draft') }}</option>
-        <option value="issued"    {{ request('status') === 'issued'    ? 'selected' : '' }}>{{ __('Issued') }}</option>
-        <option value="paid"      {{ request('status') === 'paid'      ? 'selected' : '' }}>{{ __('Paid') }}</option>
-        <option value="overdue"   {{ request('status') === 'overdue'   ? 'selected' : '' }}>{{ __('Overdue') }}</option>
-        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
-    </select>
-    @if(request('status'))
-        <a href="{{ route('client.billing.index') }}" class="btn-secondary">{{ __('Clear') }}</a>
-    @endif
-</form>
 
 <div class="card" style="padding:0;overflow:hidden;">
     @if($invoices->count())

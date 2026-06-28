@@ -194,26 +194,40 @@
     $polylinePoints = implode(' ', $points);
     $polygonPoints = implode(' ', $fillPoints);
 @endphp
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px; animation: fu .45s .05s both;">
-    <!-- Wallet & Credit card -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; animation: fu .45s .05s both;">
+    <!-- Pending Cash Card -->
+    <div class="card" style="background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(12,18,48,0.85) 100%); display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(245,158,11,0.25);">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <span style="font-size: .74rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em;">{{ __('Pending Cash') }}</span>
+            </div>
+            <div style="font-size: 2.2rem; font-weight: 900; color: #fbbf24; letter-spacing: -.03em; line-height: 1;">
+                {{ number_format($pendingCash, 2) }} <span style="font-size: 1.1rem; font-weight: 600; color: var(--text-sub);">JD</span>
+            </div>
+            <div style="font-size: .78rem; color: var(--text-dim); margin-top: 8px;">
+                {{ __('Cash in transit & pending collection') }}
+            </div>
+        </div>
+        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.04); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: .74rem; color: var(--text-dim);">{{ __('Orders: Active') }}</span>
+        </div>
+    </div>
+
+    <!-- Account Balance Card -->
     <div class="card" style="background: linear-gradient(135deg, rgba(220,38,38,0.08) 0%, rgba(12,18,48,0.85) 100%); display: flex; flex-direction: column; justify-content: space-between; border-color: var(--bdr-red);">
         <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <span style="font-size: .74rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em;">{{ __('Account Balance') }}</span>
-                <span class="badge {{ $balance >= 0 ? 'badge-success' : 'badge-danger' }}" style="font-size: .68rem;">{{ $balance >= 0 ? __('Credit') : __('Debit') }}</span>
             </div>
-            <div style="font-size: 2.2rem; font-weight: 900; color: {{ $balance >= 0 ? '#4ade80' : '#f87171' }}; letter-spacing: -.03em; line-height: 1;">
+            <div style="font-size: 2.2rem; font-weight: 900; color: #4ade80; letter-spacing: -.03em; line-height: 1;">
                 {{ number_format($balance, 2) }} <span style="font-size: 1.1rem; font-weight: 600; color: var(--text-sub);">JD</span>
             </div>
             <div style="font-size: .78rem; color: var(--text-dim); margin-top: 8px;">
-                {{ __('Credit Limit:') }} <strong style="color: var(--text-sub);">{{ number_format($creditLimit, 2) }} JD</strong>
+                {{ __('Cash from delivered orders (awaiting payout)') }}
             </div>
         </div>
         <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.04); display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: .74rem; color: var(--text-dim);">{{ __('Status: Active') }}</span>
-            <a href="{{ route('client.financials.invoices') }}" class="btn-primary" style="padding: 6px 14px; font-size: .78rem; box-shadow: none; border-radius: 8px;">
-                {{ __('Statement Details') }}
-            </a>
+            <span style="font-size: .74rem; color: var(--text-dim);">{{ __('Orders: Delivered') }}</span>
         </div>
     </div>
 
@@ -222,7 +236,7 @@
         <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <span style="font-size: .74rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em;">{{ __('Shipping Volume') }}</span>
-                <span style="font-size: .74rem; color: var(--text-dim);">{{ __('Last 14 Days') }}</span>
+                <span style="font-size: .74rem; color: var(--text-dim);">{{ __('Last 7 Days') }}</span>
             </div>
             <div style="font-size: 1.45rem; font-weight: 800; color: var(--text); letter-spacing: -.02em;">
                 {{ array_sum($daysTrend) }} <span style="font-size: .84rem; font-weight: 500; color: var(--text-dim);">{{ __('Total Shipments') }}</span>
@@ -259,34 +273,45 @@
 
 {{-- Shipment Analytics Grid --}}
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; animation: fu .45s .1s both;">
-    <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 14px;">
-        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(245,158,11,.1); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">📦</div>
-        <div>
-            <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('Pending Pickup') }}</div>
-            <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['pending'] ?? 0 }}</div>
+    <a href="{{ route('client.orders.index', ['status' => 'pending']) }}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 14px; height: 100%; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(245,158,11,.1); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">📦</div>
+            <div>
+                <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('Pending Pickup') }}</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['pending'] ?? 0 }}</div>
+            </div>
         </div>
-    </div>
-    <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 14px;">
-        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(59,130,246,.1); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">🚚</div>
-        <div>
-            <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('In Transit') }}</div>
-            <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['picked_up'] ?? 0 }}</div>
+    </a>
+
+    <a href="{{ route('client.orders.index', ['status' => 'in_transit']) }}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 14px; height: 100%; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(59,130,246,.1); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">🚚</div>
+            <div>
+                <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('In Transit') }}</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['picked_up'] ?? 0 }}</div>
+            </div>
         </div>
-    </div>
-    <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 14px;">
-        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(34,197,94,.1); color: #4ade80; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">✓</div>
-        <div>
-            <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('Delivered Today') }}</div>
-            <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['delivered_today'] ?? 0 }}</div>
+    </a>
+
+    <a href="{{ route('client.orders.index', ['status' => 'delivered', 'from' => now()->toDateString(), 'to' => now()->toDateString()]) }}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 14px; height: 100%; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(34,197,94,.1); color: #4ade80; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">✓</div>
+            <div>
+                <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('Delivered Today') }}</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['delivered_today'] ?? 0 }}</div>
+            </div>
         </div>
-    </div>
-    <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 14px;">
-        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(220,38,38,.1); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">✕</div>
-        <div>
-            <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('Returned/Failed') }}</div>
-            <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['returned'] ?? 0 }}</div>
+    </a>
+
+    <a href="{{ route('client.orders.index', ['status' => 'returned_failed']) }}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 14px; height: 100%; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(220,38,38,.1); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;">✕</div>
+            <div>
+                <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('Returned/Failed') }}</div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['returned'] ?? 0 }}</div>
+            </div>
         </div>
-    </div>
+    </a>
 </div>
 
 {{-- Active orders --}}

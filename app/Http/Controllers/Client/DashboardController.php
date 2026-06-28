@@ -20,19 +20,32 @@ class DashboardController extends Controller
             ->take(20)
             ->get();
 
-        $balance = (float) ($profile->balance ?? 0);
+        $pendingCash = (float) Order::where('client_profile_id', $profile->id)
+            ->whereIn('status', ['pending', 'picked_up'])
+            ->where('payment_status', '!=', 'paid')
+            ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
+            ->selectRaw('COALESCE(SUM(COALESCE(order_payments.order_amount, 0) + COALESCE(CASE WHEN order_payments.delivery_on_customer = 1 THEN order_payments.customer_delivery_amount ELSE 0 END, 0)), 0) as total')
+            ->value('total');
+
+        $balance = (float) Order::where('client_profile_id', $profile->id)
+            ->where('status', 'delivered')
+            ->where('payment_status', '!=', 'paid')
+            ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
+            ->selectRaw('COALESCE(SUM(COALESCE(order_payments.order_amount, 0) + COALESCE(CASE WHEN order_payments.delivery_on_customer = 1 THEN order_payments.customer_delivery_amount ELSE 0 END, 0)), 0) as total')
+            ->value('total');
+
         $creditLimit = (float) ($profile->credit_limit ?? 0);
 
         $stats = [
             'pending' => Order::where('client_profile_id', $profile->id)->where('status', 'pending')->count(),
-            'picked_up' => Order::where('client_profile_id', $profile->id)->where('status', 'picked_up')->count(),
+            'picked_up' => Order::where('client_profile_id', $profile->id)->whereIn('status', ['assigned', 'picked_up'])->count(),
             'delivered_today' => Order::where('client_profile_id', $profile->id)->where('status', 'delivered')->whereDate('created_at', now()->toDateString())->count(),
             'returned' => Order::where('client_profile_id', $profile->id)->whereIn('status', ['returned', 'rejected'])->count(),
         ];
 
-        // 14-day orders trend for SVG chart
+        // 7-day orders trend for SVG chart
         $dailyTrend = Order::where('client_profile_id', $profile->id)
-            ->where('created_at', '>=', now()->subDays(13)->startOfDay())
+            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
             ->select(DB::raw('date(created_at) as date'), DB::raw('count(*) as count'))
             ->groupBy('date')
             ->orderBy('date')
@@ -41,12 +54,12 @@ class DashboardController extends Controller
             ->toArray();
 
         $daysTrend = [];
-        for ($i = 13; $i >= 0; $i--) {
+        for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i)->toDateString();
             $daysTrend[$date] = $dailyTrend[$date] ?? 0;
         }
 
-        return view('client.dashboard.index', compact('activeOrders', 'profile', 'balance', 'creditLimit', 'stats', 'daysTrend'));
+        return view('client.dashboard.index', compact('activeOrders', 'profile', 'balance', 'creditLimit', 'stats', 'daysTrend', 'pendingCash'));
     }
 
     public function track(Request $request): View
