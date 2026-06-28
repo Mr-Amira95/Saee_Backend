@@ -9,6 +9,7 @@ use App\Models\SystemNotification;
 use App\Models\SupportTicket;
 use App\Models\UserDevice;
 use App\Models\HandoverRequest;
+use App\Models\Invoice;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
@@ -257,6 +258,33 @@ class SupportNotificationService
         }
     }
 
+    public function notifyClientPayoutMade(Invoice $invoice, int $actorId): void
+    {
+        $client = $invoice->clientProfile;
+        if (! $client) {
+            return;
+        }
+
+        $userIds = [$client->master_user_id];
+        $employeeUserIds = $client->employees()->pluck('user_id')->toArray();
+        $userIds = array_merge($userIds, $employeeUserIds);
+
+        $title = 'COD Payout Received';
+        $message = "A COD payout of " . number_format($invoice->net_amount, 2) . " JD has been processed. Invoice: {$invoice->invoice_number}.";
+
+        foreach (array_unique(array_filter($userIds)) as $userId) {
+            $this->sendToUser(
+                userId:     $userId,
+                title:      $title,
+                message:    $message,
+                type:       'info',
+                createdBy:  $actorId,
+                entityType: 'client_payout',
+                entityId:   $invoice->id,
+            );
+        }
+    }
+
     private function resolveLink(?string $entityType, ?int $entityId): ?string
     {
         if (! $entityType || ! $entityId) {
@@ -280,6 +308,10 @@ class SupportNotificationService
 
         if ($entityType === 'single_order') {
             return route('client.orders.show', $entityId);
+        }
+
+        if ($entityType === 'client_payout') {
+            return route('client.financials.invoices.show', $entityId);
         }
 
         return null;

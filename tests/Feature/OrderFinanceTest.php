@@ -222,4 +222,51 @@ class OrderFinanceTest extends TestCase
             'reference_number' => 'PAY-991'
         ]);
     }
+
+    public function test_client_payout_creates_invoice_with_attachment_and_notifies_client_users()
+    {
+        $order = $this->orderService->createOrder([
+            'client_profile_id' => $this->client->id,
+            'driver_id' => $this->driver->id,
+            'payment_type' => 'cod',
+            'order_price' => 100.00,
+            'receiver_name' => 'Receiver One',
+            'receiver_phone' => '0790000001',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'address_text' => '123 Abdali St',
+        ], $this->admin);
+
+        $this->orderService->updateStatus($order, 'delivered', [], $this->admin);
+        $this->orderService->settleDriverCash($this->driver, [$order->id], $this->admin, 'REC-001');
+
+        // Verify database does not have payout notifications
+        $this->assertDatabaseMissing('system_notifications', [
+            'entity_type' => 'client_payout',
+        ]);
+
+        // Trigger payout with notes and attachment path
+        $this->orderService->payoutClient(
+            $this->client,
+            [$order->id],
+            $this->admin,
+            'PAY-TEST-ATTACH',
+            'Settle with receipt',
+            'payout-attachments/receipt.pdf'
+        );
+
+        // Assert Invoice is created with attachment
+        $this->assertDatabaseHas('invoices', [
+            'client_profile_id' => $this->client->id,
+            'attachment_path' => 'payout-attachments/receipt.pdf',
+            'status' => 'paid',
+        ]);
+
+        // Assert system notification is created for the client master user
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id' => $this->client->master_user_id,
+            'entity_type' => 'client_payout',
+            'title' => 'COD Payout Received',
+        ]);
+    }
 }

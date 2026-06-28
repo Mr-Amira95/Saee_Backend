@@ -328,11 +328,11 @@ class OrderService
     /**
      * Log company paying COD collections to the Client.
      */
-    public function payoutClient(ClientProfile $client, array $orderIds, User $actor, ?string $ref = null, ?string $notes = null): int
+    public function payoutClient(ClientProfile $client, array $orderIds, User $actor, ?string $ref = null, ?string $notes = null, ?string $attachmentPath = null): int
     {
         $ref = $ref ?: 'PAY-' . now()->format('YmdHis') . '-C' . $client->id;
 
-        return DB::transaction(function () use ($client, $orderIds, $actor, $ref, $notes) {
+        return DB::transaction(function () use ($client, $orderIds, $actor, $ref, $notes, $attachmentPath) {
             $count = 0;
             $orders = Order::whereIn('id', $orderIds)
                 ->where('client_profile_id', $client->id)
@@ -425,7 +425,7 @@ class OrderService
 
             if ($count > 0 && $payoutLedgerEntry) {
                 $invoiceNumber = 'INV-' . now()->format('Ymd') . '-' . rand(1000, 9999);
-                \App\Models\Invoice::create([
+                $invoice = \App\Models\Invoice::create([
                     'invoice_number'         => $invoiceNumber,
                     'client_profile_id'      => $client->id,
                     'payout_ledger_entry_id' => $payoutLedgerEntry->id,
@@ -436,7 +436,11 @@ class OrderService
                     'net_amount'                  => $totalCod + $totalCustomerDelivery - $totalShipping,
                     'status'                 => 'paid',
                     'notes'                  => $notes ?? 'Auto-generated invoice for client payout.',
+                    'attachment_path'        => $attachmentPath,
                 ]);
+
+                // Notify client users about the payout
+                rescue(fn () => app(SupportNotificationService::class)->notifyClientPayoutMade($invoice, $actor->id));
             }
 
             return $count;

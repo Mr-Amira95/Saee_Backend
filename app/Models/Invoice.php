@@ -19,6 +19,7 @@ class Invoice extends Model
         'net_amount',
         'status',
         'notes',
+        'attachment_path',
     ];
 
     protected function casts(): array

@@ -158,8 +158,13 @@
             background: #fff !important;
             color: #000 !important;
         }
-        .shell, .topbar, .sidebar, .page-hd, .breadcrumb, .btn-secondary, .logout-btn {
+        .topbar, .sidebar, .page-hd, .breadcrumb, .btn-secondary, .logout-btn {
             display: none !important;
+        }
+        .shell {
+            display: block !important;
+            height: auto !important;
+            overflow: visible !important;
         }
         .main, .content {
             padding: 0 !important;
@@ -247,6 +252,9 @@
                     Reference Number: {{ $invoice->payoutLedgerEntry->reference_number ?? 'N/A' }}<br>
                     Ledger Ref ID: #{{ $invoice->payout_ledger_entry_id }}<br>
                     Recorded By: {{ $invoice->payoutLedgerEntry->recordedBy->name ?? 'System' }}
+                    @if($invoice->attachment_path)
+                        <br>Attachment: <a href="{{ asset('storage/' . $invoice->attachment_path) }}" target="_blank" style="color: var(--red-lt); font-weight: 600; text-decoration: underline;">View Attachment</a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -257,9 +265,6 @@
             <thead>
                 <tr>
                     <th>Order Number</th>
-                    <th>Recipient</th>
-                    <th>City / Area</th>
-                    <th>Payment Type</th>
                     <th style="text-align: right;">COD Amount</th>
                     <th style="text-align: right;">Customer Delivery</th>
                     <th style="text-align: right;">Net Payout</th>
@@ -274,9 +279,6 @@
                     @endphp
                     <tr>
                         <td><strong>#{{ $o->order_number }}</strong></td>
-                        <td>{{ $o->receiver?->receiver_name ?? '—' }}</td>
-                        <td>{{ $o->receiver?->city?->name ?? '—' }} / {{ $o->receiver?->area?->name ?? '—' }}</td>
-                        <td>{{ strtoupper($o->payment?->payment_type ?? '—') }}</td>
                         <td style="text-align: right;">{{ number_format($codAmt, 2) }} JD</td>
                         <td style="text-align: right;">{{ $custDel > 0 ? number_format($custDel, 2).' JD' : '—' }}</td>
                         <td style="text-align: right; font-weight: 600; color: #4ade80;">
@@ -285,7 +287,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                        <td colspan="4" style="text-align: center; color: var(--text-dim); padding: 20px;">
                             No orders found linked to this invoice reference transaction.
                         </td>
                     </tr>

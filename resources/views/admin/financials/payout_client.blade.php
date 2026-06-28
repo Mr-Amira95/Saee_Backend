@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.financials.payout-client.submit', $client) }}" method="POST" id="payoutForm">
+    <form action="{{ route('admin.financials.payout-client.submit', $client) }}" method="POST" id="payoutForm" enctype="multipart/form-data">
         @csrf
 
         {{-- Orders Table --}}
@@ -113,14 +113,18 @@
             </div>
 
             {{-- Form inputs --}}
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label" for="reference_number">Bank Transfer Reference</label>
                     <input type="text" name="reference_number" id="reference_number" class="form-input" placeholder="e.g. Bank Ref #TXN982173">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="attachment">Attachment (e.g. Bank Receipt)</label>
+                    <input type="file" name="attachment" id="attachment" class="form-input" style="padding: 8px 12px; height: 42px; display: flex; align-items: center;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label" for="notes">Payout Notes</label>
-                    <textarea name="notes" id="notes" class="form-textarea" rows="1" placeholder="Optional bank account, transfer date, etc..." style="height: 42px; resize: none;"></textarea>
+                    <textarea name="notes" id="notes" class="form-textarea" rows="1" placeholder="Optional notes..." style="height: 42px; resize: none;"></textarea>
                 </div>
             </div>
 

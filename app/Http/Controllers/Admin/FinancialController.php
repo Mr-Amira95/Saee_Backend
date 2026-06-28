@@ -184,14 +184,21 @@ class FinancialController extends Controller
             'orders.*'         => 'exists:orders,id',
             'reference_number' => 'nullable|string|max:100',
             'notes'            => 'nullable|string',
+            'attachment'       => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,zip|max:5120',
         ]);
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $request->file('attachment')->store('payout-attachments', 'public');
+        }
 
         $payoutCount = $this->orderService->payoutClient(
             $client,
             $request->input('orders'),
             Auth::user(),
             $request->input('reference_number'),
-            $request->input('notes')
+            $request->input('notes'),
+            $attachmentPath
         );
 
         return redirect()->route('admin.financials.index')
