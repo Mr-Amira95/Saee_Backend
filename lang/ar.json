@@ -35,7 +35,6 @@
   "Contact": "تواصل معنا",
   "Admin Login": "تسجيل دخول الإدارة",
   "Get a Quote": "احصل على عرض سعر",
-
   "Main": "القائمة",
   "Support & Finance": "الدعم والمالية",
   "Support": "الدعم",
@@ -53,7 +52,6 @@
   "No notifications yet.": "لا توجد إشعارات بعد.",
   "No notifications yet": "لا توجد إشعارات بعد",
   "Could not load notifications.": "تعذر تحميل الإشعارات.",
-
   "Client Portal": "بوابة العميل",
   "Welcome back": "مرحباً بعودتك",
   "Sign in to manage your shipments": "سجّل دخولك لإدارة شحناتك",
@@ -74,7 +72,6 @@
   "New Password": "كلمة مرور جديدة",
   "Choose a strong password for your account": "اختر كلمة مرور قوية لحسابك",
   "Confirm Password": "تأكيد كلمة المرور",
-
   "Track a Shipment": "تتبع شحنة",
   "Order reference, receiver name, or phone…": "رقم الطلب، اسم المستلم، أو الهاتف…",
   "Search": "بحث",
@@ -89,7 +86,6 @@
   "In Transit": "قيد التوصيل",
   "COD": "الدفع عند الاستلام",
   "Prepaid": "مدفوع مسبقاً",
-
   "Track Orders": "تتبع الطلبات",
   "← Back": "← رجوع",
   "No orders found": "لم يتم العثور على طلبات",
@@ -104,7 +100,6 @@
   "Rejected": "مرفوض",
   "Returned": "مُعاد",
   "Cancelled": "ملغى",
-
   "Manage and track all your shipments": "إدارة وتتبع كل شحناتك",
   "Import Orders": "استيراد الطلبات",
   "Add Order": "إضافة طلب",
@@ -118,7 +113,6 @@
   "Create your first order →": "أنشئ طلبك الأول ←",
   "Cancel": "إلغاء",
   "Delete": "حذف",
-
   "Create New Order": "إنشاء طلب جديد",
   "Fill in the shipment details below": "أدخل تفاصيل الشحنة أدناه",
   "Shipment Details": "تفاصيل الشحنة",
@@ -144,7 +138,6 @@
   "Select area…": "اختر منطقة…",
   "Address Details *": "تفاصيل العنوان *",
   "Street, building, floor, landmarks…": "الشارع، المبنى، الطابق، المعالم…",
-
   "Order Details": "تفاصيل الطلب",
   "Delete Order": "حذف الطلب",
   "Shipment Information": "معلومات الشحنة",
@@ -162,7 +155,6 @@
   "Tracking History": "سجل التتبع",
   "No tracking events yet.": "لا توجد أحداث تتبع بعد.",
   "Assigned Driver": "السائق المعيّن",
-
   "Upload a CSV file to create multiple orders at once": "ارفع ملف CSV لإنشاء طلبات متعددة دفعة واحدة",
   "Upload CSV File": "رفع ملف CSV",
   "Drop CSV file here, or click to browse": "اسحب ملف CSV هنا، أو انقر للتصفح",
@@ -173,8 +165,7 @@
   "CSV Format Guide": "دليل تنسيق CSV",
   "Row": "السطر",
   "Errors": "الأخطاء",
-
-  "Get help from the Saee operations team": "احصل على المساعدة من فريق عمليات سعي",
+  "Get help from the Saee operations team": "احصل على المساعدة من فريق عمليات ساعي",
   "Open Ticket": "فتح تذكرة",
   "Tickets": "التذاكر",
   "No tickets yet.": "لا توجد تذاكر بعد.",
@@ -193,7 +184,6 @@
   "You": "أنت",
   "Search by ref. number, name, or phone…": "البحث برقم المرجع، الاسم، أو الهاتف…",
   "— None —": "— لا شيء —",
-
   "Wallet Balance": "رصيد المحفظة",
   "Available to transfer": "متاح للتحويل",
   "Credit Limit": "حد الائتمان",
@@ -212,7 +202,6 @@
   "Issued": "صادر",
   "Void": "ملغى",
   "No invoices issued yet.": "لا توجد فواتير صادرة بعد.",
-
   "Active": "نشط",
   "Inactive": "غير نشط",
   "Employee": "موظف",
@@ -239,19 +228,16 @@
   "VAT Number": "رقم ضريبة القيمة المضافة",
   "Company Email": "البريد الإلكتروني للشركة",
   "Company Phone": "هاتف الشركة",
-
   "Update your personal information": "تحديث معلوماتك الشخصية",
   "Personal Information": "المعلومات الشخصية",
   "Full Name *": "الاسم الكامل *",
   "Email Address": "البريد الإلكتروني",
   "Save Changes": "حفظ التغييرات",
-
   "Company information can only be edited by the account owner.": "لا يمكن تعديل معلومات الشركة إلا من قِبل مالك الحساب.",
   "Business Identity": "هوية العمل",
   "Commercial Register No.": "رقم السجل التجاري",
   "Save Company Information": "حفظ معلومات الشركة",
   "Error loading areas": "خطأ في تحميل المناطق",
-
   "Bank Account": "الحساب البنكي",
   "Account Holder Name *": "اسم صاحب الحساب *",
   "CliQ Details": "تفاصيل كليك",
@@ -259,7 +245,6 @@
   "CliQ Alias / Number": "اسم مستخدم / رقم كليك",
   "Any additional banking notes or instructions…": "أي ملاحظات أو تعليمات مصرفية إضافية…",
   "Save Banking Details": "حفظ التفاصيل المصرفية",
-
   "Change Password": "تغيير كلمة المرور",
   "Update your account password": "تحديث كلمة مرور حسابك",
   "Current Password *": "كلمة المرور الحالية *",
@@ -288,14 +273,12 @@
   "User created successfully.": "تم إنشاء المستخدم بنجاح.",
   "User updated successfully.": "تم تحديث المستخدم بنجاح.",
   "User removed successfully.": "تم إزالة المستخدم بنجاح.",
-
   "Your Business,": "عملك،",
   "Delivered.": "مُوصَّل.",
-  "SAEE CLIENT PORTAL": "بوابة عملاء سائي",
+  "SAEE CLIENT PORTAL": "بوابة عملاء ساعي",
   "Track Orders": "تتبع الطلبات",
   "Manage Shipments": "إدارة الشحنات",
   "Real-time Updates": "تحديثات فورية",
-
   "Logistics Portal": "بوابة اللوجستيات",
   "Welcome back": "أهلاً بعودتك",
   "Sign in to your account": "سجّل الدخول إلى حسابك",
@@ -319,23 +302,20 @@
   "Forgot password?": "نسيت كلمة المرور؟",
   "Sign In": "تسجيل الدخول",
   "All rights reserved.": "جميع الحقوق محفوظة.",
-
   "Reset your password": "إعادة تعيين كلمة المرور",
   "Enter your phone number and we'll send a reset link to the email address on file.": "أدخل رقم هاتفك وسنرسل رابط إعادة التعيين إلى البريد الإلكتروني المسجّل.",
   "Email sent!": "تم إرسال البريد!",
   "Send Reset Link": "إرسال رابط الاستعادة",
   "Back to Sign In": "العودة لتسجيل الدخول",
-
   "Verify Code": "التحقق من الرمز",
   "Enter verification code": "أدخل رمز التحقق",
   "We sent a 6-digit code to your WhatsApp. Enter it below to continue.": "أرسلنا رمزاً مؤلفاً من 6 أرقام إلى واتساب الخاص بك. أدخله أدناه للمتابعة.",
   "Verification Code": "رمز التحقق",
   "Back — request a new code": "رجوع — طلب رمز جديد",
-
   "Set Your Password": "تعيين كلمة المرور",
   "Password Set": "تم تعيين كلمة المرور",
   "Account Setup": "إعداد الحساب",
-  "Create a strong password to activate your Sa'ee Logistics account.": "أنشئ كلمة مرور قوية لتفعيل حسابك في سائي للوجستيات.",
+  "Create a strong password to activate your Sa'ee Logistics account.": "أنشئ كلمة مرور قوية لتفعيل حسابك في ساعي للوجستيات.",
   "Email Address": "البريد الإلكتروني",
   "New Password": "كلمة المرور الجديدة",
   "Minimum 8 characters": "٨ أحرف على الأقل",
@@ -353,9 +333,8 @@
   "Good": "جيدة",
   "Strong": "قوية",
   "You're all set!": "كل شيء جاهز!",
-  "Your password has been created and your Sa'ee Logistics account is now active. You can close this window.": "تم إنشاء كلمة مرورك وحسابك في سائي للوجستيات أصبح نشطاً الآن. يمكنك إغلاق هذه النافذة.",
-
-  "Sa'ee Logistics — Customer Portal": "سائي للوجستيات — بوابة العميل",
+  "Your password has been created and your Sa'ee Logistics account is now active. You can close this window.": "تم إنشاء كلمة مرورك وحسابك في ساعي للوجستيات أصبح نشطاً الآن. يمكنك إغلاق هذه النافذة.",
+  "Sa'ee Logistics — Customer Portal": "ساعي للوجستيات — بوابة العميل",
   "Rate Your Delivery": "قيّم توصيلتك",
   "We value your feedback. Please rate your delivery agent,": "رأيك يهمّنا. يرجى تقييم عامل التوصيل،",
   "our driver": "السائق",
@@ -376,7 +355,7 @@
   "Your feedback helps us monitor and improve driver delivery quality.": "ملاحظاتك تساعدنا على مراقبة جودة التوصيل وتحسينها.",
   "Share My Location": "مشاركة موقعي",
   "We only use this to ensure prompt delivery of your package.": "نستخدم هذا فقط لضمان توصيل سريع لطردك.",
-  "Powered by Sa'ee Logistics System": "مدعوم بنظام سائي للوجستيات",
+  "Powered by Sa'ee Logistics System": "مدعوم بنظام ساعي للوجستيات",
   "Please select a star rating first.": "يرجى اختيار تقييم بالنجوم أولاً.",
   "Submitting...": "جارٍ الإرسال...",
   "Recording your review...": "جارٍ تسجيل تقييمك...",
@@ -395,15 +374,13 @@
   "Coordinates Received!": "تم استلام الإحداثيات!",
   "Thank you for sharing your coordinates. Our delivery agent has been notified and will proceed to your location.": "شكراً لمشاركة إحداثياتك. تم إعلام عامل التوصيل وسيتوجه إلى موقعك.",
   "Geolocation is not supported by your browser. Please copy and share your coordinates manually.": "متصفحك لا يدعم تحديد الموقع الجغرافي. يرجى نسخ إحداثياتك ومشاركتها يدوياً.",
-
-  "Sa'ee Logistics — Customer Support Desk": "سائي للوجستيات — مكتب دعم العملاء",
+  "Sa'ee Logistics — Customer Support Desk": "ساعي للوجستيات — مكتب دعم العملاء",
   "Ticket:": "التذكرة:",
   "Status:": "الحالة:",
   "Order:": "الطلب:",
   "Type your message to support desk...": "اكتب رسالتك إلى مكتب الدعم...",
   "Send": "إرسال",
-  "This ticket has been marked as resolved by Sa'ee Admin.": "تم وضع علامة على هذه التذكرة بأنها محلولة من قِبل إدارة سائي.",
-
+  "This ticket has been marked as resolved by Sa'ee Admin.": "تم وضع علامة على هذه التذكرة بأنها محلولة من قِبل إدارة ساعي.",
   "Print Order Waybills": "طباعة بوالص الشحن",
   "Print Now": "اطبع الآن",
   "DELIVERY WAYBILL": "بوليصة التوصيل",
@@ -420,7 +397,7 @@
   "No description": "لا يوجد وصف",
   "Shift:": "الوردية:",
   "Before 12 PM (Morning)": "قبل الظهر (صباحي)",
-  "After 12 PM (Evening)": "بعد الظهر (مسائي)",
+  "After 12 PM (Evening)": "بعد الظهر (مساعي)",
   "Doesn't Matter": "لا يهم",
   "Payment:": "طريقة الدفع:",
   "Notes:": "ملاحظات:",
@@ -430,15 +407,13 @@
   "Total Cash to Collect:": "إجمالي المبلغ المحصَّل:",
   "Courier Signature & Date": "توقيع المندوب والتاريخ",
   "Receiver Signature & Date": "توقيع المستلم والتاريخ",
-
   "Reset Password": "إعادة تعيين كلمة المرور",
-  "Sa'ee LogisticsServices. All rights reserved.": "سائي للخدمات اللوجستية. جميع الحقوق محفوظة.",
-  "Sa'ee Admin": "سائي للإدارة",
+  "Sa'ee LogisticsServices. All rights reserved.": "ساعي للخدمات اللوجستية. جميع الحقوق محفوظة.",
+  "Sa'ee Admin": "ساعي للإدارة",
   "this record": "هذا السجل",
   "This will soft-delete the record. It can be restored by a superadmin if needed.": "سيتم حذف هذا السجل مؤقتاً. يمكن لمدير النظام استعادته عند الحاجة.",
   "Cancel": "إلغاء",
   "Delete": "حذف",
-
   "AI Conversations": "محادثات الذكاء الاصطناعي",
   "Checkout Approvals": "موافقات تسليم الحقيبة",
   "COD Invoices": "فواتير الدفع عند الاستلام",
@@ -448,7 +423,6 @@
   "Login Page": "صفحة تسجيل الدخول",
   "Legal Content": "المحتوى القانوني",
   "Ratings": "التقييمات",
-
   "Back": "رجوع",
   "Bank Transfer": "تحويل بنكي",
   "Billable Orders": "الطلبات القابلة للفوترة",
@@ -479,7 +453,6 @@
   "Reference": "المرجع",
   "Reference Number": "رقم المرجع",
   "Total": "الإجمالي",
-
   "30 days": "30 يوم",
   "7 days": "7 أيام",
   "90 days": "90 يوم",
@@ -506,7 +479,6 @@
   "total delivery charges": "إجمالي رسوم التوصيل",
   "Total Orders": "إجمالي الطلبات",
   "Volume": "الحجم",
-
   "Account Balance": "رصيد الحساب",
   "Bulk Import": "استيراد مجمّع",
   "Cash from delivered orders (awaiting payout)": "نقد من الطلبات الموصّلة (بانتظار الصرف)",
@@ -524,7 +496,7 @@
   "Pending Pickup": "بانتظار الاستلام",
   "Quick Actions": "إجراءات سريعة",
   "Returned/Failed": "مُعاد/فاشل",
-  "Sa'ee Logistics Status: Operational": "حالة سائي للوجستيات: تعمل",
+  "Sa'ee Logistics Status: Operational": "حالة ساعي للوجستيات: تعمل",
   "Search Order": "البحث في الطلبات",
   "Ship a new parcel immediately. Enter customer information and print labels.": "أرسل طرداً جديداً فوراً. أدخل معلومات العميل واطبع الملصقات.",
   "Shipping Volume": "حجم الشحن",
@@ -532,7 +504,6 @@
   "Total Shipments": "إجمالي الشحنات",
   "Upload multiple shipments at once using an Excel or CSV template sheet.": "ارفع شحنات متعددة دفعة واحدة باستخدام قالب Excel أو CSV.",
   "Welcome back,": "مرحباً بعودتك،",
-
   "AI Image Import": "استيراد صورة بالذكاء الاصطناعي",
   "AI Image Orders Import": "استيراد طلبات بصورة بالذكاء الاصطناعي",
   "AI Vision parsing guidelines": "إرشادات تحليل رؤية الذكاء الاصطناعي",
@@ -553,7 +524,6 @@
   "Upload Image": "رفع صورة",
   "Use CSV Import instead": "استخدم استيراد CSV بدلاً من ذلك",
   "We are sending the image to OpenAI GPT-4o to scan and extract order data. This process usually takes 10 to 20 seconds. Please do not refresh or close this tab.": "نرسل الصورة إلى OpenAI GPT-4o لفحص البيانات واستخراجها. تستغرق هذه العملية عادةً 10 إلى 20 ثانية. يرجى عدم تحديث هذه الصفحة أو إغلاقها.",
-
   "Actions": "إجراءات",
   "COD Collected": "نقد الدفع عند الاستلام المحصّل",
   "Customer Delivery": "توصيل العميل",
@@ -571,7 +541,6 @@
   "View & Print Invoice": "عرض وطباعة الفاتورة",
   "View Details": "عرض التفاصيل",
   "View your payout histories, gross COD collections, and printable receipts.": "اعرض سجلات صرفك وإجمالي تحصيلات الدفع عند الاستلام والإيصالات القابلة للطباعة.",
-
   "[optional]": "[اختياري]",
   "— None —": "— لا شيء —",
   "Close this ticket?": "إغلاق هذه التذكرة؟",
@@ -587,7 +556,6 @@
   "Send Reply": "إرسال الرد",
   "Type your message…": "اكتب رسالتك…",
   "Yes, Close": "نعم، أغلق",
-
   "Create your first order →": "أنشئ طلبك الأول ←",
   "Del. Fee": "رسوم التوصيل",
   "Delete Order?": "حذف الطلب؟",
@@ -600,13 +568,11 @@
   "With driver or company": "مع السائق أو الشركة",
   "Order #, receiver name, or phone…": "رقم الطلب، اسم المستلم، أو الهاتف…",
   "Import Image (AI)": "استيراد صورة (ذكاء اصطناعي)",
-
   "Billing": "الفوترة",
   "Delivery Amount": "مبلغ التوصيل",
   "Net Amount": "صافي المبلغ",
   "No billing invoices found.": "لا توجد فواتير فوترة.",
   "Period": "الفترة",
-
   "Company Address Line": "سطر عنوان الشركة",
   "Company Name *": "اسم الشركة *",
   "Loading…": "جارٍ التحميل…",
@@ -614,69 +580,49 @@
   "Select city…": "اختر مدينة…",
   "Street, building, floor…": "الشارع، المبنى، الطابق…",
   "Your registered company name": "اسم شركتك المسجّل",
-
   "Any additional banking notes or instructions…": "أي ملاحظات أو تعليمات مصرفية إضافية…",
   "As it appears on the account": "كما يظهر في الحساب",
   "Bank account information for settlements and payouts": "معلومات الحساب البنكي للتسويات والمدفوعات",
   "Bank Name *": "اسم البنك *",
   "IBAN *": "IBAN *",
   "SWIFT / BIC Code": "رمز SWIFT / BIC",
-
   "e.g. 0791234567": "مثال: 0791234567",
   "e.g. Ahmed Ali": "مثال: أحمد علي",
   "e.g. employee@company.com": "مثال: employee@company.com",
   "e.g. Operations Manager": "مثال: مدير العمليات",
   "Edit User": "تعديل المستخدم",
-
   "Email": "البريد الإلكتروني",
   "Joined": "انضمّ",
   "No team members yet.": "لا يوجد أعضاء فريق بعد.",
   "Add your first user →": "أضف أول مستخدم ←",
-
   "7xxxxxxxx": "7xxxxxxxx",
   "Min 8 characters": "8 أحرف على الأقل",
   "Min. 8 characters": "8 أحرف على الأقل",
   "Repeat password": "تكرار كلمة المرور",
-
   "07xxxxxxxx": "07xxxxxxxx",
   "you@example.com": "you@example.com",
   "Your full name": "اسمك الكامل",
-
   "Assigned": "مُعيَّن",
   "Order reference, receiver name, or phone…": "رقم الطلب، اسم المستلم، أو الهاتف…",
-
-  "Powered by Sa'ee Logistics System": "مدعوم بنظام سائي للوجستيات",
-  "Sa'ee Logistics — Customer Portal": "سائي للوجستيات — بوابة العميل",
-  "Sa'ee Logistics — Customer Support Desk": "سائي للوجستيات — مكتب دعم العملاء",
-  "This ticket has been marked as resolved by Sa'ee Admin.": "تم تعليم هذه التذكرة كمحلولة من قِبل إدارة سائي.",
-
-  "Sa'ee Admin": "سائي للإدارة",
+  "Powered by Sa'ee Logistics System": "مدعوم بنظام ساعي للوجستيات",
+  "Sa'ee Logistics — Customer Portal": "ساعي للوجستيات — بوابة العميل",
+  "Sa'ee Logistics — Customer Support Desk": "ساعي للوجستيات — مكتب دعم العملاء",
+  "This ticket has been marked as resolved by Sa'ee Admin.": "تم تعليم هذه التذكرة كمحلولة من قِبل إدارة ساعي.",
+  "Sa'ee Admin": "ساعي للإدارة",
   "Doesn't Matter": "لا يهم",
   "Edit Order": "تعديل الطلب",
-
   "Add now →": "أضف الآن ←",
   "IBAN": "IBAN",
   "SWIFT / BIC": "SWIFT / BIC",
-
   "Enter your current password": "أدخل كلمة مرورك الحالية",
   "Toggle password": "إظهار/إخفاء كلمة المرور",
-
   "Select country code": "اختر رمز الدولة",
   "Pending Cash": "نقد معلق",
   "Print Order Waybills": "طباعة بوالص الشحن",
-
   "Checkout Approval": "موافقة التسليم",
   "Net Paid": "صافي المدفوع",
   "Delivery Charge": "رسوم التوصيل",
   "Search by ref. number, name, or phone…": "البحث برقم المرجع، الاسم، أو الهاتف…",
   "Select area…": "اختر منطقة…",
-  "Select city…": "اختر مدينة…",
-
-  "From Date": "من تاريخ",
-  "To Date": "إلى تاريخ",
-  "in transit": "قيد التوصيل",
-  "orders": "طلبات",
-  "pending": "معلق",
-  "••••••••••": "••••••••••"
+  "Select city…": "اختر مدينة…"
 }
-
