@@ -448,8 +448,26 @@
             @endif
 
             @yield('content')
+
+            {{-- Footer --}}
+            <footer class="app-footer">
+                <div class="footer-content">
+                    <div class="footer-left">
+                        <span>&copy; {{ date('Y') }} {{ __('Sa\'ee Logistics') }}. {{ __('All rights reserved.') }}</span>
+                    </div>
+                    <div class="footer-right">
+                        <span class="powered-by">{{ __('Powered by') }}</span>
+                        <a href="https://smartedge.me" target="_blank" class="smartedge-logo">
+                            <span class="smart">Smart</span><span class="edge">Edge</span>
+                            <span class="badge-tech">{{ __('Digital Solutions') }}</span>
+                            <span class="tech-tooltip">{{ __('Premium Web Systems & Software Design') }}</span>
+                        </a>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
+
 </div>
 
 <script>
@@ -831,8 +849,132 @@ document.addEventListener('DOMContentLoaded', function () {
             left: 24px;
             font-family: 'Tajawal', 'Inter', sans-serif;
         }
+
+        /* ─── Footer Styles ──────────────────────────────── */
+        .app-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.78rem;
+            color: var(--text-dim, #475569);
+            transition: all 0.3s;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+        .powered-by {
+            color: var(--text-sub, #94a3b8);
+            font-weight: 500;
+        }
+        .smartedge-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+        }
+        .smartedge-logo .smart {
+            color: #ffffff;
+        }
+        .smartedge-logo .edge {
+            color: #3b82f6;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+        .smartedge-logo .badge-tech {
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1px 5px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+        .smartedge-logo:hover {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+            transform: translateY(-1px);
+        }
+        .smartedge-logo:hover .edge {
+            color: #60a5fa;
+            text-shadow: 0 0 12px rgba(96, 165, 250, 0.6);
+        }
+        .smartedge-logo:hover .badge-tech {
+            color: #93c5fd;
+            background: rgba(59, 130, 246, 0.15);
+        }
+        .smartedge-logo .tech-tooltip {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            right: 50%;
+            transform: translateX(50%) translateY(5px);
+            background: #0d1230;
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 15px rgba(59, 130, 246, 0.15);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+        .smartedge-logo:hover .tech-tooltip {
+            opacity: 1;
+            transform: translateX(50%) translateY(0);
+        }
+        .smartedge-logo .tech-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(59, 130, 246, 0.35) transparent transparent transparent;
+        }
+        html[dir="rtl"] .smartedge-logo .badge-tech {
+            margin-left: 0;
+            margin-right: 4px;
+        }
+        html[dir="rtl"] .smartedge-logo .tech-tooltip {
+            right: auto;
+            left: 50%;
+            transform: translateX(-50%) translateY(5px);
+        }
+        html[dir="rtl"] .smartedge-logo:hover .tech-tooltip {
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
     @endif
+
 
     @stack('scripts')
 </body>

@@ -643,5 +643,16 @@
   "Ask a question or track an order...": "اطرح سؤالاً أو تتبع طلبًا...",
   "AI is delivering your answer...": "**ساعي الذكي** يوصّل إجابتك...",
   "Sorry, I'm having trouble processing that. Please try again.": "عذراً، أواجه صعوبة في معالجة ذلك. يرجى المحاولة مرة أخرى.",
-  "Connection error. Please check your internet and try again.": "خطأ في الاتصال. يرجى التحقق من الإنترنت والمحاولة مرة أخرى."
+  "Connection error. Please check your internet and try again.": "خطأ في الاتصال. يرجى التحقق من الإنترنت والمحاولة مرة أخرى.",
+
+  "Sa'ee Logistics": "ساعي للوجستيات",
+  "Digital Solutions": "للحلول الرقمية",
+  "Premium Web Systems & Software Design": "تطوير الأنظمة الرقمية المتقدمة وتصميم البرمجيات",
+  "Powered by": "بدعم من",
+  "From Date": "من تاريخ",
+  "To Date": "إلى تاريخ",
+  "in transit": "قيد التوصيل",
+  "orders": "طلبات",
+  "pending": "معلق",
+  "••••••••••": "••••••••••"
 }

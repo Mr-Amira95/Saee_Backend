@@ -56,7 +56,8 @@
         .pill-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); box-shadow: 0 0 7px var(--red); }
 
         /* Form panel */
-        .form-side { flex: 0 0 42%; display: flex; align-items: center; justify-content: center; padding: 40px 36px; }
+        .form-side { flex: 0 0 42%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 36px; gap: 20px; }
+
         .card { width: 100%; max-width: 420px; background: var(--bg-card); border: 1px solid rgba(220,38,38,0.1); border-radius: 22px; padding: 46px 40px; backdrop-filter: blur(24px); box-shadow: 0 0 0 1px rgba(255,255,255,0.025), 0 32px 80px rgba(0,0,0,0.7); opacity: 0; transform: translateY(22px); animation: card-in .85s .15s cubic-bezier(0.16,1,0.3,1) forwards; }
         @keyframes card-in { to { opacity: 1; transform: translateY(0); } }
         .card-logo { margin-bottom: 22px; }
@@ -141,6 +142,100 @@
         html[dir="rtl"] .phone-wrap input[type="tel"] { border-radius: 11px 0 0 11px !important; }
         html[dir="rtl"] .country-dropdown { right: 0; left: auto; }
         html[dir="rtl"] .country-chevron { margin-right: 2px; margin-left: 0; }
+
+        /* ─── Footer Styles ──────────────────────────────── */
+        .auth-footer {
+            width: 100%;
+            max-width: 420px;
+            font-size: 0.76rem;
+            color: var(--text-dim, #475569);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 16px;
+            animation: card-in .85s .15s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        .auth-footer-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+        .smartedge-logo-auth {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.8rem;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 3px 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+        }
+        .smartedge-logo-auth .smart {
+            color: #ffffff;
+        }
+        .smartedge-logo-auth .edge {
+            color: #3b82f6;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+        .smartedge-logo-auth:hover {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+            transform: translateY(-1px);
+        }
+        .smartedge-logo-auth:hover .edge {
+            color: #60a5fa;
+            text-shadow: 0 0 12px rgba(96, 165, 250, 0.6);
+        }
+        .smartedge-logo-auth .tech-tooltip {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            right: 50%;
+            transform: translateX(50%) translateY(5px);
+            background: #0d1230;
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 15px rgba(59, 130, 246, 0.15);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+        .smartedge-logo-auth:hover .tech-tooltip {
+            opacity: 1;
+            transform: translateX(50%) translateY(0);
+        }
+        .smartedge-logo-auth .tech-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(59, 130, 246, 0.35) transparent transparent transparent;
+        }
+        html[dir="rtl"] .smartedge-logo-auth .tech-tooltip {
+            right: auto;
+            left: 50%;
+            transform: translateX(-50%) translateY(5px);
+        }
+        html[dir="rtl"] .smartedge-logo-auth:hover .tech-tooltip {
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -172,8 +267,21 @@
     {{-- Form --}}
     <div class="form-side">
         @yield('form')
+
+        {{-- Footer --}}
+        <footer class="auth-footer">
+            <span>&copy; {{ date('Y') }} {{ __('Sa\'ee Logistics') }}</span>
+            <div class="auth-footer-right">
+                <span style="color: var(--text-sub);">{{ __('Powered by') }}</span>
+                <a href="https://smartedge.me" target="_blank" class="smartedge-logo-auth">
+                    <span class="smart">Smart</span><span class="edge">Edge</span>
+                    <span class="tech-tooltip">{{ __('Premium Web Systems & Software Design') }}</span>
+                </a>
+            </div>
+        </footer>
     </div>
 </div>
+
 
 <script>
 (function() {
