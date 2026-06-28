@@ -368,6 +368,41 @@
         .pag-links span.active { background: rgba(220,38,38,.12); border-color: rgba(220,38,38,.18); color: #fca5a5; }
         .pag-links span.disabled { opacity: .3; pointer-events: none; }
 
+        /* ─── Tailwind Pagination Overrides ─── */
+        .pag-links nav { display: flex !important; align-items: center !important; gap: 8px !important; }
+        .pag-links nav > div { display: flex !important; align-items: center !important; gap: 6px !important; }
+        .pag-links nav p { display: none !important; }
+        .pag-links nav span.relative { display: inline-flex !important; gap: 4px !important; }
+        .pag-links nav a, .pag-links nav span {
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            width: 30px !important; height: 30px !important; border-radius: 7px !important;
+            font-size: .78rem !important; font-weight: 500 !important; text-decoration: none !important; color: var(--text-sub) !important;
+            border: 1px solid var(--bdr) !important; background: rgba(255,255,255,.02) !important;
+            transition: background .12s, color .12s !important;
+        }
+        .pag-links nav a:hover { background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
+        .pag-links nav span[aria-current="page"] span {
+            background: rgba(220,38,38,.12) !important; border-color: rgba(220,38,38,.18) !important; color: #fca5a5 !important;
+        }
+        .pag-links nav span[aria-disabled="true"] span { opacity: .3 !important; pointer-events: none !important; }
+        .pag-links nav svg { width: 16px !important; height: 16px !important; }
+
+        /* Light theme adjustments */
+        html.light-theme .pag-links nav a, html.light-theme .pag-links nav span {
+            border-color: #cbd5e1 !important;
+            color: #475569 !important;
+            background: #ffffff !important;
+        }
+        html.light-theme .pag-links nav a:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+        html.light-theme .pag-links nav span[aria-current="page"] span {
+            background: rgba(220,38,38,.08) !important;
+            border-color: rgba(220,38,38,.15) !important;
+            color: var(--red) !important;
+        }
+
         /* ─── Forms ──────────────────────────────────────── */
         .form-wrap { max-width: 860px; animation: fu .45s .05s both; }
         .form-section {

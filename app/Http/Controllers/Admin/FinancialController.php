@@ -253,7 +253,7 @@ class FinancialController extends Controller
 
     public function reconciliation(Request $request)
     {
-        $drivers = User::where('role', 'driver')->get()->map(function ($driver) {
+        $drivers = User::where('role', 'driver')->with('driverProfile')->get()->map(function ($driver) {
             $collected = FinancialLedgerEntry::where('driver_id', $driver->id)
                 ->where('to_account', 'driver')
                 ->sum('amount');

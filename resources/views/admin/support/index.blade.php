@@ -262,6 +262,65 @@
     .chat-send-btn:hover {
         opacity: .95;
     }
+
+    /* ─── Light Mode Overrides for Support Chat ─── */
+    html.light-theme .chat-sidebar {
+        background: #f8fafc !important;
+        border-right-color: #cbd5e1 !important;
+    }
+    html.light-theme .chat-sidebar-head {
+        border-bottom-color: #cbd5e1 !important;
+    }
+    html.light-theme .ticket-item {
+        border-bottom-color: #cbd5e1 !important;
+    }
+    html.light-theme .ticket-item:hover {
+        background: rgba(0, 0, 0, 0.02) !important;
+    }
+    html.light-theme .ticket-item.active {
+        background: rgba(220, 38, 38, 0.05) !important;
+    }
+    html.light-theme .chat-window {
+        background: #ffffff !important;
+    }
+    html.light-theme .chat-window-head {
+        background: #f1f5f9 !important;
+        border-bottom-color: #cbd5e1 !important;
+    }
+    html.light-theme .incoming .msg-bubble {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #1e293b !important;
+    }
+    html.light-theme .outgoing .msg-bubble {
+        background: linear-gradient(135deg, var(--red), var(--red-lt)) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1) !important;
+    }
+    html.light-theme .chat-footer {
+        background: #f8fafc !important;
+        border-top-color: #cbd5e1 !important;
+    }
+    html.light-theme .chat-input {
+        color: #0f172a !important;
+        background: #ffffff !important;
+        border-color: #cbd5e1 !important;
+    }
+    html.light-theme .ticket-list::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,.08) !important;
+    }
+    html.light-theme .chat-body::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,.08) !important;
+    }
+    html.light-theme .ticket-item-hd .ticket-time,
+    html.light-theme .ticket-meta,
+    html.light-theme .msg-sender,
+    html.light-theme .msg-time {
+        color: #64748b !important;
+    }
+    html.light-theme .ticket-title {
+        color: #1e293b !important;
+    }
 </style>
 @endsection
 

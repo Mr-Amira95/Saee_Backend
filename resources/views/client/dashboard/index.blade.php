@@ -72,6 +72,24 @@
         background: rgba(15, 23, 42, 0.02);
         border-color: rgba(15, 23, 42, 0.08);
     }
+
+    .card-pending-cash {
+        background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(12,18,48,0.85) 100%);
+        border-color: rgba(245,158,11,0.25) !important;
+    }
+    html.light-theme .card-pending-cash {
+        background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(255,255,255,1) 100%) !important;
+        border-color: rgba(245,158,11,0.3) !important;
+    }
+
+    .card-account-balance {
+        background: linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(12,18,48,0.85) 100%);
+        border-color: rgba(34,197,94,0.2) !important;
+    }
+    html.light-theme .card-account-balance {
+        background: linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(255,255,255,1) 100%) !important;
+        border-color: rgba(34,197,94,0.3) !important;
+    }
 </style>
 @endpush
 
@@ -196,7 +214,7 @@
 @endphp
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; animation: fu .45s .05s both;">
     <!-- Pending Cash Card -->
-    <div class="card" style="background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(12,18,48,0.85) 100%); display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(245,158,11,0.25);">
+    <div class="card card-pending-cash" style="display: flex; flex-direction: column; justify-content: space-between;">
         <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <span style="font-size: .74rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em;">{{ __('Pending Cash') }}</span>
@@ -214,7 +232,7 @@
     </div>
 
     <!-- Account Balance Card -->
-    <div class="card" style="background: linear-gradient(135deg, rgba(220,38,38,0.08) 0%, rgba(12,18,48,0.85) 100%); display: flex; flex-direction: column; justify-content: space-between; border-color: var(--bdr-red);">
+    <div class="card card-account-balance" style="display: flex; flex-direction: column; justify-content: space-between;">
         <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <span style="font-size: .74rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em;">{{ __('Account Balance') }}</span>

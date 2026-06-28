@@ -4,6 +4,13 @@
 
 @section('content')
 
+<style>
+    html.light-theme .pending-cash-card-orders {
+        background: rgba(220,38,38,.07) !important;
+        border-color: rgba(220,38,38,.2) !important;
+    }
+</style>
+
 <div class="page-hd">
     <div class="page-hd-left">
         <h1>{{ __('Orders') }}</h1>
@@ -72,7 +79,7 @@
     </div>
 
     {{-- Pending cash --}}
-    <div class="card" style="padding:18px 20px;border-color:var(--bdr-red);background:rgba(220,38,38,.04);">
+    <div class="card pending-cash-card-orders" style="padding:18px 20px;border-color:var(--bdr-red);background:rgba(220,38,38,.04);">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
             <div style="width:32px;height:32px;border-radius:9px;background:rgba(220,38,38,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="15" height="15" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

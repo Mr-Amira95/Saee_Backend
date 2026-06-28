@@ -104,7 +104,7 @@
                             </td>
                             <td>
                                 <div class="act-btns" style="justify-content: center;">
-                                    <a href="{{ route('admin.drivers.show', $d['driver']) }}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">
+                                    <a href="{{ route('admin.drivers.show', $d['driver']->driverProfile) }}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">
                                         View Profile
                                     </a>
                                 </div>

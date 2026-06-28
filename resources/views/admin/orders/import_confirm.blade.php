@@ -115,6 +115,35 @@
     .col-notes    { min-width: 160px; }
     .col-shift    { min-width: 140px; }
     .col-errors   { min-width: 250px; }
+
+    /* ─── Light Mode Overrides ─── */
+    html.light-theme .confirm-table thead tr {
+        background: #f1f5f9 !important;
+    }
+    html.light-theme .confirm-table th {
+        color: #475569 !important;
+        border-bottom-color: #cbd5e1 !important;
+    }
+    html.light-theme .confirm-table th.col-num {
+        background: #e2e8f0 !important;
+        color: #1e293b !important;
+    }
+    html.light-theme .confirm-table td {
+        border-bottom-color: #cbd5e1 !important;
+    }
+    html.light-theme .confirm-table td.col-num {
+        background: #f8fafc !important;
+        border-right-color: #cbd5e1 !important;
+    }
+    html.light-theme .tbl-input, html.light-theme .tbl-select {
+        background: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+    html.light-theme .tbl-select option {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
 </style>
 @endsection
 

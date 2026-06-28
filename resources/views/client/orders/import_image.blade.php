@@ -65,6 +65,14 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        .ai-guidelines-panel {
+            background: rgba(12, 18, 48, 0.5) !important;
+        }
+        html.light-theme .ai-guidelines-panel {
+            background: rgba(15, 23, 42, 0.03) !important;
+            border-color: rgba(15, 23, 42, 0.08) !important;
+        }
     </style>
 @endpush
 
@@ -126,7 +134,7 @@
         </div>
 
         {{-- How it works reference --}}
-        <div class="form-section" style="background: rgba(12, 18, 48, 0.5);">
+        <div class="form-section ai-guidelines-panel">
             <div class="form-section-title" style="color: var(--text-sub);">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ __('AI Vision parsing guidelines') }}

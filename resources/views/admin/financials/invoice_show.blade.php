@@ -155,6 +155,48 @@
         text-align: center;
     }
 
+    /* ─── Light Mode Overrides for Invoice Card ─── */
+    html.light-theme .invoice-card {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+    }
+    html.light-theme .logo-screen {
+        content: url("{{ asset('saee_logo_light.png') }}");
+    }
+    html.light-theme .inv-bill-title {
+        color: #64748b !important;
+        border-bottom-color: #cbd5e1 !important;
+    }
+    html.light-theme .inv-bill-text {
+        color: #334155 !important;
+    }
+    html.light-theme .inv-bill-text strong {
+        color: #0f172a !important;
+    }
+    html.light-theme .inv-table th {
+        background: #f8fafc !important;
+        border-bottom-color: #cbd5e1 !important;
+        color: #475569 !important;
+    }
+    html.light-theme .inv-table td {
+        border-bottom-color: #cbd5e1 !important;
+        color: #334155 !important;
+    }
+    html.light-theme .inv-total-row {
+        color: #334155 !important;
+        border-bottom-color: #e2e8f0 !important;
+    }
+    html.light-theme .inv-total-row.grand {
+        color: #16a34a !important;
+        border-top-color: #cbd5e1 !important;
+    }
+    html.light-theme .inv-footer {
+        border-top-color: #e2e8f0 !important;
+        color: #64748b !important;
+    }
+
     /* Print styling overrides */
     @media print {
         body {

@@ -127,6 +127,34 @@
     from { transform: translateY(20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
+/* ─── Light Mode Overrides for Bank Details Modal ─── */
+html.light-theme .bank-modal-card {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+    color: #0f172a !important;
+}
+html.light-theme .bank-modal-hd {
+    border-bottom-color: #e2e8f0 !important;
+}
+html.light-theme .bank-modal-title {
+    color: #0f172a !important;
+}
+html.light-theme .bank-detail-item {
+    border-bottom-color: #f1f5f9 !important;
+}
+html.light-theme .bank-detail-label {
+    color: #64748b !important;
+}
+html.light-theme .bank-detail-val {
+    color: #0f172a !important;
+}
+html.light-theme #modal-notes {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+}
 </style>
 @endsection
 
