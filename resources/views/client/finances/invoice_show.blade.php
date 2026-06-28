@@ -208,16 +208,16 @@
     {{-- Top Controls --}}
     <div class="page-hd" style="max-width: 800px; margin: 0 auto 18px;">
         <div class="page-hd-left">
-            <h1>{{ __('Invoice Detail') }}</h1>
+            <h1>Invoice Detail</h1>
         </div>
         <div>
             <button onclick="window.print()" class="btn-primary" style="background: linear-gradient(135deg, #475569, #1e293b); box-shadow: none;">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
-                {{ __('Print Invoice') }}
+                Print Invoice
             </button>
-            <a href="{{ route('client.financials.invoices') }}" class="btn-secondary">{{ __('Back to Invoices') }}</a>
+            <a href="{{ route('client.financials.invoices') }}" class="btn-secondary">Back to Invoices</a>
         </div>
     </div>
 
@@ -232,45 +232,45 @@
             
             <div class="inv-meta">
                 <h2>{{ $invoice->invoice_number }}</h2>
-                <p>{{ __('Date') }}: {{ $invoice->created_at->format('d M Y') }}</p>
-                <p>{{ __('Status') }}: <span style="text-transform:uppercase; font-weight:700; color:#4ade80">{{ __($invoice->status) }}</span></p>
+                <p>Date: {{ $invoice->created_at->format('d M Y') }}</p>
+                <p>Status: <span style="text-transform:uppercase; font-weight:700; color:#4ade80">{{ $invoice->status }}</span></p>
             </div>
         </div>
 
         {{-- Client details --}}
         <div class="inv-grid">
             <div>
-                <div class="inv-bill-title">{{ __('Billed To (Merchant)') }}</div>
+                <div class="inv-bill-title">Billed To (Merchant)</div>
                 <div class="inv-bill-text">
                     <strong>{{ $invoice->clientProfile->company_name }}</strong><br>
-                    {{ __('Merchant ID') }}: #{{ $invoice->clientProfile->id }}<br>
-                    {{ __('Email') }}: {{ $invoice->clientProfile->email ?? 'N/A' }}<br>
-                    {{ __('Address') }}: {{ $invoice->clientProfile->address_line1 ?? 'N/A' }}, {{ $invoice->clientProfile->city->name ?? '' }}
+                    Merchant ID: #{{ $invoice->clientProfile->id }}<br>
+                    Email: {{ $invoice->clientProfile->email ?? 'N/A' }}<br>
+                    Address: {{ $invoice->clientProfile->address_line1 ?? 'N/A' }}, {{ $invoice->clientProfile->city->name ?? '' }}
                 </div>
             </div>
             <div>
-                <div class="inv-bill-title">{{ __('Payment Information') }}</div>
+                <div class="inv-bill-title">Payment Information</div>
                 <div class="inv-bill-text">
-                    {{ __('Method') }}: Direct Transfer / Payout Cash<br>
-                    {{ __('Reference Number') }}: {{ $invoice->payoutLedgerEntry->reference_number ?? 'N/A' }}<br>
-                    {{ __('Ledger Ref ID') }}: #{{ $invoice->payout_ledger_entry_id }}<br>
-                    {{ __('Recorded By') }}: {{ $invoice->payoutLedgerEntry->recordedBy->name ?? 'System' }}
+                    Method: Direct Transfer / Payout Cash<br>
+                    Reference Number: {{ $invoice->payoutLedgerEntry->reference_number ?? 'N/A' }}<br>
+                    Ledger Ref ID: #{{ $invoice->payout_ledger_entry_id }}<br>
+                    Recorded By: {{ $invoice->payoutLedgerEntry->recordedBy->name ?? 'System' }}
                     @if($invoice->attachment_path)
-                        <br>{{ __('Attachment') }}: <a href="{{ asset('storage/' . $invoice->attachment_path) }}" target="_blank" style="color: var(--red-lt); font-weight: 600; text-decoration: underline;">{{ __('View Attachment') }}</a>
+                        <br>Attachment: <a href="{{ asset('storage/' . $invoice->attachment_path) }}" target="_blank" style="color: var(--red-lt); font-weight: 600; text-decoration: underline;">View Attachment</a>
                     @endif
                 </div>
             </div>
         </div>
 
         {{-- Linked Orders breakdown --}}
-        <div class="inv-bill-title">{{ __('Order Breakdown List') }}</div>
+        <div class="inv-bill-title">Order Breakdown List</div>
         <table class="inv-table">
             <thead>
                 <tr>
-                    <th>{{ __('Order Number') }}</th>
-                    <th style="text-align: right;">{{ __('COD Amount') }}</th>
-                    <th style="text-align: right;">{{ __('Customer Delivery') }}</th>
-                    <th style="text-align: right;">{{ __('Net Payout') }}</th>
+                    <th>Order Number</th>
+                    <th style="text-align: right;">COD Amount</th>
+                    <th style="text-align: right;">Customer Delivery</th>
+                    <th style="text-align: right;">Net Payout</th>
                 </tr>
             </thead>
             <tbody>
@@ -291,7 +291,7 @@
                 @empty
                     <tr>
                         <td colspan="4" style="text-align: center; color: var(--text-dim); padding: 20px;">
-                            {{ __('No orders found linked to this invoice reference transaction.') }}
+                            No orders found linked to this invoice reference transaction.
                         </td>
                     </tr>
                 @endforelse
@@ -306,23 +306,23 @@
         @endphp
         <div class="inv-totals">
             <div class="inv-total-row">
-                <span style="color: var(--text-dim)">{{ __('COD Collected') }}</span>
+                <span style="color: var(--text-dim)">COD Collected</span>
                 <span>{{ number_format($totalCod, 2) }} JD</span>
             </div>
             <div class="inv-total-row">
-                <span style="color: var(--text-dim)">{{ __('Customer Delivery') }}</span>
+                <span style="color: var(--text-dim)">Customer Delivery</span>
                 <span>+{{ number_format($totalCustDel, 2) }} JD</span>
             </div>
             <div class="inv-total-row grand">
-                <span>{{ __('Net Payout Paid') }}</span>
+                <span>Net Payout Paid</span>
                 <span>{{ number_format($totalNet, 2) }} JD</span>
             </div>
         </div>
 
         {{-- Footer notes --}}
         <div class="inv-footer">
-            <p>{{ __("Thank you for choosing Sa'ee Logistics. For any inquiries, please contact our support system.") }}</p>
-            <p style="margin-top: 8px; font-size: 0.7rem; color: var(--text-dim)">{{ __('Generated on') }} {{ now()->toDateTimeString() }}</p>
+            <p>Thank you for choosing Sa'ee Logistics. For any inquiries, please contact our support system.</p>
+            <p style="margin-top: 8px; font-size: 0.7rem; color: var(--text-dim)">Generated on {{ now()->toDateTimeString() }}</p>
         </div>
     </div>
 @endsection
