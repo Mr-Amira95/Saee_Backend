@@ -1,7 +1,14 @@
-@extends('client.layouts.app')
+@extends('admin.layouts.app')
 
 @section('title', 'Invoice ' . $invoice->invoice_number)
 @section('page-title', 'Invoice Detail')
+
+@section('breadcrumb')
+    <span class="sep">/</span>
+    <a href="{{ route('admin.financials.invoices') }}">Invoices</a>
+    <span class="sep">/</span>
+    <span class="current">{{ $invoice->invoice_number }}</span>
+@endsection
 
 @section('head')
 <style>
@@ -217,7 +224,7 @@
                 </svg>
                 Print Invoice
             </button>
-            <a href="{{ route('client.financials.invoices') }}" class="btn-secondary">Back to Invoices</a>
+            <a href="{{ route('admin.financials.invoices') }}" class="btn-secondary">Back to Invoices</a>
         </div>
     </div>
 
