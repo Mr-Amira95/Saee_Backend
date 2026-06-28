@@ -267,15 +267,12 @@
                 </div>
             </div>
 
-            {{-- Barcode / QR Code Wrap --}}
-            <div class="barcode-wrap" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; margin-bottom: 20px;">
-                <div style="text-align: left;">
-                    <div class="mock-barcode" style="font-size: 22px;">||| | |||| || | || |||| | ||</div>
-                    <div class="barcode-text" style="margin-top: 3px;">*{{ $order->order_number }}*</div>
+            {{-- QR Code Wrap --}}
+            <div class="barcode-wrap" style="text-align: center; padding: 15px; margin-bottom: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                <div style="background: white; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; display: inline-flex; margin-bottom: 5px;">
+                    {!! QrCode::size(70)->generate($order->order_number) !!}
                 </div>
-                <div style="background: white; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; display: inline-flex;">
-                    {!! QrCode::size(55)->generate($order->order_number) !!}
-                </div>
+                <div class="barcode-text" style="margin-top: 2px; font-weight: 600; font-family: monospace;">*{{ $order->order_number }}*</div>
             </div>
 
             {{-- Parties Grid --}}
