@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\SupportController;
 use App\Http\Controllers\Admin\WhatsAppTemplateController;
 use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\Client\AccountController as ClientAccountController;
+use App\Http\Controllers\Client\AiChatController;
 use App\Http\Controllers\Client\AuthController as ClientAuthController;
 use App\Http\Controllers\Client\BankingDetailsController as ClientBankingController;
 use App\Http\Controllers\Client\BillingController as ClientPortalBillingController;
@@ -288,6 +289,10 @@ Route::prefix('client')->name('client.')->group(function () {
         // Reports
         Route::get('reports', [ClientReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [ClientReportController::class, 'export'])->name('reports.export');
+
+        // AI Chatbot Assistant
+        Route::get('ai-assistant', [AiChatController::class, 'index'])->name('ai-chat.index');
+        Route::post('ai-assistant/reset', [AiChatController::class, 'reset'])->name('ai-chat.reset');
 
         // Helper: areas for a city (used by create/edit forms)
         Route::get('api/areas', function (Request $request) {

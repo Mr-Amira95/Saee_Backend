@@ -44,7 +44,7 @@ PROMPT;
         'رقم الطلب', 'رقم الهاتف', 'اسمك', 'اسم المستلم', 'الاسم الكامل',
     ];
 
-    public function chat(string $sessionId, string $userMessage, ?int $userId = null): array
+    public function chat(string $sessionId, string $userMessage, ?int $userId = null, ?int $clientProfileId = null): array
     {
         $session = ChatSession::firstOrCreate(
             ['session_id' => $sessionId],
@@ -65,7 +65,7 @@ PROMPT;
         }
 
         $context = match ($intent) {
-            'tracking'         => $this->buildTrackingContext($userMessage),
+            'tracking'         => $this->buildTrackingContext($userMessage, $clientProfileId),
             'general_question' => $this->buildFaqContext($userMessage),
             default            => '',
         };
@@ -172,7 +172,7 @@ PROMPT;
         return null;
     }
 
-    public function buildTrackingContext(string $message): string
+    public function buildTrackingContext(string $message, ?int $clientProfileId = null): string
     {
         $phone  = $this->extractPhone($message);
         $refNum = $this->extractOrderNumber($message);
@@ -189,10 +189,16 @@ PROMPT;
 
         // ── 1. Search by reference / order number ────────────────────────
         if ($refNum) {
-            $order = Order::where('order_number', $refNum)
-                ->orWhere('batch_number', $refNum)
-                ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(5)])
-                ->first();
+            $query = Order::query();
+            if ($clientProfileId !== null) {
+                $query->where('client_profile_id', $clientProfileId);
+            }
+            $order = $query->where(function ($q) use ($refNum) {
+                $q->where('order_number', $refNum)
+                  ->orWhere('batch_number', $refNum);
+            })
+            ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(5)])
+            ->first();
 
             if ($order) {
                 return $this->formatOrderContext($order);
@@ -209,14 +215,18 @@ PROMPT;
             $digits = preg_replace('/\D/', '', $phone);
             $short  = ltrim($digits, '0');
 
-            $orders = Order::where(function ($q) use ($digits, $short) {
+            $query = Order::query();
+            if ($clientProfileId !== null) {
+                $query->where('client_profile_id', $clientProfileId);
+            }
+            $orders = $query->where(function ($q) use ($digits, $short) {
                 $q->where('receiver_phone', 'LIKE', "%{$digits}%")
                   ->orWhere('receiver_phone', 'LIKE', "%{$short}%");
             })
-                ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(3)])
-                ->latest()
-                ->limit(5)
-                ->get();
+            ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(3)])
+            ->latest()
+            ->limit(5)
+            ->get();
 
             if ($orders->isNotEmpty()) {
                 return $this->formatMultipleOrdersContext($orders, "phone number {$phone}");
@@ -229,7 +239,11 @@ PROMPT;
 
         // ── 3. Search by name ─────────────────────────────────────────────
         if ($name) {
-            $orders = Order::where('receiver_name', 'LIKE', "%{$name}%")
+            $query = Order::query();
+            if ($clientProfileId !== null) {
+                $query->where('client_profile_id', $clientProfileId);
+            }
+            $orders = $query->where('receiver_name', 'LIKE', "%{$name}%")
                 ->with(['trackingLogs' => fn ($q) => $q->latest()->limit(3)])
                 ->latest()
                 ->limit(5)

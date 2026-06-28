@@ -714,6 +714,90 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
-@stack('scripts')
+    {{-- Floating AI Assistant Button --}}
+    @if(!request()->routeIs('client.ai-chat.index'))
+    <a href="{{ route('client.ai-chat.index') }}" class="floating-ai-btn" title="Ask SA'EE AI Assistant">
+        <span class="ai-btn-pulse"></span>
+        <svg class="ai-icon" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zM9 9h.008v.008H9V9zm0 3h.008v.008H9V12zm0 3h.008v.008H9V15zm3-6h.008v.008H12V9zm0 3h.008v.008H12V12zm0 3h.008v.008H12V15zm3-6h.008v.008H15V9zm0 3h.008v.008H15V12zm0 3h.008v.008H15V15z"/>
+        </svg>
+        <span class="ai-btn-label">AI Assistant</span>
+    </a>
+
+    <style>
+        .floating-ai-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 50px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff;
+            text-decoration: none;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.88rem;
+            letter-spacing: 0.02em;
+        }
+
+        .floating-ai-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 14px 30px rgba(239, 68, 68, 0.55), 0 0 15px rgba(239, 68, 68, 0.3);
+            background: linear-gradient(135deg, #f87171, #dc2626);
+        }
+
+        .ai-icon {
+            animation: float-icon 3s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        .ai-btn-pulse {
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            border-radius: 50px;
+            border: 2px solid rgba(239, 68, 68, 0.6);
+            opacity: 0;
+            animation: pulse-ring 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.96);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.15);
+                opacity: 0;
+            }
+        }
+
+        @keyframes float-icon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+
+        @media (max-width: 640px) {
+            .floating-ai-btn {
+                padding: 12px;
+                border-radius: 50%;
+                bottom: 16px;
+                right: 16px;
+            }
+            .ai-btn-label {
+                display: none;
+            }
+        }
+    </style>
+    @endif
+
+    @stack('scripts')
 </body>
 </html>

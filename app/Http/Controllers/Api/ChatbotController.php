@@ -14,9 +14,19 @@ class ChatbotController extends Controller
 
     public function message(SendMessageRequest $request): JsonResponse
     {
+        $user = auth()->user() ?? auth('web')->user() ?? $request->user();
+        $clientProfileId = null;
+        if ($user && in_array($user->role, ['client_master', 'client_employee'], true)) {
+            $clientProfileId = $user->isClientMaster()
+                ? $user->clientProfile?->id
+                : $user->clientEmployee?->client_profile_id;
+        }
+
         $result = $this->chatbotService->chat(
-            sessionId:   $request->input('session_id'),
-            userMessage: $request->input('message'),
+            sessionId:       $request->input('session_id'),
+            userMessage:     $request->input('message'),
+            userId:          $user?->id,
+            clientProfileId: $clientProfileId,
         );
 
         return response()->json([
