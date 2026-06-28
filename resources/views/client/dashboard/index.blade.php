@@ -2,21 +2,94 @@
 @section('title', __('Home'))
 @section('page-title', __('Home'))
 
+@push('styles')
+<style>
+    .welcome-hero {
+        background: linear-gradient(135deg, rgba(220,38,38,0.15) 0%, rgba(12,18,48,0.9) 100%);
+        border: 1px solid var(--bdr-red);
+        border-radius: 18px;
+        padding: 28px 30px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        animation: fu .4s both;
+    }
+    .welcome-title {
+        font-size: 1.6rem;
+        font-weight: 900;
+        letter-spacing: -.02em;
+        margin-bottom: 6px;
+        color: var(--text);
+    }
+    .welcome-name {
+        background: linear-gradient(to right, #fca5a5, var(--red-lt));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .welcome-subtitle {
+        font-size: .88rem;
+        color: var(--text-sub);
+        max-width: 580px;
+        line-height: 1.5;
+    }
+    .status-widget {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--bdr);
+        padding: 8px 14px;
+        border-radius: 12px;
+        align-items: center;
+    }
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success);
+        display: inline-block;
+    }
+    .status-text {
+        font-size: .78rem;
+        font-weight: 600;
+        color: var(--text-sub);
+    }
+
+    /* ─── Light Mode ────────────────────────────── */
+    html.light-theme .welcome-hero {
+        background: linear-gradient(135deg, rgba(220,38,38,0.05) 0%, rgba(255,255,255,0.9) 100%);
+        border-color: rgba(220,38,38,0.12);
+    }
+    html.light-theme .welcome-name {
+        background: linear-gradient(to right, var(--red), var(--red-lt));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    html.light-theme .status-widget {
+        background: rgba(15, 23, 42, 0.02);
+        border-color: rgba(15, 23, 42, 0.08);
+    }
+</style>
+@endpush
+
 @section('content')
 
 {{-- Welcome Header Hero --}}
-<div style="background: linear-gradient(135deg, rgba(220,38,38,0.15) 0%, rgba(12,18,48,0.9) 100%); border: 1px solid var(--bdr-red); border-radius: 18px; padding: 28px 30px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; animation: fu .4s both;">
+<div class="welcome-hero">
     <div>
-        <h1 style="font-size: 1.6rem; font-weight: 900; letter-spacing: -.02em; margin-bottom: 6px; color: var(--text);">
-            {{ __('Welcome back,') }} <span style="background: linear-gradient(to right, #fca5a5, var(--red-lt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ $profile->company_name }}</span>!
+        <h1 class="welcome-title">
+            {{ __('Welcome back,') }} <span class="welcome-name">{{ $profile->company_name }}</span>!
         </h1>
-        <p style="font-size: .88rem; color: var(--text-sub); max-width: 580px; line-height: 1.5;">
+        <p class="welcome-subtitle">
             {{ __('Manage your logistics pipeline, track incoming and outgoing shipments, and keep your business moving efficiently.') }}
         </p>
     </div>
-    <div style="display: flex; gap: 8px; flex-shrink: 0; background: rgba(255,255,255,0.03); border: 1px solid var(--bdr); padding: 8px 14px; border-radius: 12px; align-items: center;">
-        <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); display: inline-block;"></span>
-        <span style="font-size: .78rem; font-weight: 600; color: var(--text-sub);">{{ __('Sa\'ee Logistics Status: Operational') }}</span>
+    <div class="status-widget">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ __('Sa\'ee Logistics Status: Operational') }}</span>
     </div>
 </div>
 

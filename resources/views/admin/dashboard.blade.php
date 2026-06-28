@@ -23,6 +23,19 @@
     .welcome-text p  { font-size: .82rem; color: var(--text-sub); margin-top: 5px; }
     .welcome-date    { font-size: .8rem; color: var(--text-dim); font-weight: 500; white-space: nowrap; }
 
+    /* Light Theme welcome row styling overrides */
+    html.light-theme .welcome-row {
+        background: linear-gradient(135deg, rgba(220,38,38,0.05) 0%, rgba(255,255,255,0.9) 100%);
+        border-color: rgba(220,38,38,0.12);
+    }
+    html.light-theme .welcome-text h2 em {
+        color: var(--red);
+    }
+    html.light-theme .attendance-widget {
+        background: rgba(15, 23, 42, 0.02) !important;
+        border-color: rgba(15, 23, 42, 0.08) !important;
+    }
+
     /* ─── Metric cards ────────────────────────────── */
     .cards-grid {
         display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
