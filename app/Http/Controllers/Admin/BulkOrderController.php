@@ -41,8 +41,21 @@ class BulkOrderController extends Controller
 
         $imagePath = $request->file('image')->getRealPath();
 
+        // Fetch clients, cities, areas to map names to IDs
+        $clientsList = ClientProfile::where('status', 'active')->get(['id', 'company_name']);
+        $citiesList  = City::where('is_active', true)->with('areas')->get();
+
+        // Simplify lists for OpenAI token efficiency
+        $clientsData = $clientsList->map(fn($c) => ['id' => $c->id, 'name' => $c->company_name])->toArray();
+        $citiesData = $citiesList->map(fn($c) => [
+            'id' => $c->id,
+            'name' => $c->name,
+            'name_ar' => $c->name_ar,
+            'areas' => $c->areas->map(fn($a) => ['id' => $a->id, 'name' => $a->name, 'name_ar' => $a->name_ar])->toArray()
+        ])->toArray();
+
         try {
-            $parsedOrders = $openAIService->parseImageForOrders($imagePath);
+            $parsedOrders = $openAIService->parseImageForOrders($imagePath, $clientsData, $citiesData);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'AI Processing failed: ' . $e->getMessage());
         }
@@ -51,18 +64,19 @@ class BulkOrderController extends Controller
             return redirect()->back()->with('error', 'No order details could be extracted from the image.');
         }
 
-        // Fetch clients, cities, areas to map names to IDs
-        $clientsList = ClientProfile::where('status', 'active')->get(['id', 'company_name']);
-        $citiesList  = City::where('is_active', true)->with('areas')->get();
-
         $rows = [];
         $errors = [];
         $hasErrors = false;
 
         foreach ($parsedOrders as $index => $o) {
-            // Attempt to resolve client_id
-            $clientId = null;
-            if (!empty($o['client_id_or_name'])) {
+            // 1. Resolve client_id
+            $clientId = $o['client_id'] ?? null;
+            // Validate client exists in database list
+            if ($clientId && !$clientsList->contains('id', $clientId)) {
+                $clientId = null;
+            }
+            // Fallback string matching
+            if (!$clientId && !empty($o['client_id_or_name'])) {
                 $clientName = strtolower(trim($o['client_id_or_name']));
                 $matchedClient = $clientsList->first(function ($c) use ($clientName) {
                     return str_contains(strtolower($c->company_name), $clientName) ||
@@ -73,9 +87,14 @@ class BulkOrderController extends Controller
                 }
             }
 
-            // Attempt to resolve city_id
-            $cityId = null;
-            if (!empty($o['city_name'])) {
+            // 2. Resolve city_id
+            $cityId = $o['city_id'] ?? null;
+            // Validate city exists in database list
+            if ($cityId && !$citiesList->contains('id', $cityId)) {
+                $cityId = null;
+            }
+            // Fallback string matching
+            if (!$cityId && !empty($o['city_name'])) {
                 $cityName = strtolower(trim($o['city_name']));
                 $matchedCity = $citiesList->first(function ($c) use ($cityName) {
                     return str_contains(strtolower($c->name), $cityName) ||
@@ -88,20 +107,27 @@ class BulkOrderController extends Controller
                 }
             }
 
-            // Attempt to resolve area_id
-            $areaId = null;
-            if ($cityId && !empty($o['area_name'])) {
-                $areaName = strtolower(trim($o['area_name']));
+            // 3. Resolve area_id
+            $areaId = $o['area_id'] ?? null;
+            // Validate area exists under matched city
+            if ($cityId) {
                 $cityObj = $citiesList->firstWhere('id', $cityId);
                 if ($cityObj) {
-                    $matchedArea = $cityObj->areas->first(function ($a) use ($areaName) {
-                        return str_contains(strtolower($a->name), $areaName) ||
-                               str_contains(strtolower($a->name_ar), $areaName) ||
-                               str_contains($areaName, strtolower($a->name)) ||
-                               str_contains($areaName, strtolower($a->name_ar));
-                    });
-                    if ($matchedArea) {
-                        $areaId = $matchedArea->id;
+                    if ($areaId && !$cityObj->areas->contains('id', $areaId)) {
+                        $areaId = null;
+                    }
+                    // Fallback string matching
+                    if (!$areaId && !empty($o['area_name'])) {
+                        $areaName = strtolower(trim($o['area_name']));
+                        $matchedArea = $cityObj->areas->first(function ($a) use ($areaName) {
+                            return str_contains(strtolower($a->name), $areaName) ||
+                                   str_contains(strtolower($a->name_ar), $areaName) ||
+                                   str_contains($areaName, strtolower($a->name)) ||
+                                   str_contains($areaName, strtolower($a->name_ar));
+                        });
+                        if ($matchedArea) {
+                            $areaId = $matchedArea->id;
+                        }
                     }
                 }
             }

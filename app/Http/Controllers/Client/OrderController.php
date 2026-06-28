@@ -198,8 +198,19 @@ class OrderController extends Controller
 
         $imagePath = $request->file('image')->getRealPath();
 
+        $profile = $this->getClientProfile();
+        $citiesList = City::where('is_active', true)->with('areas')->get();
+
+        // Simplify lists for OpenAI token efficiency (no clients list needed on client portal)
+        $citiesData = $citiesList->map(fn($c) => [
+            'id' => $c->id,
+            'name' => $c->name,
+            'name_ar' => $c->name_ar,
+            'areas' => $c->areas->map(fn($a) => ['id' => $a->id, 'name' => $a->name, 'name_ar' => $a->name_ar])->toArray()
+        ])->toArray();
+
         try {
-            $parsedOrders = $openAIService->parseImageForOrders($imagePath);
+            $parsedOrders = $openAIService->parseImageForOrders($imagePath, [], $citiesData);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'AI Processing failed: ' . $e->getMessage());
         }
@@ -208,17 +219,19 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'No order details could be extracted from the image.');
         }
 
-        $profile = $this->getClientProfile();
-        $citiesList = City::where('is_active', true)->with('areas')->get();
-
         $rows = [];
         $errors = [];
         $hasErrors = false;
 
         foreach ($parsedOrders as $index => $o) {
-            // Attempt to resolve city_id
-            $cityId = null;
-            if (!empty($o['city_name'])) {
+            // 1. Resolve city_id
+            $cityId = $o['city_id'] ?? null;
+            // Validate city exists in database list
+            if ($cityId && !$citiesList->contains('id', $cityId)) {
+                $cityId = null;
+            }
+            // Fallback string matching
+            if (!$cityId && !empty($o['city_name'])) {
                 $cityName = strtolower(trim($o['city_name']));
                 $matchedCity = $citiesList->first(function ($c) use ($cityName) {
                     return str_contains(strtolower($c->name), $cityName) ||
@@ -231,20 +244,27 @@ class OrderController extends Controller
                 }
             }
 
-            // Attempt to resolve area_id
-            $areaId = null;
-            if ($cityId && !empty($o['area_name'])) {
-                $areaName = strtolower(trim($o['area_name']));
+            // 2. Resolve area_id
+            $areaId = $o['area_id'] ?? null;
+            // Validate area exists under matched city
+            if ($cityId) {
                 $cityObj = $citiesList->firstWhere('id', $cityId);
                 if ($cityObj) {
-                    $matchedArea = $cityObj->areas->first(function ($a) use ($areaName) {
-                        return str_contains(strtolower($a->name), $areaName) ||
-                               str_contains(strtolower($a->name_ar), $areaName) ||
-                               str_contains($areaName, strtolower($a->name)) ||
-                               str_contains($areaName, strtolower($a->name_ar));
-                    });
-                    if ($matchedArea) {
-                        $areaId = $matchedArea->id;
+                    if ($areaId && !$cityObj->areas->contains('id', $areaId)) {
+                        $areaId = null;
+                    }
+                    // Fallback string matching
+                    if (!$areaId && !empty($o['area_name'])) {
+                        $areaName = strtolower(trim($o['area_name']));
+                        $matchedArea = $cityObj->areas->first(function ($a) use ($areaName) {
+                            return str_contains(strtolower($a->name), $areaName) ||
+                                   str_contains(strtolower($a->name_ar), $areaName) ||
+                                   str_contains($areaName, strtolower($a->name)) ||
+                                   str_contains($areaName, strtolower($a->name_ar));
+                        });
+                        if ($matchedArea) {
+                            $areaId = $matchedArea->id;
+                        }
                     }
                 }
             }

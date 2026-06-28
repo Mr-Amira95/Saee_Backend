@@ -12,10 +12,12 @@ class OpenAIService
      * Parse an image file and extract a structured list of orders using OpenAI.
      *
      * @param string $imagePath
+     * @param array $clients
+     * @param array $cities
      * @return array
      * @throws Exception
      */
-    public function parseImageForOrders(string $imagePath): array
+    public function parseImageForOrders(string $imagePath, array $clients = [], array $cities = []): array
     {
         $apiKey = config('services.openai.key');
         if (empty($apiKey)) {
@@ -37,12 +39,25 @@ class OpenAIService
         $base64Image = base64_encode($imageData);
         $mimeType = mime_content_type($imagePath) ?: 'image/jpeg';
 
+        $clientsListStr = json_encode($clients, JSON_UNESCAPED_UNICODE);
+        $citiesListStr = json_encode($cities, JSON_UNESCAPED_UNICODE);
+
         $prompt = "This image contains a list, table, or receipt of shipping orders. " .
+            "We have provided reference lists of valid clients, cities, and areas from our database. " .
+            "Your goal is to parse each order and intelligently match the client, city, and area names from the image to their corresponding IDs in these reference lists. Perform smart matching and minor typo/spelling correction (e.g. 'aman' -> Amman ID, 'swayfiyah' -> Sweifieh ID).\n\n" .
+            "--- REFERENCE DATA ---\n" .
+            "Clients: " . $clientsListStr . "\n" .
+            "Cities & Areas: " . $citiesListStr . "\n\n" .
             "Please extract every order row and return ONLY valid JSON matching this schema:\n\n" .
             "{\n" .
             "  \"orders\": [\n" .
             "    {\n" .
-            "      \"client_id_or_name\": \"string (optional: name of client or brand if visible in the document)\",\n" .
+            "      \"client_id\": \"integer|null (matched client id, or null if not matched/applicable)\",\n" .
+            "      \"client_id_or_name\": \"string (optional: raw extracted name of client or brand if visible in the document)\",\n" .
+            "      \"city_id\": \"integer|null (matched city id, or null if not matched)\",\n" .
+            "      \"city_name\": \"string (raw extracted city name from the document)\",\n" .
+            "      \"area_id\": \"integer|null (matched area id from the areas list under the matched city, or null if not matched)\",\n" .
+            "      \"area_name\": \"string (raw extracted area name from the document)\",\n" .
             "      \"order_description\": \"string (product description/item names, default to empty string)\",\n" .
             "      \"payment_type\": \"cod|prepaid (must be lowercase 'cod' or 'prepaid', default to 'cod' if price > 0, otherwise 'prepaid')\",\n" .
             "      \"delivery_on_customer\": \"boolean (true if customer pays delivery fee, false if client pays, default to false)\",\n" .
@@ -50,8 +65,6 @@ class OpenAIService
             "      \"order_price\": \"number (numeric cash/COD price of goods to be collected, default to 0.00)\",\n" .
             "      \"receiver_name\": \"string (name of the customer/receiver, mandatory)\",\n" .
             "      \"receiver_phone\": \"string (phone number of the customer/receiver, mandatory)\",\n" .
-            "      \"city_name\": \"string (city name in English or Arabic, e.g. Amman, Irbid, Zarqa, Aqaba)\",\n" .
-            "      \"area_name\": \"string (area or neighborhood name in English or Arabic if mentioned)\",\n" .
             "      \"address_text\": \"string (full details of receiver's address, mandatory)\",\n" .
             "      \"notes\": \"string (optional delivery notes or instructions)\",\n" .
             "      \"delivery_shift\": \"doesnt_matter|before_12pm|after_12pm (must be lowercase, default to 'doesnt_matter')\"\n" .
@@ -60,7 +73,7 @@ class OpenAIService
             "}\n\n" .
             "Requirements:\n" .
             "1. Extract receivers and phone numbers accurately.\n" .
-            "2. If city_name or area_name are in Arabic or English, write them exactly as shown or normalize them to their common spellings.\n" .
+            "2. Ensure you look at the provided reference tables carefully to match client_id, city_id, and area_id. Typo correction is encouraged.\n" .
             "3. If a value is empty or not present in the image, return null or the default value.\n" .
             "4. Do NOT invent data.";
 
