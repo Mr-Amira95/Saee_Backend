@@ -156,15 +156,10 @@
 @section('scripts')
 <script>
     function switchTab(tabName) {
-        // Remove active class from all buttons and panes
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-
-        // Find button and add active class
         const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(tabName));
         if (activeBtn) activeBtn.classList.add('active');
-
-        // Add active class to selected tab pane
         const activePane = document.getElementById('tab-' + tabName);
         if (activePane) activePane.classList.add('active');
     }

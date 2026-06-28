@@ -1,3 +1,10 @@
+<?php
+    use App\Models\SiteSetting;
+    $brandHeadline = SiteSetting::getVal('login_brand_headline', 'Your Business, Delivered.');
+    $brandSubtitle = SiteSetting::getVal('login_brand_subtitle', "SA'EE LOGISTICS PORTAL");
+    $brandPoints   = SiteSetting::getVal('login_brand_points', ['Track Orders', 'Manage Shipments', 'Real-time Updates']);
+    if (!is_array($brandPoints)) $brandPoints = ['Track Orders', 'Manage Shipments', 'Real-time Updates'];
+?>
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
@@ -59,9 +66,9 @@
         @keyframes slide-in-left { to { opacity: 1; transform: translateX(0); } }
         .brand-logo { animation: logo-breathe 5s ease-in-out infinite; }
         @keyframes logo-breathe { 0%,100% { filter: drop-shadow(0 0 22px rgba(220,38,38,0.35)); } 50% { filter: drop-shadow(0 0 50px rgba(220,38,38,0.65)); } }
-        .brand-headline { font-size: 2rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; line-height: 1.2; }
+        .brand-headline { font-size: 2rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; line-height: 1.25; }
         .brand-headline em { font-style: normal; color: var(--red-light); }
-        .brand-sub { font-size: .93rem; color: rgba(255,255,255,.38); letter-spacing: .06em; margin-top: -14px; }
+        .brand-sub { font-size: .93rem; color: rgba(255,255,255,.38); letter-spacing: .06em; }
         .pills { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .pill { display: flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 100px; padding: 7px 15px; font-size: .78rem; color: rgba(255,255,255,.5); font-weight: 500; animation: pill-float 4s ease-in-out infinite; }
         .pill:nth-child(2) { animation-delay: 1.3s; }
@@ -167,13 +174,13 @@
                 <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:300px;max-width:100%;filter:drop-shadow(0 4px 24px rgba(0,0,0,.45));">
             </div>
             <div>
-                <p class="brand-headline">Your Business,<br><em>Delivered.</em></p>
-                <p class="brand-sub">SA'EE LOGISTICS PORTAL</p>
+                <p class="brand-headline">{{ $brandHeadline }}</p>
+                <p class="brand-sub">{{ $brandSubtitle }}</p>
             </div>
             <div class="pills">
-                <span class="pill"><span class="pill-dot"></span> Track Orders</span>
-                <span class="pill"><span class="pill-dot"></span> Manage Shipments</span>
-                <span class="pill"><span class="pill-dot"></span> Real-time Updates</span>
+                @foreach($brandPoints as $point)
+                <span class="pill"><span class="pill-dot"></span>{{ $point }}</span>
+                @endforeach
             </div>
         </div>
     </div>

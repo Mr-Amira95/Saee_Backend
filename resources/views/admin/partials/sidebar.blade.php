@@ -133,6 +133,9 @@
             <a href="{{ route('admin.cms.faqs.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.faqs.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('FAQs List') }}
             </a>
+            <a href="{{ route('admin.cms.login-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.login-page.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Login Page') }}
+            </a>
         </div>
 
         {{-- Settings --}}

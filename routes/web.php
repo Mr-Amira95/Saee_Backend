@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\FinancialController;
 use App\Http\Controllers\Admin\LegalContentController;
+ use App\Http\Controllers\Admin\LoginPageController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PageController;
@@ -88,14 +89,11 @@ Route::prefix('portal')->name('portal.')->group(function () {
 // ─── Admin ────────────────────────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->group(function () {
 
-    // Guest routes — login & forgot-password
+    // Admin login is handled by the unified portal — redirect legacy URLs
     Route::middleware('admin.guest')->group(function () {
-        Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-        Route::post('login', [AuthController::class, 'login'])->name('login.submit');
-        Route::get('forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot-password');
-        Route::post('forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
-        Route::get('forgot-password/verify-otp', [AuthController::class, 'showVerifyOtp'])->name('forgot-password.verify-otp');
-        Route::post('forgot-password/verify-otp', [AuthController::class, 'verifyOtp'])->name('forgot-password.verify-otp.submit');
+        Route::get('login', fn() => redirect()->route('portal.login'))->name('login');
+        Route::get('forgot-password', fn() => redirect()->route('portal.forgot-password'))->name('forgot-password');
+        Route::get('forgot-password/verify-otp', fn() => redirect()->route('portal.forgot-password.verify-otp'))->name('forgot-password.verify-otp');
     });
 
     // Protected — must be authenticated admin/superadmin
@@ -108,6 +106,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('cms/banners', BannerController::class)->names('cms.banners');
         Route::resource('cms/services', ServiceController::class)->names('cms.services');
         Route::resource('cms/faqs', FaqController::class)->names('cms.faqs');
+        Route::get('cms/login-page', [LoginPageController::class, 'index'])->name('cms.login-page.index');
+        Route::put('cms/login-page', [LoginPageController::class, 'update'])->name('cms.login-page.update');
         Route::get('settings/site', [SiteSettingController::class, 'index'])->name('settings.site.index');
         Route::post('settings/site', [SiteSettingController::class, 'update'])->name('settings.site.update');
         Route::get('settings/legal', [LegalContentController::class, 'index'])->name('settings.legal.index');
