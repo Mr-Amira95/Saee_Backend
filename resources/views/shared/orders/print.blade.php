@@ -255,10 +255,13 @@
         <div>
             {{-- Header --}}
             <div class="waybill-header">
-                <div class="company-info">
-                    <h1>SA'EE LOGISTICS</h1>
-                    <p>Reliable Delivery Solutions</p>
-                    <p>Phone: +962 7 9000 0000 | support@saee.logistics</p>
+                <div class="company-info" style="display: flex; align-items: center; gap: 14px;">
+                    <img src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee Logistics" style="height: 52px; width: auto; object-fit: contain;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #0c1230; letter-spacing: 0.5px; line-height: 1.1;">SA'EE LOGISTICS</h1>
+                        <p style="margin: 2px 0 0 0; color: #64748b; font-size: 12px;">Reliable Delivery Solutions</p>
+                        <p style="margin: 2px 0 0 0; color: #64748b; font-size: 12px;">Phone: +962 7 9000 0000 | support@saee.logistics</p>
+                    </div>
                 </div>
                 <div class="waybill-title">
                     <h2>DELIVERY WAYBILL</h2>

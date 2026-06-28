@@ -5,6 +5,9 @@
 
 @section('head')
 <style>
+    .logo-print {
+        display: none !important;
+    }
     .invoice-card {
         background: #0c1230;
         border: 1px solid var(--bdr);
@@ -164,6 +167,12 @@
             overflow: visible !important;
             background: transparent !important;
         }
+        .logo-screen {
+            display: none !important;
+        }
+        .logo-print {
+            display: block !important;
+        }
         .invoice-card {
             box-shadow: none !important;
             border: none !important;
@@ -217,7 +226,8 @@
         {{-- Header --}}
         <div class="inv-header">
             <div class="inv-logo">
-                <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
+                <img class="logo-screen" src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
+                <img class="logo-print" src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee Logistics" style="height: 48px; width: auto;">
             </div>
             
             <div class="inv-meta">
