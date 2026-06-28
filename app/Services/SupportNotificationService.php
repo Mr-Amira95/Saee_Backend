@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\SystemNotification;
 use App\Models\SupportTicket;
 use App\Models\UserDevice;
+use App\Models\HandoverRequest;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
@@ -66,6 +67,18 @@ class SupportNotificationService
             type:       'info',
             entityType: 'support_ticket',
             entityId:   $ticket->id,
+        );
+    }
+
+    public function notifyAdminsNewHandoverRequest(HandoverRequest $handoverRequest): void
+    {
+        $driverName = $handoverRequest->driver?->name ?? 'Driver';
+        $this->sendToAdmins(
+            title:      'New Checkout Handover Request',
+            message:    "Driver {$driverName} has submitted a checkout handover request.",
+            type:       'info',
+            entityType: 'handover_request',
+            entityId:   $handoverRequest->id,
         );
     }
 
@@ -259,6 +272,10 @@ class SupportNotificationService
 
         if ($entityType === 'order') {
             return route('admin.orders.show', $entityId);
+        }
+
+        if ($entityType === 'handover_request') {
+            return route('admin.financials.handover-requests.show', $entityId);
         }
 
         if ($entityType === 'single_order') {

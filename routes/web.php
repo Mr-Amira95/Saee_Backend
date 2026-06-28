@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\DriverPayrollController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\FinancialController;
+use App\Http\Controllers\Admin\HandoverRequestController;
 use App\Http\Controllers\Admin\LegalContentController;
  use App\Http\Controllers\Admin\LoginPageController;
 use App\Http\Controllers\Admin\NotificationController;
@@ -206,6 +207,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('financials/settle-driver/{driver}', [FinancialController::class, 'settleDriver'])->name('financials.settle-driver.submit');
         Route::get('financials/payout-client/{client}', [FinancialController::class, 'clientPayoutForm'])->name('financials.payout-client');
         Route::post('financials/payout-client/{client}', [FinancialController::class, 'payoutClient'])->name('financials.payout-client.submit');
+
+        // Checkout Approvals (Driver Handover Requests)
+        Route::get('financials/handover-requests', [HandoverRequestController::class, 'index'])->name('financials.handover-requests.index');
+        Route::get('financials/handover-requests/{handoverRequest}', [HandoverRequestController::class, 'show'])->name('financials.handover-requests.show');
+        Route::post('financials/handover-requests/{handoverRequest}/approve', [HandoverRequestController::class, 'approve'])->name('financials.handover-requests.approve');
 
         // Driver Payroll (Saee → Driver compensation)
         Route::get('payroll', [DriverPayrollController::class, 'index'])->name('payroll.index');

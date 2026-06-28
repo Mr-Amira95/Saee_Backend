@@ -76,6 +76,9 @@
             <a href="{{ route('admin.financials.index') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.index') || request()->routeIs('admin.financials.settle-driver') || request()->routeIs('admin.financials.payout-client') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Settlements') }}
             </a>
+            <a href="{{ route('admin.financials.handover-requests.index') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.handover-requests.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Checkout Approvals') }}
+            </a>
             <a href="{{ route('admin.financials.invoices') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.invoices*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('COD Invoices') }}
             </a>

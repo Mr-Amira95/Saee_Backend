@@ -9,6 +9,7 @@ use App\Models\OrderTrackingLog;
 use App\Models\FinancialLedgerEntry;
 use App\Models\ClientProfile;
 use App\Models\User;
+use App\Models\HandoverRequest;
 use Illuminate\Support\Facades\DB;
 
 class OrderService
@@ -443,59 +444,78 @@ class OrderService
     }
 
     /**
-     * Bulk-return all rejected orders and settle all delivered COD cash to company.
+     * Submit a handover request for approval (bulk-return rejected and settle delivered COD cash).
      */
     public function confirmHandover(User $driver, ?string $notes = null): array
     {
         return DB::transaction(function () use ($driver, $notes) {
-            $driverProfile = DriverProfile::where('user_id', $driver->id)->firstOrFail();
+            $hasPending = HandoverRequest::where('driver_id', $driver->id)
+                ->where('status', 'pending')
+                ->exists();
 
-            $returnedCount = 0;
-            $settledCount  = 0;
+            if ($hasPending) {
+                throw new \Exception("You already have a pending checkout request awaiting admin approval.");
+            }
+
+            $driverProfile = DriverProfile::where('user_id', $driver->id)->firstOrFail();
 
             $rejectedOrders = Order::where('driver_profile_id', $driverProfile->id)
                 ->where('status', 'rejected')
-                ->with('payment')
+                ->whereNull('handover_request_id')
                 ->get();
 
-            foreach ($rejectedOrders as $order) {
-                $order->update([
-                    'status'         => 'returned',
-                    'payment_status' => 'no_payment',
-                ]);
+            $deliveredOrders = Order::where('driver_profile_id', $driverProfile->id)
+                ->where('status', 'delivered')
+                ->where('payment_status', 'with_driver')
+                ->whereNull('handover_request_id')
+                ->get();
 
-                $clientDeliveryAmount = $order->payment->client_delivery_amount;
-                if ($clientDeliveryAmount > 0) {
-                    FinancialLedgerEntry::create([
-                        'order_id'          => $order->id,
-                        'client_profile_id' => $order->client_profile_id,
-                        'driver_id'         => $driver->id,
-                        'from_account'      => 'client',
-                        'to_account'        => 'company',
-                        'amount'            => $clientDeliveryAmount,
-                        'type'              => 'shipping_charge',
-                        'recorded_by'       => $driver->id,
-                        'notes'             => 'Delivery charge for returned order ' . $order->order_number,
-                    ]);
-                }
-
-                $description = 'Driver confirmed handover — order returned to client.';
-                if ($notes) {
-                    $description .= " Notes: {$notes}";
-                }
-
-                $this->logTracking($order->id, $driver->id, 'rejected', 'returned', $description);
-                $returnedCount++;
+            if ($rejectedOrders->isEmpty() && $deliveredOrders->isEmpty()) {
+                throw new \Exception("No orders to hand over.");
             }
 
-            $deliveredOrders = Order::where('driver_profile_id', $driverProfile->id)
+            $handoverRequest = HandoverRequest::create([
+                'driver_id' => $driver->id,
+                'status'    => 'pending',
+                'notes'     => $notes,
+            ]);
+
+            foreach ($rejectedOrders as $order) {
+                $order->update(['handover_request_id' => $handoverRequest->id]);
+            }
+
+            foreach ($deliveredOrders as $order) {
+                $order->update(['handover_request_id' => $handoverRequest->id]);
+            }
+
+            // Send notification to admins
+            app(SupportNotificationService::class)->notifyAdminsNewHandoverRequest($handoverRequest);
+
+            return [
+                'returned' => $rejectedOrders->count(),
+                'settled'  => $deliveredOrders->count(),
+            ];
+        });
+    }
+
+    /**
+     * Approve a handover request: perform cash settlement and return rejected orders.
+     */
+    public function approveHandover(HandoverRequest $handoverRequest, User $actor): void
+    {
+        DB::transaction(function () use ($handoverRequest, $actor) {
+            if ($handoverRequest->status !== 'pending') {
+                throw new \Exception("Only pending handover requests can be approved.");
+            }
+
+            $deliveredOrders = $handoverRequest->orders()
                 ->where('status', 'delivered')
                 ->where('payment_status', 'with_driver')
                 ->get();
 
             foreach ($deliveredOrders as $order) {
                 $driverCollected = FinancialLedgerEntry::where('order_id', $order->id)
-                    ->where('driver_id', $driver->id)
+                    ->where('driver_id', $handoverRequest->driver_id)
                     ->where('to_account', 'driver')
                     ->sum('amount');
 
@@ -503,13 +523,13 @@ class OrderService
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $order->client_profile_id,
-                        'driver_id'         => $driver->id,
+                        'driver_id'         => $handoverRequest->driver_id,
                         'from_account'      => 'driver',
                         'to_account'        => 'company',
                         'amount'            => $driverCollected,
                         'type'              => 'driver_settlement',
-                        'recorded_by'       => $driver->id,
-                        'notes'             => ($notes ?? 'Driver confirmed cash handover to Saee') . ' — order ' . $order->order_number,
+                        'recorded_by'       => $actor->id,
+                        'notes'             => ($handoverRequest->notes ?? 'Driver confirmed cash handover to Saee') . ' — order ' . $order->order_number,
                     ]);
                 }
 
@@ -518,16 +538,53 @@ class OrderService
 
                 $this->logTracking(
                     $order->id,
-                    $driver->id,
+                    $actor->id,
                     $order->status,
                     $order->status,
-                    'Driver confirmed cash transfer to Saee. Amount: ' . $driverCollected . '.'
+                    'Driver cash transfer approved by admin. Amount: ' . $driverCollected . '.'
                 );
-
-                $settledCount++;
             }
 
-            return ['returned' => $returnedCount, 'settled' => $settledCount];
+            $rejectedOrders = $handoverRequest->orders()
+                ->where('status', 'rejected')
+                ->with('payment')
+                ->get();
+
+            foreach ($rejectedOrders as $order) {
+                $order->update([
+                    'status'         => 'returned',
+                    'payment_status' => 'no_payment',
+                    'returned_at'    => now(),
+                ]);
+
+                $clientDeliveryAmount = $order->payment?->client_delivery_amount ?? 0;
+                if ($clientDeliveryAmount > 0) {
+                    FinancialLedgerEntry::create([
+                        'order_id'          => $order->id,
+                        'client_profile_id' => $order->client_profile_id,
+                        'driver_id'         => $handoverRequest->driver_id,
+                        'from_account'      => 'client',
+                        'to_account'        => 'company',
+                        'amount'            => $clientDeliveryAmount,
+                        'type'              => 'shipping_charge',
+                        'recorded_by'       => $actor->id,
+                        'notes'             => 'Delivery charge for returned order ' . $order->order_number,
+                    ]);
+                }
+
+                $description = 'Driver handover approved by admin — order returned to client.';
+                if ($handoverRequest->notes) {
+                    $description .= " Notes: {$handoverRequest->notes}";
+                }
+
+                $this->logTracking($order->id, $actor->id, 'rejected', 'returned', $description);
+            }
+
+            $handoverRequest->update([
+                'status'      => 'approved',
+                'approved_by' => $actor->id,
+                'approved_at' => now(),
+            ]);
         });
     }
 

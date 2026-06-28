@@ -108,6 +108,7 @@ class FinancialController extends Controller
             ? Order::where('driver_profile_id', $driverProfile->id)
                 ->where('status', 'delivered')
                 ->where('payment_status', 'with_driver')
+                ->whereNull('handover_request_id')
                 ->with('payment')
                 ->orderBy('updated_at', 'desc')
                 ->get()

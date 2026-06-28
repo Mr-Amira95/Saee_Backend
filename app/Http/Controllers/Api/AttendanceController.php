@@ -151,6 +151,7 @@ class AttendanceController extends Controller
         // Cash physically with the driver across all time (not yet settled)
         $cashToHandover = (float) Order::where('driver_profile_id', $driverId)
             ->where('payment_status', 'with_driver')
+            ->whereNull('handover_request_id')
             ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
             ->sum(\DB::raw('COALESCE(order_payments.order_amount, 0) + COALESCE(order_payments.customer_delivery_amount, 0)'));
 

@@ -18,6 +18,7 @@ class Order extends Model
         'batch_number',
         'client_profile_id',
         'driver_profile_id',
+        'handover_request_id',
         'order_description',
         'status',
         'payment_status',
@@ -91,6 +92,11 @@ class Order extends Model
     public function driverProfile(): BelongsTo
     {
         return $this->belongsTo(DriverProfile::class);
+    }
+
+    public function handoverRequest(): BelongsTo
+    {
+        return $this->belongsTo(HandoverRequest::class);
     }
 
     public function payment(): HasOne
