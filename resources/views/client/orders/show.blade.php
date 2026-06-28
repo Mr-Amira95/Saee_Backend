@@ -62,8 +62,12 @@
             <p>Created {{ $order->created_at->format('d M Y, H:i') }}</p>
         </div>
     </div>
-    <div class="page-hd-right">
+    <div class="page-hd-right" style="display:flex;align-items:center;gap:8px;">
         <span class="badge {{ $statusClass }}" style="font-size:.8rem;padding:5px 12px;"><span class="badge-dot"></span>{{ $statusLabel }}</span>
+        <a href="{{ route('client.orders.print', $order) }}" target="_blank" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;display:inline-flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print Waybill
+        </a>
         @if($order->status === 'pending')
         <a href="{{ route('client.orders.edit', $order) }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -102,6 +106,10 @@
             <div class="info-row">
                 <span>Description:</span>
                 <strong>{{ $order->order_description ?: '—' }}</strong>
+            </div>
+            <div class="info-row">
+                <span>Delivery Shift:</span>
+                <strong>{{ $order->delivery_shift?->label() ?? "Doesn't Matter" }}</strong>
             </div>
             @if($order->notes)
             <div class="info-row">

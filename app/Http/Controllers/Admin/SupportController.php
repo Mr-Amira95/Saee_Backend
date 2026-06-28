@@ -87,7 +87,7 @@ class SupportController extends Controller
         ]);
 
         // Create the initial message from the admin
-        SupportMessage::create([
+        $message = SupportMessage::create([
             'support_ticket_id' => $ticket->id,
             'sender_id'         => Auth::id(),
             'sender_name'       => Auth::user()->name . ' (Operations)',
@@ -95,7 +95,8 @@ class SupportController extends Controller
             'is_read'           => true,
         ]);
 
-        rescue(fn () => app(SupportNotificationService::class)->notifyTicketOpened($ticket, Auth::id()));
+        broadcast(new SupportMessageSent($message));
+        rescue(fn () => app(SupportNotificationService::class)->notifyAdminReply($ticket, Auth::id()));
 
         return redirect()->route('admin.support.index', ['ticket' => $ticket->ticket_number])
             ->with('success', "Support ticket {$ticket->ticket_number} opened successfully.");

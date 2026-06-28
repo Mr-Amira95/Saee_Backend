@@ -70,10 +70,21 @@
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Shipment Description
             </div>
-            <div class="form-group">
-                <label class="form-label" for="order_description">Shipment Contents / Description</label>
-                <input type="text" name="order_description" id="order_description" class="form-input @error('order_description') err @enderror" value="{{ old('order_description') }}" placeholder="e.g. Shoes, electronics, documents">
-                @error('order_description') <span class="form-error">{{ $message }}</span> @enderror
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label" for="order_description">Shipment Contents / Description</label>
+                    <input type="text" name="order_description" id="order_description" class="form-input @error('order_description') err @enderror" value="{{ old('order_description') }}" placeholder="e.g. Shoes, electronics, documents">
+                    @error('order_description') <span class="form-error">{{ $message }}</span> @enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="delivery_shift">Preferred Delivery Shift</label>
+                    <select name="delivery_shift" id="delivery_shift" class="form-select @error('delivery_shift') err @enderror">
+                        <option value="doesnt_matter" {{ old('delivery_shift', 'doesnt_matter') === 'doesnt_matter' ? 'selected' : '' }}>Doesn't Matter</option>
+                        <option value="before_12pm" {{ old('delivery_shift') === 'before_12pm' ? 'selected' : '' }}>Before 12 PM</option>
+                        <option value="after_12pm" {{ old('delivery_shift') === 'after_12pm' ? 'selected' : '' }}>After 12 PM</option>
+                    </select>
+                    @error('delivery_shift') <span class="form-error">{{ $message }}</span> @enderror
+                </div>
             </div>
         </div>
 

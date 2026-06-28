@@ -640,6 +640,36 @@
         html[dir="rtl"] .form-actions {
             justify-content: flex-start;
         }
+
+        /* Table Sorting Styles */
+        thead th.sortable-th {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: background 0.15s, color 0.15s;
+        }
+        thead th.sortable-th:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+        thead th.sortable-th::after {
+            content: ' ↕';
+            opacity: 0.25;
+            margin-left: 6px;
+            font-size: 0.8em;
+            display: inline-block;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+        thead th.sortable-th.sort-asc::after {
+            content: ' ▲';
+            opacity: 0.9;
+            color: var(--red-lt);
+        }
+        thead th.sortable-th.sort-desc::after {
+            content: ' ▼';
+            opacity: 0.9;
+            color: var(--red-lt);
+        }
     </style>
     @yield('head')
 </head>
@@ -966,6 +996,184 @@ if (document.getElementById('notifBell')) {
         if (btn)  btn.classList.add('parent-open');
     }
 })();
+
+// Client-side table sorter
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('table').forEach(function (table) {
+        const headers = table.querySelectorAll('thead th');
+        const tbody = table.querySelector('tbody');
+        if (!tbody) return;
+
+        headers.forEach(function (th, index) {
+            const text = th.textContent.trim();
+            if (!text || th.classList.contains('no-sort') || th.querySelector('input[type="checkbox"]')) {
+                return;
+            }
+
+            th.classList.add('sortable-th');
+
+            th.addEventListener('click', function () {
+                const isAsc = th.classList.contains('sort-asc');
+                headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+
+                const direction = isAsc ? -1 : 1;
+                th.classList.add(isAsc ? 'sort-desc' : 'sort-asc');
+
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.sort(function (rowA, rowB) {
+                    const cellA = rowA.children[index];
+                    const cellB = rowB.children[index];
+                    if (!cellA || !cellB) return 0;
+
+                    const valA = getCellValue(cellA);
+                    const valB = getCellValue(cellB);
+
+                    if (!isNaN(valA) && !isNaN(valB) && valA !== '' && valB !== '') {
+                        return (parseFloat(valA) - parseFloat(valB)) * direction;
+                    }
+
+                    const dateA = Date.parse(valA);
+                    const dateB = Date.parse(valB);
+                    if (!isNaN(dateA) && !isNaN(dateB)) {
+                        return (dateA - dateB) * direction;
+                    }
+
+                    return valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' }) * direction;
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+    });
+
+    function getCellValue(cell) {
+        const input = cell.querySelector('input, select');
+        if (input) {
+            if (input.type === 'checkbox') {
+                return input.checked ? '1' : '0';
+            }
+            return input.value;
+        }
+        return cell.getAttribute('data-sort') || cell.textContent.trim();
+    }
+
+    // Universal CSV Export
+    const tables = document.querySelectorAll('table');
+    tables.forEach(function(table, index) {
+        if (table.closest('.timeline') || table.offsetParent === null) {
+            return;
+        }
+        
+        const bodyRows = table.querySelectorAll('tbody tr');
+        if (bodyRows.length === 0) return;
+        if (bodyRows.length === 1 && (bodyRows[0].textContent.includes('No ') || bodyRows[0].textContent.includes('Empty') || bodyRows[0].textContent.includes('No data'))) {
+            return;
+        }
+        
+        const headers = table.querySelectorAll('thead th');
+        if (headers.length < 2) return;
+
+        if (table.dataset.hasExportButton) return;
+        table.dataset.hasExportButton = 'true';
+
+        const bar = document.createElement('div');
+        bar.className = 'table-export-bar';
+        bar.style.display = 'flex';
+        bar.style.justifyContent = 'flex-end';
+        bar.style.marginBottom = '12px';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-secondary';
+        btn.style.padding = '6px 12px';
+        btn.style.fontSize = '0.78rem';
+        btn.style.display = 'inline-flex';
+        btn.style.alignItems = 'center';
+        btn.style.gap = '6px';
+        btn.style.cursor = 'pointer';
+        btn.style.borderRadius = '8px';
+        btn.style.fontWeight = '500';
+        btn.innerHTML = `
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export Table (CSV)
+        `;
+
+        btn.addEventListener('click', function() {
+            const csv = [];
+            const rows = table.querySelectorAll('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].offsetParent === null) continue;
+
+                const row = [];
+                const cols = rows[i].querySelectorAll('th, td');
+
+                for (let j = 0; j < cols.length; j++) {
+                    const col = cols[j];
+                    
+                    if (col.classList.contains('actions') || col.classList.contains('col-actions') || col.querySelector('button') || col.querySelector('input[type="checkbox"]')) {
+                        const select = col.querySelector('select');
+                        const input = col.querySelector('input:not([type="checkbox"]):not([type="hidden"])');
+                        if (select) {
+                            row.push(cleanCSVValue(select.options[select.selectedIndex]?.text || ''));
+                        } else if (input) {
+                            row.push(cleanCSVValue(input.value));
+                        } else {
+                            continue;
+                        }
+                    } else {
+                        const select = col.querySelector('select');
+                        const input = col.querySelector('input:not([type="checkbox"]):not([type="hidden"])');
+                        if (select) {
+                            row.push(cleanCSVValue(select.options[select.selectedIndex]?.text || ''));
+                        } else if (input) {
+                            row.push(cleanCSVValue(input.value));
+                        } else {
+                            let text = col.innerText || col.textContent || '';
+                            row.push(cleanCSVValue(text));
+                        }
+                    }
+                }
+                if (row.length > 0) {
+                    csv.push(row.join(','));
+                }
+            }
+
+            const csvContent = "\uFEFF" + csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const filename = `export_${table.className.replace(/[^a-zA-Z0-9]/g, '_') || 'data'}_${new Date().toISOString().slice(0,10)}.csv`;
+
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+
+        bar.appendChild(btn);
+
+        const parent = table.parentElement;
+        if (parent && (parent.classList.contains('confirm-table-wrap') || parent.style.overflowX === 'auto' || parent.style.overflow === 'auto' || parent.tagName === 'DIV')) {
+            parent.parentNode.insertBefore(bar, parent);
+        } else {
+            table.parentNode.insertBefore(bar, table);
+        }
+    });
+
+    function cleanCSVValue(value) {
+        let clean = value.replace(/"/g, '""');
+        clean = clean.replace(/\r?\n|\r/g, ' ').trim();
+        if (clean.indexOf(',') > -1 || clean.indexOf('"') > -1 || clean.indexOf('\n') > -1) {
+            clean = `"${clean}"`;
+        }
+        return clean;
+    }
+});
 </script>
 @yield('scripts')
 

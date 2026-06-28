@@ -30,6 +30,7 @@ class OrderResource extends JsonResource
                 $payment?->order_amount !== null ? (float) $payment->order_amount : null
             ),
             'receiver_name'            => $receiver?->receiver_name,
+            'delivery_shift'           => $this->delivery_shift?->value,
             'receiver_phone'           => $receiver?->receiver_phone,
             'address_text'             => $receiver?->address_text,
             'notes'                    => $this->notes,

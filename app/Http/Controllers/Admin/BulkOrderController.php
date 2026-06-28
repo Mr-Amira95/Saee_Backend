@@ -46,6 +46,7 @@ class BulkOrderController extends Controller
             'area_id',
             'address_text',
             'notes',
+            'delivery_shift',
         ];
 
         $sample = [
@@ -61,6 +62,7 @@ class BulkOrderController extends Controller
             '2',
             'King Fahd Road, Al Malaz',
             'Deliver after 5 PM please.',
+            'doesnt_matter',
         ];
 
         $callback = function () use ($headers, $sample) {
@@ -92,7 +94,7 @@ class BulkOrderController extends Controller
         if (($handle = fopen($path, 'r')) !== false) {
             $headers = fgetcsv($handle, 1000, ',');
 
-            $expected = ['client_id', 'order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes'];
+            $expected = ['client_id', 'order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes', 'delivery_shift'];
             if (! $headers || count(array_intersect($headers, $expected)) < 5) {
                 return redirect()->back()->with('error', 'Invalid CSV format. Please make sure to use the template provided.');
             }
@@ -110,67 +112,33 @@ class BulkOrderController extends Controller
             return redirect()->back()->with('error', 'The CSV file is empty.');
         }
 
-        $results   = [];
+        $rows = [];
+        $errors = [];
         $hasErrors = false;
 
         foreach ($data as $index => $row) {
-            $rowErrors = [];
-            $rowNum    = $index + 2;
+            $rowErrors = $this->validateImportRow($row);
 
-            $clientId = filter_var($row['client_id'] ?? null, FILTER_VALIDATE_INT);
-            if (! $clientId || ! ClientProfile::where('id', $clientId)->exists()) {
-                $rowErrors[] = "Client ID [{$row['client_id']}] not found.";
+            $deliveryShift = isset($row['delivery_shift']) ? strtolower(trim($row['delivery_shift'])) : 'doesnt_matter';
+            if ($deliveryShift === '') {
+                $deliveryShift = 'doesnt_matter';
             }
-
-            $paymentType = strtolower($row['payment_type'] ?? '');
-            if (! in_array($paymentType, ['cod', 'prepaid'])) {
-                $rowErrors[] = "Payment type must be 'cod' or 'prepaid'.";
-            }
-
-            $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
-            if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
-                $rowErrors[] = 'Order price must be a positive number for COD orders.';
-            }
-
-            $deliveryOnCustomer = filter_var($row['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-            if ($deliveryOnCustomer === null) {
-                $rowErrors[] = "delivery_on_customer must be 'true' or 'false'.";
-            }
-
-            $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
-            if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
-                $rowErrors[] = 'delivery_customer_amount must be a valid number.';
-            }
-
-            $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
-            if (! $cityId || ! City::where('id', $cityId)->exists()) {
-                $rowErrors[] = "City ID [{$row['city_id']}] does not exist.";
-            }
-
-            $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
-            if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
-                $rowErrors[] = "Area ID [{$row['area_id']}] does not exist or does not belong to City [{$row['city_id']}].";
-            }
-
-            if (empty($row['receiver_name']))  { $rowErrors[] = 'Receiver name is required.'; }
-            if (empty($row['receiver_phone'])) { $rowErrors[] = 'Receiver phone is required.'; }
-            if (empty($row['address_text']))   { $rowErrors[] = 'Address text is required.'; }
+            $row['delivery_shift'] = $deliveryShift;
 
             if (! empty($rowErrors)) {
                 $hasErrors = true;
+                $errors[$index] = $rowErrors;
             }
-
-            $results[] = ['row_number' => $rowNum, 'data' => $row, 'errors' => $rowErrors];
+            $rows[$index] = $row;
         }
+
+        session(['import_pending_rows' => $rows]);
+        session(['import_errors' => $errors]);
 
         if ($hasErrors) {
-            return view('admin.orders.import_preview', [
-                'results'    => $results,
-                'has_errors' => true,
-            ]);
+            return redirect()->route('admin.orders.import.review')
+                ->with('error', 'CSV parsed but some rows failed validation. Please correct them below.');
         }
-
-        session(['import_pending_rows' => array_column($results, 'data')]);
 
         return redirect()->route('admin.orders.import.review');
     }
@@ -178,6 +146,7 @@ class BulkOrderController extends Controller
     public function showReview()
     {
         $rows = session('import_pending_rows');
+        $rowErrors = session('import_errors', []);
 
         if (empty($rows)) {
             return redirect()->route('admin.orders.import');
@@ -189,7 +158,7 @@ class BulkOrderController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.orders.import_confirm', compact('rows', 'clients', 'cities'));
+        return view('admin.orders.import_confirm', compact('rows', 'rowErrors', 'clients', 'cities'));
     }
 
     public function storeConfirmed(Request $request)
@@ -198,6 +167,25 @@ class BulkOrderController extends Controller
 
         if (empty($rows)) {
             return redirect()->route('admin.orders.import')->with('error', 'No order data found. Please re-upload your file.');
+        }
+
+        $errors = [];
+        $hasErrors = false;
+
+        foreach ($rows as $index => $rowData) {
+            $rowErrors = $this->validateImportRow($rowData);
+            if (! empty($rowErrors)) {
+                $hasErrors = true;
+                $errors[$index] = $rowErrors;
+            }
+        }
+
+        if ($hasErrors) {
+            session(['import_pending_rows' => $rows]);
+            session(['import_errors' => $errors]);
+
+            return redirect()->route('admin.orders.import.review')
+                ->with('error', 'Some rows still have validation errors. Please correct them.');
         }
 
         $firstClientId = $rows[0]['client_profile_id'] ?? 'X';
@@ -219,14 +207,71 @@ class BulkOrderController extends Controller
                 'notes'                    => $rowData['notes'] ?? null,
                 'driver_id'                => null,
                 'batch_number'             => $batchNumber,
+                'delivery_shift'           => $rowData['delivery_shift'] ?? 'doesnt_matter',
             ], Auth::user());
         }
 
         session()->forget('import_pending_rows');
+        session()->forget('import_errors');
 
         $count = count($rows);
 
         return redirect()->route('admin.orders.index')
             ->with('success', "Successfully imported {$count} orders. Batch: {$batchNumber}");
+    }
+
+    private function validateImportRow(array $row): array
+    {
+        $rowErrors = [];
+
+        $clientId = $row['client_profile_id'] ?? ($row['client_id'] ?? null);
+        $clientId = filter_var($clientId, FILTER_VALIDATE_INT);
+        if (! $clientId || ! ClientProfile::where('id', $clientId)->exists()) {
+            $rowErrors[] = "Client ID [{$clientId}] not found.";
+        }
+
+        $paymentType = strtolower($row['payment_type'] ?? '');
+        if (! in_array($paymentType, ['cod', 'prepaid'])) {
+            $rowErrors[] = "Payment type must be 'cod' or 'prepaid'.";
+        }
+
+        $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
+        if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
+            $rowErrors[] = 'Order price must be a positive number for COD orders.';
+        }
+
+        $deliveryOnCustomer = filter_var($row['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($deliveryOnCustomer === null) {
+            $rowErrors[] = "delivery_on_customer must be 'true' or 'false'.";
+        }
+
+        $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
+        if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
+            $rowErrors[] = 'delivery_customer_amount must be a valid number.';
+        }
+
+        $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
+        if (! $cityId || ! City::where('id', $cityId)->exists()) {
+            $rowErrors[] = "City ID [{$row['city_id']}] does not exist.";
+        }
+
+        $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
+        if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
+            $rowErrors[] = "Area ID [{$row['area_id']}] does not exist or does not belong to City [{$row['city_id']}].";
+        }
+
+        if (empty($row['receiver_name']))  { $rowErrors[] = 'Receiver name is required.'; }
+        if (empty($row['receiver_phone'])) { $rowErrors[] = 'Receiver phone is required.'; }
+        if (empty($row['address_text']))   { $rowErrors[] = 'Address text is required.'; }
+
+        $deliveryShift = isset($row['delivery_shift']) ? strtolower(trim($row['delivery_shift'])) : 'doesnt_matter';
+        if ($deliveryShift === '') {
+            $deliveryShift = 'doesnt_matter';
+        }
+        if (! in_array($deliveryShift, ['doesnt_matter', 'before_12pm', 'after_12pm'])) {
+            $rowErrors[] = "Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.";
+        }
+
+        return $rowErrors;
     }
 }

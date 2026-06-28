@@ -189,6 +189,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('orders/import/confirm', [BulkOrderController::class, 'storeConfirmed'])->name('orders.import.confirm');
         Route::post('orders/calculate-price', [OrderController::class, 'calculatePrice'])->name('orders.calculate-price');
         Route::post('orders/assign-driver', [OrderController::class, 'assignDriver'])->name('orders.assign-driver');
+        Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
+        Route::get('orders/print-all', [OrderController::class, 'printAll'])->name('orders.print-all');
+        Route::get('orders/{order}/print', [OrderController::class, 'printOrder'])->name('orders.print');
         Route::resource('orders', OrderController::class)->names('orders');
 
         // Financial Ledger & Settlements
@@ -244,6 +247,9 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::post('orders/import/confirm', [ClientOrderController::class, 'storeConfirmed'])->name('orders.import.confirm');
         Route::get('orders/import', [ClientOrderController::class, 'showImport'])->name('orders.import');
         Route::post('orders/import', [ClientOrderController::class, 'import'])->name('orders.import.submit');
+        Route::get('orders/export', [ClientOrderController::class, 'export'])->name('orders.export');
+        Route::get('orders/print-all', [ClientOrderController::class, 'printAll'])->name('orders.print-all');
+        Route::get('orders/{order}/print', [ClientOrderController::class, 'printOrder'])->name('orders.print');
         Route::get('orders/create', [ClientOrderController::class, 'create'])->name('orders.create');
         Route::post('orders', [ClientOrderController::class, 'store'])->name('orders.store');
         Route::get('orders/{order}/edit', [ClientOrderController::class, 'edit'])->name('orders.edit');

@@ -113,6 +113,8 @@
     .col-area     { min-width: 140px; }
     .col-address  { min-width: 200px; }
     .col-notes    { min-width: 160px; }
+    .col-shift    { min-width: 140px; }
+    .col-errors   { min-width: 250px; }
 </style>
 @endsection
 
@@ -130,12 +132,22 @@
         </div>
     </div>
 
+    @if(!empty($rowErrors))
+    <div class="flash flash-err" style="margin-bottom: 22px; border-radius: 14px;">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div>
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 3px;">Validation Errors Found</strong>
+            Some spreadsheet records contain formatting errors. Please correct the highlighted cells below before confirming.
+        </div>
+    </div>
+    @else
     <div class="flash flash-info" style="margin-bottom: 22px; border-radius: 14px; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.05);">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <div>
             All rows passed validation. You can edit any field using the dropdowns and inputs below before confirming.
         </div>
     </div>
+    @endif
 
     <form action="{{ route('admin.orders.import.confirm') }}" method="POST" id="confirmForm">
         @csrf
@@ -157,12 +169,22 @@
                         <th class="col-area">Area</th>
                         <th class="col-address">Address</th>
                         <th class="col-notes">Notes</th>
+                        <th class="col-shift">Delivery Shift</th>
+                        @if(!empty($rowErrors))
+                        <th class="col-errors" style="color: var(--red-lt);">Validation Errors</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($rows as $i => $row)
-                    <tr>
-                        <td class="col-num">{{ $i + 1 }}</td>
+                    @php $rowHasErrors = !empty($rowErrors[$i]); @endphp
+                    <tr style="{{ $rowHasErrors ? 'background: rgba(220, 38, 38, 0.04);' : '' }}">
+                        <td class="col-num" style="{{ $rowHasErrors ? 'color: var(--red-lt); font-weight: 800;' : '' }}">
+                            {{ $i + 1 }}
+                            @if($rowHasErrors)
+                                <div style="font-size: 0.65rem; color: #fca5a5; font-weight: 500; margin-top: 4px;">⚠️</div>
+                            @endif
+                        </td>
 
                         {{-- Client --}}
                         <td class="col-client">
@@ -279,6 +301,29 @@
                                 class="tbl-input"
                                 value="{{ $row['notes'] ?? '' }}">
                         </td>
+
+                        {{-- Delivery Shift --}}
+                        <td class="col-shift">
+                            <select name="rows[{{ $i }}][delivery_shift]" class="tbl-select">
+                                <option value="doesnt_matter" {{ ($row['delivery_shift'] ?? 'doesnt_matter') === 'doesnt_matter' ? 'selected' : '' }}>Doesn't Matter</option>
+                                <option value="before_12pm"   {{ ($row['delivery_shift'] ?? '') === 'before_12pm' ? 'selected' : '' }}>Before 12 PM</option>
+                                <option value="after_12pm"    {{ ($row['delivery_shift'] ?? '') === 'after_12pm' ? 'selected' : '' }}>After 12 PM</option>
+                            </select>
+                        </td>
+
+                        @if(!empty($rowErrors))
+                        <td class="col-errors">
+                            @if($rowHasErrors)
+                                <ul style="margin: 0; padding-left: 12px; color: #fca5a5; font-size: 0.72rem; list-style-type: square; line-height: 1.3;">
+                                    @foreach($rowErrors[$i] as $err)
+                                        <li>{{ $err }}</li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <span style="color: var(--success); font-size: 0.75rem; font-weight: 600;">✓ Valid Row</span>
+                            @endif
+                        </td>
+                        @endif
                     </tr>
                     @endforeach
                 </tbody>

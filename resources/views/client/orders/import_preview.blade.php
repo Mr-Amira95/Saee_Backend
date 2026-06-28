@@ -59,6 +59,9 @@
                             <div class="cell-sub">
                                 Price: {{ number_format((float)($item['data']['order_price'] ?? 0), 2) }} JD
                             </div>
+                            <div class="cell-sub" style="margin-top: 2px; font-weight: 500;">
+                                Shift: {{ $item['data']['delivery_shift'] ?? 'doesnt_matter' }}
+                            </div>
                         </td>
                         <td>
                             <div class="cell-main">City ID: {{ $item['data']['city_id'] ?? 'N/A' }}</div>

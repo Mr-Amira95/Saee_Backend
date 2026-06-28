@@ -96,6 +96,15 @@
                         <input type="text" name="order_description" id="order_description" class="form-input @error('order_description') err @enderror" value="{{ old('order_description') }}" placeholder="e.g. Shoes, electronics, documents">
                         @error('order_description') <span class="form-error">{{ $message }}</span> @enderror
                     </div>
+                    <div class="form-group">
+                        <label class="form-label" for="delivery_shift">Preferred Delivery Shift</label>
+                        <select name="delivery_shift" id="delivery_shift" class="form-select @error('delivery_shift') err @enderror">
+                            <option value="doesnt_matter" {{ old('delivery_shift', 'doesnt_matter') === 'doesnt_matter' ? 'selected' : '' }}>Doesn't Matter</option>
+                            <option value="before_12pm" {{ old('delivery_shift') === 'before_12pm' ? 'selected' : '' }}>Before 12 PM</option>
+                            <option value="after_12pm" {{ old('delivery_shift') === 'after_12pm' ? 'selected' : '' }}>After 12 PM</option>
+                        </select>
+                        @error('delivery_shift') <span class="form-error">{{ $message }}</span> @enderror
+                    </div>
                 </div>
             </div>
 

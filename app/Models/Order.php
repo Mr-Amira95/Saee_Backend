@@ -29,6 +29,7 @@ class Order extends Model
         'notes',
         'delivered_at',
         'returned_at',
+        'delivery_shift',
     ];
 
     protected function casts(): array
@@ -41,6 +42,7 @@ class Order extends Model
             'delivered_at'        => 'datetime',
             'returned_at'         => 'datetime',
             'deleted_at'          => 'datetime',
+            'delivery_shift'      => \App\Enums\DeliveryShift::class,
         ];
     }
 

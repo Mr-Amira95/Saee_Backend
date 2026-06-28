@@ -98,6 +98,14 @@
                     Cancel Order
                 </button>
             @endif
+            <a href="{{ route('admin.orders.print', $order) }}" target="_blank" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Print Waybill
+            </a>
+            <a href="{{ route('admin.orders.edit', $order) }}" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Edit Order
+            </a>
             <button class="btn-primary" onclick="openModal('assignDriverModal')">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 {{ $order->driver ? 'Reassign Driver' : 'Assign Driver' }}
@@ -134,6 +142,10 @@
                 <div class="info-row">
                     <span>Description:</span>
                     <strong>{{ $order->order_description ?: 'No description' }}</strong>
+                </div>
+                <div class="info-row">
+                    <span>Delivery Shift:</span>
+                    <strong>{{ $order->delivery_shift?->label() ?? "Doesn't Matter" }}</strong>
                 </div>
                 @if($order->batch_number)
                     <div class="info-row">

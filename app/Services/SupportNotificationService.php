@@ -215,6 +215,35 @@ class SupportNotificationService
         }
     }
 
+    public function notifyClientOrderStatusChanged(Order $order, string $status, int $actorId): void
+    {
+        $clientProfile = $order->clientProfile;
+        if (! $clientProfile) {
+            return;
+        }
+
+        $userIds = [$clientProfile->master_user_id];
+        $employeeUserIds = $clientProfile->employees()->pluck('user_id')->toArray();
+        $userIds = array_merge($userIds, $employeeUserIds);
+
+        $title = $status === 'delivered' ? 'Order Delivered' : 'Order Rejected';
+        $message = $status === 'delivered'
+            ? "Your order #{$order->order_number} has been delivered."
+            : "Your order #{$order->order_number} has been rejected.";
+
+        foreach (array_unique(array_filter($userIds)) as $userId) {
+            $this->sendToUser(
+                userId:     $userId,
+                title:      $title,
+                message:    $message,
+                type:       'info',
+                createdBy:  $actorId,
+                entityType: 'single_order',
+                entityId:   $order->id,
+            );
+        }
+    }
+
     private function resolveLink(?string $entityType, ?int $entityId): ?string
     {
         if (! $entityType || ! $entityId) {
@@ -230,6 +259,10 @@ class SupportNotificationService
 
         if ($entityType === 'order') {
             return route('admin.orders.show', $entityId);
+        }
+
+        if ($entityType === 'single_order') {
+            return route('client.orders.show', $entityId);
         }
 
         return null;

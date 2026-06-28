@@ -1,6 +1,15 @@
-@extends('client.layouts.app')
+@extends('admin.layouts.app')
 @section('title', 'Edit Order ' . $order->order_number)
-@section('page-title', __('Edit Order'))
+@section('page-title', 'Edit Order')
+
+@section('breadcrumb')
+    <span class="sep">/</span>
+    <a href="{{ route('admin.orders.index') }}">Orders</a>
+    <span class="sep">/</span>
+    <a href="{{ route('admin.orders.show', $order) }}">#{{ $order->order_number }}</a>
+    <span class="sep">/</span>
+    <span class="current">Edit</span>
+@endsection
 
 @push('styles')
 <style>
@@ -28,7 +37,11 @@
     }
     .form-section-title svg { color: var(--red-lt); opacity: .7; }
     .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 768px) { .form-grid-2 { grid-template-columns: 1fr; } }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    @media (max-width: 768px) { 
+        .form-grid-2 { grid-template-columns: 1fr; }
+        .form-grid-3 { grid-template-columns: 1fr; }
+    }
     .form-group  { display: flex; flex-direction: column; gap: 6px; }
     .form-label .req { color: var(--red-lt); margin-left: 2px; }
     .form-actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; padding-top: 4px; }
@@ -56,25 +69,37 @@
 @endphp
 
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-    <a href="{{ route('client.orders.show', $order) }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← Back</a>
+    <a href="{{ route('admin.orders.show', $order) }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← Back</a>
     <div>
         <h1 style="font-size:1.3rem;font-weight:800;">Edit Order <span style="font-family:monospace;color:var(--red-lt);">{{ $order->order_number }}</span></h1>
-        <p style="font-size:.82rem;color:var(--text-sub);">Changes are only allowed while the order is pending.</p>
+        <p style="font-size:.82rem;color:var(--text-sub);">Admins can edit all details and settings of the order.</p>
     </div>
 </div>
 
 <div class="form-wrap">
-    <form action="{{ route('client.orders.update', $order) }}" method="POST" id="orderForm">
+    <form action="{{ route('admin.orders.update', $order) }}" method="POST" id="orderForm">
         @csrf
         @method('PATCH')
 
-        {{-- 1. Shipment Description --}}
+        {{-- 1. Client & Description --}}
         <div class="form-section">
             <div class="form-section-title">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Shipment Description
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                Client &amp; Description
             </div>
-            <div class="form-grid-2">
+            <div class="form-grid-3">
+                <div class="form-group">
+                    <label class="form-label" for="client_profile_id">Client Name <span class="req">*</span></label>
+                    <select name="client_profile_id" id="client_profile_id" class="form-select @error('client_profile_id') err @enderror" required>
+                        <option value="">Select Client</option>
+                        @foreach($clients as $client)
+                            <option value="{{ $client->id }}" {{ old('client_profile_id', $order->client_profile_id) == $client->id ? 'selected' : '' }}>
+                                {{ $client->company_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('client_profile_id') <span class="form-error">{{ $message }}</span> @enderror
+                </div>
                 <div class="form-group">
                     <label class="form-label" for="order_description">Shipment Contents / Description</label>
                     <input type="text" name="order_description" id="order_description" class="form-input @error('order_description') err @enderror"
@@ -197,7 +222,7 @@
         </div>
 
         <div class="form-actions">
-            <a href="{{ route('client.orders.show', $order) }}" class="btn-secondary">Cancel</a>
+            <a href="{{ route('admin.orders.show', $order) }}" class="btn-secondary">Cancel</a>
             <button type="submit" class="btn-primary" id="submitBtn">Save Changes</button>
         </div>
     </form>
@@ -310,6 +335,10 @@
             });
         }
     }
+
+    // ── Client select searchable select ──────────────────────────────
+    const clientSelect = document.getElementById('client_profile_id');
+    new SearchableSelect(clientSelect, 'Search clients...');
 
     // ── City / Area selects ───────────────────────────────────────────
     const citySelect = document.getElementById('city_id');

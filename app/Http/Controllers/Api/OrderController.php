@@ -400,6 +400,7 @@ class OrderController extends Controller
             'area_id'                  => ['required', 'integer', 'exists:areas,id'],
             'address_text'             => ['required', 'string'],
             'notes'                    => ['nullable', 'string', 'max:1000'],
+            'delivery_shift'           => ['nullable', 'string', 'in:doesnt_matter,before_12pm,after_12pm'],
         ]);
 
         if ($request->input('payment_type') === 'cod' && ! $request->filled('order_price')) {
@@ -421,7 +422,7 @@ class OrderController extends Controller
         $order = $this->orderService->createOrder(array_merge($request->only([
             'order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount',
             'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id',
-            'address_text', 'notes',
+            'address_text', 'notes', 'delivery_shift',
         ]), [
             'client_profile_id' => $clientProfile->id,
             'driver_id'         => null,
@@ -479,6 +480,7 @@ class OrderController extends Controller
             'area_id'                  => ['required', 'integer', 'exists:areas,id'],
             'address_text'             => ['required', 'string', 'max:1000'],
             'notes'                    => ['nullable', 'string', 'max:500'],
+            'delivery_shift'           => ['nullable', 'string', 'in:doesnt_matter,before_12pm,after_12pm'],
         ]);
 
         if ($validated['payment_type'] === 'cod' && ! $request->filled('order_price')) {
@@ -509,6 +511,7 @@ class OrderController extends Controller
         $order->update([
             'order_description' => $validated['order_description'] ?? null,
             'notes'             => $validated['notes'] ?? null,
+            'delivery_shift'    => $validated['delivery_shift'] ?? 'doesnt_matter',
         ]);
 
         $order->payment->update([
@@ -646,7 +649,7 @@ class OrderController extends Controller
 
         if (($handle = fopen($path, 'r')) !== false) {
             $headers = fgetcsv($handle, 1000, ',');
-            $expected = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes'];
+            $expected = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes', 'delivery_shift'];
 
             if (! $headers || count(array_intersect($headers, $expected)) < 5) {
                 fclose($handle);
@@ -711,6 +714,15 @@ class OrderController extends Controller
             if (empty($row['receiver_phone'])) { $rowErrors[] = 'Receiver phone is required.'; }
             if (empty($row['address_text']))   { $rowErrors[] = 'Address is required.'; }
 
+            $deliveryShift = isset($row['delivery_shift']) ? strtolower(trim($row['delivery_shift'])) : 'doesnt_matter';
+            if ($deliveryShift === '') {
+                $deliveryShift = 'doesnt_matter';
+            }
+            if (! in_array($deliveryShift, ['doesnt_matter', 'before_12pm', 'after_12pm'])) {
+                $rowErrors[] = "Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.";
+            }
+            $row['delivery_shift'] = $deliveryShift;
+
             if (! empty($rowErrors)) {
                 $errors[] = ['row' => $rowNum, 'errors' => $rowErrors];
             }
@@ -743,6 +755,7 @@ class OrderController extends Controller
                 'address_text'             => $row['address_text'],
                 'notes'                    => $row['notes'] ?? null,
                 'batch_number'             => $batchNumber,
+                'delivery_shift'           => $row['delivery_shift'] ?? 'doesnt_matter',
             ], $user);
 
             $importedCount++;
@@ -764,8 +777,8 @@ class OrderController extends Controller
 
     public function downloadImportTemplate(): StreamedResponse
     {
-        $headers = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes'];
-        $sample  = ['E-commerce parcel', 'cod', 'false', '0.00', '150.00', 'Ahmed Mansour', '0501234567', '1', '2', 'King Fahd Road, Al Malaz', 'Deliver after 5 PM'];
+        $headers = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes', 'delivery_shift'];
+        $sample  = ['E-commerce parcel', 'cod', 'false', '0.00', '150.00', 'Ahmed Mansour', '0501234567', '1', '2', 'King Fahd Road, Al Malaz', 'Deliver after 5 PM', 'doesnt_matter'];
 
         $callback = function () use ($headers, $sample) {
             $file = fopen('php://output', 'w');

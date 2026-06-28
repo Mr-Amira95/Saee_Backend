@@ -103,7 +103,7 @@ class ReportController extends Controller
             fputcsv($file, [
                 'Order #', 'Date', 'Receiver Name', 'Phone', 'City', 'Area',
                 'Payment Type', 'Order Amount (JD)', 'Delivery Fee (JD)',
-                'Status', 'Payment Status', 'Delivered At', 'Returned At',
+                'Status', 'Payment Status', 'Delivery Shift', 'Delivered At', 'Returned At',
             ]);
 
             Order::where('client_profile_id', $profile->id)
@@ -125,6 +125,7 @@ class ReportController extends Controller
                             $o->payment?->customer_delivery_amount ?? 0,
                             ucfirst($o->status),
                             ucfirst($o->payment_status ?? ''),
+                            $o->delivery_shift?->label() ?? "Doesn't Matter",
                             $o->delivered_at?->toDateString() ?? '',
                             $o->returned_at?->toDateString()  ?? '',
                         ]);

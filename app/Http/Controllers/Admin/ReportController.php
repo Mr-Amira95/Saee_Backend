@@ -198,7 +198,7 @@ class ReportController extends Controller
 
             if ($table === 'orders') {
                 // Header
-                fputcsv($file, ['Order ID', 'Order Number', 'Client Company', 'Driver Name', 'Receiver Name', 'Phone', 'City', 'Area', 'Payment Type', 'Goods Price (JD)', 'Delivery Price (JD)', 'Status', 'Payment Status', 'Created At']);
+                fputcsv($file, ['Order ID', 'Order Number', 'Client Company', 'Driver Name', 'Receiver Name', 'Phone', 'City', 'Area', 'Payment Type', 'Goods Price (JD)', 'Delivery Price (JD)', 'Status', 'Payment Status', 'Delivery Shift', 'Created At']);
                 
                 Order::with('clientProfile', 'driver', 'city', 'area')
                     ->chunk(200, function ($orders) use ($file) {
@@ -217,6 +217,7 @@ class ReportController extends Controller
                                 $o->delivery_amount,
                                 ucfirst($o->status),
                                 ucfirst($o->payment_status),
+                                $o->delivery_shift?->label() ?? "Doesn't Matter",
                                 $o->created_at->toDateTimeString()
                             ]);
                         }

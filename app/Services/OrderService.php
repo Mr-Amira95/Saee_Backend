@@ -50,6 +50,7 @@ class OrderService
                 'payment_status'    => 'pending',
                 'notes'             => $data['notes'] ?? null,
                 'batch_number'      => $data['batch_number'] ?? null,
+                'delivery_shift'    => $data['delivery_shift'] ?? 'doesnt_matter',
             ]);
 
             $order->payment()->create([
@@ -209,6 +210,10 @@ class OrderService
             }
 
             $order->save();
+
+            if (in_array($newStatus, ['delivered', 'rejected'])) {
+                rescue(fn () => app(SupportNotificationService::class)->notifyClientOrderStatusChanged($order, $newStatus, $actor->id));
+            }
 
             // WhatsApp notifications
             $receiver = $order->receiver;
