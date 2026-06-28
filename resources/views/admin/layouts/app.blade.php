@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') — Sa'ee Admin</title>
+    <title>@yield('title', __('Dashboard')) — Sa'ee Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -732,9 +732,9 @@
         {{-- Topbar --}}
         <header class="topbar">
             <div class="topbar-left">
-                <div class="topbar-title">@yield('page-title', 'Dashboard')</div>
+                <div class="topbar-title">@yield('page-title', __('Dashboard'))</div>
                 <div class="breadcrumb">
-                    <a href="{{ route('admin.dashboard') }}">Sa'ee Admin</a>
+                    <a href="{{ route('admin.dashboard') }}">{{ __('Sa\'ee Admin') }}</a>
                     @yield('breadcrumb')
                 </div>
             </div>
@@ -747,12 +747,12 @@
                 @endif
 
                 {{-- Theme Switcher --}}
-                <button class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="Toggle Theme">
+                <button class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="{{ __('Toggle Theme') }}">
                     <svg id="themeMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
                     <svg id="themeSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m8.942-8.942h-2.25M4.313 12H2.063m15.122-6.938l-1.591 1.591M6.818 17.182l-1.591 1.591m12.94 0l-1.591-1.591M6.818 6.818L5.227 5.227M12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
                 </button>
 
-                <div class="icon-btn" title="Notifications" id="notifBell" onclick="toggleNotifDropdown(event)">
+                <div class="icon-btn" title="{{ __('Notifications') }}" id="notifBell" onclick="toggleNotifDropdown(event)">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                     <span class="notif-dot" id="notifDot" style="display: none;"></span>
                 </div>
@@ -790,16 +790,16 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
         </div>
-        <h3>Delete <span id="modalEntityName">this record</span>?</h3>
-        <p>This will soft-delete the record. It can be restored by a superadmin if needed.</p>
+        <h3>{{ __('Delete') }} <span id="modalEntityName">{{ __('this record') }}</span>?</h3>
+        <p>{{ __('This will soft-delete the record. It can be restored by a superadmin if needed.') }}</p>
         <div class="modal-actions">
-            <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn-secondary" onclick="closeDeleteModal()">{{ __('Cancel') }}</button>
             <form id="deleteForm" method="POST" style="flex:1">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn-danger" style="width:100%;justify-content:center">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    Delete
+                    {{ __('Delete') }}
                 </button>
             </form>
         </div>

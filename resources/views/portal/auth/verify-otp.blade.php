@@ -122,7 +122,7 @@
             {{ __('Back — request a new code') }}
         </a>
 
-        <p class="footer">&copy; {{ date('Y') }} Sa'ee LogisticsServices</p>
+        <p class="footer">&copy; {{ date('Y') }} {{ __('Sa\'ee LogisticsServices. All rights reserved.') }}</p>
     </div>
 </div>
 
