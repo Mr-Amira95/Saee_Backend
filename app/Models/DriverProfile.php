@@ -16,6 +16,7 @@ class DriverProfile extends Model
     protected $fillable = [
         'user_id',
         'national_id',
+        'national_id_attachment',
         'license_number',
         'license_expiry_date',
         'license_attachment',

@@ -80,11 +80,23 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::post('login', [PortalAuthController::class, 'login']);
         Route::get('forgot-password', [PortalAuthController::class, 'showForgotPassword'])->name('forgot-password');
         Route::post('forgot-password', [PortalAuthController::class, 'sendResetLink'])->name('forgot-password.send');
+        Route::get('forgot-password/verify-otp', [PortalAuthController::class, 'showVerifyOtp'])->name('forgot-password.verify-otp');
+        Route::post('forgot-password/verify-otp', [PortalAuthController::class, 'verifyOtp'])->name('forgot-password.verify-otp.submit');
     });
 });
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->group(function () {
+
+    // Guest routes — login & forgot-password
+    Route::middleware('admin.guest')->group(function () {
+        Route::get('login', [AuthController::class, 'showLogin'])->name('login');
+        Route::post('login', [AuthController::class, 'login'])->name('login.submit');
+        Route::get('forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot-password');
+        Route::post('forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+        Route::get('forgot-password/verify-otp', [AuthController::class, 'showVerifyOtp'])->name('forgot-password.verify-otp');
+        Route::post('forgot-password/verify-otp', [AuthController::class, 'verifyOtp'])->name('forgot-password.verify-otp.submit');
+    });
 
     // Protected — must be authenticated admin/superadmin
     Route::middleware('admin.auth')->group(function () {

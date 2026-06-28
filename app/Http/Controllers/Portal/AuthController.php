@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use App\Models\PasswordResetCode;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -94,19 +96,92 @@ class AuthController extends Controller
 
         $user = User::whereIn('phone', $candidates)->first();
 
-        if (! $user) {
+        if (! $user || ! in_array($user->role, ['admin', 'superadmin', 'client_master', 'client_employee'])) {
             return back()->withErrors(['phone' => 'No account was found with that phone number.']);
         }
 
-        if (! $user->email) {
-            return back()->withErrors(['phone' => 'No email address is linked to this account. Please contact support.']);
+        if ($user->status !== 'active') {
+            return back()->withErrors(['phone' => 'This account is not active. Please contact support.']);
         }
 
-        $status = Password::sendResetLink(['email' => $user->email]);
+        PasswordResetCode::where('user_id', $user->id)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->update(['expires_at' => now()]);
 
-        return $status === Password::ResetLinkSent
-            ? back()->with('status', 'A password reset link has been sent to the email address on file.')
-            : back()->withErrors(['phone' => __($status)]);
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        PasswordResetCode::create([
+            'user_id'    => $user->id,
+            'phone'      => $user->phone,
+            'code_hash'  => Hash::make($code),
+            'attempts'   => 0,
+            'expires_at' => now()->addMinutes(5),
+        ]);
+
+        app(WhatsAppService::class)->sendTemplate('password_reset_otp', $user->phone ?? '', [
+            'code' => $code,
+        ]);
+
+        $request->session()->put('otp_user_id', $user->id);
+
+        return redirect()->route('portal.forgot-password.verify-otp');
+    }
+
+    public function showVerifyOtp(Request $request): View|RedirectResponse
+    {
+        if (Auth::check()) {
+            return $this->redirectByRole(Auth::user());
+        }
+
+        if (! $request->session()->has('otp_user_id')) {
+            return redirect()->route('portal.forgot-password');
+        }
+
+        return view('portal.auth.verify-otp');
+    }
+
+    public function verifyOtp(Request $request): RedirectResponse
+    {
+        $request->validate(['code' => ['required', 'string', 'size:6']]);
+
+        $userId = $request->session()->get('otp_user_id');
+
+        if (! $userId) {
+            return redirect()->route('portal.forgot-password')
+                ->withErrors(['code' => 'Session expired. Please start again.']);
+        }
+
+        $resetCode = PasswordResetCode::where('user_id', $userId)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (! $resetCode) {
+            $request->session()->forget('otp_user_id');
+            return redirect()->route('portal.forgot-password')
+                ->withErrors(['phone' => 'Code expired. Please request a new one.']);
+        }
+
+        if ($resetCode->attempts >= 5) {
+            return back()->withErrors(['code' => 'Too many attempts. Please request a new code.']);
+        }
+
+        if (! Hash::check($request->input('code'), $resetCode->code_hash)) {
+            $resetCode->increment('attempts');
+            return back()->withErrors(['code' => 'Invalid code. Please try again.']);
+        }
+
+        $resetCode->update(['verified_at' => now(), 'used_at' => now()]);
+        $request->session()->forget('otp_user_id');
+
+        $user  = User::find($userId);
+        $token = Password::createToken($user);
+
+        return redirect()->to(
+            url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email))
+        );
     }
 
     private function redirectByRole(User $user): RedirectResponse

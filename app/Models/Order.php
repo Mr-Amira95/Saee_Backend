@@ -24,6 +24,7 @@ class Order extends Model
         'route_order',
         'signature_path',
         'proof_image_path',
+        'national_id_attachment_path',
         'rejection_reason_id',
         'notes',
         'delivered_at',

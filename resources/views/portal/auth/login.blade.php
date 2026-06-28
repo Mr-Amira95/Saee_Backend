@@ -164,7 +164,7 @@
 
         <div class="brand-inner">
             <div class="brand-logo">
-                <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee Logistic Services" style="width:300px;max-width:100%;filter:drop-shadow(0 4px 24px rgba(0,0,0,.45));">
+                <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:300px;max-width:100%;filter:drop-shadow(0 4px 24px rgba(0,0,0,.45));">
             </div>
             <div>
                 <p class="brand-headline">Your Business,<br><em>Delivered.</em></p>
@@ -262,7 +262,7 @@
                 </button>
             </form>
 
-            <p class="card-footer f5">&copy; {{ date('Y') }} Sa'ee Logistic Services. All rights reserved.</p>
+            <p class="card-footer f5">&copy; {{ date('Y') }} Sa'ee LogisticsServices. All rights reserved.</p>
         </div>
     </div>
 

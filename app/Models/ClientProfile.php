@@ -28,6 +28,7 @@ class ClientProfile extends Model
         'credit_limit',
         'balance',
         'status',
+        'require_national_id',
         'expiry_date',
     ];
 
@@ -36,6 +37,7 @@ class ClientProfile extends Model
         return [
             'credit_limit'                    => 'decimal:2',
             'balance'                         => 'decimal:2',
+            'require_national_id'             => 'boolean',
             'expiry_date'                     => 'date',
             'deleted_at'                      => 'datetime',
         ];

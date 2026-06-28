@@ -175,7 +175,7 @@
             Back to Sign In
         </a>
 
-        <p class="footer">&copy; {{ date('Y') }} Sa'ee Logistic Services</p>
+        <p class="footer">&copy; {{ date('Y') }} Sa'ee LogisticsServices</p>
     </div>
 </div>
 

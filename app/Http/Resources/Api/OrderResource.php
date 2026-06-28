@@ -39,6 +39,9 @@ class OrderResource extends JsonResource
             'proof_image_url'          => $this->proof_image_path
                 ? Storage::disk('public')->url($this->proof_image_path)
                 : null,
+            'national_id_attachment_url' => $this->national_id_attachment_path
+                ? Storage::disk('public')->url($this->national_id_attachment_path)
+                : null,
             'city'                     => $this->whenLoaded('receiver', fn () => $this->receiver?->city ? [
                 'id'      => $this->receiver->city->id,
                 'name'    => $this->receiver->city->name,
@@ -54,8 +57,9 @@ class OrderResource extends JsonResource
                 'name' => $this->driverProfile->user->name,
             ] : null),
             'client_profile'           => $this->whenLoaded('clientProfile', fn () => $this->clientProfile ? [
-                'id'           => $this->clientProfile->id,
-                'company_name' => $this->clientProfile->company_name,
+                'id'                   => $this->clientProfile->id,
+                'company_name'         => $this->clientProfile->company_name,
+                'require_national_id'  => (bool) $this->clientProfile->require_national_id,
             ] : null),
             'rejection_reason'         => $this->whenLoaded('rejectionReason', fn () => $this->rejectionReason ? [
                 'id'        => $this->rejectionReason->id,

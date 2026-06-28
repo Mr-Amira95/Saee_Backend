@@ -138,6 +138,11 @@
                 @error('national_id')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
+                <label class="form-label" for="national_id_attachment">National ID Attachment <span class="opt">(optional)</span></label>
+                <input class="form-input @error('national_id_attachment') is-error @enderror" id="national_id_attachment" type="file" name="national_id_attachment" accept="image/*,.pdf" style="padding:8px 12px;">
+                @error('national_id_attachment')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
                 <label class="form-label" for="license_number">License Number <span class="req">*</span></label>
                 <input class="form-input @error('license_number') is-error @enderror" id="license_number" type="text" name="license_number" value="{{ old('license_number') }}" required>
                 @error('license_number')<span class="form-error">{{ $message }}</span>@enderror

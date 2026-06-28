@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -148,12 +148,17 @@ class AdminUserController extends Controller
     public function resendInvitation(User $admin)
     {
         $this->sendInvitation($admin);
-        return back()->with('success', "Invitation email resent to {$admin->email}.");
+        return back()->with('success', "Invitation sent to {$admin->name}.");
     }
 
     private function sendInvitation(User $user): void
     {
-        $token = Password::createToken($user);
-        Mail::to($user->email)->send(new \App\Mail\UserInvitationMail($user, $token));
+        $token          = Password::createToken($user);
+        $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email));
+
+        app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
+            'name' => $user->name,
+            'link' => $setPasswordUrl,
+        ]);
     }
 }

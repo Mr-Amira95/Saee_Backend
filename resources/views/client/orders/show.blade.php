@@ -167,6 +167,23 @@
     </div>
 </div>
 
+{{-- QR Code --}}
+<div class="info-card" style="margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+    <div>
+        <div class="info-card-title" style="margin-bottom:8px;">Order QR Code</div>
+        <p style="font-size:.82rem;color:var(--text-sub);max-width:380px;line-height:1.6;">
+            Scan to retrieve order <strong style="color:var(--text);">#{{ $order->order_number }}</strong>.<br>
+            Present this at pickup or show the driver for quick verification.
+        </p>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <div style="background:#fff;border-radius:12px;padding:14px;display:inline-block;border:1px solid var(--bdr);">
+            {!! QrCode::size(160)->generate($order->order_number) !!}
+        </div>
+        <span style="font-size:.78rem;font-weight:700;color:var(--text-sub);letter-spacing:.08em;font-family:monospace;">#{{ $order->order_number }}</span>
+    </div>
+</div>
+
 {{-- Row 2: Tracking + Proof --}}
 <div class="info-grid">
     {{-- Tracking History --}}
@@ -222,6 +239,27 @@
                         </div>
                     @else
                         <span style="font-size:.82rem;color:var(--text-dim);font-style:italic;">No proof photo uploaded</span>
+                    @endif
+                </div>
+                <div>
+                    <div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">
+                        National ID Attachment
+                    </div>
+                    @if($order->national_id_attachment_path)
+                        @php $ext = strtolower(pathinfo($order->national_id_attachment_path, PATHINFO_EXTENSION)); @endphp
+                        @if(in_array($ext, ['jpg','jpeg','png','webp']))
+                            <div style="border-radius:8px;overflow:hidden;max-width:200px;border:1px solid var(--bdr);">
+                                <img src="{{ asset('storage/' . $order->national_id_attachment_path) }}" alt="National ID" style="width:100%;height:auto;">
+                            </div>
+                        @else
+                            <a href="{{ asset('storage/' . $order->national_id_attachment_path) }}" target="_blank"
+                               style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:8px;color:var(--red-lt);font-size:.85rem;text-decoration:none;">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                                View PDF
+                            </a>
+                        @endif
+                    @else
+                        <span style="font-size:.82rem;color:var(--text-dim);font-style:italic;">No national ID uploaded</span>
                     @endif
                 </div>
             @elseif($order->status === 'rejected')

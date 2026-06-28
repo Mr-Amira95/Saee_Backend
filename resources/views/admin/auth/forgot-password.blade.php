@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Reset Password — Sa'ee Logistic Services</title>
+    <title>Reset Password — Sa'ee LogisticsServices</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -258,39 +258,37 @@
         </div>
 
         <h1 class="f2">Reset your password</h1>
-        <p class="desc f2">Enter the email address linked to your admin account and we'll send you a secure reset link.</p>
+        <p class="desc f2">Enter your phone number and we'll send a verification code to your WhatsApp.</p>
 
         {{-- Alerts --}}
         @if ($errors->any())
             <div class="alert alert-err">{{ $errors->first() }}</div>
-        @endif
-        @if (session('status'))
-            <div class="alert alert-ok">
-                <strong>Email sent!</strong> {{ session('status') }}
-            </div>
         @endif
 
         <form method="POST" action="{{ route('admin.password.email') }}" id="resetForm" novalidate>
             @csrf
 
             <div class="field f3">
-                <label class="field-label" for="email">Email Address</label>
-                <div class="field-wrap">
-                    <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                    <input
-                        id="email" name="email" type="email"
-                        value="{{ old('email') }}"
-                        placeholder="admin@saee.com"
-                        autocomplete="email" autofocus
-                    >
+                <label class="field-label" for="fpPhoneLocal">Phone Number</label>
+                <div class="field-wrap phone-wrap" style="display:flex;align-items:stretch;border:1px solid var(--in-bdr);border-radius:11px;background:var(--in-bg);transition:border-color .2s,box-shadow .2s;">
+                    <button type="button" class="country-btn" id="fpCountryBtn" aria-label="Select country code" style="display:flex;align-items:center;gap:5px;padding:0 9px 0 12px;background:none;border:none;border-right:1px solid var(--in-bdr);color:#fff;cursor:pointer;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:500;white-space:nowrap;border-radius:11px 0 0 11px;">
+                        <span id="fpCountryFlag">🇯🇴</span>
+                        <span id="fpCountryDial">+962</span>
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="fpCountryDropdown" style="position:absolute;top:calc(100% + 5px);left:0;width:215px;background:#0d0f22;border:1px solid rgba(255,255,255,.15);border-radius:11px;z-index:999;box-shadow:0 10px 28px rgba(0,0,0,.75);display:none;max-height:252px;overflow-y:auto;">
+                        <div class="country-option active" data-dial="+962" data-flag="🇯🇴" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇯🇴 Jordan <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+962</span></div>
+                        <div class="country-option" data-dial="+966" data-flag="🇸🇦" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇸🇦 Saudi Arabia <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+966</span></div>
+                        <div class="country-option" data-dial="+971" data-flag="🇦🇪" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇦🇪 UAE <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+971</span></div>
+                    </div>
+                    <input id="fpPhoneLocal" type="tel" placeholder="7xxxxxxxx" autocomplete="tel" autofocus style="background:transparent;border:none;box-shadow:none;border-radius:0 11px 11px 0;padding:13px 12px;flex:1;color:#fff;font-size:.9rem;font-family:'Inter',sans-serif;outline:none;">
+                    <input type="hidden" name="phone" id="fpPhoneHidden">
                 </div>
             </div>
 
             <button type="submit" class="btn f4" id="submitBtn">
                 <div class="spinner"></div>
-                <span class="btn-text">Send Reset Link</span>
+                <span class="btn-text">Send WhatsApp Code</span>
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="transition:transform .2s">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                 </svg>
@@ -306,7 +304,7 @@
             Back to Admin Login
         </a>
 
-        <p class="footer">© {{ date('Y') }} Sa'ee Logistic Services</p>
+        <p class="footer">© {{ date('Y') }} Sa'ee LogisticsServices</p>
     </div>
 </div>
 
@@ -347,8 +345,28 @@
     }
     loop();
 
-    /* ── Loading state ── */
+    /* ── Country dropdown ── */
+    const btn      = document.getElementById('fpCountryBtn');
+    const dropdown = document.getElementById('fpCountryDropdown');
+    const flagEl   = document.getElementById('fpCountryFlag');
+    const dialEl   = document.getElementById('fpCountryDial');
+    if (btn && dropdown) {
+        btn.addEventListener('click', e => { e.stopPropagation(); dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block'; });
+        document.addEventListener('click', () => { dropdown.style.display = 'none'; });
+        dropdown.querySelectorAll('.country-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                flagEl.textContent = opt.dataset.flag;
+                dialEl.textContent = opt.dataset.dial;
+                dropdown.style.display = 'none';
+            });
+        });
+    }
+
+    /* ── Submit ── */
     document.getElementById('resetForm').addEventListener('submit', () => {
+        let local = document.getElementById('fpPhoneLocal').value.trim();
+        if (local.startsWith('0')) local = local.slice(1);
+        document.getElementById('fpPhoneHidden').value = dialEl.textContent + local;
         document.getElementById('submitBtn').classList.add('loading');
     });
 })();

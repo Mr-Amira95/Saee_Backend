@@ -177,6 +177,19 @@
                 <span class="info-row-val" style="font-family:monospace;letter-spacing:.03em;">{{ $driver->national_id }}</span>
             </div>
             <div class="info-row">
+                <span class="info-row-key">National ID File</span>
+                <span class="info-row-val">
+                    @if($driver->national_id_attachment)
+                        <a href="{{ Storage::disk('public')->url($driver->national_id_attachment) }}" target="_blank" class="file-link">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/></svg>
+                            View File
+                        </a>
+                    @else
+                        <span style="color:var(--text-dim);">—</span>
+                    @endif
+                </span>
+            </div>
+            <div class="info-row">
                 <span class="info-row-key">License No.</span>
                 <span class="info-row-val" style="font-family:monospace;letter-spacing:.03em;">{{ $driver->license_number }}</span>
             </div>

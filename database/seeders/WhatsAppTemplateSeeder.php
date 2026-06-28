@@ -26,6 +26,14 @@ class WhatsAppTemplateSeeder extends Seeder
                 'event'         => 'order_rejected',
                 'template_body' => "Hello {{customer_name}}, your order #{{order_number}} could not be delivered. Reason: {{rejection_reason}}. Please review and update your details here: {{location_link}}",
             ],
+            [
+                'event'         => 'user_invitation',
+                'template_body' => "Welcome to Sa'ee Logistics, {{name}}! 👋\n\nYour account has been created. Please set your password using the link below:\n\n{{link}}\n\nThis link is valid for 24 hours. If you did not expect this message, please contact support.",
+            ],
+            [
+                'event'         => 'password_reset_otp',
+                'template_body' => "Your Sa'ee password reset code is: *{{code}}*\n\nThis code expires in 5 minutes. Do not share it with anyone.",
+            ],
         ];
 
         foreach ($templates as $tpl) {

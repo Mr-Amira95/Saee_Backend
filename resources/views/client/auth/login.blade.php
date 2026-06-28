@@ -79,7 +79,7 @@
         </button>
     </form>
 
-    <p class="card-footer f5">&copy; {{ date('Y') }} Sa'ee Logistic Services. {{ __('All rights reserved.') }}</p>
+    <p class="card-footer f5">&copy; {{ date('Y') }} Sa'ee LogisticsServices. {{ __('All rights reserved.') }}</p>
 </div>
 @endsection
 

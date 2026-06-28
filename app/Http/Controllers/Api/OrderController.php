@@ -179,11 +179,14 @@ class OrderController extends Controller
             ], 422);
         }
 
+        $requiresNationalId = (bool) $order->clientProfile?->require_national_id;
+
         $request->validate([
-            'signature'   => ['required', 'file', 'image', 'max:5120'],
-            'proof_image' => ['nullable', 'file', 'image', 'max:5120'],
-            'latitude'    => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude'   => ['nullable', 'numeric', 'between:-180,180'],
+            'signature'              => ['required', 'file', 'image', 'max:5120'],
+            'proof_image'            => ['nullable', 'file', 'image', 'max:5120'],
+            'national_id_attachment' => [$requiresNationalId ? 'required' : 'nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'latitude'               => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude'              => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
         $signaturePath = $request->file('signature')
@@ -193,9 +196,14 @@ class OrderController extends Controller
             ? $request->file('proof_image')->store("orders/{$order->id}/proofs", 'public')
             : null;
 
+        $nationalIdAttachmentPath = $request->hasFile('national_id_attachment')
+            ? $request->file('national_id_attachment')->store("orders/{$order->id}/national-ids", 'public')
+            : null;
+
         $order = $this->orderService->updateStatus($order, 'delivered', [
-            'signature_path'   => $signaturePath,
-            'proof_image_path' => $proofImagePath,
+            'signature_path'              => $signaturePath,
+            'proof_image_path'            => $proofImagePath,
+            'national_id_attachment_path' => $nationalIdAttachmentPath,
         ], $user);
 
         $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);

@@ -333,6 +333,17 @@
     <div class="form-section">
         <div class="form-section-title">Financial &amp; Account Settings</div>
         <div class="form-grid-2">
+            <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">Order Settings</label>
+                <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:10px 14px;background:var(--in-bg);border:1px solid var(--bdr);border-radius:8px;">
+                    <input type="hidden" name="require_national_id" value="0">
+                    <input type="checkbox" name="require_national_id" id="require_national_id" value="1"
+                           {{ old('require_national_id', $client->require_national_id) ? 'checked' : '' }}
+                           style="width:16px;height:16px;accent-color:var(--red);cursor:pointer;">
+                    <span style="font-size:.9rem;color:var(--text);">Require national ID attachment on delivery</span>
+                    <span style="font-size:.78rem;color:var(--text-sub);">(driver must upload a copy of the receiver's national ID when marking the order as delivered)</span>
+                </label>
+            </div>
             <div class="form-group">
                 <label class="form-label" for="credit_limit">Credit Limit <span class="opt">(optional)</span></label>
                 <div id="creditLimitWrap"

@@ -136,7 +136,7 @@
                 {{-- ── Footer ───────────────────────────── --}}
                 <tr>
                     <td style="background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 18px 18px;padding:28px 40px;text-align:center;">
-                        <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#0f172a;">Sa'ee Logistic Services</p>
+                        <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#0f172a;">Sa'ee LogisticsServices</p>
                         <p style="margin:0 0 16px;font-size:12px;color:#94a3b8;">
                             This email was sent to <strong>{{ $user->email }}</strong>
                         </p>

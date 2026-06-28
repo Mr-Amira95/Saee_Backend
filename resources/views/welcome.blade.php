@@ -1183,7 +1183,7 @@
                             <div class="slide-content container">
                                 <div class="hero-badge" style="animation: none;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
-                                    Premium Logistic Solutions
+                                    Premium LogisticsSolutions
                                 </div>
                                 <h1 style="font-size: 3.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.5rem; letter-spacing: -1px;">
                                     {!! preg_replace('/(\S+)$/', '<span>$1</span>', $banner->title) !!}

@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\UserInvitationMail;
 use App\Models\DriverBankDetail;
 use App\Models\DriverProfile;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -56,6 +55,7 @@ class DriverController extends Controller
             'phone'                  => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'     => 'nullable|string|max:10',
             'national_id'            => 'required|string|max:20|unique:driver_profiles,national_id',
+            'national_id_attachment' => 'nullable|image|max:10240',
             'license_number'         => 'required|string|max:50|unique:driver_profiles,license_number',
             'license_expiry_date'    => 'required|date',
             'license_attachment'     => 'nullable|image|max:10240',
@@ -88,6 +88,12 @@ class DriverController extends Controller
                 'status'             => 'active',
             ]);
 
+            $nationalIdAttachment = null;
+            if ($request->hasFile('national_id_attachment')) {
+                $nationalIdAttachment = $request->file('national_id_attachment')
+                    ->store("driver-national-ids/{$user->id}", 'public');
+            }
+
             $licenseAttachment = null;
             if ($request->hasFile('license_attachment')) {
                 $licenseAttachment = $request->file('license_attachment')
@@ -103,6 +109,7 @@ class DriverController extends Controller
             $profile = DriverProfile::create([
                 'user_id'                => $user->id,
                 'national_id'            => $data['national_id'],
+                'national_id_attachment' => $nationalIdAttachment,
                 'license_number'         => $data['license_number'],
                 'license_expiry_date'    => $data['license_expiry_date'],
                 'license_attachment'     => $licenseAttachment,
@@ -133,7 +140,7 @@ class DriverController extends Controller
         $this->sendInvitation($user);
 
         return redirect()->route('admin.drivers.index')
-            ->with('success', "Driver account created. An invitation email has been sent to {$user->email}.");
+            ->with('success', 'Driver account created. An invitation has been sent via WhatsApp.');
     }
 
     public function show(DriverProfile $driver)
@@ -156,6 +163,7 @@ class DriverController extends Controller
             'phone'                  => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($driver->user_id)],
             'phone_country_code'     => 'nullable|string|max:10',
             'national_id'            => ['required','string','max:20', Rule::unique('driver_profiles','national_id')->ignore($driver->id)],
+            'national_id_attachment' => 'nullable|image|max:10240',
             'license_number'         => ['required','string','max:50', Rule::unique('driver_profiles','license_number')->ignore($driver->id)],
             'license_expiry_date'    => 'required|date',
             'license_attachment'     => 'nullable|image|max:10240',
@@ -186,6 +194,13 @@ class DriverController extends Controller
                 'status'             => $driver->user->status,
             ]);
 
+            $nationalIdAttachment = $driver->national_id_attachment;
+            if ($request->hasFile('national_id_attachment')) {
+                if ($nationalIdAttachment) Storage::disk('public')->delete($nationalIdAttachment);
+                $nationalIdAttachment = $request->file('national_id_attachment')
+                    ->store("driver-national-ids/{$driver->user_id}", 'public');
+            }
+
             $licenseAttachment = $driver->license_attachment;
             if ($request->hasFile('license_attachment')) {
                 if ($licenseAttachment) Storage::disk('public')->delete($licenseAttachment);
@@ -202,6 +217,7 @@ class DriverController extends Controller
 
             $driver->update([
                 'national_id'            => $data['national_id'],
+                'national_id_attachment' => $nationalIdAttachment,
                 'license_number'         => $data['license_number'],
                 'license_expiry_date'    => $data['license_expiry_date'],
                 'license_attachment'     => $licenseAttachment,
@@ -297,7 +313,7 @@ class DriverController extends Controller
     {
         $this->sendInvitation($driver->user);
 
-        return back()->with('success', "Invitation email resent to {$driver->user->email}.");
+        return back()->with('success', "Invitation sent to {$driver->user->name}.");
     }
 
     public function toggleStatus(DriverProfile $driver)
@@ -322,7 +338,12 @@ class DriverController extends Controller
 
     private function sendInvitation(User $user): void
     {
-        $token = Password::createToken($user);
-        Mail::to($user->email)->send(new UserInvitationMail($user, $token));
+        $token          = Password::createToken($user);
+        $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email));
+
+        app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
+            'name' => $user->name,
+            'link' => $setPasswordUrl,
+        ]);
     }
 }
