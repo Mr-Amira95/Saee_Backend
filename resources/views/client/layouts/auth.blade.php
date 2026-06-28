@@ -274,7 +274,11 @@
             <div class="auth-footer-right">
                 <span style="color: var(--text-sub);">{{ __('Powered by') }}</span>
                 <a href="https://smartedge.me" target="_blank" class="smartedge-logo-auth">
-                    <span class="smart">Smart</span><span class="edge">Edge</span>
+                    @if(app()->getLocale() === 'ar')
+                        <span class="smart">الحافة الذكية للحلول الرقمية</span>
+                    @else
+                        <span class="smart">Smart</span><span class="edge">Edge</span>
+                    @endif
                     <span class="tech-tooltip">{{ __('Premium Web Systems & Software Design') }}</span>
                 </a>
             </div>

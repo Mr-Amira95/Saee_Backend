@@ -646,6 +646,10 @@
         html.light-theme .modal-card p { color: var(--text-sub); }
         html.light-theme .nav-chevron { color: var(--text-dim); }
         html.light-theme .sidebar-logo-text { color: var(--text-dim); }
+        html.light-theme .smartedge-logo { background: rgba(15, 23, 42, 0.035); border-color: rgba(15, 23, 42, 0.08); }
+        html.light-theme .smartedge-logo .smart { color: #0f172a; }
+        html.light-theme .smartedge-logo .badge-tech { color: rgba(15, 23, 42, 0.6); background: rgba(15, 23, 42, 0.05); }
+
 
         /* ─── RTL Directional Overrides ──────────────────── */
         html[dir="rtl"] .sidebar {
@@ -912,11 +916,16 @@
                     <div class="footer-right">
                         <span class="powered-by">{{ __('Powered by') }}</span>
                         <a href="https://smartedge.me" target="_blank" class="smartedge-logo">
-                            <span class="smart">Smart</span><span class="edge">Edge</span>
-                            <span class="badge-tech">{{ __('Digital Solutions') }}</span>
+                            @if(app()->getLocale() === 'ar')
+                                <span class="smart">الحافة الذكية للحلول الرقمية</span>
+                            @else
+                                <span class="smart">Smart</span><span class="edge">Edge</span>
+                                <span class="badge-tech">{{ __('Digital Solutions') }}</span>
+                            @endif
                             <span class="tech-tooltip">{{ __('Premium Web Systems & Software Design') }}</span>
                         </a>
                     </div>
+
                 </div>
             </footer>
         </div>

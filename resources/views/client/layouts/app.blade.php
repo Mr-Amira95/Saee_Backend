@@ -252,6 +252,10 @@
         html.light-theme .sidebar-user { background: rgba(15, 23, 42, 0.02); }
         html.light-theme .notif-panel { background: #ffffff; color: #0f172a; border-color: var(--bdr); }
         html.light-theme .filter-select option { background: #ffffff; color: #0f172a; }
+        html.light-theme .smartedge-logo { background: rgba(15, 23, 42, 0.035); border-color: rgba(15, 23, 42, 0.08); }
+        html.light-theme .smartedge-logo .smart { color: #0f172a; }
+        html.light-theme .smartedge-logo .badge-tech { color: rgba(15, 23, 42, 0.6); background: rgba(15, 23, 42, 0.05); }
+
 
         /* ─── RTL Directional Overrides ──────────────────── */
         html[dir="rtl"] .sidebar { border-left: 1px solid var(--bdr); border-right: none; }
@@ -397,6 +401,17 @@
                     <a href="{{ route('lang.switch', 'en') }}" class="icon-btn" title="Switch to English" style="text-decoration:none;font-weight:700;font-size:.8rem;">EN</a>
                 @endif
 
+                {{-- AI Assistant (in Header) --}}
+                @if(!request()->routeIs('client.ai-chat.index'))
+                    <a href="{{ route('client.ai-chat.index') }}" class="icon-btn" title="{{ __('Ask AI Assistant') }}" style="position: relative;">
+                        <span class="ai-header-pulse"></span>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zM9 9h.008v.008H9V9zm0 3h.008v.008H9V12zm0 3h.008v.008H9V15zm3-6h.008v.008H12V9zm0 3h.008v.008H12V12zm0 3h.008v.008H12V15zm3-6h.008v.008H15V9zm0 3h.008v.008H15V12zm0 3h.008v.008H15V15z"/>
+                        </svg>
+                    </a>
+                @endif
+
+
                 {{-- Theme Switcher --}}
                 <button class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="{{ __('Toggle Theme') }}">
                     <svg id="themeMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
@@ -458,11 +473,16 @@
                     <div class="footer-right">
                         <span class="powered-by">{{ __('Powered by') }}</span>
                         <a href="https://smartedge.me" target="_blank" class="smartedge-logo">
-                            <span class="smart">Smart</span><span class="edge">Edge</span>
-                            <span class="badge-tech">{{ __('Digital Solutions') }}</span>
+                            @if(app()->getLocale() === 'ar')
+                                <span class="smart">الحافة الذكية للحلول الرقمية</span>
+                            @else
+                                <span class="smart">Smart</span><span class="edge">Edge</span>
+                                <span class="badge-tech">{{ __('Digital Solutions') }}</span>
+                            @endif
                             <span class="tech-tooltip">{{ __('Premium Web Systems & Software Design') }}</span>
                         </a>
                     </div>
+
                 </div>
             </footer>
         </div>
@@ -757,97 +777,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
-    {{-- Floating AI Assistant Button --}}
-    @if(!request()->routeIs('client.ai-chat.index'))
-    <a href="{{ route('client.ai-chat.index') }}" class="floating-ai-btn {{ app()->getLocale() === 'ar' ? 'floating-ai-btn--rtl' : '' }}" title="{{ __('Ask AI Assistant') }}">
-        <span class="ai-btn-pulse"></span>
-        <svg class="ai-icon" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zM9 9h.008v.008H9V9zm0 3h.008v.008H9V12zm0 3h.008v.008H9V15zm3-6h.008v.008H12V9zm0 3h.008v.008H12V12zm0 3h.008v.008H12V15zm3-6h.008v.008H15V9zm0 3h.008v.008H15V12zm0 3h.008v.008H15V15z"/>
-        </svg>
-        <span class="ai-btn-label">{{ __('AI Assistant') }}</span>
-    </a>
-
-    <style>
-        .floating-ai-btn {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 9999;
-            background: linear-gradient(135deg, #ef4444, #b91c1c);
-            border: 1px solid rgba(255,255,255,0.25);
-            border-radius: 50px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #ffffff;
-            text-decoration: none;
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.45), inset 0 1px 0 rgba(255,255,255,0.3);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 0.88rem;
-            letter-spacing: 0.02em;
-        }
-
-        .floating-ai-btn:hover {
-            transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 14px 30px rgba(239, 68, 68, 0.55), 0 0 15px rgba(239, 68, 68, 0.3);
-            background: linear-gradient(135deg, #f87171, #dc2626);
-        }
-
-        .ai-icon {
-            animation: float-icon 3s ease-in-out infinite;
-            flex-shrink: 0;
-        }
-
-        .ai-btn-pulse {
+        /* ─── Header AI Assistant Pulse ───────────────────── */
+        .ai-header-pulse {
             position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            border-radius: 50px;
-            border: 2px solid rgba(239, 68, 68, 0.6);
-            opacity: 0;
-            animation: pulse-ring 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-            pointer-events: none;
+            top: 5px;
+            right: 5px;
+            width: 6px;
+            height: 6px;
+            background: #ef4444;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ef4444;
+            animation: header-pulse 2s infinite;
         }
-
-        @keyframes pulse-ring {
-            0% {
-                transform: scale(0.96);
-                opacity: 0.8;
-            }
-            100% {
-                transform: scale(1.15);
-                opacity: 0;
-            }
+        @keyframes header-pulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
         }
-
-        @keyframes float-icon {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-2px); }
-        }
-
-        @media (max-width: 640px) {
-            .floating-ai-btn {
-                padding: 12px;
-                border-radius: 50%;
-                bottom: 16px;
-                right: 16px;
-            }
-            .floating-ai-btn--rtl {
-                right: auto;
-                left: 16px;
-            }
-            .ai-btn-label {
-                display: none;
-            }
-        }
-
-        /* Arabic / RTL: move button to left side */
-        .floating-ai-btn--rtl {
+        html[dir="rtl"] .ai-header-pulse {
             right: auto;
-            left: 24px;
-            font-family: 'Tajawal', 'Inter', sans-serif;
+            left: 5px;
         }
 
         /* ─── Footer Styles ──────────────────────────────── */
