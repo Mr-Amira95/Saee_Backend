@@ -15,7 +15,7 @@
             </div>
             <div>
                 <h1 class="chat-title">SA'EE AI Assistant</h1>
-                <p class="chat-subtitle">Powered by GPT-4o Vision & Intent Matching</p>
+                <p class="chat-subtitle">Your personal logistics assistant</p>
             </div>
         </div>
         <form method="POST" action="{{ route('client.ai-chat.reset') }}">
