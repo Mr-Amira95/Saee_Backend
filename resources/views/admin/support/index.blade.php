@@ -361,7 +361,14 @@
                 </div>
             @else
                 <div class="empty-state" style="margin: auto;">
-                    <div style="font-size: 3rem; margin-bottom: 15px;">💬</div>
+                    <div style="margin-bottom: 15px; color: var(--text-dim);">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity: 0.65;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12c0-4.97 4.03-9 9-9s9 4.03 9 9" />
+                            <rect x="1" y="10" width="3" height="6" rx="1.5" />
+                            <rect x="20" y="10" width="3" height="6" rx="1.5" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 14c0 3 2.5 5 5.5 5" />
+                        </svg>
+                    </div>
                     <h3>Operations Support Center</h3>
                     <p>Select a ticket conversation from the queue sidebar to begin chatting with clients or drivers.</p>
                 </div>
