@@ -203,4 +203,85 @@ class WhatsAppService
             'rejection_reason' => $rejectionReason,
         ];
     }
+
+    /**
+     * Send a structured template message using the Meta WhatsApp Cloud API.
+     * This bypasses the 24-hour customer window constraint.
+     *
+     * @param  string  $phone         Recipient phone number.
+     * @param  string  $templateName  Official Meta template name (e.g. 'hello_world').
+     * @param  string  $languageCode  Language code (e.g. 'en_US').
+     * @param  array   $parameters    Positional array of parameters for the template body.
+     * @param  int|null $orderId      Optional order ID for auditing.
+     * @return array{success: bool, log?: WhatsAppLog, error?: string, response?: array}
+     */
+    public function sendStructuredTemplate(
+        string $phone,
+        string $templateName,
+        string $languageCode = 'en_US',
+        array  $parameters = [],
+        ?int   $orderId    = null
+    ): array {
+        $normalizedPhone = $this->normalizePhone($phone);
+        $url = sprintf('%s/%s/messages', rtrim(config('whatsapp.api_url'), '/'), config('whatsapp.sender'));
+
+        $components = [];
+        if (!empty($parameters)) {
+            $components[] = [
+                'type' => 'body',
+                'parameters' => array_map(fn($val) => [
+                    'type' => 'text',
+                    'text' => (string) $val
+                ], $parameters)
+            ];
+        }
+
+        try {
+            $response = Http::withToken(config('whatsapp.api_token'))
+                ->timeout(15)
+                ->post($url, [
+                    'messaging_product' => 'whatsapp',
+                    'recipient_type'    => 'individual',
+                    'to'                => $normalizedPhone,
+                    'type'              => 'template',
+                    'template'          => [
+                        'name'     => $templateName,
+                        'language' => [
+                            'code' => $languageCode
+                        ],
+                        'components' => $components
+                    ]
+                ]);
+
+            $success = $response->successful();
+            $status  = $success ? 'sent' : 'failed';
+
+            $log = WhatsAppLog::create([
+                'order_id' => $orderId,
+                'phone'    => $phone,
+                'message'  => "Template: {$templateName} (" . json_encode($parameters) . ")",
+                'status'   => $status,
+            ]);
+
+            if ($success) {
+                Log::info("WhatsApp structured template [{$templateName}] sent to {$phone}.", ['response' => $response->json()]);
+                return ['success' => true, 'log' => $log, 'response' => $response->json()];
+            }
+
+            Log::error("WhatsApp structured template [{$templateName}] failed to {$phone}", [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
+
+            return [
+                'success' => false,
+                'error'   => $response->json('error.message') ?? "HTTP {$response->status()}",
+                'log'     => $log
+            ];
+
+        } catch (\Throwable $e) {
+            Log::error("WhatsApp API exception sending template [{$templateName}]: {$e->getMessage()}");
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }
