@@ -624,5 +624,24 @@
   "Delivery Charge": "رسوم التوصيل",
   "Search by ref. number, name, or phone…": "البحث برقم المرجع، الاسم، أو الهاتف…",
   "Select area…": "اختر منطقة…",
-  "Select city…": "اختر مدينة…"
+  "Select city…": "اختر مدينة…",
+  "AI Assistant": "المساعد الذكي",
+  "Ask AI Assistant": "اسأل المساعد الذكي",
+
+  "SA'EE AI Assistant": "مساعد ساعي الذكي",
+  "Your personal logistics assistant": "مساعدك الشخصي في اللوجستيات",
+  "Start a fresh chat session": "بدء جلسة محادثة جديدة",
+  "New Chat": "محادثة جديدة",
+  "AI Welcome Message": "مرحباً! أنا **مساعد ساعي الذكي**. يمكنني مساعدتك في تتبع طلباتك، والإجابة على الأسئلة الشائعة، وشرح تغطية خدماتنا اللوجستية. كيف يمكنني مساعدتك اليوم؟",
+  "Track my order": "تتبع طلبي",
+  "What is SA'EE delivery coverage?": "ما هي تغطية توصيل ساعي؟",
+  "How can I contact support?": "كيف أتواصل مع الدعم؟",
+  "What are the payment methods?": "ما هي طرق الدفع المتاحة؟",
+  "Service coverage": "تغطية الخدمة",
+  "Contact support": "التواصل مع الدعم",
+  "Payment methods": "طرق الدفع",
+  "Ask a question or track an order...": "اطرح سؤالاً أو تتبع طلبًا...",
+  "AI is delivering your answer...": "**ساعي الذكي** يوصّل إجابتك...",
+  "Sorry, I'm having trouble processing that. Please try again.": "عذراً، أواجه صعوبة في معالجة ذلك. يرجى المحاولة مرة أخرى.",
+  "Connection error. Please check your internet and try again.": "خطأ في الاتصال. يرجى التحقق من الإنترنت والمحاولة مرة أخرى."
 }

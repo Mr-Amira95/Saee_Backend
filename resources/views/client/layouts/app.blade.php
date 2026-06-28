@@ -741,12 +741,12 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
     {{-- Floating AI Assistant Button --}}
     @if(!request()->routeIs('client.ai-chat.index'))
-    <a href="{{ route('client.ai-chat.index') }}" class="floating-ai-btn" title="Ask SA'EE AI Assistant">
+    <a href="{{ route('client.ai-chat.index') }}" class="floating-ai-btn {{ app()->getLocale() === 'ar' ? 'floating-ai-btn--rtl' : '' }}" title="{{ __('Ask AI Assistant') }}">
         <span class="ai-btn-pulse"></span>
         <svg class="ai-icon" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zM9 9h.008v.008H9V9zm0 3h.008v.008H9V12zm0 3h.008v.008H9V15zm3-6h.008v.008H12V9zm0 3h.008v.008H12V12zm0 3h.008v.008H12V15zm3-6h.008v.008H15V9zm0 3h.008v.008H15V12zm0 3h.008v.008H15V15z"/>
         </svg>
-        <span class="ai-btn-label">AI Assistant</span>
+        <span class="ai-btn-label">{{ __('AI Assistant') }}</span>
     </a>
 
     <style>
@@ -816,9 +816,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 bottom: 16px;
                 right: 16px;
             }
+            .floating-ai-btn--rtl {
+                right: auto;
+                left: 16px;
+            }
             .ai-btn-label {
                 display: none;
             }
+        }
+
+        /* Arabic / RTL: move button to left side */
+        .floating-ai-btn--rtl {
+            right: auto;
+            left: 24px;
+            font-family: 'Tajawal', 'Inter', sans-serif;
         }
     </style>
     @endif

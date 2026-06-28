@@ -1,6 +1,6 @@
 @extends('client.layouts.app')
 
-@section('title', 'AI Assistant')
+@section('title', __('AI Assistant'))
 
 @section('content')
 <div class="chat-container">
@@ -14,17 +14,17 @@
                 </svg>
             </div>
             <div>
-                <h1 class="chat-title">SA'EE AI Assistant</h1>
-                <p class="chat-subtitle">Your personal logistics assistant</p>
+                <h1 class="chat-title">{{ __('SA\'EE AI Assistant') }}</h1>
+                <p class="chat-subtitle">{{ __('Your personal logistics assistant') }}</p>
             </div>
         </div>
         <form method="POST" action="{{ route('client.ai-chat.reset') }}">
             @csrf
-            <button type="submit" class="btn-reset" title="Start a fresh chat session. Previous logs are preserved for admins.">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right: 5px;">
+            <button type="submit" class="btn-reset" title="{{ __('Start a fresh chat session') }}">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: -2px; margin-inline-end: 5px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
                 </svg>
-                New Chat
+                {{ __('New Chat') }}
             </button>
         </form>
     </div>
@@ -34,24 +34,24 @@
         {{-- Welcome message --}}
         <div class="msg bot-msg">
             <div class="msg-bubble">
-                <p>Hello! I am your **SA'EE AI Assistant**. I can help you track your orders, answer FAQ questions, or explain our logistical service coverages. How can I help you today?</p>
+                <p>{{ __('AI Welcome Message') }}</p>
             </div>
         </div>
     </div>
 
     {{-- Suggestions --}}
     <div class="chat-suggestions">
-        <button type="button" class="suggestion-chip" onclick="applySuggestion('Track my order')">🔍 Track my order</button>
-        <button type="button" class="suggestion-chip" onclick="applySuggestion('What is SA\'EE delivery coverage?')">📍 Service coverage</button>
-        <button type="button" class="suggestion-chip" onclick="applySuggestion('How can I contact support?')">📞 Contact support</button>
-        <button type="button" class="suggestion-chip" onclick="applySuggestion('What are the payment methods?')">💳 Payment methods</button>
+        <button type="button" class="suggestion-chip" onclick="applySuggestion('{{ __('Track my order') }}')">🔍 {{ __('Track my order') }}</button>
+        <button type="button" class="suggestion-chip" onclick="applySuggestion('{{ __('What is SA\'EE delivery coverage?') }}')">📍 {{ __('Service coverage') }}</button>
+        <button type="button" class="suggestion-chip" onclick="applySuggestion('{{ __('How can I contact support?') }}')">📞 {{ __('Contact support') }}</button>
+        <button type="button" class="suggestion-chip" onclick="applySuggestion('{{ __('What are the payment methods?') }}')">💳 {{ __('Payment methods') }}</button>
     </div>
 
     {{-- Input Bar --}}
     <div class="chat-input-bar">
         <form id="chatForm" onsubmit="sendMessage(event)" style="display: flex; width: 100%; gap: 12px; align-items: center;">
-            <input type="text" id="userInput" placeholder="Ask a question or track an order..." required autocomplete="off">
-            <button type="submit" class="btn-send">
+            <input type="text" id="userInput" placeholder="{{ __('Ask a question or track an order...') }}" required autocomplete="off">
+            <button type="submit" class="btn-send" title="{{ __('Send') }}">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
                 </svg>
@@ -72,6 +72,10 @@
         border-radius: 20px;
         overflow: hidden;
         font-family: 'Inter', sans-serif;
+    }
+
+    [dir="rtl"] .chat-container {
+        font-family: 'Tajawal', 'Inter', sans-serif;
     }
 
     .chat-header {
@@ -171,11 +175,14 @@
         align-self: flex-end;
     }
 
+    [dir="rtl"] .bot-msg { align-self: flex-end; }
+    [dir="rtl"] .user-msg { align-self: flex-start; }
+
     .msg-bubble {
         padding: 12px 18px;
         border-radius: 16px;
         font-size: 0.88rem;
-        line-height: 1.5;
+        line-height: 1.6;
     }
 
     .bot-msg .msg-bubble {
@@ -185,11 +192,21 @@
         border-bottom-left-radius: 4px;
     }
 
+    [dir="rtl"] .bot-msg .msg-bubble {
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 4px;
+    }
+
     .user-msg .msg-bubble {
         background: linear-gradient(135deg, #ef4444, #dc2626);
         color: #ffffff;
         border-bottom-right-radius: 4px;
         box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+    }
+
+    [dir="rtl"] .user-msg .msg-bubble {
+        border-bottom-right-radius: 16px;
+        border-bottom-left-radius: 4px;
     }
 
     .msg-bubble p {
@@ -249,6 +266,11 @@
         font-size: 0.9rem;
         outline: none;
         transition: all 0.2s;
+        text-align: start;
+    }
+
+    [dir="rtl"] #userInput {
+        font-family: 'Tajawal', sans-serif;
     }
 
     #userInput:focus {
@@ -270,6 +292,12 @@
         cursor: pointer;
         transition: all 0.2s;
         box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+        flex-shrink: 0;
+    }
+
+    /* Mirror send icon in RTL */
+    [dir="rtl"] .btn-send svg {
+        transform: scaleX(-1);
     }
 
     .btn-send:hover {
@@ -315,7 +343,7 @@
         left: 0;
         width: 100%;
         height: 25px;
-        background: #ef4444; /* SA'EE Red */
+        background: #ef4444;
         border-radius: 6px 12px 4px 4px;
         box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
     }
@@ -350,13 +378,8 @@
         animation: wheel-spin 0.4s infinite linear;
     }
 
-    .front-wheel {
-        right: 8px;
-    }
-
-    .back-wheel {
-        left: 8px;
-    }
+    .front-wheel { right: 8px; }
+    .back-wheel  { left: 8px; }
 
     /* Road */
     .delivery-road {
@@ -374,10 +397,10 @@
         left: 0;
         width: 200%;
         height: 100%;
-        background: linear-gradient(to right, 
-            transparent 0%, transparent 20%, 
-            rgba(255, 255, 255, 0.6) 20%, rgba(255, 255, 255, 0.6) 40%, 
-            transparent 40%, transparent 60%, 
+        background: linear-gradient(to right,
+            transparent 0%, transparent 20%,
+            rgba(255, 255, 255, 0.6) 20%, rgba(255, 255, 255, 0.6) 40%,
+            transparent 40%, transparent 60%,
             rgba(255, 255, 255, 0.6) 60%, rgba(255, 255, 255, 0.6) 80%,
             transparent 80%, transparent 100%
         );
@@ -396,65 +419,66 @@
 
     /* Keyframes */
     @keyframes van-bounce {
-        0% { transform: translateY(0); }
+        0%   { transform: translateY(0); }
         100% { transform: translateY(-4px); }
     }
 
     @keyframes wheel-spin {
-        0% { transform: rotate(0deg); }
+        0%   { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
 
     @keyframes road-move {
-        0% { transform: translateX(0); }
+        0%   { transform: translateX(0); }
         100% { transform: translateX(-50%); }
     }
 
     @keyframes text-pulse {
-        0% { opacity: 0.5; }
+        0%   { opacity: 0.5; }
         100% { opacity: 1; }
     }
 
     @keyframes msg-slide {
         from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 </style>
 @endsection
 
 @push('scripts')
 <script>
-    const sessionId = "{{ $sessionId }}";
+    const sessionId   = "{{ $sessionId }}";
     const chatMessages = document.getElementById('chatMessages');
-    const userInput = document.getElementById('userInput');
+    const userInput   = document.getElementById('userInput');
+    const isRTL       = document.documentElement.dir === 'rtl';
 
-    // Helper: format response message helpers (supports simple bold formatting **)
+    // Loader text — passed from Blade so it's translatable
+    const loaderText  = @json(__('AI is delivering your answer...'));
+    const errorText   = @json(__('Sorry, I\'m having trouble processing that. Please try again.'));
+    const connErrText = @json(__('Connection error. Please check your internet and try again.'));
+
+    // Helper: format response message (supports simple bold **)
     function formatMarkdown(text) {
         if (!text) return '';
-        // Bold
         let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        // Newlines
         formatted = formatted.replace(/\n/g, '<br>');
         return formatted;
     }
 
-    // Apply suggestions to input field
+    // Apply suggestion chip to input field
     function applySuggestion(text) {
         userInput.value = text;
         userInput.focus();
     }
 
-    // Load session chat history on load
+    // Load session chat history on page load
     async function loadHistory() {
         try {
-            const res = await fetch(`/api/chatbot/history/${sessionId}`);
+            const res  = await fetch(`/api/chatbot/history/${sessionId}`);
             const data = await res.json();
             if (data.success && data.data.length > 0) {
-                // Clear default welcome message if history exists
                 chatMessages.innerHTML = '';
-                data.data.forEach(msg => {
-                    appendMessage(msg.role, msg.message);
-                });
+                data.data.forEach(msg => appendMessage(msg.role, msg.message));
                 scrollChat();
             }
         } catch (err) {
@@ -462,26 +486,26 @@
         }
     }
 
-    // Append single bubble message to conversation pane
+    // Append a single bubble to the conversation pane
     function appendMessage(role, text) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `msg ${role === 'user' ? 'user-msg' : 'bot-msg'}`;
-        
+
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
         bubble.innerHTML = formatMarkdown(text);
-        
+
         msgDiv.appendChild(bubble);
         chatMessages.appendChild(msgDiv);
         scrollChat();
     }
 
-    // Add typing loader indicator bubble
+    // Show animated delivery-van typing indicator
     function showTypingLoader() {
         const loaderDiv = document.createElement('div');
         loaderDiv.className = 'msg bot-msg typing-loader';
         loaderDiv.id = 'typingLoader';
-        
+
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
         bubble.innerHTML = `
@@ -498,10 +522,10 @@
                     <div class="road-dash"></div>
                 </div>
                 <div class="delivery-text">
-                    ${formatMarkdown("**SA'EE AI** is delivering your answer...")}
+                    ${formatMarkdown(loaderText)}
                 </div>
             </div>`;
-        
+
         loaderDiv.appendChild(bubble);
         chatMessages.appendChild(loaderDiv);
         scrollChat();
@@ -513,18 +537,17 @@
         if (loader) loader.remove();
     }
 
-    // Scroll chat conversation container to bottom
+    // Scroll conversation pane to bottom
     function scrollChat() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Form submit messaging logic
+    // Handle form submission
     async function sendMessage(e) {
         e.preventDefault();
         const msg = userInput.value.trim();
         if (!msg) return;
 
-        // Reset inputs
         userInput.value = '';
         appendMessage('user', msg);
         showTypingLoader();
@@ -536,10 +559,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
-                body: JSON.stringify({
-                    session_id: sessionId,
-                    message: msg
-                })
+                body: JSON.stringify({ session_id: sessionId, message: msg })
             });
 
             const data = await response.json();
@@ -548,18 +568,16 @@
             if (data.success && data.reply) {
                 appendMessage('assistant', data.reply);
             } else {
-                appendMessage('assistant', "I'm sorry, I'm having trouble processing that right now. Please try again.");
+                appendMessage('assistant', errorText);
             }
         } catch (error) {
             console.error('API Error:', error);
             hideTypingLoader();
-            appendMessage('assistant', "Oops! An error occurred connecting to the service. Please verify your connection.");
+            appendMessage('assistant', connErrText);
         }
     }
 
-    // Initialize load
-    document.addEventListener('DOMContentLoaded', () => {
-        loadHistory();
-    });
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadHistory);
 </script>
 @endpush

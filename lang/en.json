@@ -643,6 +643,25 @@
   "You rated our driver": "You rated our driver",
   "You're all set!": "You're all set!",
   "Your feedback helps us monitor and improve driver delivery quality.": "Your feedback helps us monitor and improve driver delivery quality.",
-  "Your password has been created and your Sa'ee Logistics account is now active. You can close this window.": "Your password has been created and your Sa'ee Logistics account is now active. You can close this window."
-}
+  "Your password has been created and your Sa'ee Logistics account is now active. You can close this window.": "Your password has been created and your Sa'ee Logistics account is now active. You can close this window.",
 
+  "AI Assistant": "AI Assistant",
+  "Ask AI Assistant": "Ask AI Assistant",
+
+  "SA'EE AI Assistant": "SA'EE AI Assistant",
+  "Your personal logistics assistant": "Your personal logistics assistant",
+  "Start a fresh chat session": "Start a fresh chat session",
+  "New Chat": "New Chat",
+  "AI Welcome Message": "Hello! I am your **SA'EE AI Assistant**. I can help you track your orders, answer FAQ questions, or explain our logistical service coverages. How can I help you today?",
+  "Track my order": "Track my order",
+  "What is SA'EE delivery coverage?": "What is SA'EE delivery coverage?",
+  "How can I contact support?": "How can I contact support?",
+  "What are the payment methods?": "What are the payment methods?",
+  "Service coverage": "Service coverage",
+  "Contact support": "Contact support",
+  "Payment methods": "Payment methods",
+  "Ask a question or track an order...": "Ask a question or track an order...",
+  "AI is delivering your answer...": "**SA'EE AI** is delivering your answer...",
+  "Sorry, I'm having trouble processing that. Please try again.": "Sorry, I'm having trouble processing that. Please try again.",
+  "Connection error. Please check your internet and try again.": "Connection error. Please check your internet and try again."
+}
