@@ -72,7 +72,16 @@ class OrderController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
+            $status = $request->input('status');
+            if ($status === 'active') {
+                $query->whereIn('status', ['pending', 'assigned', 'picked_up']);
+            } elseif (is_array($status)) {
+                $query->whereIn('status', $status);
+            } elseif (is_string($status) && str_contains($status, ',')) {
+                $query->whereIn('status', explode(',', $status));
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         if ($request->filled('payment_status')) {
