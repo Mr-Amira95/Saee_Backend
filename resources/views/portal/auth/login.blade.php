@@ -200,11 +200,7 @@
     <div class="form-side">
         <div class="card">
 
-            <div class="card-logo">
-                <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee" width="44" height="44" style="object-fit:contain;border-radius:10px;">
-            </div>
-
-            <span class="badge"><span class="badge-dot"></span>{{ __('Logistics Portal') }}</span>
+            <span class="badge"><span class="badge-dot"></span>{{ __("Sa'ee Logistics Services Portal") }}</span>
             <h1>{{ __('Welcome back') }}</h1>
             <p class="sub">{{ __('Sign in to your account') }}</p>
 

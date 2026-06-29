@@ -254,7 +254,7 @@
             <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee" style="width:280px;max-width:100%;filter:drop-shadow(0 4px 24px rgba(0,0,0,.45));">
             <div>
                 <p class="brand-headline">{{ __('Your Business,') }}<br><em>{{ __('Delivered.') }}</em></p>
-                <p class="brand-sub">{{ __('SAEE CLIENT PORTAL') }}</p>
+                <p class="brand-sub">{{ __("SA'EE CLIENT PORTAL") }}</p>
             </div>
             <div class="pills">
                 <span class="pill"><span class="pill-dot"></span> {{ __('Track Orders') }}</span>

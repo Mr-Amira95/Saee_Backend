@@ -1901,7 +1901,7 @@
         <div id="saee-chat-root">
 
             <!-- FAB pill -->
-            <button id="saee-chat-fab" onclick="chatToggle()" aria-label="Open SAEE AI Assistant">
+            <button id="saee-chat-fab" onclick="chatToggle()" aria-label="Open Sa'ee AI Assistant">
                 <span class="fab-dot"></span>
                 <span class="fab-lbl">AI Assistant</span>
                 <svg class="fab-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1910,13 +1910,13 @@
             </button>
 
             <!-- Chat window -->
-            <div id="saee-chat-win" role="dialog" aria-label="SAEE Logistics AI Assistant" aria-modal="true">
+            <div id="saee-chat-win" role="dialog" aria-label="Sa'ee Logistics AI Assistant" aria-modal="true">
 
                 <!-- Header -->
                 <div class="cw-hdr">
                     <div class="cw-hdr-mark" aria-hidden="true">SA</div>
                     <div class="cw-hdr-info">
-                        <div class="cw-hdr-name">SAEE Logistics AI</div>
+                        <div class="cw-hdr-name">Sa'ee Logistics AI</div>
                         <div class="cw-hdr-sub">Available · Test environment</div>
                     </div>
                     <button class="cw-btn-new" onclick="chatClear()">New session</button>
@@ -1949,7 +1949,7 @@
 
                 <!-- Status bar -->
                 <div class="cw-bar">
-                    <span class="cw-bar-lbl">SAEE Logistics · AI Testing</span>
+                    <span class="cw-bar-lbl">Sa'ee Logistics · AI Testing</span>
                     <span class="cw-bar-sid" id="cw-sid"></span>
                 </div>
 
