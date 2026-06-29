@@ -657,5 +657,7 @@
   "in transit": "قيد التوصيل",
   "orders": "طلبات",
   "pending": "معلق",
-  "••••••••••": "••••••••••"
+  "••••••••••": "••••••••••",
+  "Disclaimer:": "تنويه:",
+  "The sender agrees that Sa'ee Logistics Services' responsibility is limited to transportation and delivery services, and the company bears no responsibility for damage, shortage, or loss resulting from improper packaging, the nature of the shipment's contents, incorrect information provided by the sender, force majeure, or any cause beyond the company's control.": "يوافق المرسل على أن مسؤولية شركة ساعي للخدمات اللوجستية تقتصر على خدمات النقل والتوصيل، ولا تتحمل الشركة أي مسؤولية عن التلف أو النقص أو الفقدان الناتج عن التغليف غير المناسب، أو طبيعة محتويات الشحنة، أو معلومات غير صحيحة مقدمة من المرسل، أو القوة القاهرة، أو أي سبب خارج عن سيطرة الشركة."
 }

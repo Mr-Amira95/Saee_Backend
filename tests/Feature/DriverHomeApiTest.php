@@ -38,6 +38,7 @@ class DriverHomeApiTest extends TestCase
         $this->admin = User::factory()->create([
             'role' => 'superadmin',
             'status' => 'active',
+            'phone' => '0790000881',
         ]);
 
         // Create City & Area
@@ -48,6 +49,7 @@ class DriverHomeApiTest extends TestCase
         $clientUser = User::factory()->create([
             'role' => 'client_master',
             'status' => 'active',
+            'phone' => '0790000882',
         ]);
         $this->clientProfile = ClientProfile::create([
             'master_user_id' => $clientUser->id,
@@ -61,6 +63,7 @@ class DriverHomeApiTest extends TestCase
         $this->driverUser = User::factory()->create([
             'role' => 'driver',
             'status' => 'active',
+            'phone' => '0790000883',
         ]);
         $this->driverProfile = DriverProfile::create([
             'user_id' => $this->driverUser->id,

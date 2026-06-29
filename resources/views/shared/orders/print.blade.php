@@ -259,19 +259,25 @@
     <div class="print-page">
         <div>
             {{-- Header --}}
-            <div class="waybill-header">
-                <div class="company-info" style="display: flex; align-items: center; gap: 14px;">
-                    <img src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee Logistics" style="height: 52px; width: auto; object-fit: contain;">
-                    <div>
-                        <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #0c1230; letter-spacing: 0.5px; line-height: 1.1;">SA'EE LOGISTICS</h1>
-                        <p style="margin: 2px 0 0 0; color: #64748b; font-size: 12px;">Reliable Delivery Solutions</p>
-                        <p style="margin: 2px 0 0 0; color: #64748b; font-size: 12px;">Phone: +962 7 9000 0000 | support@saee.logistics</p>
-                    </div>
+            <div class="waybill-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0c1230; padding-bottom: 15px; margin-bottom: 20px;">
+                {{-- Sa'ee Details (Left side) --}}
+                <div class="company-details" style="flex: 1; text-align: left;">
+                    <h1 style="margin: 0; font-size: 18px; font-weight: 800; color: #0c1230; letter-spacing: 0.5px; line-height: 1.1;">SA'EE LOGISTICS</h1>
+                    <p style="margin: 2px 0 0 0; color: #64748b; font-size: 11px; font-weight: 500;">Reliable Delivery Solutions</p>
+                    <p style="margin: 2px 0 0 0; color: #64748b; font-size: 11px; font-weight: 500;">Phone: +962 7 9080 0989</p>
+                    <p style="margin: 2px 0 0 0; color: #64748b; font-size: 11px; font-weight: 500;">support@saee.logistics</p>
                 </div>
-                <div class="waybill-title">
-                    <h2>{{ __('DELIVERY WAYBILL') }}</h2>
-                    <div class="order-no">#{{ $order->order_number }}</div>
-                    <div class="order-date">{{ __('Date:') }} {{ $order->created_at?->format('Y-m-d H:i') }}</div>
+
+                {{-- Logo (Center) --}}
+                <div class="logo-center" style="flex: 1; text-align: center;">
+                    <img src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee Logistics" style="height: 75px; width: auto; object-fit: contain; display: inline-block;">
+                </div>
+
+                {{-- Waybill title (Right side) --}}
+                <div class="waybill-title" style="flex: 1; text-align: right;">
+                    <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #0c1230;">{{ __('DELIVERY WAYBILL') }}</h2>
+                    <div class="order-no" style="font-size: 16px; font-weight: 800; color: #e05454; margin-top: 5px;">#{{ $order->order_number }}</div>
+                    <div class="order-date" style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ __('Date:') }} {{ $order->created_at?->format('Y-m-d H:i') }}</div>
                 </div>
             </div>
 
@@ -396,6 +402,11 @@
                 <div class="sig-line"></div>
                 <div class="sig-label">{{ __('Receiver Signature & Date') }}</div>
             </div>
+        </div>
+
+        {{-- Disclaimer Note --}}
+        <div class="disclaimer-note" style="margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 10px; color: #64748b; text-align: justify; line-height: 1.35;">
+            <strong>{{ __('Disclaimer:') }}</strong> {{ __("The sender agrees that Sa'ee Logistics Services' responsibility is limited to transportation and delivery services, and the company bears no responsibility for damage, shortage, or loss resulting from improper packaging, the nature of the shipment's contents, incorrect information provided by the sender, force majeure, or any cause beyond the company's control.") }}
         </div>
     </div>
     @endforeach
