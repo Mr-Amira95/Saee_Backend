@@ -102,7 +102,7 @@
 
             <div class="filter-row">
                 {{-- Status --}}
-                <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1; min-width:0;">
+                <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1; min-width:180px;">
                     <option value="">All Statuses</option>
                     <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>Pending</option>
                     <option value="assigned"  {{ request('status') === 'assigned'  ? 'selected' : '' }}>Assigned</option>
@@ -114,7 +114,7 @@
                 </select>
 
                 {{-- Searchable: Clients --}}
-                <div class="ss-wrap" style="flex:1; min-width:0;">
+                <div class="ss-wrap" style="flex:1; min-width:180px;">
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
                             @php $selectedClient = $clients->firstWhere('id', request('client_profile_id')); @endphp
@@ -135,7 +135,7 @@
                 </div>
 
                 {{-- Searchable: Drivers --}}
-                <div class="ss-wrap" style="flex:1; min-width:0;">
+                <div class="ss-wrap" style="flex:1; min-width:180px;">
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
                             @php $selectedDriver = $drivers->firstWhere('id', request('driver_id')); @endphp
@@ -156,7 +156,7 @@
                 </div>
 
                 {{-- Searchable: Cities --}}
-                <div class="ss-wrap" style="flex:1; min-width:0;">
+                <div class="ss-wrap" style="flex:1; min-width:180px;">
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
                             @php $selectedCity = $cities->firstWhere('id', request('city_id')); @endphp
@@ -349,6 +349,7 @@
         align-items: center;
         gap: 10px;
         width: 100%;
+        flex-wrap: wrap;
     }
 
     /* Searchable select — matches dark admin theme */
