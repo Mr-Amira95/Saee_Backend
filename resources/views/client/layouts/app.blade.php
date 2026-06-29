@@ -921,7 +921,6 @@ document.addEventListener('DOMContentLoaded', function () {
             transform: translateX(-50%) translateY(0);
         }
     </style>
-    @endif
 
 
     @stack('scripts')
