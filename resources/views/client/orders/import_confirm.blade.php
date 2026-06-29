@@ -85,6 +85,16 @@
 
     .tbl-select option { background: #1a2040; color: var(--text); }
 
+    .tbl-input-err {
+        border-color: #ef4444 !important;
+        background: rgba(220, 38, 38, 0.04) !important;
+        box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25) !important;
+    }
+    .tbl-input-err:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35) !important;
+    }
+
     .col-desc     { min-width: 170px; }
     .col-ptype    { min-width: 110px; }
     .col-doc      { min-width: 110px; }
@@ -189,7 +199,54 @@
             </thead>
             <tbody>
                 @foreach($rows as $i => $row)
-                @php $rowHasErrors = !empty($rowErrors[$i]); @endphp
+                @php
+                    $rowHasErrors = !empty($rowErrors[$i]);
+                    $errorsList = $rowErrors[$i] ?? [];
+
+                    $hasPaymentTypeError = false;
+                    $hasDeliveryOnCustomerError = false;
+                    $hasDeliveryCustomerAmountError = false;
+                    $hasOrderPriceError = false;
+                    $hasReceiverNameError = false;
+                    $hasReceiverPhoneError = false;
+                    $hasCityError = false;
+                    $hasAreaError = false;
+                    $hasAddressError = false;
+                    $hasDeliveryShiftError = false;
+
+                    foreach ($errorsList as $err) {
+                        if (stripos($err, 'payment type') !== false) {
+                            $hasPaymentTypeError = true;
+                        }
+                        if (stripos($err, 'delivery_on_customer') !== false) {
+                            $hasDeliveryOnCustomerError = true;
+                        }
+                        if (stripos($err, 'delivery_customer_amount') !== false) {
+                            $hasDeliveryCustomerAmountError = true;
+                        }
+                        if (stripos($err, 'order price') !== false) {
+                            $hasOrderPriceError = true;
+                        }
+                        if (stripos($err, 'receiver name') !== false) {
+                            $hasReceiverNameError = true;
+                        }
+                        if (stripos($err, 'receiver phone') !== false) {
+                            $hasReceiverPhoneError = true;
+                        }
+                        if (stripos($err, 'city id') !== false) {
+                            $hasCityError = true;
+                        }
+                        if (stripos($err, 'area id') !== false) {
+                            $hasAreaError = true;
+                        }
+                        if (stripos($err, 'address text') !== false) {
+                            $hasAddressError = true;
+                        }
+                        if (stripos($err, 'delivery shift') !== false) {
+                            $hasDeliveryShiftError = true;
+                        }
+                    }
+                @endphp
                 <tr style="{{ $rowHasErrors ? 'background: rgba(220, 38, 38, 0.04);' : '' }}">
                     <td class="col-num" style="{{ $rowHasErrors ? 'color: var(--red-lt); font-weight: 800;' : '' }}">
                         {{ $i + 1 }}
@@ -207,7 +264,7 @@
 
                     {{-- Payment Type --}}
                     <td class="col-ptype">
-                        <select name="rows[{{ $i }}][payment_type]" class="tbl-select">
+                        <select name="rows[{{ $i }}][payment_type]" class="tbl-select {{ $hasPaymentTypeError ? 'tbl-input-err' : '' }}">
                             <option value="cod"     {{ strtolower($row['payment_type'] ?? '') === 'cod'     ? 'selected' : '' }}>COD</option>
                             <option value="prepaid" {{ strtolower($row['payment_type'] ?? '') === 'prepaid' ? 'selected' : '' }}>Prepaid</option>
                         </select>
@@ -215,7 +272,7 @@
 
                     {{-- Delivery on Customer --}}
                     <td class="col-doc">
-                        <select name="rows[{{ $i }}][delivery_on_customer]" class="tbl-select">
+                        <select name="rows[{{ $i }}][delivery_on_customer]" class="tbl-select {{ $hasDeliveryOnCustomerError ? 'tbl-input-err' : '' }}">
                             @php $doc = strtolower($row['delivery_on_customer'] ?? 'false'); @endphp
                             <option value="false" {{ $doc === 'false' ? 'selected' : '' }}>No (Client pays)</option>
                             <option value="true"  {{ $doc === 'true'  ? 'selected' : '' }}>Yes (Customer pays)</option>
@@ -225,7 +282,7 @@
                     {{-- Delivery Customer Amount --}}
                     <td class="col-damount">
                         <input type="number" name="rows[{{ $i }}][delivery_customer_amount]"
-                            class="tbl-input"
+                            class="tbl-input {{ $hasDeliveryCustomerAmountError ? 'tbl-input-err' : '' }}"
                             step="0.01" min="0"
                             value="{{ $row['delivery_customer_amount'] ?? '0.00' }}">
                     </td>
@@ -233,7 +290,7 @@
                     {{-- Order Price --}}
                     <td class="col-price">
                         <input type="number" name="rows[{{ $i }}][order_price]"
-                            class="tbl-input"
+                            class="tbl-input {{ $hasOrderPriceError ? 'tbl-input-err' : '' }}"
                             step="0.01" min="0"
                             value="{{ $row['order_price'] ?? '0.00' }}">
                     </td>
@@ -241,21 +298,21 @@
                     {{-- Receiver Name --}}
                     <td class="col-rname">
                         <input type="text" name="rows[{{ $i }}][receiver_name]"
-                            class="tbl-input"
+                            class="tbl-input {{ $hasReceiverNameError ? 'tbl-input-err' : '' }}"
                             value="{{ $row['receiver_name'] ?? '' }}">
                     </td>
 
                     {{-- Receiver Phone --}}
                     <td class="col-rphone">
                         <input type="text" name="rows[{{ $i }}][receiver_phone]"
-                            class="tbl-input"
+                            class="tbl-input {{ $hasReceiverPhoneError ? 'tbl-input-err' : '' }}"
                             value="{{ $row['receiver_phone'] ?? '' }}">
                     </td>
 
                     {{-- City --}}
                     <td class="col-city">
                         <select name="rows[{{ $i }}][city_id]"
-                            class="tbl-select city-select"
+                            class="tbl-select city-select {{ $hasCityError ? 'tbl-input-err' : '' }}"
                             data-row="{{ $i }}"
                             data-selected-city="{{ $row['city_id'] ?? '' }}">
                             <option value="">— City —</option>
@@ -272,7 +329,7 @@
                     <td class="col-area">
                         @php $rowCity = $cities->firstWhere('id', $row['city_id'] ?? null); @endphp
                         <select name="rows[{{ $i }}][area_id]"
-                            class="tbl-select area-select"
+                            class="tbl-select area-select {{ $hasAreaError ? 'tbl-input-err' : '' }}"
                             data-row="{{ $i }}"
                             data-selected-area="{{ $row['area_id'] ?? '' }}">
                             <option value="">— Area —</option>
@@ -290,7 +347,7 @@
                     {{-- Address --}}
                     <td class="col-address">
                         <input type="text" name="rows[{{ $i }}][address_text]"
-                            class="tbl-input"
+                            class="tbl-input {{ $hasAddressError ? 'tbl-input-err' : '' }}"
                             value="{{ $row['address_text'] ?? '' }}">
                     </td>
 
@@ -303,7 +360,7 @@
 
                     {{-- Delivery Shift --}}
                     <td class="col-shift">
-                        <select name="rows[{{ $i }}][delivery_shift]" class="tbl-select">
+                        <select name="rows[{{ $i }}][delivery_shift]" class="tbl-select {{ $hasDeliveryShiftError ? 'tbl-input-err' : '' }}">
                             <option value="doesnt_matter" {{ ($row['delivery_shift'] ?? 'doesnt_matter') === 'doesnt_matter' ? 'selected' : '' }}>Doesn't Matter</option>
                             <option value="before_12pm"   {{ ($row['delivery_shift'] ?? '') === 'before_12pm' ? 'selected' : '' }}>Before 12 PM</option>
                             <option value="after_12pm"    {{ ($row['delivery_shift'] ?? '') === 'after_12pm' ? 'selected' : '' }}>After 12 PM</option>

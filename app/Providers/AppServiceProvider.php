@@ -15,11 +15,14 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(FirebaseMessaging::class, function ($app) {
-            try {
-                return $app->make('firebase.messaging');
-            } catch (\Throwable) {
-                return null;
+            if ($app->bound('firebase.messaging')) {
+                try {
+                    return $app->make('firebase.messaging');
+                } catch (\Throwable) {
+                    return null;
+                }
             }
+            return null;
         });
     }
 
