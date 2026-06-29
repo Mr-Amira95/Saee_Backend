@@ -87,15 +87,6 @@ class HomeController extends Controller
             ->latest();
 
         $checkInAlert = null;
-        if (!$isCheckedIn) {
-            $hasHiddenOrders = Order::where('driver_profile_id', $driverProfileId)
-                ->whereIn('status', ['picked_up', 'rejected'])
-                ->exists();
-
-            if ($hasHiddenOrders) {
-                $checkInAlert = 'You have pending orders. Please check in to view your orders.';
-            }
-        }
 
         $orders = $ordersQuery->get();
 

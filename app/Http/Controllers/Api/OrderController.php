@@ -37,18 +37,6 @@ class OrderController extends Controller
         if ($user->isDriver()) {
             $driverProfile = $user->driverProfile;
             $query->where('driver_profile_id', $driverProfile?->id);
-
-            if (! $this->isDriverCheckedIn($user)) {
-                $hasHiddenOrders = Order::where('driver_profile_id', $driverProfile?->id)
-                    ->whereIn('status', ['assigned', 'picked_up', 'rejected'])
-                    ->exists();
-
-                if ($hasHiddenOrders) {
-                    $checkInAlert = 'You have pending orders. Please check in to view your orders.';
-                }
-
-                $query->whereNotIn('status', ['assigned', 'picked_up']);
-            }
         } elseif ($user->isClientMaster()) {
             $clientProfile = $user->clientProfile;
             if (! $clientProfile) {
