@@ -304,8 +304,8 @@
     {{-- ═══════════ SIDEBAR ════════════ --}}
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}"  alt="Sa'ee" width="50" height="50" style="object-fit:contain;border-radius:7px;">
-            <img id="logoLight" src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee" width="50" height="50" style="object-fit:contain;border-radius:7px;display:none;">
+            <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;">
+            <img id="logoLight" src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;display:none;">
         </div>
 
         <nav class="sidebar-nav">
