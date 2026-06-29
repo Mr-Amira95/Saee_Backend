@@ -246,6 +246,7 @@
 
         /* ─── Filter bar ─────────────────────────────────── */
         .filter-bar {
+            position: relative; z-index: 50;
             display: flex; align-items: center; gap: 10px;
             background: var(--card); border: 1px solid var(--bdr);
             border-radius: 12px; padding: 12px 16px;

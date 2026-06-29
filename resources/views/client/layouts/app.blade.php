@@ -136,7 +136,7 @@
         .card { background: var(--card); border: 1px solid var(--bdr); border-radius: 14px; padding: 20px 22px; backdrop-filter: blur(8px); }
 
         /* ── Filter bar ──────────────────────────────────── */
-        .filter-bar { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--bdr); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; flex-wrap: wrap; backdrop-filter: blur(8px); }
+        .filter-bar { position: relative; z-index: 50; display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--bdr); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; flex-wrap: wrap; backdrop-filter: blur(8px); }
         .filter-search-wrap { position: relative; flex: 1; min-width: 180px; }
         .filter-search-wrap svg { position: absolute; left: 10px; top: 50%; translate: 0 -50%; color: rgba(255,255,255,.22); pointer-events: none; }
         .filter-input { width: 100%; padding: 8px 12px 8px 34px; background: var(--in-bg); border: 1px solid var(--in-bdr); border-radius: 8px; color: var(--text); font-size: .84rem; font-family: inherit; outline: none; transition: border-color .2s; }

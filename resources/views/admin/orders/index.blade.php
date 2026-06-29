@@ -94,11 +94,13 @@
 
             <div class="filter-row">
                 {{-- Search --}}
-                <div class="filter-search-wrap" style="flex: 2; min-width: 0;">
+                <div class="filter-search-wrap" style="flex: 1; width: 100%;">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input type="text" name="search" id="live-search" value="{{ request('search') }}" class="filter-input" placeholder="Search order #, batch #, receiver name, phone...">
                 </div>
+            </div>
 
+            <div class="filter-row">
                 {{-- Status --}}
                 <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1; min-width:0;">
                     <option value="">All Statuses</option>
