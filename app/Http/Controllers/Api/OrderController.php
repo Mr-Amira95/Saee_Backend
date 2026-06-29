@@ -253,21 +253,10 @@ class OrderController extends Controller
 
         $reason = RejectionReason::find($request->input('rejection_reason_id'));
 
-        $order->update([
-            'status'              => 'rejected',
+        $order = $this->orderService->updateStatus($order, 'rejected', [
             'rejection_reason_id' => $reason->id,
             'notes'               => $request->input('notes'),
-        ]);
-
-        OrderTrackingLog::create([
-            'order_id'    => $order->id,
-            'user_id'     => $user->id,
-            'from_status' => 'picked_up',
-            'to_status'   => 'rejected',
-            'description' => "Order rejected: {$reason->reason}",
-            'latitude'    => $request->input('latitude'),
-            'longitude'   => $request->input('longitude'),
-        ]);
+        ], $user);
 
         $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
