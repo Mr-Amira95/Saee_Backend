@@ -853,6 +853,47 @@ class OrderController extends Controller
         ]);
     }
 
+    public function showByReference(Request $request, ?string $reference_code = null): JsonResponse
+    {
+        $reference = $reference_code ?? $request->query('reference_code');
+
+        if (empty($reference)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Reference code is required.',
+            ], 422);
+        }
+
+        $order = Order::where('order_number', $reference)->first();
+
+        if (! $order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $this->canAccessOrder($user, $order)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have access to this order.',
+            ], 403);
+        }
+
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order retrieved successfully.',
+            'order_id' => $order->id,
+            'data'    => new OrderResource($order),
+        ]);
+    }
+
+
     private function isDriverCheckedIn(User $user): bool
     {
         $attendance = Attendance::where('user_id', $user->id)

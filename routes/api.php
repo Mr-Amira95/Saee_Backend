@@ -142,6 +142,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('orders', [OrderController::class, 'store'])
         ->name('api.orders.store');
 
+    Route::get('orders/by-reference/{reference_code?}', [OrderController::class, 'showByReference'])
+        ->name('api.orders.by-reference');
+
     Route::get('orders/{order}', [OrderController::class, 'show'])
         ->name('api.orders.show');
 

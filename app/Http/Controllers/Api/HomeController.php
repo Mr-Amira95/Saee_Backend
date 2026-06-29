@@ -46,6 +46,10 @@ class HomeController extends Controller
             ->where('status', 'picked_up')
             ->count();
 
+        $assignedOrders = Order::where('driver_profile_id', $driverProfileId)
+            ->where('status', 'assigned')
+            ->count();
+
         $completedOrderIds = DB::table('order_tracking_logs')
             ->join('orders', 'order_tracking_logs.order_id', '=', 'orders.id')
             ->where('orders.driver_profile_id', $driverProfileId)
@@ -63,7 +67,7 @@ class HomeController extends Controller
             ->pluck('order_tracking_logs.order_id');
 
         $completedOrders = $completedOrderIds->count();
-        $rejectedOrders  = $rejectedOrderIds->count();
+        $rejectedOrders = $rejectedOrderIds->count();
 
         $cashCollected = Order::where('driver_profile_id', $driverProfileId)
             ->where('payment_status', 'with_driver')
@@ -75,7 +79,7 @@ class HomeController extends Controller
             )
             ->value('total');
 
-        $isCheckedIn = $attendance && $attendance->check_in_at && ! $attendance->check_out_at;
+        $isCheckedIn = $attendance && $attendance->check_in_at && !$attendance->check_out_at;
 
         $ordersQuery = Order::with(['receiver.city', 'receiver.area', 'payment', 'rejectionReason'])
             ->where('driver_profile_id', $driverProfileId)
@@ -83,7 +87,7 @@ class HomeController extends Controller
             ->latest();
 
         $checkInAlert = null;
-        if (! $isCheckedIn) {
+        if (!$isCheckedIn) {
             $hasHiddenOrders = Order::where('driver_profile_id', $driverProfileId)
                 ->whereIn('status', ['picked_up', 'rejected'])
                 ->exists();
@@ -98,25 +102,26 @@ class HomeController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Home data retrieved successfully.',
-            'alert'   => $checkInAlert,
-            'data'    => [
+            'alert' => $checkInAlert,
+            'data' => [
                 'attendance' => $attendance
                     ? new AttendanceResource($attendance)
                     : [
-                        'id'                 => null,
-                        'date'               => $today,
-                        'status'             => 'not_checked_in',
-                        'check_in_at'        => null,
-                        'check_out_at'       => null,
-                        'check_in_location'  => null,
+                        'id' => null,
+                        'date' => $today,
+                        'status' => 'not_checked_in',
+                        'check_in_at' => null,
+                        'check_out_at' => null,
+                        'check_in_location' => null,
                         'check_out_location' => null,
-                        'duration_minutes'   => null,
+                        'duration_minutes' => null,
                     ],
                 'summary' => [
-                    'total_orders'     => $totalOrders,
+                    'total_orders' => $totalOrders,
                     'completed_orders' => $completedOrders,
-                    'rejected_orders'  => $rejectedOrders,
-                    'cash_collected'   => (float) ($cashCollected ?? 0),
+                    'rejected_orders' => $rejectedOrders,
+                    'assigned_orders' => $assignedOrders,
+                    'cash_collected' => (float) ($cashCollected ?? 0),
                 ],
                 'orders' => OrderResource::collection($orders),
             ],
@@ -129,11 +134,11 @@ class HomeController extends Controller
             ? $user->clientProfile
             : $user->clientEmployee?->clientProfile;
 
-        if (! $clientProfile) {
+        if (!$clientProfile) {
             return response()->json([
                 'success' => false,
                 'message' => 'Client profile not found.',
-                'code'    => 'CLIENT_PROFILE_NOT_FOUND',
+                'code' => 'CLIENT_PROFILE_NOT_FOUND',
             ], 403);
         }
 
@@ -158,14 +163,14 @@ class HomeController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Home data retrieved successfully.',
-            'data'    => [
+            'data' => [
                 'summary' => [
-                    'total'      => (int) $summary->total,
-                    'pending'    => (int) $summary->pending,
+                    'total' => (int) $summary->total,
+                    'pending' => (int) $summary->pending,
                     'in_transit' => (int) $summary->in_transit,
-                    'delivered'  => (int) $summary->delivered,
-                    'returned'   => (int) $summary->returned,
-                    'rejected'   => (int) $summary->rejected,
+                    'delivered' => (int) $summary->delivered,
+                    'returned' => (int) $summary->returned,
+                    'rejected' => (int) $summary->rejected,
                 ],
                 'active_orders' => OrderResource::collection($activeOrders),
             ],
