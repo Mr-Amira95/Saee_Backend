@@ -103,6 +103,10 @@
                             onclick="showBankDetails('{{ route('admin.drivers.bank-details', $driver) }}', '{{ addslashes($driver->user->name ?? 'Driver') }}')">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                         </button>
+                        <button class="act-btn act-reset-pw" title="Reset Password"
+                            onclick="openResetPasswordModal('{{ route('admin.drivers.reset-password', $driver) }}', '{{ addslashes($driver->user->name ?? 'this driver') }}')">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </button>
                         <a href="{{ route('admin.drivers.edit', $driver) }}" class="act-btn act-edit" title="Edit">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         </a>

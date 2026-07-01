@@ -156,6 +156,10 @@
                 <span class="info-row-val">{{ $client->masterUser->name ?? '—' }}</span>
             </div>
             <div class="info-row">
+                <span class="info-row-key">Username</span>
+                <span class="info-row-val">{{ $client->masterUser->username ?? '—' }}</span>
+            </div>
+            <div class="info-row">
                 <span class="info-row-key">Email</span>
                 <span class="info-row-val" style="word-break:break-all;">{{ $client->masterUser->email ?? '—' }}</span>
             </div>
@@ -167,6 +171,10 @@
                     @else —
                     @endif
                 </span>
+            </div>
+            <div class="info-row">
+                <span class="info-row-key">OTP / Notification Channel</span>
+                <span class="info-row-val">{{ $client->masterUser?->otp_channel === 'email' ? 'Email' : 'WhatsApp' }}</span>
             </div>
             <div class="info-row">
                 <span class="info-row-key">Account Status</span>

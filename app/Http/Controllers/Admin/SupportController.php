@@ -59,6 +59,14 @@ class SupportController extends Controller
     }
 
     /**
+     * Return the current unread support-message count for the admin sidebar badge.
+     */
+    public function unreadCount()
+    {
+        return response()->json(['count' => SupportMessage::unreadForAdminCount()]);
+    }
+
+    /**
      * Show create ticket form.
      */
     public function create()

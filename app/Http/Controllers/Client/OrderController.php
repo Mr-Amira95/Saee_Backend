@@ -13,9 +13,12 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Services\OpenAIService;
+use App\Traits\NormalizesOrderImportValues;
 
 class OrderController extends Controller
 {
+    use NormalizesOrderImportValues;
+
     public function __construct(private OrderService $orderService) {}
 
     public function index(Request $request): View
@@ -274,8 +277,8 @@ class OrderController extends Controller
                 'client_profile_id'        => $profile->id,
                 'client_id'                => $profile->id,
                 'order_description'        => $o['order_description'] ?? '',
-                'payment_type'             => strtolower($o['payment_type'] ?? 'cod'),
-                'delivery_on_customer'     => filter_var($o['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false',
+                'payment_type'             => strtolower($this->normalizePaymentTypeValue($o['payment_type'] ?? 'cod')),
+                'delivery_on_customer'     => filter_var($this->normalizeYesNoValue($o['delivery_on_customer'] ?? 'false'), FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false',
                 'delivery_customer_amount' => number_format((float)($o['delivery_customer_amount'] ?? 0.00), 2, '.', ''),
                 'order_price'              => number_format((float)($o['order_price'] ?? 0.00), 2, '.', ''),
                 'receiver_name'            => $o['receiver_name'] ?? '',
@@ -324,7 +327,7 @@ class OrderController extends Controller
 
     public function downloadTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        $headers = [
+        $fields = [
             'order_description',
             'payment_type',
             'delivery_on_customer',
@@ -339,10 +342,27 @@ class OrderController extends Controller
             'delivery_shift',
         ];
 
-        $sample = [
+        $locale = app()->getLocale();
+
+        $headers = $this->localizeImportHeaders($fields, $locale);
+
+        $sample = $locale === 'ar' ? [
+            'طلب تجارة إلكترونية (أحذية)',
+            'عند التسليم',
+            'لا',
+            '0.00',
+            '150.00',
+            'أحمد منصور',
+            '0791234567',
+            '1',
+            '2',
+            'شارع الملك عبدالله الثاني، عمان',
+            'يرجى التوصيل بعد الساعة 5 مساءً.',
+            'doesnt_matter',
+        ] : [
             'E-commerce order (Shoes)',
             'cod',
-            'false',
+            'No',
             '0.00',
             '150.00',
             'Ahmed Mansour',
@@ -356,6 +376,7 @@ class OrderController extends Controller
 
         $callback = function () use ($headers, $sample) {
             $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM so Excel renders Arabic correctly
             fputcsv($file, $headers);
             fputcsv($file, $sample);
             fclose($file);
@@ -381,6 +402,7 @@ class OrderController extends Controller
 
         if (($handle = fopen($path, 'r')) !== false) {
             $headers = fgetcsv($handle, 1000, ',');
+            $headers = $headers ? $this->normalizeImportHeaderRow($headers) : $headers;
 
             $expected = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes', 'delivery_shift'];
 
@@ -406,6 +428,9 @@ class OrderController extends Controller
         $hasErrors = false;
 
         foreach ($data as $index => $row) {
+            $row['payment_type']         = $this->normalizePaymentTypeValue($row['payment_type'] ?? '');
+            $row['delivery_on_customer'] = $this->normalizeYesNoValue($row['delivery_on_customer'] ?? 'false');
+
             $rowErrors = $this->validateImportRow($row);
 
             $deliveryShift = isset($row['delivery_shift']) ? strtolower(trim($row['delivery_shift'])) : 'doesnt_matter';
@@ -518,9 +543,9 @@ class OrderController extends Controller
     {
         $rowErrors = [];
 
-        $paymentType = strtolower($row['payment_type'] ?? '');
+        $paymentType = strtolower($this->normalizePaymentTypeValue($row['payment_type'] ?? ''));
         if (! in_array($paymentType, ['cod', 'prepaid'])) {
-            $rowErrors[] = "Payment type must be 'cod' or 'prepaid'.";
+            $rowErrors[] = "Payment type must be 'cod'/'عند التسليم' or 'prepaid'/'مدفوع'.";
         }
 
         $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
@@ -528,9 +553,9 @@ class OrderController extends Controller
             $rowErrors[] = 'Order price must be a positive number for COD orders.';
         }
 
-        $deliveryOnCustomer = filter_var($row['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        $deliveryOnCustomer = filter_var($this->normalizeYesNoValue($row['delivery_on_customer'] ?? 'false'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         if ($deliveryOnCustomer === null) {
-            $rowErrors[] = "delivery_on_customer must be 'true' or 'false'.";
+            $rowErrors[] = "delivery_on_customer must be 'yes'/'نعم' or 'no'/'لا'.";
         }
 
         $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);

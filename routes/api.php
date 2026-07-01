@@ -67,7 +67,7 @@ Route::prefix('chatbot')->middleware('throttle:30,1')->group(function () {
     Route::get('history/{session_id}', [ChatbotController::class, 'history'])->name('api.chatbot.history');
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () {
     Route::get('home', [HomeController::class, 'index'])
         ->name('api.home');
 
@@ -113,6 +113,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('attendance/check-out', [AttendanceController::class, 'checkOut'])
         ->name('api.attendance.check-out');
+
+    Route::post('attendance/check-out/confirm', [AttendanceController::class, 'confirmCheckOut'])
+        ->name('api.attendance.check-out.confirm');
 
     Route::get('ratings', [RatingController::class, 'index'])
         ->name('api.ratings.index');
@@ -183,6 +186,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('bank-details',  [BankDetailController::class, 'update'])->name('api.bank-details.update');
 
     // Client user management (employees)
+    Route::get('users/permissions', [ClientUserController::class, 'permissions'])->name('api.users.permissions');
     Route::get('users',          [ClientUserController::class, 'index'])->name('api.users.index');
     Route::post('users',         [ClientUserController::class, 'store'])->name('api.users.store');
     Route::put('users/{employee}',    [ClientUserController::class, 'update'])->name('api.users.update');

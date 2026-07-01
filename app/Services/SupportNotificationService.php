@@ -240,10 +240,18 @@ class SupportNotificationService
         $employeeUserIds = $clientProfile->employees()->pluck('user_id')->toArray();
         $userIds = array_merge($userIds, $employeeUserIds);
 
-        $title = $status === 'delivered' ? 'Order Delivered' : 'Order Rejected';
-        $message = $status === 'delivered'
-            ? "Your order #{$order->order_number} has been delivered."
-            : "Your order #{$order->order_number} has been rejected.";
+        $title = match ($status) {
+            'delivered'  => 'Order Delivered',
+            'rejected'   => 'Order Rejected',
+            'picked_up'  => 'Order Picked Up',
+            default      => 'Order Status Updated',
+        };
+        $message = match ($status) {
+            'delivered'  => "Your order #{$order->order_number} has been delivered.",
+            'rejected'   => "Your order #{$order->order_number} has been rejected.",
+            'picked_up'  => "Your order #{$order->order_number} has been picked up by the driver.",
+            default      => "Your order #{$order->order_number} status has been updated to {$status}.",
+        };
 
         foreach (array_unique(array_filter($userIds)) as $userId) {
             $this->sendToUser(

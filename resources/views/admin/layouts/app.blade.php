@@ -180,7 +180,7 @@
         }
 
         /* ─── Content ────────────────────────────────────── */
-        .content { flex: 1; overflow-y: auto; padding: 24px 26px; }
+        .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 26px; }
         .content::-webkit-scrollbar { width: 6px; }
         .content::-webkit-scrollbar-track { background: transparent; }
         .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 3px; }
@@ -337,6 +337,7 @@
         .act-btn.act-view:hover  { background: rgba(59,130,246,.08); border-color: rgba(59,130,246,.15); color: #60a5fa; }
         .act-btn.act-edit:hover  { background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.15); color: #fcd34d; }
         .act-btn.act-resend:hover { background: rgba(16,185,129,.08); border-color: rgba(16,185,129,.15); color: #34d399; }
+        .act-btn.act-reset-pw:hover { background: rgba(167,139,250,.1); border-color: rgba(167,139,250,.2); color: #a78bfa; }
 
         /* ─── Toggle switch ──────────────────────────────── */
         .toggle-switch { display:inline-flex; align-items:center; cursor:pointer; }
@@ -537,7 +538,7 @@
         .toast-msg   { font-size:.74rem; color:#94a3b8; margin-top:3px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .toast-close { background:none; border:none; color:#475569; cursor:pointer; padding:2px; line-height:1; flex-shrink:0; font-size:15px; margin-top:-1px; }
         .toast-close:hover { color:#f1f5f9; }
-        .toast-bar { height:3px; animation:toast-progress 5s linear forwards; }
+        .toast-bar { height:3px; animation:toast-progress 10s linear forwards; }
         /* type colours */
         .toast-warning .toast-icon { background:rgba(245,158,11,.12); }
         .toast-warning .toast-bar  { background:#f59e0b; }
@@ -958,6 +959,33 @@
     </div>
 </div>
 
+{{-- Reset Password Modal --}}
+<div class="modal-overlay" id="resetPasswordModal">
+    <div class="modal-card" style="max-width:420px;text-align:left;">
+        <div class="modal-icon" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2);">
+            <svg width="26" height="26" fill="none" stroke="#a78bfa" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <h3 style="text-align:center;">{{ __('Reset Password for') }} <span id="resetPasswordEntityName">{{ __('this user') }}</span></h3>
+        <p style="text-align:center;">{{ __('Set a new password for this account. The user can log in with it immediately.') }}</p>
+        <form id="resetPasswordForm" method="POST">
+            @csrf
+            <div class="form-group" style="margin-bottom:14px;">
+                <label class="form-label" for="rp_password">{{ __('New Password') }}</label>
+                <input class="form-input" type="password" id="rp_password" name="password" autocomplete="new-password" placeholder="{{ __('Minimum 8 characters') }}">
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label class="form-label" for="rp_password_confirmation">{{ __('Confirm Password') }}</label>
+                <input class="form-input" type="password" id="rp_password_confirmation" name="password_confirmation" autocomplete="new-password" placeholder="{{ __('Repeat password') }}">
+            </div>
+            <span class="form-error" id="rp_password_error" style="display:none;margin-bottom:14px;"></span>
+            <div class="modal-actions" style="margin-top:18px;">
+                <button type="button" class="btn-secondary" onclick="closeResetPasswordModal()">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">{{ __('Reset Password') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function confirmDelete(url, name) {
     document.getElementById('deleteForm').action = url;
@@ -970,8 +998,41 @@ function closeDeleteModal() {
 document.getElementById('deleteModal').addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();
 });
+
+function openResetPasswordModal(url, name) {
+    document.getElementById('resetPasswordForm').action = url;
+    document.getElementById('resetPasswordEntityName').textContent = name || 'this user';
+    document.getElementById('rp_password').value = '';
+    document.getElementById('rp_password_confirmation').value = '';
+    document.getElementById('rp_password_error').style.display = 'none';
+    document.getElementById('resetPasswordModal').classList.add('open');
+}
+function closeResetPasswordModal() {
+    document.getElementById('resetPasswordModal').classList.remove('open');
+}
+document.getElementById('resetPasswordModal').addEventListener('click', function(e) {
+    if (e.target === this) closeResetPasswordModal();
+});
+document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
+    var pw  = document.getElementById('rp_password').value;
+    var pwc = document.getElementById('rp_password_confirmation').value;
+    var err = document.getElementById('rp_password_error');
+    err.style.display = 'none';
+    if (pw.length < 8) {
+        e.preventDefault();
+        err.textContent = '{{ __('Password must be at least 8 characters.') }}';
+        err.style.display = 'block';
+        return;
+    }
+    if (pw !== pwc) {
+        e.preventDefault();
+        err.textContent = '{{ __('Passwords do not match.') }}';
+        err.style.display = 'block';
+    }
+});
+
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeDeleteModal();
+    if (e.key === 'Escape') { closeDeleteModal(); closeResetPasswordModal(); }
 });
 
 // Theme toggle logic
@@ -980,6 +1041,7 @@ function toggleTheme() {
     const isLight = html.classList.toggle('light-theme');
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
     updateThemeIcons();
+    document.dispatchEvent(new CustomEvent('themechange', { detail: { theme: isLight ? 'light' : 'dark' } }));
 }
 
 function updateThemeIcons() {
@@ -1096,7 +1158,7 @@ function showToast(title, message, type, link, notifId) {
 
     stack.appendChild(t);
 
-    const timer = setTimeout(() => dismissToast(t), 5000);
+    const timer = setTimeout(() => dismissToast(t), 10000);
     t._dismissTimer = timer;
 }
 
@@ -1395,6 +1457,34 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+
+@auth
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+<script>
+(function () {
+    const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
+        cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}'
+    });
+
+    function refreshSupportBadge() {
+        fetch('{{ route('admin.support.unread-count') }}')
+            .then(r => r.json())
+            .then(d => {
+                const badge = document.getElementById('supportTicketBadge');
+                if (!badge) return;
+                if (d.count > 0) { badge.textContent = d.count; badge.style.display = 'inline-block'; }
+                else { badge.style.display = 'none'; }
+            })
+            .catch(() => {});
+    }
+
+    const channel = pusher.subscribe('support-admin');
+    channel.bind('ticket.created', refreshSupportBadge);
+    channel.bind('message.sent', refreshSupportBadge);
+})();
+</script>
+@endauth
+
 @yield('scripts')
 
 {{-- Toast stack — body-level so it's never clipped by any stacking context --}}

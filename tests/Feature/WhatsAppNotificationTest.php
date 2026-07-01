@@ -10,6 +10,7 @@ use App\Models\Area;
 use App\Models\Order;
 use App\Models\WhatsAppTemplate;
 use App\Models\WhatsAppLog;
+use App\Models\SystemNotification;
 use App\Services\OrderService;
 use App\Services\WhatsAppService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -118,7 +119,7 @@ class WhatsAppNotificationTest extends TestCase
         $this->assertStringContainsString('Driver: Ahmed Driver', $log->message);
     }
 
-    public function test_order_delivery_triggers_whatsapp_notification()
+    public function test_order_delivery_triggers_portal_notification_and_no_whatsapp()
     {
         $order = $this->orderService->createOrder([
             'client_profile_id' => $this->client->id,
@@ -135,21 +136,21 @@ class WhatsAppNotificationTest extends TestCase
         // Transition status to delivered
         $this->orderService->updateStatus($order, 'delivered', [], $this->admin);
 
-        $this->assertDatabaseHas('whatsapp_logs', [
-            'order_id' => $order->id,
-            'phone' => '0790000001',
-            'status' => 'simulated',
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id' => $this->client->master_user_id,
+            'entity_type' => 'single_order',
+            'entity_id' => $order->id,
+            'title' => 'Order Delivered',
         ]);
 
-        $deliveredLog = WhatsAppLog::where('order_id', $order->id)
+        $deliveredWhatsapp = WhatsAppLog::where('order_id', $order->id)
             ->where('message', 'like', '%delivered%')
             ->first();
 
-        $this->assertNotNull($deliveredLog);
-        $this->assertStringContainsString('Review:', $deliveredLog->message);
+        $this->assertNull($deliveredWhatsapp);
     }
 
-    public function test_order_rejection_triggers_whatsapp_notification()
+    public function test_order_rejection_triggers_portal_notification_and_no_whatsapp()
     {
         $order = $this->orderService->createOrder([
             'client_profile_id' => $this->client->id,
@@ -168,18 +169,49 @@ class WhatsAppNotificationTest extends TestCase
             'notes' => 'Customer is on vacation'
         ], $this->admin);
 
-        $this->assertDatabaseHas('whatsapp_logs', [
-            'order_id' => $order->id,
-            'phone' => '0790000001',
-            'status' => 'simulated',
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id' => $this->client->master_user_id,
+            'entity_type' => 'single_order',
+            'entity_id' => $order->id,
+            'title' => 'Order Rejected',
         ]);
 
-        $rejectedLog = WhatsAppLog::where('order_id', $order->id)
+        $rejectedWhatsapp = WhatsAppLog::where('order_id', $order->id)
             ->where('message', 'like', '%rejected%')
             ->first();
 
-        $this->assertNotNull($rejectedLog);
-        $this->assertStringContainsString('Reason: Customer is on vacation', $rejectedLog->message);
+        $this->assertNull($rejectedWhatsapp);
+    }
+
+    public function test_order_picked_up_triggers_portal_notification_and_no_whatsapp()
+    {
+        $order = $this->orderService->createOrder([
+            'client_profile_id' => $this->client->id,
+            'driver_id' => $this->driver->id,
+            'payment_type' => 'cod',
+            'order_price' => 100.00,
+            'receiver_name' => 'John Doe',
+            'receiver_phone' => '0790000001',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'address_text' => '123 Abdali St',
+        ], $this->admin);
+
+        // Transition status to picked_up
+        $this->orderService->updateStatus($order, 'picked_up', [], $this->admin);
+
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id' => $this->client->master_user_id,
+            'entity_type' => 'single_order',
+            'entity_id' => $order->id,
+            'title' => 'Order Picked Up',
+        ]);
+
+        $pickedUpWhatsapp = WhatsAppLog::where('order_id', $order->id)
+            ->where('message', 'like', '%picked%')
+            ->first();
+
+        $this->assertNull($pickedUpWhatsapp);
     }
 
     public function test_public_customer_location_sharing()

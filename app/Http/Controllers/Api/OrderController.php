@@ -19,9 +19,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Validation\Rule;
+use App\Traits\NormalizesOrderImportValues;
 
 class OrderController extends Controller
 {
+    use NormalizesOrderImportValues;
+
     public function __construct(private OrderService $orderService) {}
 
     public function index(Request $request): JsonResponse
@@ -635,6 +638,7 @@ class OrderController extends Controller
 
         if (($handle = fopen($path, 'r')) !== false) {
             $headers = fgetcsv($handle, 1000, ',');
+            $headers = $headers ? $this->normalizeImportHeaderRow($headers) : $headers;
             $expected = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes', 'delivery_shift'];
 
             if (! $headers || count(array_intersect($headers, $expected)) < 5) {
@@ -666,9 +670,12 @@ class OrderController extends Controller
             $rowNum    = $index + 2;
             $rowErrors = [];
 
-            $paymentType = strtolower($row['payment_type'] ?? '');
+            $row['payment_type']         = $this->normalizePaymentTypeValue($row['payment_type'] ?? '');
+            $row['delivery_on_customer'] = $this->normalizeYesNoValue($row['delivery_on_customer'] ?? 'false');
+
+            $paymentType = strtolower($row['payment_type']);
             if (! in_array($paymentType, ['cod', 'prepaid'])) {
-                $rowErrors[] = "Payment type must be 'cod' or 'prepaid'.";
+                $rowErrors[] = "Payment type must be 'cod'/'عند التسليم' or 'prepaid'/'مدفوع'.";
             }
 
             $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
@@ -676,9 +683,9 @@ class OrderController extends Controller
                 $rowErrors[] = 'Order price must be a positive number for COD orders.';
             }
 
-            $deliveryOnCustomer = filter_var($row['delivery_on_customer'] ?? 'false', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            $deliveryOnCustomer = filter_var($row['delivery_on_customer'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($deliveryOnCustomer === null) {
-                $rowErrors[] = "delivery_on_customer must be 'true' or 'false'.";
+                $rowErrors[] = "delivery_on_customer must be 'yes'/'نعم' or 'no'/'لا'.";
             }
 
             $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
@@ -708,6 +715,7 @@ class OrderController extends Controller
                 $rowErrors[] = "Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.";
             }
             $row['delivery_shift'] = $deliveryShift;
+            $rows[$index] = $row;
 
             if (! empty($rowErrors)) {
                 $errors[] = ['row' => $rowNum, 'errors' => $rowErrors];
@@ -761,13 +769,24 @@ class OrderController extends Controller
         ], 201);
     }
 
-    public function downloadImportTemplate(): StreamedResponse
+    public function downloadImportTemplate(Request $request): StreamedResponse
     {
-        $headers = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes', 'delivery_shift'];
-        $sample  = ['E-commerce parcel', 'cod', 'false', '0.00', '150.00', 'Ahmed Mansour', '0501234567', '1', '2', 'King Fahd Road, Al Malaz', 'Deliver after 5 PM', 'doesnt_matter'];
+        $fields = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes', 'delivery_shift'];
+
+        $locale = strtolower((string) $request->query('lang', substr((string) $request->header('Accept-Language', ''), 0, 2)));
+        $locale = $locale === 'ar' ? 'ar' : 'en';
+
+        $headers = $this->localizeImportHeaders($fields, $locale);
+
+        $sample = $locale === 'ar' ? [
+            'طرد تجارة إلكترونية', 'عند التسليم', 'لا', '0.00', '150.00', 'أحمد منصور', '0501234567', '1', '2', 'طريق الملك فهد، الملز', 'التوصيل بعد الساعة 5 مساءً', 'doesnt_matter',
+        ] : [
+            'E-commerce parcel', 'cod', 'No', '0.00', '150.00', 'Ahmed Mansour', '0501234567', '1', '2', 'King Fahd Road, Al Malaz', 'Deliver after 5 PM', 'doesnt_matter',
+        ];
 
         $callback = function () use ($headers, $sample) {
             $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM so Excel renders Arabic correctly
             fputcsv($file, $headers);
             fputcsv($file, $sample);
             fclose($file);

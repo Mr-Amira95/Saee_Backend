@@ -30,6 +30,12 @@
     text-decoration: none; transition: background .15s;
 }
 .file-link:hover { background: rgba(220,38,38,.16); }
+
+html.light-theme #map { background: #e5e3df; }
+html.light-theme .leaflet-popup-content-wrapper { background: #ffffff; color: #0f172a; box-shadow: 0 8px 30px rgba(15,23,42,.15); }
+html.light-theme .leaflet-popup-tip { background: #ffffff; }
+html.light-theme .leaflet-control-attribution { background: rgba(255,255,255,.7) !important; color: #64748b !important; }
+html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 </style>
 @endsection
 
@@ -129,6 +135,10 @@
     <div class="info-card">
         <div class="info-card-title">Contact</div>
         <div class="info-rows">
+            <div class="info-row">
+                <span class="info-row-key">Username</span>
+                <span class="info-row-val">{{ $driver->user->username ?? '—' }}</span>
+            </div>
             <div class="info-row">
                 <span class="info-row-key">Email</span>
                 <span class="info-row-val" style="word-break:break-all;">{{ $driver->user->email ?? '—' }}</span>
@@ -502,11 +512,16 @@
         
         if (lat !== null && lng !== null) {
             var map = L.map('map', { zoomControl: true }).setView([lat, lng], 14);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            var isLight = document.documentElement.classList.contains('light-theme');
+            var tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/' + (isLight ? 'light_all' : 'dark_all') + '/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
                 subdomains: 'abcd',
                 maxZoom: 20
             }).addTo(map);
+
+            document.addEventListener('themechange', function (e) {
+                tileLayer.setUrl('https://{s}.basemaps.cartocdn.com/' + (e.detail.theme === 'light' ? 'light_all' : 'dark_all') + '/{z}/{x}/{y}{r}.png');
+            });
 
             var initials = "{{ strtoupper(substr($driver->user->name ?? '?', 0, 2)) }}";
             var driverIcon = L.divIcon({

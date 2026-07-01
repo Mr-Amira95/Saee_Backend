@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -19,9 +20,11 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'username',
         'email',
         'phone',
         'phone_country_code',
+        'otp_channel',
         'password',
         'role',
         'status',
@@ -49,6 +52,59 @@ class User extends Authenticatable
     public function isDriver(): bool       { return $this->role === 'driver'; }
     public function isClientMaster(): bool { return $this->role === 'client_master'; }
     public function isClientEmployee(): bool { return $this->role === 'client_employee'; }
+
+    /**
+     * Page-level client-portal permission check. The client master always has
+     * full access; a client_employee needs an explicit, non-expired grant.
+     */
+    public function hasClientPermission(string $page): bool
+    {
+        if ($this->isClientMaster()) {
+            return true;
+        }
+
+        if (! $this->isClientEmployee()) {
+            return false;
+        }
+
+        return DB::table('client_employee_permission_user')
+            ->join('permissions', 'permissions.id', '=', 'client_employee_permission_user.permission_id')
+            ->where('client_employee_permission_user.employee_user_id', $this->id)
+            ->where('permissions.name', $page)
+            ->where('permissions.scope', 'client')
+            ->where(function ($q) {
+                $q->whereNull('client_employee_permission_user.expires_at')
+                    ->orWhere('client_employee_permission_user.expires_at', '>', now());
+            })
+            ->exists();
+    }
+
+    /**
+     * Page names (e.g. "orders", "billing") this client account can access.
+     * The client master gets every client-scope page; a client_employee gets
+     * only their granted, non-expired pages. Empty for non-client roles.
+     */
+    public function clientPermissionNames(): array
+    {
+        if ($this->isClientMaster()) {
+            return Permission::where('scope', 'client')->pluck('name')->all();
+        }
+
+        if (! $this->isClientEmployee()) {
+            return [];
+        }
+
+        return DB::table('client_employee_permission_user')
+            ->join('permissions', 'permissions.id', '=', 'client_employee_permission_user.permission_id')
+            ->where('client_employee_permission_user.employee_user_id', $this->id)
+            ->where('permissions.scope', 'client')
+            ->where(function ($q) {
+                $q->whereNull('client_employee_permission_user.expires_at')
+                    ->orWhere('client_employee_permission_user.expires_at', '>', now());
+            })
+            ->pluck('permissions.name')
+            ->all();
+    }
 
     // Relationships
     public function driverProfile(): HasOne

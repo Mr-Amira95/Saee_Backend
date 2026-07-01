@@ -77,6 +77,11 @@
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
+                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username" value="{{ old('username', $admin->username) }}" required>
+                @error('username')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
                 <label class="form-label" for="email">Email <span class="req">*</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email', $admin->email) }}" required>
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
@@ -305,8 +310,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!first) first = el;
         }
 
-        req('name',  'Full name is required.');
-        req('email', 'Email address is required.');
+        req('name',     'Full name is required.');
+        req('username', 'Username is required.');
+        req('email',    'Email address is required.');
 
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {

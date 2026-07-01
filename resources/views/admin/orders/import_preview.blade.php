@@ -12,6 +12,16 @@
     <span class="current">Validation Report</span>
 @endsection
 
+@section('head')
+    <style>
+        .cell-invalid {
+            box-shadow: inset 0 0 0 1px var(--red-lt);
+            background: rgba(220, 38, 38, 0.05);
+            border-radius: 6px;
+        }
+    </style>
+@endsection
+
 @section('content')
     <div class="page-hd">
         <div class="page-hd-left">
@@ -50,19 +60,33 @@
                 </thead>
                 <tbody>
                     @foreach($results as $item)
-                        @php $hasRowErrors = !empty($item['errors']); @endphp
+                        @php
+                            $hasRowErrors = !empty($item['errors']);
+                            $errClient = $errReceiver = $errPricing = $errDestination = false;
+                            foreach ($item['errors'] ?? [] as $error) {
+                                if (str_contains($error, 'Client ID')) {
+                                    $errClient = true;
+                                } elseif (str_contains($error, 'Receiver name') || str_contains($error, 'Receiver phone')) {
+                                    $errReceiver = true;
+                                } elseif (str_contains($error, 'Payment type') || str_contains($error, 'Order price') || str_contains($error, 'delivery_on_customer') || str_contains($error, 'delivery_customer_amount') || str_contains($error, 'Delivery shift')) {
+                                    $errPricing = true;
+                                } elseif (str_contains($error, 'City ID') || str_contains($error, 'Area ID') || str_contains($error, 'Address text')) {
+                                    $errDestination = true;
+                                }
+                            }
+                        @endphp
                         <tr style="{{ $hasRowErrors ? 'background: rgba(220, 38, 38, 0.03);' : '' }}">
                             <td style="text-align: center; font-weight: 700; color: {{ $hasRowErrors ? 'var(--red-lt)' : 'var(--text-dim)' }};">
                                 {{ $item['row_number'] }}
                             </td>
-                            <td>
+                            <td class="{{ $errClient ? 'cell-invalid' : '' }}">
                                 <div class="cell-main">ID: {{ $item['data']['client_id'] ?? 'N/A' }}</div>
                             </td>
-                            <td>
+                            <td class="{{ $errReceiver ? 'cell-invalid' : '' }}">
                                 <div class="cell-main">{{ $item['data']['receiver_name'] ?: 'N/A' }}</div>
                                 <div class="cell-sub">{{ $item['data']['receiver_phone'] ?: 'N/A' }}</div>
                             </td>
-                            <td>
+                            <td class="{{ $errPricing ? 'cell-invalid' : '' }}">
                                 <div class="cell-main" style="text-transform: uppercase;">
                                     {{ $item['data']['payment_type'] ?: 'N/A' }}
                                 </div>
@@ -73,7 +97,7 @@
                                     Shift: {{ $item['data']['delivery_shift'] ?? 'doesnt_matter' }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="{{ $errDestination ? 'cell-invalid' : '' }}">
                                 <div class="cell-main">City ID: {{ $item['data']['city_id'] ?? 'N/A' }}</div>
                                 <div class="cell-sub">Area ID: {{ $item['data']['area_id'] ?? 'N/A' }}</div>
                             </td>

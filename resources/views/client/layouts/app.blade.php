@@ -107,7 +107,7 @@
         }
 
         /* ── Content ─────────────────────────────────────── */
-        .content { flex: 1; overflow-y: auto; padding: 24px 26px; }
+        .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 26px; }
         .content::-webkit-scrollbar { width: 5px; }
         .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 3px; }
 
@@ -219,6 +219,36 @@
         .notif-footer a:hover { color: var(--red-lt); }
         .notif-empty { padding: 28px 16px; text-align: center; color: var(--text-dim); font-size: .84rem; }
 
+        /* ── Toast notifications ──────────────────────────── */
+        @keyframes toast-in  { from{transform:translateX(110%);opacity:0;} to{transform:translateX(0);opacity:1;} }
+        @keyframes toast-out { from{transform:translateX(0);opacity:1;}   to{transform:translateX(110%);opacity:0;} }
+        @keyframes toast-progress { from{width:100%;} to{width:0%;} }
+        #toastStack { position:fixed; bottom:24px; right:24px; z-index:999999; display:flex; flex-direction:column-reverse; gap:10px; pointer-events:none; }
+        html[dir="rtl"] #toastStack { right:auto; left:24px; }
+        .toast {
+            pointer-events:all; width:320px; border-radius:12px; overflow:hidden;
+            background:#0c1230; border:1px solid rgba(255,255,255,.07);
+            box-shadow:0 8px 32px rgba(0,0,0,.55);
+            animation:toast-in .32s cubic-bezier(.16,1,.3,1) both;
+        }
+        .toast.toast-hide { animation:toast-out .28s ease-in forwards; }
+        .toast-body { display:flex; align-items:flex-start; gap:11px; padding:13px 14px 11px; }
+        .toast-icon { width:32px; height:32px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+        .toast-text { flex:1; min-width:0; }
+        .toast-title { font-size:.82rem; font-weight:700; color:#f1f5f9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .toast-msg   { font-size:.74rem; color:#94a3b8; margin-top:3px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .toast-close { background:none; border:none; color:#475569; cursor:pointer; padding:2px; line-height:1; flex-shrink:0; font-size:15px; margin-top:-1px; }
+        .toast-close:hover { color:#f1f5f9; }
+        .toast-bar { height:3px; animation:toast-progress 10s linear forwards; }
+        .toast-warning .toast-icon { background:rgba(245,158,11,.12); }
+        .toast-warning .toast-bar  { background:#f59e0b; }
+        .toast-info    .toast-icon { background:rgba(59,130,246,.12); }
+        .toast-info    .toast-bar  { background:#3b82f6; }
+        .toast-success .toast-icon { background:rgba(34,197,94,.12); }
+        .toast-success .toast-bar  { background:#22c55e; }
+        .toast-danger  .toast-icon { background:rgba(220,38,38,.12); }
+        .toast-danger  .toast-bar  { background:#dc2626; }
+
         /* ── Order status map ────────────────────────────── */
         .status-pending   { color: #fbbf24; background: rgba(245,158,11,.1); }
         .status-picked_up { color: #60a5fa; background: rgba(59,130,246,.1); }
@@ -316,13 +346,16 @@
                 {{ __('Home') }}
             </a>
 
+            @if(auth()->user()->hasClientPermission('orders'))
             <a href="{{ route('client.orders.index') }}" class="nav-item {{ request()->routeIs('client.orders.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 {{ __('Orders') }}
             </a>
+            @endif
 
             <span class="nav-label" style="margin-top:8px;">{{ __('Support & Finance') }}</span>
 
+            @if(auth()->user()->hasClientPermission('support'))
             <a href="{{ route('client.support.index') }}" class="nav-item {{ request()->routeIs('client.support.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12c0-4.97 4.03-9 9-9s9 4.03 9 9" />
@@ -331,41 +364,46 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 14c0 3 2.5 5 5.5 5" />
                 </svg>
                 <span style="flex: 1;">{{ __('Support') }}</span>
-                @if(isset($unreadSupportMessagesCount) && $unreadSupportMessagesCount > 0)
-                    <span class="sidebar-badge">{{ $unreadSupportMessagesCount }}</span>
-                @endif
+                <span class="sidebar-badge" id="supportTicketBadge" style="display:{{ (isset($unreadSupportMessagesCount) && $unreadSupportMessagesCount > 0) ? 'inline-block' : 'none' }};">{{ $unreadSupportMessagesCount ?? 0 }}</span>
             </a>
+            @endif
 
-
-
+            @if(auth()->user()->hasClientPermission('payout_invoices'))
             <a href="{{ route('client.financials.invoices') }}" class="nav-item {{ request()->routeIs('client.financials.invoices*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 {{ __('Payout Invoices') }}
             </a>
+            @endif
 
+            @if(auth()->user()->hasClientPermission('billing'))
             <a href="{{ route('client.billing.index') }}" class="nav-item {{ request()->routeIs('client.billing.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 {{ __('Billing') }}
             </a>
+            @endif
 
+            @if(auth()->user()->hasClientPermission('reports'))
             <a href="{{ route('client.reports.index') }}" class="nav-item {{ request()->routeIs('client.reports.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 {{ __('Reports') }}
             </a>
+            @endif
 
             <span class="nav-label" style="margin-top:8px;">{{ __('Account') }}</span>
 
-            @if(auth()->user()->isClientMaster())
+            @if(auth()->user()->hasClientPermission('team'))
             <a href="{{ route('client.users.index') }}" class="nav-item {{ request()->routeIs('client.users.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 {{ __('Team') }}
             </a>
             @endif
 
+            @if(auth()->user()->hasClientPermission('account'))
             <a href="{{ route('client.account.index') }}" class="nav-item {{ request()->routeIs('client.account.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ __('Account') }}
             </a>
+            @endif
         </nav>
 
         <div class="sidebar-foot">
@@ -402,7 +440,7 @@
                 @endif
 
                 {{-- AI Assistant (in Header) --}}
-                @if(!request()->routeIs('client.ai-chat.index'))
+                @if(auth()->user()->hasClientPermission('ai_assistant') && !request()->routeIs('client.ai-chat.index'))
                     <a href="{{ route('client.ai-chat.index') }}" class="icon-btn" title="{{ __('Ask AI Assistant') }}" style="position: relative;">
                         <span class="ai-header-pulse"></span>
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -490,6 +528,9 @@
 
 </div>
 
+{{-- Toast stack — body-level so it's never clipped by any stacking context --}}
+<div id="toastStack"></div>
+
 <script>
 // ── Notifications panel ───────────────────────────────
 function toggleNotifPanel() {
@@ -563,6 +604,55 @@ function updateBadge() {
 function hideBadge() {
     const badge = document.getElementById('notifCount');
     badge.style.display = 'none';
+}
+
+// ── Toast popups ──────────────────────────────────────
+const _toastIcons = {
+    warning: `<svg width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`,
+    info:    `<svg width="16" height="16" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/></svg>`,
+    success: `<svg width="16" height="16" fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`,
+    danger:  `<svg width="16" height="16" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+};
+
+function showToast(title, message, type, link) {
+    const stack = document.getElementById('toastStack');
+    if (!stack) return;
+    const t = document.createElement('div');
+
+    const safeType = _toastIcons[type] ? type : 'info';
+    t.className = `toast toast-${safeType}`;
+    t.style.cursor = link ? 'pointer' : 'default';
+
+    t.innerHTML = `
+        <div class="toast-body">
+            <div class="toast-icon">${_toastIcons[safeType]}</div>
+            <div class="toast-text">
+                <div class="toast-title">${escHtml(title || '')}</div>
+                <div class="toast-msg">${escHtml(message || '')}</div>
+            </div>
+            <button class="toast-close" onclick="event.stopPropagation();dismissToast(this.closest('.toast'))">&#x2715;</button>
+        </div>
+        <div class="toast-bar"></div>
+    `;
+
+    if (link) {
+        t.addEventListener('click', function(e) {
+            if (!e.target.closest('.toast-close')) window.location.href = link;
+        });
+    }
+
+    stack.appendChild(t);
+
+    const timer = setTimeout(() => dismissToast(t), 10000);
+    t._dismissTimer = timer;
+}
+
+function dismissToast(el) {
+    if (!el || el._dismissing) return;
+    el._dismissing = true;
+    clearTimeout(el._dismissTimer);
+    el.classList.add('toast-hide');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
 }
 
 // ── Theme toggle ─────────────────────────────────────
@@ -777,6 +867,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+    <style>
         /* ─── Header AI Assistant Pulse ───────────────────── */
         .ai-header-pulse {
             position: absolute;
@@ -922,6 +1013,42 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     </style>
 
+    @auth
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <script>
+    (function () {
+        const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
+            cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}'
+        });
+
+        const channel = pusher.subscribe('user-notifications.{{ auth()->id() }}');
+        channel.bind('notification.new', function (data) {
+            if (typeof showToast === 'function') {
+                showToast(data.title, data.message, data.type, data.link);
+            }
+
+            const notifBadge = document.getElementById('notifCount');
+            if (notifBadge) {
+                const current = parseInt(notifBadge.textContent, 10) || 0;
+                notifBadge.textContent = current + 1;
+                notifBadge.style.display = 'block';
+            }
+
+            if (data.entity_type !== 'support_ticket') return;
+
+            fetch('{{ route('client.support.unread-count') }}')
+                .then(r => r.json())
+                .then(d => {
+                    const badge = document.getElementById('supportTicketBadge');
+                    if (!badge) return;
+                    if (d.count > 0) { badge.textContent = d.count; badge.style.display = 'inline-block'; }
+                    else { badge.style.display = 'none'; }
+                })
+                .catch(() => {});
+        });
+    })();
+    </script>
+    @endauth
 
     @stack('scripts')
 </body>

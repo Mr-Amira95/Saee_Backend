@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Client;
 
 use App\Mail\UserInvitationMail;
 use App\Models\ClientEmployee;
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -19,7 +21,8 @@ class UserManagementController extends Controller
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (! Auth::user()->isClientMaster()) {
+            $user = Auth::user();
+            if (! $user->isClientMaster() && ! $user->hasClientPermission('team')) {
                 abort(403);
             }
 
@@ -37,16 +40,20 @@ class UserManagementController extends Controller
 
     public function create(): View
     {
-        return view('client.users.create');
+        $permissions = Permission::where('scope', 'client')->orderBy('display_name')->get();
+
+        return view('client.users.create', compact('permissions'));
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'job_title' => ['nullable', 'string', 'max:100'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['integer', 'exists:permissions,id'],
         ]);
 
         $profile = $this->getClientProfile();
@@ -67,6 +74,8 @@ class UserManagementController extends Controller
             'status' => 'active',
         ]);
 
+        $this->syncPermissions($user->id, $profile->id, $data['permissions'] ?? []);
+
         $token = Password::createToken($user);
         Mail::to($user->email)->send(new UserInvitationMail($user, $token));
 
@@ -78,8 +87,13 @@ class UserManagementController extends Controller
     {
         $profile = $this->getClientProfile();
         $employee = $profile->employees()->with('user')->findOrFail($id);
+        $permissions = Permission::where('scope', 'client')->orderBy('display_name')->get();
+        $grantedPermissionIds = DB::table('client_employee_permission_user')
+            ->where('employee_user_id', $employee->user_id)
+            ->where('client_profile_id', $profile->id)
+            ->pluck('permission_id');
 
-        return view('client.users.edit', compact('employee'));
+        return view('client.users.edit', compact('employee', 'permissions', 'grantedPermissionIds'));
     }
 
     public function update(Request $request, int $id): RedirectResponse
@@ -88,11 +102,13 @@ class UserManagementController extends Controller
         $employee = $profile->employees()->with('user')->findOrFail($id);
         $user = $employee->user;
 
-        $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
             'job_title' => ['nullable', 'string', 'max:100'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['integer', 'exists:permissions,id'],
         ]);
 
         $user->name = $request->name;
@@ -103,8 +119,34 @@ class UserManagementController extends Controller
         $employee->job_title = $request->job_title ?: null;
         $employee->save();
 
+        $this->syncPermissions($user->id, $profile->id, $data['permissions'] ?? []);
+
         return redirect()->route('client.users.index')
             ->with('success', __('User updated successfully.'));
+    }
+
+    protected function syncPermissions(int $employeeUserId, int $clientProfileId, array $permissionIds): void
+    {
+        DB::transaction(function () use ($employeeUserId, $clientProfileId, $permissionIds) {
+            DB::table('client_employee_permission_user')
+                ->where('employee_user_id', $employeeUserId)
+                ->where('client_profile_id', $clientProfileId)
+                ->delete();
+
+            $now = now();
+            $rows = array_map(fn ($permId) => [
+                'employee_user_id' => $employeeUserId,
+                'permission_id' => (int) $permId,
+                'client_profile_id' => $clientProfileId,
+                'granted_by' => Auth::id(),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ], $permissionIds);
+
+            if ($rows !== []) {
+                DB::table('client_employee_permission_user')->insertOrIgnore($rows);
+            }
+        });
     }
 
     public function destroy(int $id): RedirectResponse

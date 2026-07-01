@@ -37,6 +37,11 @@
     .preset-btns { display: flex; gap: 6px; flex-wrap: wrap; }
     .preset-btn { padding: 5px 12px; border-radius: 7px; font-size: .78rem; font-weight: 500; border: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--text-sub); cursor: pointer; text-decoration: none; transition: background .13s, color .13s, border-color .13s; }
     .preset-btn:hover, .preset-btn.active { background: rgba(220,38,38,.1); color: #fca5a5; border-color: rgba(220,38,38,.2); }
+
+    /* Clickable status KPI cards */
+    .kpi-clickable { transition: transform .13s, border-color .13s, background .13s; }
+    .kpi-clickable:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.16); }
+    .kpi-active { background: rgba(220,38,38,.09); border-color: rgba(220,38,38,.35); }
 </style>
 @endpush
 
@@ -80,28 +85,30 @@
     </form>
 </div>
 
-{{-- KPI Cards --}}
+{{-- Status KPI Cards — click any card to view its order list below --}}
+<div class="section-title">{{ __('Click a card to view the order list') }}</div>
 <div class="kpi-grid">
-    <div class="kpi-card kpi-accent-blue">
-        <div class="kpi-label">{{ __('Total Orders') }}</div>
-        <div class="kpi-value" style="color:var(--text);">{{ number_format($total) }}</div>
-        <div class="kpi-sub">{{ \Carbon\Carbon::parse($from)->format('d M') }} – {{ \Carbon\Carbon::parse($to)->format('d M Y') }}</div>
-    </div>
-    <div class="kpi-card kpi-accent-green">
-        <div class="kpi-label">{{ __('Delivered') }}</div>
-        <div class="kpi-value" style="color:#4ade80;">{{ number_format($delivered) }}</div>
-        <div class="kpi-sub">{{ __('Success rate:') }} <strong style="color:#4ade80;">{{ $successRate }}%</strong></div>
-    </div>
-    <div class="kpi-card kpi-accent-red">
-        <div class="kpi-label">{{ __('Returned / Failed') }}</div>
-        <div class="kpi-value" style="color:#f87171;">{{ number_format($returned) }}</div>
-        <div class="kpi-sub">{{ $total > 0 ? round(($returned / $total) * 100, 1) : 0 }}% {{ __('of total') }}</div>
-    </div>
-    <div class="kpi-card kpi-accent-yellow">
-        <div class="kpi-label">{{ __('Active (Pending + Transit)') }}</div>
-        <div class="kpi-value" style="color:#fbbf24;">{{ number_format($pending + $inTransit) }}</div>
-        <div class="kpi-sub">{{ $pending }} {{ __('pending') }} · {{ $inTransit }} {{ __('in transit') }}</div>
-    </div>
+    @php
+        $statusCards = [
+            'total'           => ['label' => __('Total Orders'),      'value' => $total,               'color' => 'blue',   'sub' => \Carbon\Carbon::parse($from)->format('d M') . ' – ' . \Carbon\Carbon::parse($to)->format('d M Y')],
+            'delivered'       => ['label' => __('Delivered'),         'value' => $delivered,           'color' => 'green',  'sub' => __('Success rate:') . ' ' . $successRate . '%'],
+            'returned_failed' => ['label' => __('Returned / Failed'), 'value' => $returned,            'color' => 'red',    'sub' => ($total > 0 ? round(($returned / $total) * 100, 1) : 0) . '% ' . __('of total')],
+            'active'          => ['label' => __('Active'),            'value' => $pending + $inTransit,'color' => 'yellow', 'sub' => $pending . ' ' . __('pending') . ' · ' . $inTransit . ' ' . __('in transit')],
+        ];
+    @endphp
+    @foreach ($statusCards as $key => $c)
+        <a href="{{ route('client.reports.index', array_merge(request()->only('from', 'to'), ['status' => $key])) }}"
+           class="kpi-card kpi-accent-{{ $c['color'] }} kpi-clickable {{ $selectedStatus === $key ? 'kpi-active' : '' }}"
+           style="text-decoration:none;display:block;">
+            <div class="kpi-label">{{ $c['label'] }}</div>
+            <div class="kpi-value" style="color:var(--text);">{{ number_format($c['value']) }}</div>
+            <div class="kpi-sub">{{ $c['sub'] }}</div>
+        </a>
+    @endforeach
+</div>
+
+{{-- COD & Delivery Fees --}}
+<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
     <div class="kpi-card kpi-accent-purple">
         <div class="kpi-label">{{ __('Total COD Value') }}</div>
         <div class="kpi-value" style="color:#c084fc;font-size:1.5rem;">{{ number_format($totalCod, 2) }}</div>
@@ -113,6 +120,104 @@
         <div class="kpi-sub">JD {{ __('total delivery charges') }}</div>
     </div>
 </div>
+
+{{-- Drill-down order list for the selected status --}}
+@if ($selectedStatus !== null)
+<div class="card" style="margin-top:24px;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <div class="section-title" style="margin-bottom:0;">
+            {{ $statusLabels[$selectedStatus] }} {{ __('Orders') }} ({{ number_format($orders->total()) }})
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="{{ route('client.reports.export', request()->only('from', 'to', 'status')) }}" class="btn-secondary" style="padding:7px 14px;font-size:.8rem;">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                {{ __('Export CSV') }}
+            </a>
+            <a href="{{ route('client.reports.print', request()->only('from', 'to', 'status')) }}" target="_blank" class="btn-secondary" style="padding:7px 14px;font-size:.8rem;">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                {{ __('Export PDF') }}
+            </a>
+            <a href="{{ route('client.reports.index', request()->only('from', 'to')) }}" class="btn-secondary" style="padding:7px 14px;font-size:.8rem;">
+                {{ __('Clear') }}
+            </a>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ __('Order #') }}</th>
+                    <th>{{ __('Receiver') }}</th>
+                    <th>{{ __('City') }}</th>
+                    <th>{{ __('COD Amount') }}</th>
+                    <th>{{ __('Del. Fee') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('Date') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($orders as $order)
+                    @php
+                        $payment = $order->payment;
+                        $receiver = $order->receiver;
+                        $statusClass = match ($order->status) {
+                            'pending'   => 'badge-pending',
+                            'picked_up' => 'badge-info',
+                            'delivered' => 'badge-success',
+                            'rejected'  => 'badge-danger',
+                            'returned'  => 'badge-neutral',
+                            'cancelled' => 'badge-neutral',
+                            default     => 'badge-neutral',
+                        };
+                        $rowStatusLabel = match ($order->status) {
+                            'pending'   => __('Pending'),
+                            'picked_up' => __('In Transit'),
+                            'delivered' => __('Delivered'),
+                            'rejected'  => __('Rejected'),
+                            'returned'  => __('Returned'),
+                            'cancelled' => __('Cancelled'),
+                            default     => ucfirst($order->status),
+                        };
+                    @endphp
+                    <tr>
+                        <td><span style="font-family:monospace;font-size:.82rem;color:var(--red-lt);">{{ $order->order_number }}</span></td>
+                        <td>
+                            <div class="cell-main">{{ optional($receiver)->receiver_name }}</div>
+                            <div class="cell-sub">{{ optional($receiver)->receiver_phone }}</div>
+                        </td>
+                        <td>{{ optional(optional($receiver)->city)->name ?? '—' }}</td>
+                        <td>
+                            @if (optional($payment)->order_amount)
+                                <span style="font-weight:700;color:#fbbf24;">{{ number_format($payment->order_amount, 2) }} JD</span>
+                            @else
+                                <span style="color:var(--text-dim);">—</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if (optional($payment)->customer_delivery_amount)
+                                <span style="font-weight:600;color:#60a5fa;">{{ number_format($payment->customer_delivery_amount, 2) }} JD</span>
+                            @else
+                                <span style="color:var(--text-dim);">—</span>
+                            @endif
+                        </td>
+                        <td><span class="badge {{ $statusClass }}"><span class="badge-dot"></span>{{ $rowStatusLabel }}</span></td>
+                        <td><span style="font-size:.8rem;color:var(--text-dim);">{{ $order->created_at->format('d M Y') }}</span></td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">{{ __('No orders found for this filter.') }}</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    @if ($orders->hasPages())
+        <div class="pagination">
+            {{ $orders->links('vendor.pagination.simple-default') }}
+        </div>
+    @endif
+</div>
+@endif
 
 {{-- Trend + Donut Row --}}
 <div class="report-grid">

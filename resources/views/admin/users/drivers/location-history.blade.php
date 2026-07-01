@@ -36,6 +36,16 @@
 .leaflet-control-attribution { background: rgba(0,0,0,.5) !important; color: #64748b !important; font-size: .68rem; }
 .leaflet-control-attribution a { color: #94a3b8 !important; }
 
+html.light-theme #map { background: #e5e3df; }
+html.light-theme .leaflet-popup-content-wrapper {
+    background: #ffffff; border: 1px solid rgba(15,23,42,.08);
+    color: #0f172a; box-shadow: 0 8px 30px rgba(15,23,42,.15);
+}
+html.light-theme .leaflet-popup-tip { background: #ffffff; }
+html.light-theme .leaflet-popup-content b { color: #dc2626; }
+html.light-theme .leaflet-control-attribution { background: rgba(255,255,255,.7) !important; color: #64748b !important; }
+html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
+
 .stat-bar {
     display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
 }
@@ -231,12 +241,21 @@ $mapPoints = $points->map(function ($p) {
 
     var map = L.map('map', { zoomControl: true });
 
-    // Dark tile layer (CartoDB Dark Matter — free, no API key)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    // CartoDB tile layer — follows the current admin theme
+    function getTileUrl() {
+        var isLight = document.documentElement.classList.contains('light-theme');
+        return 'https://{s}.basemaps.cartocdn.com/' + (isLight ? 'light_all' : 'dark_all') + '/{z}/{x}/{y}{r}.png';
+    }
+
+    var tileLayer = L.tileLayer(getTileUrl(), {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 20
     }).addTo(map);
+
+    document.addEventListener('themechange', function () {
+        tileLayer.setUrl(getTileUrl());
+    });
 
     if (RAW_POINTS.length === 0) {
         map.setView([DEFAULT_LAT, DEFAULT_LNG], DEFAULT_ZOOM);

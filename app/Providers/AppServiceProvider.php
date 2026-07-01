@@ -34,27 +34,14 @@ class AppServiceProvider extends ServiceProvider
         // Share unread support tickets count with admin sidebar
         view()->composer('admin.partials.sidebar', function ($view) {
             if (auth()->check()) {
-                $unreadCount = \App\Models\SupportMessage::where('is_read', false)
-                    ->where(function($query) {
-                        $query->whereNull('sender_id')
-                              ->orWhereHas('sender', fn($sq) => $sq->whereNotIn('role', ['admin', 'superadmin']));
-                    })
-                    ->count();
-                $view->with('unreadSupportTicketsCount', $unreadCount);
+                $view->with('unreadSupportTicketsCount', \App\Models\SupportMessage::unreadForAdminCount());
             }
         });
 
         // Share unread support messages count with client layout
         view()->composer('client.layouts.app', function ($view) {
             if (auth()->check()) {
-                $userId = auth()->id();
-                $unreadCount = \App\Models\SupportMessage::where('is_read', false)
-                    ->whereHas('ticket', function ($q) use ($userId) {
-                        $q->where('user_id', $userId);
-                    })
-                    ->where('sender_id', '!=', $userId)
-                    ->count();
-                $view->with('unreadSupportMessagesCount', $unreadCount);
+                $view->with('unreadSupportMessagesCount', \App\Models\SupportMessage::unreadForUserCount(auth()->id()));
             }
         });
     }

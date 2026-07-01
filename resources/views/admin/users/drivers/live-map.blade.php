@@ -33,6 +33,16 @@
 .leaflet-control-attribution { background: rgba(0,0,0,.5) !important; color: #64748b !important; font-size: .68rem; }
 .leaflet-control-attribution a { color: #94a3b8 !important; }
 
+html.light-theme #map { background: #e5e3df; }
+html.light-theme .leaflet-popup-content-wrapper {
+    background: #ffffff; border: 1px solid rgba(15,23,42,.08);
+    color: #0f172a; box-shadow: 0 8px 30px rgba(15,23,42,.15);
+}
+html.light-theme .leaflet-popup-tip { background: #ffffff; }
+html.light-theme .leaflet-popup-content b { color: #dc2626; }
+html.light-theme .leaflet-control-attribution { background: rgba(255,255,255,.7) !important; color: #64748b !important; }
+html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
+
 .live-badge {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 4px 10px; border-radius: 100px;
@@ -108,7 +118,7 @@
         <div id="map"></div>
         @if($drivers->isEmpty())
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:5;">
-            <div style="background:rgba(8,12,30,.88);border:1px solid var(--bdr);border-radius:12px;padding:22px 32px;text-align:center;">
+            <div style="background:var(--card);backdrop-filter:blur(6px);border:1px solid var(--bdr);border-radius:12px;padding:22px 32px;text-align:center;">
                 <svg width="32" height="32" fill="none" stroke="var(--text-dim)" stroke-width="1.4" viewBox="0 0 24 24" style="margin-bottom:10px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 <div style="font-size:.85rem;color:var(--text-sub);">No drivers with a known location yet.</div>
                 <div style="font-size:.75rem;color:var(--text-dim);margin-top:6px;">Markers will appear once drivers start sending updates.</div>
@@ -170,11 +180,20 @@ $seedDrivers = $drivers->map(function ($d) {
 
     var map = L.map('map', { zoomControl: true });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    var tileLayer = L.tileLayer(getTileUrl(), {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 20
     }).addTo(map);
+
+    function getTileUrl() {
+        var isLight = document.documentElement.classList.contains('light-theme');
+        return 'https://{s}.basemaps.cartocdn.com/' + (isLight ? 'light_all' : 'dark_all') + '/{z}/{x}/{y}{r}.png';
+    }
+
+    document.addEventListener('themechange', function () {
+        tileLayer.setUrl(getTileUrl());
+    });
 
     var SEED = @json($seedDrivers);
 

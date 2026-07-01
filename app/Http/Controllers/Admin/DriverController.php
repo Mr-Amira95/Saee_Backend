@@ -51,9 +51,11 @@ class DriverController extends Controller
     {
         $data = $request->validate([
             'name'                   => 'required|string|max:255',
+            'username'               => 'required|string|max:50|alpha_dash|unique:users,username',
             'email'                  => 'required|email|unique:users,email',
             'phone'                  => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'     => 'nullable|string|max:10',
+            'password'               => 'nullable|string|min:8|confirmed',
             'national_id'            => 'required|string|max:20|unique:driver_profiles,national_id',
             'national_id_attachment' => 'nullable|image|max:10240',
             'license_number'         => 'required|string|max:50|unique:driver_profiles,license_number',
@@ -80,8 +82,9 @@ class DriverController extends Controller
         $user = DB::transaction(function () use ($data, $request) {
             $user = User::create([
                 'name'               => $data['name'],
+                'username'           => $data['username'],
                 'email'              => $data['email'],
-                'password'           => Hash::make(Str::random(40)),
+                'password'           => Hash::make($data['password'] ?? Str::random(40)),
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? '+962',
                 'role'               => 'driver',
@@ -137,10 +140,15 @@ class DriverController extends Controller
             return $user;
         });
 
-        $this->sendInvitation($user);
+        if (empty($data['password'])) {
+            $this->sendInvitation($user);
+
+            return redirect()->route('admin.drivers.index')
+                ->with('success', 'Driver account created. An invitation has been sent via WhatsApp.');
+        }
 
         return redirect()->route('admin.drivers.index')
-            ->with('success', 'Driver account created. An invitation has been sent via WhatsApp.');
+            ->with('success', 'Driver account created successfully.');
     }
 
     public function show(DriverProfile $driver)
@@ -159,6 +167,7 @@ class DriverController extends Controller
     {
         $data = $request->validate([
             'name'                   => 'required|string|max:255',
+            'username'               => ['required','string','max:50','alpha_dash', Rule::unique('users','username')->ignore($driver->user_id)],
             'email'                  => ['required','email', Rule::unique('users','email')->ignore($driver->user_id)],
             'phone'                  => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($driver->user_id)],
             'phone_country_code'     => 'nullable|string|max:10',
@@ -188,6 +197,7 @@ class DriverController extends Controller
         DB::transaction(function () use ($data, $request, $driver) {
             $driver->user->update([
                 'name'               => $data['name'],
+                'username'           => $data['username'],
                 'email'              => $data['email'],
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? $driver->user->phone_country_code,
@@ -314,6 +324,17 @@ class DriverController extends Controller
         $this->sendInvitation($driver->user);
 
         return back()->with('success', "Invitation sent to {$driver->user->name}.");
+    }
+
+    public function resetPassword(Request $request, DriverProfile $driver)
+    {
+        $data = $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $driver->user->update(['password' => Hash::make($data['password'])]);
+
+        return back()->with('success', "Password reset for {$driver->user->name}.");
     }
 
     public function toggleStatus(DriverProfile $driver)

@@ -115,6 +115,37 @@ class AttendanceController extends Controller
             ], 422);
         }
 
+        return response()->json([
+            'success'       => true,
+            'message'       => 'Shift summary generated. Confirm to check out.',
+            'data'          => new AttendanceResource($attendance),
+            'shift_summary' => $this->buildShiftSummary($user->driverProfile->id, $attendance->check_in_at),
+        ]);
+    }
+
+    public function confirmCheckOut(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $today = now()->toDateString();
+
+        $attendance = Attendance::where('user_id', $user->id)
+            ->whereDate('date', $today)
+            ->whereNull('check_out_at')
+            ->latest('check_in_at')
+            ->first();
+
+        if (! $attendance) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not currently checked in.',
+                'code'    => 'NOT_CHECKED_IN',
+            ], 422);
+        }
+
+        $shiftSummary = $this->buildShiftSummary($user->driverProfile->id, $attendance->check_in_at);
+
         $attendance->update([
             'check_out_at'       => now(),
             'check_out_location' => $request->input('location'),
@@ -124,7 +155,7 @@ class AttendanceController extends Controller
             'success'       => true,
             'message'       => 'Checked out successfully.',
             'data'          => new AttendanceResource($attendance),
-            'shift_summary' => $this->buildShiftSummary($user->driverProfile->id, $attendance->check_in_at),
+            'shift_summary' => $shiftSummary,
         ]);
     }
 

@@ -101,6 +101,11 @@
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
+                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username" value="{{ old('username') }}" required>
+                @error('username')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
                 <label class="form-label" for="email">Email <span class="req">*</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email') }}" required>
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
@@ -124,6 +129,25 @@
                     </div>
                 </div>
                 @error('phone')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">Password <span class="opt">(optional — leave blank to auto-generate &amp; send invitation)</span></label>
+                <div style="position:relative;">
+                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="Minimum 8 characters" style="width:100%;padding-right:40px;box-sizing:border-box;">
+                    <button type="button" onclick="togglePwd('password','eyePwd')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
+                        <svg id="eyePwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </button>
+                </div>
+                @error('password')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password_confirmation">Confirm Password <span class="opt">(optional)</span></label>
+                <div style="position:relative;">
+                    <input class="form-input" id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="Repeat password" style="width:100%;padding-right:40px;box-sizing:border-box;">
+                    <button type="button" onclick="togglePwd('password_confirmation','eyePwdConf')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
+                        <svg id="eyePwdConf" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -420,6 +444,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initPhoneDropdown('phoneExtBtn','phoneExtFlag','phoneExtCode','phoneExtVal','phoneExtDropdown','phoneExtList');
 });
 
+function togglePwd(inputId, iconId) {
+    var input = document.getElementById(inputId);
+    var isText = input.type === 'text';
+    input.type = isText ? 'password' : 'text';
+    document.getElementById(iconId).style.opacity = isText ? '1' : '0.5';
+}
+
 /* ── Driver Form Validation ── */
 (function() {
     var form = document.querySelector('form');
@@ -458,6 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         req('name',                'Full name is required.');
+        req('username',            'Username is required.');
         req('email',               'Email address is required.');
         req('national_id',         'National ID is required.');
         req('license_number',      'License number is required.');
@@ -467,6 +499,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
             showFieldError(eEl, 'Please enter a valid email address.');
             if (!first) first = eEl;
+        }
+
+        var pEl  = getField('password');
+        var pcEl = getField('password_confirmation');
+        if (pEl && pEl.value) {
+            if (pEl.value.length < 8) {
+                showFieldError(pEl, 'Password must be at least 8 characters.');
+                if (!first) first = pEl;
+            } else if (pEl.value !== pcEl.value) {
+                showFieldError(pcEl, 'Passwords do not match.');
+                if (!first) first = pcEl;
+            }
         }
 
         if (first) {

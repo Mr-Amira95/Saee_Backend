@@ -32,4 +32,24 @@ class SupportMessage extends Model
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
+
+    public static function unreadForAdminCount(): int
+    {
+        return static::where('is_read', false)
+            ->where(function ($query) {
+                $query->whereNull('sender_id')
+                      ->orWhereHas('sender', fn ($sq) => $sq->whereNotIn('role', ['admin', 'superadmin']));
+            })
+            ->count();
+    }
+
+    public static function unreadForUserCount(int $userId): int
+    {
+        return static::where('is_read', false)
+            ->whereHas('ticket', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->where('sender_id', '!=', $userId)
+            ->count();
+    }
 }

@@ -103,26 +103,6 @@
         .pwd-btn { position: absolute; right: 13px; top: 50%; translate: 0 -50%; background: none; border: none; cursor: pointer; color: rgba(255,255,255,.25); padding: 4px; transition: color .2s; line-height: 1; }
         .pwd-btn:hover { color: rgba(255,255,255,.65); }
 
-        /* Phone country-code picker */
-        .field:has(.phone-wrap) { position:relative; z-index:10; }
-        .phone-wrap { display:flex; align-items:stretch; border:1px solid var(--input-bdr); border-radius:11px; background:var(--input-bg); transition:border-color .2s,box-shadow .2s,background .2s; position:relative; overflow:visible; }
-        .phone-wrap:focus-within { border-color:rgba(220,38,38,.4); background:rgba(220,38,38,.025); box-shadow:0 0 0 3px rgba(220,38,38,.07),0 0 18px rgba(220,38,38,.04); }
-        .phone-wrap.has-error { border-color:rgba(220,38,38,.45) !important; }
-        .country-btn { display:flex; align-items:center; gap:5px; padding:0 9px 0 12px; background:none; border:none; border-right:1px solid var(--input-bdr); color:#fff; cursor:pointer; font-family:'Inter',sans-serif; font-size:.82rem; font-weight:500; white-space:nowrap; transition:background .2s; border-radius:11px 0 0 11px; }
-        .country-btn:hover,.country-btn.open { background:rgba(255,255,255,.06); }
-        .country-flag { font-size:1rem; line-height:1; }
-        .country-chevron { transition:transform .2s; margin-left:2px; }
-        .country-btn.open .country-chevron { transform:rotate(180deg); }
-        .phone-wrap input[type="tel"] { background:transparent !important; border:none !important; box-shadow:none !important; border-radius:0 11px 11px 0 !important; padding-left:12px !important; padding-right:12px !important; width:auto !important; flex:1; min-width:0; }
-        .country-dropdown { position:absolute; top:calc(100% + 5px); left:0; width:215px; background:#0d0f22; border:1px solid rgba(255,255,255,.15); border-radius:11px; z-index:999; box-shadow:0 10px 28px rgba(0,0,0,.75); display:none; max-height:252px; overflow-y:auto; }
-        .country-dropdown.open { display:block; }
-        .country-option { display:flex; align-items:center; gap:8px; padding:9px 12px; cursor:pointer; font-size:.81rem; color:rgba(255,255,255,.92); transition:background .15s; }
-        .country-option:hover { background:rgba(255,255,255,.08); color:#fff; }
-        .country-option.active { background:rgba(220,38,38,.15); color:#fff; }
-        .country-option .opt-flag { font-size:.95rem; flex-shrink:0; }
-        .country-option .opt-name { flex:1; }
-        .country-option .opt-dial { color:rgba(255,255,255,.65); font-size:.78rem; flex-shrink:0; }
-
         .extras { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
         .check-wrap { display: flex; align-items: center; gap: 8px; font-size: .84rem; color: var(--text-sub); cursor: pointer; }
         input[type="checkbox"] { width: 15px; height: 15px; border-radius: 4px; accent-color: var(--red); cursor: pointer; padding: 0; }
@@ -159,10 +139,6 @@
         html[dir="rtl"] .brand-inner { transform: translateX(36px); }
         html[dir="rtl"] .field-icon { right: 14px; left: auto; }
         html[dir="rtl"] .pwd-btn { left: 13px; right: auto; }
-        html[dir="rtl"] .country-btn { padding: 0 12px 0 9px; border-left: 1px solid var(--input-bdr); border-right: none; border-radius: 0 11px 11px 0; }
-        html[dir="rtl"] .phone-wrap input[type="tel"] { border-radius: 11px 0 0 11px !important; }
-        html[dir="rtl"] .country-dropdown { right: 0; left: auto; }
-        html[dir="rtl"] .country-chevron { margin-right: 2px; margin-left: 0; }
         html[dir="rtl"] .btn:hover .btn-arrow { transform: translateX(-4px); }
     </style>
 </head>
@@ -214,31 +190,15 @@
             <form method="POST" action="{{ route('portal.login') }}" id="loginForm" novalidate>
                 @csrf
 
-                {{-- Phone --}}
+                {{-- Username or Phone --}}
                 <div class="field f1">
-                    <label class="field-label" for="phoneLocal">{{ __('Phone Number') }}</label>
-                    <div class="field-wrap phone-wrap{{ $errors->has('phone') ? ' has-error' : '' }}">
-                        <button type="button" class="country-btn" id="countryBtn" aria-label="{{ __('Select country code') }}">
-                            <span class="country-flag" id="countryFlag">🇯🇴</span>
-                            <span class="country-dial" id="countryDial">+962</span>
-                            <svg class="country-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                        </button>
-                        <div class="country-dropdown" id="countryDropdown">
-                            <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">{{ __('Jordan') }}</span><span class="opt-dial">+962</span></div>
-                            <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">{{ __('Saudi Arabia') }}</span><span class="opt-dial">+966</span></div>
-                            <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">{{ __('UAE') }}</span><span class="opt-dial">+971</span></div>
-                            <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">{{ __('Kuwait') }}</span><span class="opt-dial">+965</span></div>
-                            <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">{{ __('Qatar') }}</span><span class="opt-dial">+974</span></div>
-                            <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">{{ __('Bahrain') }}</span><span class="opt-dial">+973</span></div>
-                            <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">{{ __('Oman') }}</span><span class="opt-dial">+968</span></div>
-                            <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">{{ __('Egypt') }}</span><span class="opt-dial">+20</span></div>
-                            <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">{{ __('Palestine') }}</span><span class="opt-dial">+970</span></div>
-                            <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">{{ __('Lebanon') }}</span><span class="opt-dial">+961</span></div>
-                            <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">{{ __('Iraq') }}</span><span class="opt-dial">+964</span></div>
-                            <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">{{ __('Syria') }}</span><span class="opt-dial">+963</span></div>
-                        </div>
-                        <input id="phoneLocal" type="tel" placeholder="7xxxxxxxx" autocomplete="tel" autofocus>
-                        <input type="hidden" name="phone" id="phoneHidden">
+                    <label class="field-label" for="loginInput">{{ __('Username or Phone Number') }}</label>
+                    <div class="field-wrap{{ $errors->has('login') ? ' has-error' : '' }}">
+                        <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <input id="loginInput" name="login" type="text" class="{{ $errors->has('login') ? 'has-error' : '' }}"
+                               value="{{ old('login') }}" placeholder="{{ __('Username or phone number') }}" autocomplete="username" autofocus>
                     </div>
                 </div>
 
@@ -321,37 +281,8 @@
         eyeIcon.innerHTML = isText ? eyeOpen : eyeClosed;
     });
 
-    /* ── Country code dropdown ─────────────────── */
-    const countryBtn      = document.getElementById('countryBtn');
-    const countryDropdown = document.getElementById('countryDropdown');
-    const countryFlag     = document.getElementById('countryFlag');
-    const countryDial     = document.getElementById('countryDial');
-
-    countryBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        countryBtn.classList.toggle('open');
-        countryDropdown.classList.toggle('open');
-    });
-    document.addEventListener('click', () => {
-        countryBtn.classList.remove('open');
-        countryDropdown.classList.remove('open');
-    });
-    countryDropdown.querySelectorAll('.country-option').forEach(opt => {
-        opt.addEventListener('click', () => {
-            countryDropdown.querySelectorAll('.country-option').forEach(o => o.classList.remove('active'));
-            opt.classList.add('active');
-            countryFlag.textContent = opt.dataset.flag;
-            countryDial.textContent = opt.dataset.dial;
-            countryBtn.classList.remove('open');
-            countryDropdown.classList.remove('open');
-        });
-    });
-
     /* ── Form submit ───────────────────────────── */
     document.getElementById('loginForm').addEventListener('submit', () => {
-        let local = document.getElementById('phoneLocal').value.trim();
-        if (local.startsWith('0')) local = local.slice(1);
-        document.getElementById('phoneHidden').value = countryDial.textContent + local;
         document.getElementById('submitBtn').classList.add('loading');
     });
 })();

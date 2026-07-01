@@ -144,6 +144,12 @@
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
+                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username"
+                       value="{{ old('username') }}" required>
+                @error('username')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
                 <label class="form-label" for="email">Email Address <span class="req">*</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email"
                        value="{{ old('email') }}" placeholder="employee@company.com" required>
@@ -188,11 +194,14 @@
 
         @php
             $groupIcons = [
-                'orders'    => '📦',
-                'billing'   => '💳',
-                'reports'   => '📊',
-                'addresses' => '📍',
-                'team'      => '👥',
+                'orders'          => '📦',
+                'support'         => '🎧',
+                'payout_invoices' => '🧾',
+                'billing'         => '💳',
+                'reports'         => '📊',
+                'team'            => '👥',
+                'account'         => '⚙️',
+                'ai_assistant'    => '🤖',
             ];
         @endphp
 
@@ -373,8 +382,9 @@ function togglePermGroup(btn, groupKey) {
             if (!el || el.value.trim()) return;
             showFieldError(el, msg); if (!first) first = el;
         }
-        req('name',  'Full name is required.');
-        req('email', 'Email address is required.');
+        req('name',     'Full name is required.');
+        req('username', 'Username is required.');
+        req('email',    'Email address is required.');
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
             showFieldError(eEl, 'Please enter a valid email address.'); if (!first) first = eEl;

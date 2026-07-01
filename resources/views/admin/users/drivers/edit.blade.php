@@ -77,6 +77,11 @@
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
+                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username" value="{{ old('username', $driver->user->username) }}" required>
+                @error('username')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group">
                 <label class="form-label" for="email">Email <span class="req">*</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email', $driver->user->email) }}" required>
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
@@ -383,6 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         req('name',                'Full name is required.');
+        req('username',            'Username is required.');
         req('email',               'Email address is required.');
         req('national_id',         'National ID is required.');
         req('license_number',      'License number is required.');

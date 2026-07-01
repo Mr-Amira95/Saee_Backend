@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.auth'    => \App\Http\Middleware\EnsureAdminRole::class,
             'admin.guest'   => \App\Http\Middleware\RedirectIfAdmin::class,
             'client.auth'   => \App\Http\Middleware\EnsureClientRole::class,
+            'client.permission' => \App\Http\Middleware\EnsureClientPagePermission::class,
+            'client.api.permission' => \App\Http\Middleware\EnsureApiClientPagePermission::class,
             'client.guest'  => \App\Http\Middleware\RedirectIfClient::class,
             'portal.guest'  => \App\Http\Middleware\RedirectIfPortalAuthenticated::class,
         ]);

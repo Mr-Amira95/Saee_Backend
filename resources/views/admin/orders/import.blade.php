@@ -157,11 +157,11 @@
                 </div>
                 <div class="info-row">
                     <span style="font-weight: 700; color: var(--text); width: 180px;">payment_type</span>
-                    <strong>Must be either <code>cod</code> or <code>prepaid</code> (lowercase).</strong>
+                    <strong>Use <code>cod</code> / <code>عند التسليم</code> or <code>prepaid</code> / <code>مدفوع</code>.</strong>
                 </div>
                 <div class="info-row">
                     <span style="font-weight: 700; color: var(--text); width: 180px;">delivery_on_customer</span>
-                    <strong>Use <code>true</code> if the customer pays the delivery fee, or <code>false</code> if it is charged to the client.</strong>
+                    <strong>Use <code>Yes</code> / <code>نعم</code> if the customer pays the delivery fee, or <code>No</code> / <code>لا</code> if it is charged to the client.</strong>
                 </div>
                 <div class="info-row">
                     <span style="font-weight: 700; color: var(--text); width: 180px;">order_price</span>

@@ -212,52 +212,8 @@ class OrderService
 
             $order->save();
 
-            if (in_array($newStatus, ['delivered', 'rejected'])) {
+            if (in_array($newStatus, ['delivered', 'rejected', 'picked_up'])) {
                 rescue(fn () => app(SupportNotificationService::class)->notifyClientOrderStatusChanged($order, $newStatus, $actor->id));
-            }
-
-            // WhatsApp notifications
-            $receiver = $order->receiver;
-            $driverUser = $order->driverProfile?->user;
-
-            if ($newStatus === 'delivered') {
-                SendWhatsappMessageJob::dispatch(
-                    'order_delivered',
-                    $receiver->receiver_phone,
-                    [
-                        'customer_name' => $receiver->receiver_name ?? '',
-                        'order_number'  => $order->order_number ?? '',
-                        'driver_name'   => $driverUser?->name ?? '',
-                        'location_link' => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
-                    ],
-                    $order->id,
-                )->onQueue(config('whatsapp.queue', 'default'));
-
-            } elseif ($newStatus === 'rejected') {
-                SendWhatsappMessageJob::dispatch(
-                    'order_rejected',
-                    $receiver->receiver_phone,
-                    [
-                        'customer_name'    => $receiver->receiver_name ?? '',
-                        'order_number'     => $order->order_number ?? '',
-                        'rejection_reason' => optional($order->rejectionReason)->reason ?? ($order->notes ?? 'Not specified'),
-                        'location_link'    => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
-                    ],
-                    $order->id,
-                )->onQueue(config('whatsapp.queue', 'default'));
-
-            } elseif ($newStatus === 'picked_up') {
-                SendWhatsappMessageJob::dispatch(
-                    'order_picked_up',
-                    $receiver->receiver_phone,
-                    [
-                        'customer_name' => $receiver->receiver_name ?? '',
-                        'order_number'  => $order->order_number ?? '',
-                        'driver_name'   => $driverUser?->name  ?? '',
-                        'driver_phone'  => $driverUser?->phone ?? '',
-                    ],
-                    $order->id,
-                )->onQueue(config('whatsapp.queue', 'default'));
             }
 
             return $order;

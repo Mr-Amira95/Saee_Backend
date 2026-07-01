@@ -63,9 +63,12 @@ class ClientController extends Controller
     {
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
+            'username'                    => 'required|string|max:50|alpha_dash|unique:users,username',
             'email'                       => 'required|email|unique:users,email',
             'phone'                       => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'          => 'nullable|string|max:10',
+            'otp_channel'                 => ['nullable', Rule::in(['whatsapp', 'email'])],
+            'password'                    => 'nullable|string|min:8|confirmed',
             'company_name'                => 'required|string|max:255',
             'company_name_ar'             => 'nullable|string|max:255',
             'commercial_register_number'  => 'nullable|string|max:100',
@@ -100,10 +103,12 @@ class ClientController extends Controller
         $user = DB::transaction(function () use ($data, $request) {
             $user = User::create([
                 'name'               => $data['name'],
+                'username'           => $data['username'],
                 'email'              => $data['email'],
-                'password'           => Hash::make(Str::random(40)),
+                'password'           => Hash::make($data['password'] ?? Str::random(40)),
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? '+962',
+                'otp_channel'        => $data['otp_channel'] ?? 'whatsapp',
                 'role'               => 'client_master',
                 'status'             => 'active',
             ]);
@@ -160,12 +165,17 @@ class ClientController extends Controller
             return $user;
         });
 
-        $channel = $request->input('invitation_channel', 'whatsapp');
-        $this->sendInvitation($user, $channel);
+        if (empty($data['password'])) {
+            $channel = $data['otp_channel'] ?? 'whatsapp';
+            $this->sendInvitation($user, $channel);
 
-        $via = $channel === 'email' ? 'email' : 'WhatsApp';
+            $via = $channel === 'email' ? 'email' : 'WhatsApp';
+            return redirect()->route('admin.clients.index')
+                ->with('success', "Client account created. An invitation has been sent via {$via}.");
+        }
+
         return redirect()->route('admin.clients.index')
-            ->with('success', "Client account created. An invitation has been sent via {$via}.");
+            ->with('success', 'Client account created successfully.');
     }
 
     public function show(ClientProfile $client)
@@ -186,9 +196,11 @@ class ClientController extends Controller
     {
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
+            'username'                    => ['required','string','max:50','alpha_dash', Rule::unique('users','username')->ignore($client->master_user_id)],
             'email'                       => ['required','email', Rule::unique('users','email')->ignore($client->master_user_id)],
             'phone'                       => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($client->master_user_id)],
             'phone_country_code'          => 'nullable|string|max:10',
+            'otp_channel'                 => ['nullable', Rule::in(['whatsapp', 'email'])],
             'company_name'                => 'required|string|max:255',
             'company_name_ar'             => 'nullable|string|max:255',
             'commercial_register_number'  => 'nullable|string|max:100',
@@ -225,9 +237,11 @@ class ClientController extends Controller
         DB::transaction(function () use ($data, $request, $client) {
             $client->masterUser->update([
                 'name'               => $data['name'],
+                'username'           => $data['username'],
                 'email'              => $data['email'],
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? $client->masterUser->phone_country_code,
+                'otp_channel'        => $data['otp_channel'] ?? $client->masterUser->otp_channel,
                 'status'             => $data['user_status'] ?? $client->masterUser->status,
             ]);
 
@@ -311,8 +325,19 @@ class ClientController extends Controller
 
     public function resendInvitation(ClientProfile $client)
     {
-        $this->sendInvitation($client->masterUser, 'whatsapp');
+        $this->sendInvitation($client->masterUser, $client->masterUser->otp_channel ?? 'whatsapp');
         return back()->with('success', "Invitation resent to {$client->masterUser->name}.");
+    }
+
+    public function resetPassword(Request $request, ClientProfile $client)
+    {
+        $data = $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $client->masterUser->update(['password' => Hash::make($data['password'])]);
+
+        return back()->with('success', "Password reset for {$client->masterUser->name}.");
     }
 
     public function toggleNotifications(ClientProfile $client)

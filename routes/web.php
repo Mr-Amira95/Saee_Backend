@@ -140,6 +140,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Support Tickets & Chat Center
         Route::get('support', [SupportController::class, 'index'])->name('support.index');
+        Route::get('support/unread-count', [SupportController::class, 'unreadCount'])->name('support.unread-count');
         Route::get('support/create', [SupportController::class, 'create'])->name('support.create');
         Route::post('support', [SupportController::class, 'store'])->name('support.store');
         Route::post('support/{ticket}/send', [SupportController::class, 'sendMessage'])->name('support.send');
@@ -164,6 +165,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('users')->name('')->group(function () {
             Route::resource('clients', ClientController::class)->names('clients');
             Route::post('clients/{client}/resend-invitation', [ClientController::class, 'resendInvitation'])->name('clients.resend-invitation');
+            Route::post('clients/{client}/reset-password', [ClientController::class, 'resetPassword'])->name('clients.reset-password');
             Route::post('clients/{client}/toggle-notifications', [ClientController::class, 'toggleNotifications'])->name('clients.toggle-notifications');
             Route::patch('clients/{client}/toggle-status', [ClientController::class, 'toggleStatus'])->name('clients.toggle-status');
             Route::get('clients/{client}/employees/create', [ClientEmployeeController::class, 'create'])->name('clients.employees.create');
@@ -174,6 +176,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             Route::resource('drivers', DriverController::class)->names('drivers');
             Route::post('drivers/{driver}/resend-invitation', [DriverController::class, 'resendInvitation'])->name('drivers.resend-invitation');
+            Route::post('drivers/{driver}/reset-password', [DriverController::class, 'resetPassword'])->name('drivers.reset-password');
             Route::get('drivers/{driver}/location-history', [DriverController::class, 'locationHistory'])->name('drivers.location-history');
             Route::get('drivers/{driver}/bank-details', [DriverController::class, 'bankDetails'])->name('drivers.bank-details');
             Route::get('drivers-live-map', [DriverController::class, 'liveMap'])->name('drivers.live-map');
@@ -181,6 +184,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             Route::resource('admins', AdminUserController::class)->except(['show'])->names('admins');
             Route::post('admins/{admin}/resend-invitation', [AdminUserController::class, 'resendInvitation'])->name('admins.resend-invitation');
+            Route::post('admins/{admin}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admins.reset-password');
         });
 
         // Orders Management
@@ -243,7 +247,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::prefix('client')->name('client.')->group(function () {
 
     // Authenticated clients
-    Route::middleware('client.auth')->group(function () {
+    Route::middleware(['client.auth', 'client.permission'])->group(function () {
         Route::post('logout', [ClientAuthController::class, 'logout'])->name('logout');
 
         // Dashboard & tracking
@@ -271,6 +275,7 @@ Route::prefix('client')->name('client.')->group(function () {
 
         // Support
         Route::get('support', [ClientSupportController::class, 'index'])->name('support.index');
+        Route::get('support/unread-count', [ClientSupportController::class, 'unreadCount'])->name('support.unread-count');
         Route::post('support', [ClientSupportController::class, 'store'])->name('support.store');
         Route::get('support/{ticket}', [ClientSupportController::class, 'show'])->name('support.show');
         Route::post('support/{ticket}/messages', [ClientSupportController::class, 'sendMessage'])->name('support.message');
@@ -295,6 +300,7 @@ Route::prefix('client')->name('client.')->group(function () {
         // Reports
         Route::get('reports', [ClientReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [ClientReportController::class, 'export'])->name('reports.export');
+        Route::get('reports/print', [ClientReportController::class, 'print'])->name('reports.print');
 
         // AI Chatbot Assistant
         Route::get('ai-assistant', [AiChatController::class, 'index'])->name('ai-chat.index');

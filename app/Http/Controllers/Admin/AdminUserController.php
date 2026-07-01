@@ -42,9 +42,11 @@ class AdminUserController extends Controller
     {
         $data = $request->validate([
             'name'                => 'required|string|max:255',
+            'username'            => 'required|string|max:50|alpha_dash|unique:users,username',
             'email'               => 'required|email|unique:users,email',
             'phone'               => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'  => 'nullable|string|max:10',
+            'password'            => 'nullable|string|min:8|confirmed',
             'permissions'         => 'nullable|array',
             'permissions.*'       => 'integer|exists:permissions,id',
         ]);
@@ -52,8 +54,9 @@ class AdminUserController extends Controller
         $user = DB::transaction(function () use ($data) {
             $user = User::create([
                 'name'               => $data['name'],
+                'username'           => $data['username'],
                 'email'              => $data['email'],
-                'password'           => Hash::make(Str::random(40)),
+                'password'           => Hash::make($data['password'] ?? Str::random(40)),
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? '+962',
                 'role'               => 'admin',
@@ -75,7 +78,9 @@ class AdminUserController extends Controller
             return $user;
         });
 
-        $this->sendInvitation($user);
+        if (empty($data['password'])) {
+            $this->sendInvitation($user);
+        }
 
         return redirect()->route('admin.admins.index')
             ->with('success', 'Admin account created successfully.');
@@ -97,6 +102,7 @@ class AdminUserController extends Controller
     {
         $data = $request->validate([
             'name'                => 'required|string|max:255',
+            'username'            => ['required','string','max:50','alpha_dash', Rule::unique('users','username')->ignore($admin->id)],
             'email'               => ['required','email', Rule::unique('users','email')->ignore($admin->id)],
             'phone'               => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($admin->id)],
             'phone_country_code'  => 'nullable|string|max:10',
@@ -108,6 +114,7 @@ class AdminUserController extends Controller
         DB::transaction(function () use ($data, $admin) {
             $userUpdate = [
                 'name'               => $data['name'],
+                'username'           => $data['username'],
                 'email'              => $data['email'],
                 'phone'              => $data['phone'] ?? null,
                 'phone_country_code' => $data['phone_country_code'] ?? $admin->phone_country_code,
@@ -149,6 +156,17 @@ class AdminUserController extends Controller
     {
         $this->sendInvitation($admin);
         return back()->with('success', "Invitation sent to {$admin->name}.");
+    }
+
+    public function resetPassword(Request $request, User $admin)
+    {
+        $data = $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $admin->update(['password' => Hash::make($data['password'])]);
+
+        return back()->with('success', "Password reset for {$admin->name}.");
     }
 
     private function sendInvitation(User $user): void

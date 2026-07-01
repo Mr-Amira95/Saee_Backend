@@ -63,6 +63,14 @@ class SupportController extends Controller
         return view('client.support.index', compact('tickets', 'activeTicket', 'profile', 'orders'));
     }
 
+    /**
+     * Return the current unread support-message count for the client sidebar badge.
+     */
+    public function unreadCount(): JsonResponse
+    {
+        return response()->json(['count' => SupportMessage::unreadForUserCount(Auth::id())]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $request->validate([

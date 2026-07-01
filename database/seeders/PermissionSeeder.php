@@ -32,22 +32,16 @@ class PermissionSeeder extends Seeder
             ['name' => 'view_system_logs',          'display_name' => 'View System Logs',            'scope' => 'admin', 'group' => 'system'],
             ['name' => 'manage_system_settings',    'display_name' => 'Manage System Settings',     'scope' => 'admin', 'group' => 'system'],
 
-            // Client permissions
-            ['name' => 'place_orders',              'display_name' => 'Place Orders',                'scope' => 'client', 'group' => 'orders'],
-            ['name' => 'view_own_orders',           'display_name' => 'View Own Orders',             'scope' => 'client', 'group' => 'orders'],
-            ['name' => 'view_all_company_orders',   'display_name' => 'View All Company Orders',    'scope' => 'client', 'group' => 'orders'],
-            ['name' => 'cancel_orders',             'display_name' => 'Cancel Orders',               'scope' => 'client', 'group' => 'orders'],
-            ['name' => 'track_orders',              'display_name' => 'Track Orders',                'scope' => 'client', 'group' => 'orders'],
-            ['name' => 'view_invoices',             'display_name' => 'View Invoices',               'scope' => 'client', 'group' => 'billing'],
-            ['name' => 'download_invoices',         'display_name' => 'Download Invoices',           'scope' => 'client', 'group' => 'billing'],
-            ['name' => 'view_wallet',               'display_name' => 'View Wallet',                 'scope' => 'client', 'group' => 'billing'],
-            ['name' => 'top_up_wallet',             'display_name' => 'Top Up Wallet',               'scope' => 'client', 'group' => 'billing'],
-            ['name' => 'view_reports',              'display_name' => 'View Reports',                'scope' => 'client', 'group' => 'reports'],
-            ['name' => 'export_reports',            'display_name' => 'Export Reports',              'scope' => 'client', 'group' => 'reports'],
-            ['name' => 'manage_addresses',          'display_name' => 'Manage Saved Addresses',     'scope' => 'client', 'group' => 'addresses'],
-            ['name' => 'invite_employees',          'display_name' => 'Invite Employees',            'scope' => 'client', 'group' => 'team'],
-            ['name' => 'manage_team',               'display_name' => 'Manage Team Permissions',    'scope' => 'client', 'group' => 'team'],
-            ['name' => 'view_team',                 'display_name' => 'View Team Members',           'scope' => 'client', 'group' => 'team'],
+            // Client permissions — one page-level permission per client-portal page.
+            // Having the permission grants full access to everything inside that page.
+            ['name' => 'orders',           'display_name' => 'Orders',           'scope' => 'client', 'group' => 'orders'],
+            ['name' => 'support',          'display_name' => 'Support',          'scope' => 'client', 'group' => 'support'],
+            ['name' => 'payout_invoices',  'display_name' => 'Payout Invoices',  'scope' => 'client', 'group' => 'payout_invoices'],
+            ['name' => 'billing',          'display_name' => 'Billing',          'scope' => 'client', 'group' => 'billing'],
+            ['name' => 'reports',          'display_name' => 'Reports',          'scope' => 'client', 'group' => 'reports'],
+            ['name' => 'team',             'display_name' => 'Team',             'scope' => 'client', 'group' => 'team'],
+            ['name' => 'account',          'display_name' => 'Account',          'scope' => 'client', 'group' => 'account'],
+            ['name' => 'ai_assistant',     'display_name' => 'AI Assistant',     'scope' => 'client', 'group' => 'ai_assistant'],
         ];
 
         $rows = array_map(fn($p) => array_merge($p, [
@@ -55,6 +49,11 @@ class PermissionSeeder extends Seeder
             'created_at'  => $now,
             'updated_at'  => $now,
         ]), $permissions);
+
+        // Drop old granular client permissions that no longer exist in the simplified,
+        // page-level model above (cascades to client_employee_permission_user grants).
+        $clientPageNames = array_column(array_filter($permissions, fn($p) => $p['scope'] === 'client'), 'name');
+        DB::table('permissions')->where('scope', 'client')->whereNotIn('name', $clientPageNames)->delete();
 
         DB::table('permissions')->upsert(
             $rows,

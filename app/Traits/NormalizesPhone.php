@@ -5,32 +5,30 @@ namespace App\Traits;
 trait NormalizesPhone
 {
     /**
-     * Build candidate phone strings from the three mobile-app inputs so that
-     * a user can be found regardless of how the number is stored in the DB.
+     * Build candidate phone strings from a single free-text input so a user can be
+     * found regardless of whether they typed +{cc}{number}, {cc}{number}, or {number},
+     * and regardless of how the number is stored in the DB (with/without leading 0, cc, etc).
      */
-    protected function phoneCandidates(string $phoneNumber, ?string $countryCode, ?string $fullPhone): array
+    protected function phoneCandidates(string $input): array
     {
-        $phoneDigits   = preg_replace('/\D/', '', $phoneNumber);
-        $countryDigits = preg_replace('/\D/', '', $countryCode ?? '');
-        $fullDigits    = preg_replace('/\D/', '', $fullPhone ?? '');
+        $trimmed = trim($input);
+        $digits  = preg_replace('/\D/', '', $trimmed);
 
-        $candidates = [];
+        $candidates = array_filter([
+            $trimmed,
+            $digits,
+            $digits !== '' ? '0' . ltrim($digits, '0') : null,
+        ], fn ($v) => $v !== null && $v !== '');
 
-        if ($fullPhone) {
-            $candidates[] = $fullPhone;
-            $candidates[] = '0' . ltrim($fullDigits, '0');
+        // Strip 1-3 leading digits (possible country code lengths) to derive local-format candidates.
+        for ($strip = 1; $strip <= 3; $strip++) {
+            if (\strlen($digits) > $strip + 7) {
+                $local        = substr($digits, $strip);
+                $candidates[] = $local;
+                $candidates[] = '0' . $local;
+            }
         }
 
-        if ($phoneDigits) {
-            $candidates[] = $phoneDigits;
-            $candidates[] = '0' . $phoneDigits;
-        }
-
-        if ($countryDigits && $phoneDigits) {
-            $candidates[] = $countryDigits . $phoneDigits;
-            $candidates[] = '+' . $countryDigits . $phoneDigits;
-        }
-
-        return array_unique(array_filter($candidates));
+        return array_values(array_unique(array_filter($candidates)));
     }
 }

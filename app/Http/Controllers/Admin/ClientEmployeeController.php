@@ -27,6 +27,7 @@ class ClientEmployeeController extends Controller
     {
         $data = $request->validate([
             'name'               => 'required|string|max:255',
+            'username'           => 'required|string|max:50|alpha_dash|unique:users,username',
             'email'              => 'required|email|unique:users,email',
             'phone'              => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code' => 'nullable|string|max:10',
@@ -39,6 +40,7 @@ class ClientEmployeeController extends Controller
         DB::transaction(function () use ($data, $client, &$user) {
             $user = User::create([
                 'name'               => $data['name'],
+                'username'           => $data['username'],
                 'email'              => $data['email'],
                 'password'           => Hash::make(Str::random(40)),
                 'phone'              => $data['phone'] ?? null,

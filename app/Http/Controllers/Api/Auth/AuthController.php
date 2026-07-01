@@ -10,21 +10,21 @@ use App\Http\Resources\Api\DriverProfileResource;
 use App\Http\Resources\Api\UserResource;
 use App\Models\User;
 use App\Models\UserDevice;
+use App\Traits\NormalizesPhone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    use NormalizesPhone;
+
     public function login(LoginRequest $request): JsonResponse
     {
-        $candidates = $this->phoneCandidates(
-            $request->phone_number,
-            $request->country_code,
-            $request->full_phone
-        );
+        $login = trim($request->login);
 
-        $user = User::whereIn('phone', $candidates)->first();
+        $user = User::where('username', $login)->first()
+            ?? User::whereIn('phone', $this->phoneCandidates($login))->first();
 
         if (! $user) {
             return $this->invalidCredentials();
@@ -97,6 +97,7 @@ class AuthController extends Controller
                 'notifications_enabled' => $device->notifications_enabled,
                 'user'                  => new UserResource($user),
                 'profile'               => $profileResource,
+                'permissions'           => $roleType === 'client' ? $user->clientPermissionNames() : null,
             ],
         ]);
     }
@@ -190,41 +191,11 @@ class AuthController extends Controller
         return ['unknown', null];
     }
 
-    // Generates phone candidates from the three possible inputs to match any stored format.
-    private function phoneCandidates(string $phoneNumber, ?string $countryCode, ?string $fullPhone): array
-    {
-        $phoneDigits   = preg_replace('/\D/', '', $phoneNumber);
-        $countryDigits = preg_replace('/\D/', '', $countryCode ?? '');
-        $fullDigits    = preg_replace('/\D/', '', $fullPhone ?? '');
-
-        $candidates = [];
-
-        // full_phone as-is and normalised with leading zero
-        if ($fullPhone) {
-            $candidates[] = $fullPhone;
-            $candidates[] = '0' . ltrim($fullDigits, '0');
-        }
-
-        // phone_number raw and with leading zero prefix
-        if ($phoneDigits) {
-            $candidates[] = $phoneDigits;
-            $candidates[] = '0' . $phoneDigits;
-        }
-
-        // country-code + phone_number variants
-        if ($countryDigits && $phoneDigits) {
-            $candidates[] = $countryDigits . $phoneDigits;
-            $candidates[] = '+' . $countryDigits . $phoneDigits;
-        }
-
-        return array_unique(array_filter($candidates));
-    }
-
     private function invalidCredentials(): JsonResponse
     {
         return response()->json([
             'success' => false,
-            'message' => 'Invalid phone number or password',
+            'message' => 'Invalid username/phone number or password',
         ], 401);
     }
 }

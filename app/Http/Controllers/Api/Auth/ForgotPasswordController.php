@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ForgotPassword\RequestCodeRequest;
 use App\Http\Requests\Api\ForgotPassword\ResetPasswordRequest;
 use App\Http\Requests\Api\ForgotPassword\VerifyCodeRequest;
+use App\Mail\PasswordResetOtpMail;
 use App\Models\PasswordResetCode;
 use App\Models\User;
 use App\Services\WhatsAppService;
 use App\Traits\NormalizesPhone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class ForgotPasswordController extends Controller
@@ -22,19 +24,16 @@ class ForgotPasswordController extends Controller
 
     public function requestCode(RequestCodeRequest $request): JsonResponse
     {
-        $candidates = $this->phoneCandidates(
-            $request->phone_number,
-            $request->country_code,
-            $request->full_phone
-        );
+        $login = trim($request->login);
 
-        $user = User::whereIn('phone', $candidates)->first();
+        $user = User::where('username', $login)->first()
+            ?? User::whereIn('phone', $this->phoneCandidates($login))->first();
 
         if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'This phone number is not registered',
-                'code'    => 'PHONE_NOT_REGISTERED',
+                'message' => 'This username or phone number is not registered',
+                'code'    => 'ACCOUNT_NOT_REGISTERED',
             ], 404);
         }
 
@@ -73,9 +72,14 @@ class ForgotPasswordController extends Controller
             'expires_at' => now()->addMinutes(5),
         ]);
 
-        $this->whatsAppService->sendTemplate('password_reset_otp', $user->phone ?? '', [
-            'code' => $code,
-        ]);
+        // Drivers always get WhatsApp; clients follow their configured otp_channel.
+        if (! $user->isDriver() && $user->otp_channel === 'email') {
+            Mail::to($user->email)->send(new PasswordResetOtpMail($user, $code));
+        } else {
+            $this->whatsAppService->sendTemplate('password_reset_otp', $user->phone ?? '', [
+                'code' => $code,
+            ]);
+        }
 
         $data = ['expires_in_seconds' => 300];
 
@@ -93,13 +97,10 @@ class ForgotPasswordController extends Controller
 
     public function verifyCode(VerifyCodeRequest $request): JsonResponse
     {
-        $candidates = $this->phoneCandidates(
-            $request->phone_number,
-            $request->country_code,
-            $request->full_phone
-        );
+        $login = trim($request->login);
 
-        $user = User::whereIn('phone', $candidates)->first();
+        $user = User::where('username', $login)->first()
+            ?? User::whereIn('phone', $this->phoneCandidates($login))->first();
 
         if (! $user) {
             return $this->invalidCodeResponse();

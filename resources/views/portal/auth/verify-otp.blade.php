@@ -82,7 +82,11 @@
         </div>
 
         <h1 class="f1">{{ __('Enter verification code') }}</h1>
-        <p class="desc f1">{{ __('We sent a 6-digit code to your WhatsApp. Enter it below to continue.') }}</p>
+        <p class="desc f1">
+            {{ ($channel ?? 'whatsapp') === 'email'
+                ? __('We sent a 6-digit code to your email. Enter it below to continue.')
+                : __('We sent a 6-digit code to your WhatsApp. Enter it below to continue.') }}
+        </p>
 
         @if ($errors->any())
             <div class="alert alert-err">{{ $errors->first() }}</div>

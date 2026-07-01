@@ -3,18 +3,23 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetOtpMail;
 use App\Models\PasswordResetCode;
 use App\Models\User;
 use App\Services\WhatsAppService;
+use App\Traits\NormalizesPhone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    use NormalizesPhone;
+
     public function showLogin(): View|RedirectResponse
     {
         if (Auth::check()) {
@@ -27,41 +32,31 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate([
-            'phone'    => ['required', 'string'],
+            'login'    => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        $submitted = trim($request->input('phone'));
-        $digits    = preg_replace('/\D/', '', $submitted);
+        $submitted = trim($request->input('login'));
 
-        // Build candidate phone formats to match however the number is stored
-        $candidates = array_unique(array_filter([$submitted, $digits]));
-        for ($strip = 1; $strip <= 3; $strip++) {
-            if (\strlen($digits) > $strip + 7) {
-                $local        = substr($digits, $strip);
-                $candidates[] = $local;
-                $candidates[] = '0' . $local;
-            }
-        }
-
-        $user = User::whereIn('phone', $candidates)->first();
+        $user = User::where('username', $submitted)->first()
+            ?? User::whereIn('phone', $this->phoneCandidates($submitted))->first();
 
         if (! $user || ! Hash::check($request->input('password'), $user->password)) {
             return back()
-                ->withErrors(['phone' => 'The credentials you entered are incorrect.'])
-                ->withInput($request->only('phone'));
+                ->withErrors(['login' => 'The credentials you entered are incorrect.'])
+                ->withInput($request->only('login'));
         }
 
         if (! \in_array($user->role, ['admin', 'superadmin', 'client_master', 'client_employee'])) {
             return back()
-                ->withErrors(['phone' => 'This portal is for admin and client users only. Please use the mobile app.'])
-                ->withInput($request->only('phone'));
+                ->withErrors(['login' => 'This portal is for admin and client users only. Please use the mobile app.'])
+                ->withInput($request->only('login'));
         }
 
         if ($user->status !== 'active') {
             return back()
-                ->withErrors(['phone' => 'Your account has been suspended. Please contact support.'])
-                ->withInput($request->only('phone'));
+                ->withErrors(['login' => 'Your account has been suspended. Please contact support.'])
+                ->withInput($request->only('login'));
         }
 
         Auth::login($user, $request->boolean('remember'));
@@ -81,27 +76,19 @@ class AuthController extends Controller
 
     public function sendResetLink(Request $request): RedirectResponse
     {
-        $request->validate(['phone' => ['required', 'string']]);
+        $request->validate(['login' => ['required', 'string']]);
 
-        $submitted  = trim($request->input('phone'));
-        $digits     = preg_replace('/\D/', '', $submitted);
-        $candidates = array_unique(array_filter([$submitted, $digits]));
-        for ($strip = 1; $strip <= 3; $strip++) {
-            if (\strlen($digits) > $strip + 7) {
-                $local        = substr($digits, $strip);
-                $candidates[] = $local;
-                $candidates[] = '0' . $local;
-            }
-        }
+        $submitted = trim($request->input('login'));
 
-        $user = User::whereIn('phone', $candidates)->first();
+        $user = User::where('username', $submitted)->first()
+            ?? User::whereIn('phone', $this->phoneCandidates($submitted))->first();
 
         if (! $user || ! in_array($user->role, ['admin', 'superadmin', 'client_master', 'client_employee'])) {
-            return back()->withErrors(['phone' => 'No account was found with that phone number.']);
+            return back()->withErrors(['login' => 'No account was found with that username or phone number.']);
         }
 
         if ($user->status !== 'active') {
-            return back()->withErrors(['phone' => 'This account is not active. Please contact support.']);
+            return back()->withErrors(['login' => 'This account is not active. Please contact support.']);
         }
 
         PasswordResetCode::where('user_id', $user->id)
@@ -119,11 +106,19 @@ class AuthController extends Controller
             'expires_at' => now()->addMinutes(5),
         ]);
 
-        app(WhatsAppService::class)->sendTemplate('password_reset_otp', $user->phone ?? '', [
-            'code' => $code,
-        ]);
+        // Admins always get WhatsApp; clients follow their configured otp_channel.
+        $channel = \in_array($user->role, ['admin', 'superadmin']) ? 'whatsapp' : ($user->otp_channel ?? 'whatsapp');
+
+        if ($channel === 'email') {
+            Mail::to($user->email)->send(new PasswordResetOtpMail($user, $code));
+        } else {
+            app(WhatsAppService::class)->sendTemplate('password_reset_otp', $user->phone ?? '', [
+                'code' => $code,
+            ]);
+        }
 
         $request->session()->put('otp_user_id', $user->id);
+        $request->session()->put('otp_channel', $channel);
 
         return redirect()->route('portal.forgot-password.verify-otp');
     }
@@ -138,7 +133,9 @@ class AuthController extends Controller
             return redirect()->route('portal.forgot-password');
         }
 
-        return view('portal.auth.verify-otp');
+        return view('portal.auth.verify-otp', [
+            'channel' => $request->session()->get('otp_channel', 'whatsapp'),
+        ]);
     }
 
     public function verifyOtp(Request $request): RedirectResponse
@@ -159,9 +156,9 @@ class AuthController extends Controller
             ->first();
 
         if (! $resetCode) {
-            $request->session()->forget('otp_user_id');
+            $request->session()->forget(['otp_user_id', 'otp_channel']);
             return redirect()->route('portal.forgot-password')
-                ->withErrors(['phone' => 'Code expired. Please request a new one.']);
+                ->withErrors(['login' => 'Code expired. Please request a new one.']);
         }
 
         if ($resetCode->attempts >= 5) {
@@ -174,7 +171,7 @@ class AuthController extends Controller
         }
 
         $resetCode->update(['verified_at' => now(), 'used_at' => now()]);
-        $request->session()->forget('otp_user_id');
+        $request->session()->forget(['otp_user_id', 'otp_channel']);
 
         $user  = User::find($userId);
         $token = Password::createToken($user);

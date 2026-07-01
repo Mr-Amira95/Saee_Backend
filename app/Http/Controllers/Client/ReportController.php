@@ -9,6 +9,35 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
+    private const STATUS_LABELS = [
+        'total'           => 'Total Orders',
+        'delivered'       => 'Delivered',
+        'returned_failed' => 'Returned / Failed',
+        'active'          => 'Active',
+    ];
+
+    private function applyStatusFilter($query, ?string $status): void
+    {
+        match ($status) {
+            'delivered'       => $query->where('orders.status', 'delivered'),
+            'returned_failed' => $query->whereIn('orders.status', ['returned', 'rejected']),
+            'active'          => $query->whereIn('orders.status', ['pending', 'picked_up']),
+            default           => null,
+        };
+    }
+
+    private function ordersQuery(int $clientProfileId, string $from, string $to, ?string $status)
+    {
+        $query = Order::where('client_profile_id', $clientProfileId)
+            ->whereDate('created_at', '>=', $from)
+            ->whereDate('created_at', '<=', $to)
+            ->with(['receiver.city', 'receiver.area', 'payment']);
+
+        $this->applyStatusFilter($query, $status);
+
+        return $query->latest();
+    }
+
     public function index(Request $request)
     {
         $profile = $this->getClientProfile();
@@ -16,6 +45,8 @@ class ReportController extends Controller
         // Date range defaults: last 30 days
         $from = $request->filled('from') ? $request->input('from') : now()->subDays(29)->toDateString();
         $to   = $request->filled('to')   ? $request->input('to')   : now()->toDateString();
+
+        $selectedStatus = $this->resolveStatus($request);
 
         // Always qualify orders.created_at so JOIN queries remain unambiguous
         $base = Order::where('orders.client_profile_id', $profile->id)
@@ -78,27 +109,44 @@ class ReportController extends Controller
             ->orderByDesc('total')
             ->get();
 
+        $orders = null;
+        if ($selectedStatus !== null) {
+            $orders = $this->ordersQuery($profile->id, $from, $to, $selectedStatus)
+                ->paginate(20)
+                ->withQueryString();
+        }
+
         return view('client.reports.index', compact(
-            'profile', 'from', 'to',
+            'profile', 'from', 'to', 'selectedStatus', 'orders',
             'total', 'delivered', 'returned', 'pending', 'inTransit',
             'successRate', 'totalCod', 'totalDelivery',
             'statusCounts', 'dailyTrend', 'cityBreakdown'
-        ));
+        ) + ['statusLabels' => self::STATUS_LABELS]);
+    }
+
+    private function resolveStatus(Request $request): ?string
+    {
+        $status = $request->input('status');
+
+        return array_key_exists($status, self::STATUS_LABELS) ? $status : null;
     }
 
     public function export(Request $request): StreamedResponse
     {
         $profile = $this->getClientProfile();
 
-        $from = $request->filled('from') ? $request->from : now()->subDays(29)->toDateString();
-        $to   = $request->filled('to')   ? $request->to   : now()->toDateString();
+        $from   = $request->filled('from') ? $request->from : now()->subDays(29)->toDateString();
+        $to     = $request->filled('to')   ? $request->to   : now()->toDateString();
+        $status = $this->resolveStatus($request);
+
+        $filename = $status ? "orders_report_{$status}_{$from}_to_{$to}.csv" : "orders_report_{$from}_to_{$to}.csv";
 
         $headers = [
             'Content-Type'        => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="orders_report_' . $from . '_to_' . $to . '.csv"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
-        $callback = function () use ($profile, $from, $to) {
+        $callback = function () use ($profile, $from, $to, $status) {
             $file = fopen('php://output', 'w');
             fputcsv($file, [
                 'Order #', 'Date', 'Receiver Name', 'Phone', 'City', 'Area',
@@ -106,21 +154,17 @@ class ReportController extends Controller
                 'Status', 'Payment Status', 'Delivery Shift', 'Delivered At', 'Returned At',
             ]);
 
-            Order::where('client_profile_id', $profile->id)
-                ->whereDate('created_at', '>=', $from)
-                ->whereDate('created_at', '<=', $to)
-                ->with('city', 'area', 'payment')
-                ->orderBy('created_at', 'desc')
+            $this->ordersQuery($profile->id, $from, $to, $status)
                 ->chunk(200, function ($orders) use ($file) {
                     foreach ($orders as $o) {
                         fputcsv($file, [
                             $o->order_number,
                             $o->created_at->toDateString(),
-                            $o->receiver_name,
-                            $o->receiver_phone,
-                            optional($o->city)->name  ?? '',
-                            optional($o->area)->name  ?? '',
-                            strtoupper($o->payment_type ?? ''),
+                            $o->receiver?->receiver_name ?? '',
+                            $o->receiver?->receiver_phone ?? '',
+                            $o->receiver?->city?->name ?? '',
+                            $o->receiver?->area?->name ?? '',
+                            strtoupper($o->payment?->payment_type ?? ''),
                             $o->payment?->order_amount ?? 0,
                             $o->payment?->customer_delivery_amount ?? 0,
                             ucfirst($o->status),
@@ -136,5 +180,29 @@ class ReportController extends Controller
         };
 
         return new StreamedResponse($callback, 200, $headers);
+    }
+
+    public function print(Request $request)
+    {
+        $profile = $this->getClientProfile();
+
+        $from   = $request->filled('from') ? $request->from : now()->subDays(29)->toDateString();
+        $to     = $request->filled('to')   ? $request->to   : now()->toDateString();
+        $status = $this->resolveStatus($request);
+
+        $orders = $this->ordersQuery($profile->id, $from, $to, $status)->get();
+
+        $totalCod      = $orders->sum(fn ($o) => (float) ($o->payment?->order_amount ?? 0));
+        $totalDelivery = $orders->sum(fn ($o) => (float) ($o->payment?->customer_delivery_amount ?? 0));
+
+        return view('client.reports.print', [
+            'profile'      => $profile,
+            'orders'       => $orders,
+            'from'         => $from,
+            'to'           => $to,
+            'statusLabel'  => $status ? self::STATUS_LABELS[$status] : 'All Orders',
+            'totalCod'     => $totalCod,
+            'totalDelivery' => $totalDelivery,
+        ]);
     }
 }
