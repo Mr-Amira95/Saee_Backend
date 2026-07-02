@@ -1182,11 +1182,16 @@ function fetchUnreadNotifications() {
 
             // Detect new notifications (only after initial load)
             if (_notifInitDone) {
+                let hasNew = false;
                 data.notifications.forEach(n => {
                     if (!_seenNotifIds.has(n.id)) {
                         showToast(n.title, n.message, n.type || 'warning', n.link || null, n.id);
+                        hasNew = true;
                     }
                 });
+                if (hasNew && typeof window.playNotificationSound === 'function') {
+                    window.playNotificationSound();
+                }
             }
             data.notifications.forEach(n => _seenNotifIds.add(n.id));
             _notifInitDone = true;
@@ -1483,6 +1488,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         } catch (e) {}
     }
+    window.playNotificationSound = playNotificationSound;
 
     const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
         cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}'

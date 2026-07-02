@@ -1058,9 +1058,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 notifBadge.style.display = 'block';
             }
 
-            if (data.entity_type !== 'support_ticket') return;
-
             playNotificationSound();
+
+            if (data.entity_type !== 'support_ticket') return;
 
             fetch('{{ route('client.support.unread-count') }}')
                 .then(r => r.json())
