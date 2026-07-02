@@ -411,14 +411,6 @@ class OrderService
     public function confirmHandover(User $driver, ?string $notes = null, ?string $location = null): array
     {
         return DB::transaction(function () use ($driver, $notes, $location) {
-            $hasPending = HandoverRequest::where('driver_id', $driver->id)
-                ->where('status', 'pending')
-                ->exists();
-
-            if ($hasPending) {
-                throw new \Exception("You already have a pending checkout request awaiting admin approval.");
-            }
-
             $driverProfile = DriverProfile::where('user_id', $driver->id)->firstOrFail();
 
             $rejectedOrders = Order::where('driver_profile_id', $driverProfile->id)

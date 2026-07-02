@@ -112,16 +112,26 @@ class UserManagementController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users', 'username')->ignore($user->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'phone_country_code' => ['nullable', 'string', 'max:10'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'job_title' => ['nullable', 'string', 'max:100'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
+        ], [
+            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
         ]);
 
         $user->name = $request->name;
+        $user->username = $data['username'];
         $user->email = $request->email;
         $user->phone = $request->phone;
+        $user->phone_country_code = $data['phone_country_code'] ?? '+962';
+        if (! empty($data['password'])) {
+            $user->password = $data['password'];
+        }
         $user->save();
 
         $employee->job_title = $request->job_title ?: null;
