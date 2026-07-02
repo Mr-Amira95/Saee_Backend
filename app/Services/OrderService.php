@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Jobs\SendWhatsappMessageJob;
+use App\Models\Attendance;
 use App\Models\DriverProfile;
 use App\Models\Order;
 use App\Models\OrderTrackingLog;
@@ -407,9 +408,9 @@ class OrderService
     /**
      * Submit a handover request for approval (bulk-return rejected and settle delivered COD cash).
      */
-    public function confirmHandover(User $driver, ?string $notes = null): array
+    public function confirmHandover(User $driver, ?string $notes = null, ?string $location = null): array
     {
-        return DB::transaction(function () use ($driver, $notes) {
+        return DB::transaction(function () use ($driver, $notes, $location) {
             $hasPending = HandoverRequest::where('driver_id', $driver->id)
                 ->where('status', 'pending')
                 ->exists();
@@ -431,30 +432,45 @@ class OrderService
                 ->whereNull('handover_request_id')
                 ->get();
 
-            if ($rejectedOrders->isEmpty() && $deliveredOrders->isEmpty()) {
-                throw new \Exception("No orders to hand over.");
+            $handoverRequest = null;
+
+            if ($rejectedOrders->isNotEmpty() || $deliveredOrders->isNotEmpty()) {
+                $handoverRequest = HandoverRequest::create([
+                    'driver_id' => $driver->id,
+                    'status'    => 'pending',
+                    'notes'     => $notes,
+                ]);
+
+                foreach ($rejectedOrders as $order) {
+                    $order->update(['handover_request_id' => $handoverRequest->id]);
+                }
+
+                foreach ($deliveredOrders as $order) {
+                    $order->update(['handover_request_id' => $handoverRequest->id]);
+                }
+
+                // Send notification to admins
+                app(SupportNotificationService::class)->notifyAdminsNewHandoverRequest($handoverRequest);
             }
 
-            $handoverRequest = HandoverRequest::create([
-                'driver_id' => $driver->id,
-                'status'    => 'pending',
-                'notes'     => $notes,
-            ]);
+            // Handover marks the end of the shift, so close out today's open attendance session here too.
+            $attendance = Attendance::where('user_id', $driver->id)
+                ->whereDate('date', now()->toDateString())
+                ->whereNull('check_out_at')
+                ->latest('check_in_at')
+                ->first();
 
-            foreach ($rejectedOrders as $order) {
-                $order->update(['handover_request_id' => $handoverRequest->id]);
+            if ($attendance) {
+                $attendance->update([
+                    'check_out_at'       => now(),
+                    'check_out_location' => $location,
+                ]);
             }
-
-            foreach ($deliveredOrders as $order) {
-                $order->update(['handover_request_id' => $handoverRequest->id]);
-            }
-
-            // Send notification to admins
-            app(SupportNotificationService::class)->notifyAdminsNewHandoverRequest($handoverRequest);
 
             return [
-                'returned' => $rejectedOrders->count(),
-                'settled'  => $deliveredOrders->count(),
+                'returned'    => $rejectedOrders->count(),
+                'settled'     => $deliveredOrders->count(),
+                'checked_out' => (bool) $attendance,
             ];
         });
     }

@@ -27,7 +27,7 @@
     .perm-item-lbl { font-size: .87rem; color: var(--text); font-weight: 500; }
 </style>
 
-<div class="card" style="margin-bottom:20px; max-width:650px;">
+<div class="card" style="margin-bottom:20px;">
     <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">{{ __('Page Permissions') }}</div>
     <p style="font-size:.8rem;color:var(--text-sub);margin-bottom:16px;">{{ __('Choose which pages this team member can access. Access to a page includes everything within it.') }}</p>
 

@@ -353,7 +353,9 @@
             </a>
             @endif
 
+            @if(auth()->user()->hasClientPermission('support') || auth()->user()->hasClientPermission('payout_invoices') || auth()->user()->hasClientPermission('billing') || auth()->user()->hasClientPermission('reports'))
             <span class="nav-label" style="margin-top:8px;">{{ __('Support & Finance') }}</span>
+            @endif
 
             @if(auth()->user()->hasClientPermission('support'))
             <a href="{{ route('client.support.index') }}" class="nav-item {{ request()->routeIs('client.support.*') ? 'active' : '' }}">
@@ -389,7 +391,9 @@
             </a>
             @endif
 
+            @if(auth()->user()->hasClientPermission('team') || auth()->user()->hasClientPermission('account'))
             <span class="nav-label" style="margin-top:8px;">{{ __('Account') }}</span>
+            @endif
 
             @if(auth()->user()->hasClientPermission('team'))
             <a href="{{ route('client.users.index') }}" class="nav-item {{ request()->routeIs('client.users.*') ? 'active' : '' }}">

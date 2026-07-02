@@ -26,7 +26,7 @@
     @csrf
     @method('PUT')
 
-    <div class="card" style="margin-bottom:20px; max-width:650px;">
+    <div class="card" style="margin-bottom:20px;">
         <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;">{{ __('Employee Information') }}</div>
 
         <div class="form-group">
@@ -60,7 +60,7 @@
 
     @include('client.users.partials.permissions', ['checkedIds' => collect(old('permissions', $grantedPermissionIds))->map(fn($v) => (int) $v)])
 
-    <div style="display:flex;gap:10px;max-width:650px;">
+    <div style="display:flex;gap:10px;">
         <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
             {{ __('Save Changes') }}

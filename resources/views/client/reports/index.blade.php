@@ -107,23 +107,9 @@
     @endforeach
 </div>
 
-{{-- COD & Delivery Fees --}}
-<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
-    <div class="kpi-card kpi-accent-purple">
-        <div class="kpi-label">{{ __('Total COD Value') }}</div>
-        <div class="kpi-value" style="color:#c084fc;font-size:1.5rem;">{{ number_format($totalCod, 2) }}</div>
-        <div class="kpi-sub">JD {{ __('collected from customers') }}</div>
-    </div>
-    <div class="kpi-card kpi-accent-teal">
-        <div class="kpi-label">{{ __('Delivery Fees') }}</div>
-        <div class="kpi-value" style="color:#2dd4bf;font-size:1.5rem;">{{ number_format($totalDelivery, 2) }}</div>
-        <div class="kpi-sub">JD {{ __('total delivery charges') }}</div>
-    </div>
-</div>
-
 {{-- Drill-down order list for the selected status --}}
 @if ($selectedStatus !== null)
-<div class="card" style="margin-top:24px;margin-bottom:24px;">
+<div class="card" style="margin-bottom:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
         <div class="section-title" style="margin-bottom:0;">
             {{ $statusLabels[$selectedStatus] }} {{ __('Orders') }} ({{ number_format($orders->total()) }})
@@ -218,6 +204,20 @@
     @endif
 </div>
 @endif
+
+{{-- COD & Delivery Fees --}}
+<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+    <div class="kpi-card kpi-accent-purple">
+        <div class="kpi-label">{{ __('Total COD Value') }}</div>
+        <div class="kpi-value" style="color:#c084fc;font-size:1.5rem;">{{ number_format($totalCod, 2) }}</div>
+        <div class="kpi-sub">JD {{ __('collected from customers') }}</div>
+    </div>
+    <div class="kpi-card kpi-accent-teal">
+        <div class="kpi-label">{{ __('Delivery Fees') }}</div>
+        <div class="kpi-value" style="color:#2dd4bf;font-size:1.5rem;">{{ number_format($totalDelivery, 2) }}</div>
+        <div class="kpi-sub">JD {{ __('total delivery charges') }}</div>
+    </div>
+</div>
 
 {{-- Trend + Donut Row --}}
 <div class="report-grid">

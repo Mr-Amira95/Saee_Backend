@@ -49,20 +49,28 @@ class UserManagementController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
+            'phone_country_code' => ['nullable', 'string', 'max:10'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'job_title' => ['nullable', 'string', 'max:100'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
+        ], [
+            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
         ]);
 
         $profile = $this->getClientProfile();
 
         $user = User::create([
             'name' => $request->name,
+            'username' => $data['username'],
             'email' => $request->email,
             'phone' => $request->phone,
-            'password' => Str::random(40),
+            'phone_country_code' => $data['phone_country_code'] ?? '+962',
+            'otp_channel' => Auth::user()->otp_channel ?? 'whatsapp',
+            'password' => $data['password'] ?? Str::random(40),
             'role' => 'client_employee',
             'status' => 'active',
         ]);

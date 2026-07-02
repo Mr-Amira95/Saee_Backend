@@ -340,10 +340,11 @@ class OrderController extends Controller
         }
 
         $request->validate([
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'notes'    => ['nullable', 'string', 'max:1000'],
+            'location' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $result = $this->orderService->confirmHandover($user, $request->input('notes'));
+        $result = $this->orderService->confirmHandover($user, $request->input('notes'), $request->input('location'));
 
         return response()->json([
             'success' => true,
@@ -351,6 +352,7 @@ class OrderController extends Controller
             'data'    => [
                 'returned_count' => $result['returned'],
                 'settled_count'  => $result['settled'],
+                'checked_out'    => $result['checked_out'],
             ],
         ]);
     }
