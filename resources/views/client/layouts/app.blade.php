@@ -73,19 +73,19 @@
             margin-bottom: 10px;
             border-radius: 12px;
             text-decoration: none;
-            background: linear-gradient(135deg, rgba(99,102,241,.18), rgba(56,189,248,.10) 55%, rgba(217,70,239,.16));
-            border: 1px solid rgba(129,140,248,.35);
+            background: linear-gradient(135deg, rgba(220,38,38,.20), rgba(127,29,29,.12) 55%, rgba(239,68,68,.16));
+            border: 1px solid rgba(248,113,113,.35);
             overflow: hidden;
             isolation: isolate;
             transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-            box-shadow: 0 4px 18px rgba(79,70,229,.2);
+            box-shadow: 0 4px 18px rgba(220,38,38,.22);
         }
         .ai-assist-btn::before {
             content: '';
             position: absolute; inset: -60%;
-            background: conic-gradient(from 0deg, #6366f1, #22d3ee, #d946ef, #6366f1);
+            background: conic-gradient(from 0deg, #dc2626, #f97316, #fb7185, #dc2626);
             animation: ai-spin 6s linear infinite;
-            opacity: .16;
+            opacity: .18;
             z-index: -1;
         }
         .ai-assist-btn::after {
@@ -95,19 +95,19 @@
             background: var(--sidebar);
             z-index: -1;
         }
-        .ai-assist-btn:hover { transform: translateY(-1px); border-color: rgba(129,140,248,.65); box-shadow: 0 6px 26px rgba(79,70,229,.35); }
-        .ai-assist-btn.active { border-color: rgba(56,189,248,.6); box-shadow: 0 0 0 1px rgba(56,189,248,.3), 0 6px 22px rgba(56,189,248,.3); }
+        .ai-assist-btn:hover { transform: translateY(-1px); border-color: rgba(248,113,113,.65); box-shadow: 0 6px 26px rgba(220,38,38,.38); }
+        .ai-assist-btn.active { border-color: rgba(239,68,68,.65); box-shadow: 0 0 0 1px rgba(239,68,68,.32), 0 6px 22px rgba(220,38,38,.32); }
         @keyframes ai-spin { to { transform: rotate(360deg); } }
         .ai-assist-icon {
             position: relative; z-index: 1;
             width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #6366f1, #22d3ee);
+            background: linear-gradient(135deg, var(--red-dark), var(--red-lt));
             color: #fff;
-            box-shadow: 0 0 14px rgba(56,189,248,.55);
+            box-shadow: 0 0 14px rgba(239,68,68,.55);
         }
         .ai-assist-text { position: relative; z-index: 1; flex: 1; min-width: 0; }
-        .ai-assist-title { display: flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: #e0e7ff; letter-spacing: .01em; }
+        .ai-assist-title { display: flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: #fee2e2; letter-spacing: .01em; }
         .ai-assist-sub { display: block; font-size: .65rem; color: rgba(203,213,225,.65); margin-top: 1px; }
         .ai-assist-arrow { position: relative; z-index: 1; color: rgba(203,213,225,.55); flex-shrink: 0; transition: transform .18s, color .18s; }
         .ai-assist-btn:hover .ai-assist-arrow { transform: translateX(3px); color: #fff; }
@@ -116,8 +116,8 @@
         .ai-assist-dot {
             position: relative; z-index: 1;
             width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-            background: #22d3ee;
-            box-shadow: 0 0 6px 2px rgba(34,211,238,.85);
+            background: #f87171;
+            box-shadow: 0 0 6px 2px rgba(248,113,113,.85);
             animation: ai-pulse-dot 1.8s ease-in-out infinite;
         }
         @keyframes ai-pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
@@ -512,17 +512,6 @@
                 @else
                     <a href="{{ route('lang.switch', 'en') }}" class="icon-btn" title="Switch to English" style="text-decoration:none;font-weight:700;font-size:.8rem;">EN</a>
                 @endif
-
-                {{-- AI Assistant (in Header) --}}
-                @if(auth()->user()->hasClientPermission('ai_assistant') && !request()->routeIs('client.ai-chat.index'))
-                    <a href="{{ route('client.ai-chat.index') }}" class="icon-btn" title="{{ __('Ask AI Assistant') }}" style="position: relative;">
-                        <span class="ai-header-pulse"></span>
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zM9 9h.008v.008H9V9zm0 3h.008v.008H9V12zm0 3h.008v.008H9V15zm3-6h.008v.008H12V9zm0 3h.008v.008H12V12zm0 3h.008v.008H12V15zm3-6h.008v.008H15V9zm0 3h.008v.008H15V12zm0 3h.008v.008H15V15z"/>
-                        </svg>
-                    </a>
-                @endif
-
 
                 {{-- Theme Switcher --}}
                 <button class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="{{ __('Toggle Theme') }}">
@@ -965,27 +954,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
     <style>
-        /* ─── Header AI Assistant Pulse ───────────────────── */
-        .ai-header-pulse {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 6px;
-            height: 6px;
-            background: #ef4444;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #ef4444;
-            animation: header-pulse 2s infinite;
-        }
-        @keyframes header-pulse {
-            0%, 100% { opacity: 0.4; transform: scale(0.9); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-        html[dir="rtl"] .ai-header-pulse {
-            right: auto;
-            left: 5px;
-        }
-
         /* ─── Footer Styles ──────────────────────────────── */
         .app-footer {
             margin-top: 40px;
