@@ -19,6 +19,7 @@ class SupportMessageSent implements ShouldBroadcastNow
     {
         return [
             new Channel('support.' . $this->message->support_ticket_id),
+            new Channel('support-admin'),
         ];
     }
 
