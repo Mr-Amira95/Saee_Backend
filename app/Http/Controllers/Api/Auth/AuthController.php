@@ -24,6 +24,7 @@ class AuthController extends Controller
         $login = trim($request->login);
 
         $user = User::where('username', $login)->first()
+            ?? User::where('email', $login)->first()
             ?? User::whereIn('phone', $this->phoneCandidates($login))->first();
 
         if (! $user) {

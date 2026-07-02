@@ -64,7 +64,7 @@ class ClientController extends Controller
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
             'username'                    => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email'                       => 'required|email|unique:users,email',
+            'email'                       => 'nullable|email|unique:users,email',
             'phone'                       => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'          => 'nullable|string|max:10',
             'otp_channel'                 => ['nullable', Rule::in(['whatsapp', 'email'])],
@@ -199,7 +199,7 @@ class ClientController extends Controller
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
             'username'                    => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($client->master_user_id)],
-            'email'                       => ['required','email', Rule::unique('users','email')->ignore($client->master_user_id)],
+            'email'                       => ['nullable','email', Rule::unique('users','email')->ignore($client->master_user_id)],
             'phone'                       => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($client->master_user_id)],
             'phone_country_code'          => 'nullable|string|max:10',
             'otp_channel'                 => ['nullable', Rule::in(['whatsapp', 'email'])],
@@ -400,9 +400,9 @@ class ClientController extends Controller
     private function sendInvitation(User $user, string $channel = 'whatsapp'): void
     {
         $token          = Password::createToken($user);
-        $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email));
+        $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email ?? ''));
 
-        if ($channel === 'email') {
+        if ($channel === 'email' && $user->email) {
             Mail::to($user->email)->send(new UserInvitationMail($user, $token));
         } else {
             app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [

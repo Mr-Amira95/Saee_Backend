@@ -143,8 +143,8 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="email">{{ __('Email Address *') }}</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required class="form-input {{ $errors->has('email') ? 'has-error' : '' }}" placeholder="{{ __('e.g. employee@company.com') }}">
+                <label class="form-label" for="email">{{ __('Email Address') }} <span class="opt">({{ __('optional') }})</span></label>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" class="form-input {{ $errors->has('email') ? 'has-error' : '' }}" placeholder="{{ __('e.g. employee@company.com') }}">
                 @error('email') <div class="form-error">{{ $message }}</div> @enderror
             </div>
         </div>

@@ -36,22 +36,8 @@
         .no-print-btn:hover { background: #c94040; }
 
         @media screen {
-            .report-header { margin-top: 46px; }
+            .waybill-header { margin-top: 46px; }
         }
-
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 2px solid #0c1230;
-            padding-bottom: 14px;
-            margin-bottom: 18px;
-        }
-        .report-header h1 { margin: 0; font-size: 20px; font-weight: 800; color: #0c1230; }
-        .report-header p { margin: 2px 0 0 0; color: #64748b; font-size: 11px; font-weight: 500; }
-        .report-meta { text-align: right; }
-        .report-meta .status-label { font-size: 15px; font-weight: 700; color: #e05454; }
-        .report-meta .range { font-size: 11px; color: #64748b; margin-top: 2px; }
 
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         th, td { padding: 7px 8px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 11.5px; }
@@ -69,23 +55,34 @@
         }
 
         html[dir="rtl"] th, html[dir="rtl"] td { text-align: right; }
-        html[dir="rtl"] .report-meta { text-align: left; }
+        html[dir="rtl"] .waybill-title { text-align: left; }
+        html[dir="rtl"] .company-details { text-align: right; }
     </style>
 </head>
 <body>
 
     <button onclick="window.print()" class="no-print-btn">{{ __('Print / Save as PDF') }}</button>
 
-    <div class="report-header">
-        <div>
-            <h1>SA'EE LOGISTICS</h1>
-            <p>{{ $profile->company_name ?? '' }}</p>
-            <p>{{ __('Orders Report') }}</p>
+    <div class="waybill-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0c1230; padding-bottom: 15px; margin-bottom: 20px;">
+        {{-- Sa'ee Details (Left side) --}}
+        <div class="company-details" style="flex: 1; text-align: left;">
+            <h1 style="margin: 0; font-size: 18px; font-weight: 800; color: #0c1230; letter-spacing: 0.5px; line-height: 1.1;">SA'EE LOGISTICS</h1>
+            <p style="margin: 2px 0 0 0; color: #64748b; font-size: 11px; font-weight: 500;">Reliable Delivery Solutions</p>
+            <p style="margin: 2px 0 0 0; color: #64748b; font-size: 11px; font-weight: 500;">Phone: +962 7 9080 0989</p>
+            <p style="margin: 2px 0 0 0; color: #64748b; font-size: 11px; font-weight: 500;">support@saee.logistics</p>
         </div>
-        <div class="report-meta">
-            <div class="status-label">{{ $statusLabel }}</div>
-            <div class="range">{{ \Carbon\Carbon::parse($from)->format('d M Y') }} – {{ \Carbon\Carbon::parse($to)->format('d M Y') }}</div>
-            <div class="range">{{ __('Total orders:') }} {{ number_format($orders->count()) }}</div>
+
+        {{-- Logo (Center) --}}
+        <div class="logo-center" style="flex: 1; text-align: center;">
+            <img src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee Logistics" style="height: 75px; width: auto; object-fit: contain; display: inline-block;">
+        </div>
+
+        {{-- Report meta (Right side) --}}
+        <div class="waybill-title" style="flex: 1; text-align: right;">
+            <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #0c1230;">{{ __('ORDERS REPORT') }}</h2>
+            <div class="status-label" style="font-size: 15px; font-weight: 800; color: #e05454; margin-top: 5px;">{{ $statusLabel }}</div>
+            <div class="range" style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ __('Duration:') }} {{ \Carbon\Carbon::parse($from)->format('d M Y') }} – {{ \Carbon\Carbon::parse($to)->format('d M Y') }}</div>
+            <div class="range" style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ __('Number of orders:') }} {{ number_format($orders->count()) }}</div>
         </div>
     </div>
 

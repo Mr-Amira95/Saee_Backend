@@ -12,6 +12,8 @@ class HandoverRequest extends Model
         'driver_id',
         'status', // 'pending', 'approved'
         'notes',
+        'payment_method', // 'cash', 'bank_transfer', 'cliq'
+        'proof_image_path',
         'approved_by',
         'approved_at',
     ];

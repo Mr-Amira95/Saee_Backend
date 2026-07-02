@@ -174,8 +174,8 @@
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email Address <span class="req">*</span></label>
-                <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email') }}" placeholder="owner@company.com" required>
+                <label class="form-label" for="email">Email Address <span class="opt">(optional)</span></label>
+                <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email') }}" placeholder="owner@company.com">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
@@ -986,7 +986,6 @@ function togglePwd(inputId, iconId) {
 
         req('name',         'Full name is required.');
         req('username',     'Username is required.');
-        req('email',        'Email address is required.');
         req('company_name', 'Company name (EN) is required.');
 
         var eEl = getField('email');

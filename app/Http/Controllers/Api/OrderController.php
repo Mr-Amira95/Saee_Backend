@@ -339,12 +339,36 @@ class OrderController extends Controller
             ], 403);
         }
 
+        $driverProfile = $user->driverProfile;
+
+        $cashToHandover = (float) Order::where('driver_profile_id', $driverProfile?->id)
+            ->where('status', 'delivered')
+            ->where('payment_status', 'with_driver')
+            ->whereNull('handover_request_id')
+            ->with('payment')
+            ->get()
+            ->sum(fn (Order $o) => (float) ($o->payment?->order_amount ?? 0) + ($o->payment?->delivery_on_customer ? (float) ($o->payment?->customer_delivery_amount ?? 0) : 0));
+
+        $requiresProof = $cashToHandover > 0;
+
         $request->validate([
-            'notes'    => ['nullable', 'string', 'max:1000'],
-            'location' => ['nullable', 'string', 'max:255'],
+            'notes'          => ['nullable', 'string', 'max:1000'],
+            'location'       => ['nullable', 'string', 'max:255'],
+            'payment_method' => [$requiresProof ? 'required' : 'nullable', Rule::in(['cash', 'bank_transfer', 'cliq'])],
+            'proof_image'    => [$requiresProof ? 'required' : 'nullable', 'file', 'image', 'max:5120'],
         ]);
 
-        $result = $this->orderService->confirmHandover($user, $request->input('notes'), $request->input('location'));
+        $proofImagePath = $request->hasFile('proof_image')
+            ? $request->file('proof_image')->store("handovers/{$user->id}", 'public')
+            : null;
+
+        $result = $this->orderService->confirmHandover(
+            $user,
+            $request->input('notes'),
+            $request->input('location'),
+            $request->input('payment_method'),
+            $proofImagePath,
+        );
 
         return response()->json([
             'success' => true,

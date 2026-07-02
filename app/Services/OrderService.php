@@ -408,9 +408,9 @@ class OrderService
     /**
      * Submit a handover request for approval (bulk-return rejected and settle delivered COD cash).
      */
-    public function confirmHandover(User $driver, ?string $notes = null, ?string $location = null): array
+    public function confirmHandover(User $driver, ?string $notes = null, ?string $location = null, ?string $paymentMethod = null, ?string $proofImagePath = null): array
     {
-        return DB::transaction(function () use ($driver, $notes, $location) {
+        return DB::transaction(function () use ($driver, $notes, $location, $paymentMethod, $proofImagePath) {
             $driverProfile = DriverProfile::where('user_id', $driver->id)->firstOrFail();
 
             $rejectedOrders = Order::where('driver_profile_id', $driverProfile->id)
@@ -428,9 +428,11 @@ class OrderService
 
             if ($rejectedOrders->isNotEmpty() || $deliveredOrders->isNotEmpty()) {
                 $handoverRequest = HandoverRequest::create([
-                    'driver_id' => $driver->id,
-                    'status'    => 'pending',
-                    'notes'     => $notes,
+                    'driver_id'         => $driver->id,
+                    'status'            => 'pending',
+                    'notes'             => $notes,
+                    'payment_method'    => $paymentMethod,
+                    'proof_image_path'  => $proofImagePath,
                 ]);
 
                 foreach ($rejectedOrders as $order) {

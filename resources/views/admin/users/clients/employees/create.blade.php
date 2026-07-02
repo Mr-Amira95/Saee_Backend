@@ -150,9 +150,9 @@
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email Address <span class="req">*</span></label>
+                <label class="form-label" for="email">Email Address <span class="opt">(optional)</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email"
-                       value="{{ old('email') }}" placeholder="employee@company.com" required>
+                       value="{{ old('email') }}" placeholder="employee@company.com">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
@@ -384,7 +384,6 @@ function togglePermGroup(btn, groupKey) {
         }
         req('name',     'Full name is required.');
         req('username', 'Username is required.');
-        req('email',    'Email address is required.');
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
             showFieldError(eEl, 'Please enter a valid email address.'); if (!first) first = eEl;

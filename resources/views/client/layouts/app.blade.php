@@ -64,6 +64,63 @@
         .nav-item.active svg { opacity: 1; color: var(--red-lt); }
         .nav-item svg { flex-shrink: 0; opacity: .55; }
         .sidebar-foot { padding: 12px 8px; border-top: 1px solid var(--bdr); flex-shrink: 0; }
+
+        /* ── AI Assistant (sidebar, fixed above account card) ─── */
+        .ai-assist-btn {
+            position: relative;
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 11px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            text-decoration: none;
+            background: linear-gradient(135deg, rgba(99,102,241,.18), rgba(56,189,248,.10) 55%, rgba(217,70,239,.16));
+            border: 1px solid rgba(129,140,248,.35);
+            overflow: hidden;
+            isolation: isolate;
+            transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+            box-shadow: 0 4px 18px rgba(79,70,229,.2);
+        }
+        .ai-assist-btn::before {
+            content: '';
+            position: absolute; inset: -60%;
+            background: conic-gradient(from 0deg, #6366f1, #22d3ee, #d946ef, #6366f1);
+            animation: ai-spin 6s linear infinite;
+            opacity: .16;
+            z-index: -1;
+        }
+        .ai-assist-btn::after {
+            content: '';
+            position: absolute; inset: 1px;
+            border-radius: 11px;
+            background: var(--sidebar);
+            z-index: -1;
+        }
+        .ai-assist-btn:hover { transform: translateY(-1px); border-color: rgba(129,140,248,.65); box-shadow: 0 6px 26px rgba(79,70,229,.35); }
+        .ai-assist-btn.active { border-color: rgba(56,189,248,.6); box-shadow: 0 0 0 1px rgba(56,189,248,.3), 0 6px 22px rgba(56,189,248,.3); }
+        @keyframes ai-spin { to { transform: rotate(360deg); } }
+        .ai-assist-icon {
+            position: relative; z-index: 1;
+            width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #6366f1, #22d3ee);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(56,189,248,.55);
+        }
+        .ai-assist-text { position: relative; z-index: 1; flex: 1; min-width: 0; }
+        .ai-assist-title { display: flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: #e0e7ff; letter-spacing: .01em; }
+        .ai-assist-sub { display: block; font-size: .65rem; color: rgba(203,213,225,.65); margin-top: 1px; }
+        .ai-assist-arrow { position: relative; z-index: 1; color: rgba(203,213,225,.55); flex-shrink: 0; transition: transform .18s, color .18s; }
+        .ai-assist-btn:hover .ai-assist-arrow { transform: translateX(3px); color: #fff; }
+        html[dir="rtl"] .ai-assist-btn:hover .ai-assist-arrow { transform: translateX(-3px); }
+        html[dir="rtl"] .ai-assist-arrow svg { transform: scaleX(-1); }
+        .ai-assist-dot {
+            position: relative; z-index: 1;
+            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+            background: #22d3ee;
+            box-shadow: 0 0 6px 2px rgba(34,211,238,.85);
+            animation: ai-pulse-dot 1.8s ease-in-out infinite;
+        }
+        @keyframes ai-pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
         .sidebar-user {
             display: flex; align-items: center; gap: 10px;
             padding: 10px 11px; border-radius: 10px;
@@ -411,6 +468,20 @@
         </nav>
 
         <div class="sidebar-foot">
+            @if(auth()->user()->hasClientPermission('ai_assistant'))
+            <a href="{{ route('client.ai-chat.index') }}" class="ai-assist-btn {{ request()->routeIs('client.ai-chat.index') ? 'active' : '' }}">
+                <span class="ai-assist-icon">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
+                </span>
+                <span class="ai-assist-text">
+                    <span class="ai-assist-title">{{ __('AI Assistant') }}<span class="ai-assist-dot"></span></span>
+                    <span class="ai-assist-sub">{{ __('Ask me anything') }}</span>
+                </span>
+                <span class="ai-assist-arrow">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </span>
+            </a>
+            @endif
             <div class="sidebar-user">
                 <div class="u-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
                 <div class="u-info">

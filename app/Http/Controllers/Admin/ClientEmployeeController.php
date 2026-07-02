@@ -28,7 +28,7 @@ class ClientEmployeeController extends Controller
         $data = $request->validate([
             'name'               => 'required|string|max:255',
             'username'           => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email'              => 'required|email|unique:users,email',
+            'email'              => 'nullable|email|unique:users,email',
             'phone'              => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code' => 'nullable|string|max:10',
             'job_title'          => 'nullable|string|max:100',
@@ -72,7 +72,7 @@ class ClientEmployeeController extends Controller
         });
 
         $token          = Password::createToken($user);
-        $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email));
+        $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email ?? ''));
 
         app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
             'name' => $user->name,

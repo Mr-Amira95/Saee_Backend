@@ -27,12 +27,13 @@ class ForgotPasswordController extends Controller
         $login = trim($request->login);
 
         $user = User::where('username', $login)->first()
+            ?? User::where('email', $login)->first()
             ?? User::whereIn('phone', $this->phoneCandidates($login))->first();
 
         if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'This username or phone number is not registered',
+                'message' => 'This username, email, or phone number is not registered',
                 'code'    => 'ACCOUNT_NOT_REGISTERED',
             ], 404);
         }
@@ -100,6 +101,7 @@ class ForgotPasswordController extends Controller
         $login = trim($request->login);
 
         $user = User::where('username', $login)->first()
+            ?? User::where('email', $login)->first()
             ?? User::whereIn('phone', $this->phoneCandidates($login))->first();
 
         if (! $user) {

@@ -61,6 +61,12 @@
                     <span style="color: var(--text-dim);">Submitted:</span>
                     <span style="color: var(--text-dim);">{{ $handoverRequest->created_at->format('Y-m-d H:i') }}</span>
                 </div>
+                @if($handoverRequest->payment_method)
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-dim);">Handover Method:</span>
+                        <strong style="color: var(--text-sub); text-transform: capitalize;">{{ str_replace('_', ' ', $handoverRequest->payment_method) }}</strong>
+                    </div>
+                @endif
 
                 @if($handoverRequest->status === 'approved')
                     <div style="border-top: 1px solid var(--bdr); padding-top: 12px; margin-top: 4px; display: flex; flex-direction: column; gap: 8px;">
@@ -106,6 +112,18 @@
             <p style="font-size: 0.88rem; color: var(--text-sub); line-height: 1.4; font-style: italic; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; border-left: 3px solid #f59e0b; margin: 0;">
                 "{{ $handoverRequest->notes }}"
             </p>
+        </div>
+    @endif
+
+    {{-- Cash Handover Proof --}}
+    @if($handoverRequest->proof_image_path)
+        <div class="table-card" style="padding: 16px; margin-bottom: 24px;">
+            <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px;">
+                Cash Handover Proof ({{ str_replace('_', ' ', $handoverRequest->payment_method) }})
+            </h4>
+            <a href="{{ Storage::disk('public')->url($handoverRequest->proof_image_path) }}" target="_blank">
+                <img src="{{ Storage::disk('public')->url($handoverRequest->proof_image_path) }}" alt="Handover proof" style="max-width: 260px; max-height: 260px; border-radius: 8px; border: 1px solid var(--bdr);">
+            </a>
         </div>
     @endif
 

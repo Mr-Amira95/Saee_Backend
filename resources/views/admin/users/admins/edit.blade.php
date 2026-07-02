@@ -82,8 +82,8 @@
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email <span class="req">*</span></label>
-                <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email', $admin->email) }}" required>
+                <label class="form-label" for="email">Email <span class="opt">(optional)</span></label>
+                <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email', $admin->email) }}">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
@@ -345,7 +345,6 @@ function setOtpChannel(ch) {
 
         req('name',     'Full name is required.');
         req('username', 'Username is required.');
-        req('email',    'Email address is required.');
 
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {

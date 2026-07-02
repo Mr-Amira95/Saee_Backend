@@ -13,6 +13,8 @@ use App\Models\FinancialLedgerEntry;
 use App\Models\SystemNotification;
 use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class HandoverRequestTest extends TestCase
@@ -94,10 +96,15 @@ class HandoverRequestTest extends TestCase
         $this->assertNull($order1->fresh()->handover_request_id);
         $this->assertNull($order2->fresh()->handover_request_id);
 
-        // 3. Driver confirms handover (checkout) via API
+        Storage::fake('public');
+
+        // 3. Driver confirms handover (checkout) via API — cash to hand over is > 0,
+        // so payment method + proof image are required.
         $response = $this->actingAs($this->driver, 'sanctum')
             ->postJson('/api/driver/confirm-handover', [
-                'notes' => 'End of shift cash and returns handover.',
+                'notes'          => 'End of shift cash and returns handover.',
+                'payment_method' => 'cash',
+                'proof_image'    => UploadedFile::fake()->image('proof.jpg'),
             ]);
 
         $response->assertStatus(200)
@@ -108,6 +115,9 @@ class HandoverRequestTest extends TestCase
         $this->assertNotNull($handoverRequest);
         $this->assertEquals('pending', $handoverRequest->status);
         $this->assertEquals('End of shift cash and returns handover.', $handoverRequest->notes);
+        $this->assertEquals('cash', $handoverRequest->payment_method);
+        $this->assertNotNull($handoverRequest->proof_image_path);
+        Storage::disk('public')->assertExists($handoverRequest->proof_image_path);
 
         // Assert orders now reference the handover request but keep their status/payment_status
         $this->assertEquals($handoverRequest->id, $order1->fresh()->handover_request_id);
@@ -170,5 +180,62 @@ class HandoverRequestTest extends TestCase
             'amount' => 10.00,
             'type' => 'shipping_charge',
         ]);
+    }
+
+    public function test_confirm_handover_requires_payment_method_and_proof_when_cash_is_held()
+    {
+        $order = $this->orderService->createOrder([
+            'client_profile_id' => $this->client->id,
+            'driver_id' => $this->driver->id,
+            'payment_type' => 'cod',
+            'order_price' => 75.00,
+            'receiver_name' => 'Receiver Three',
+            'receiver_phone' => '0790000003',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'address_text' => '789 Abdali St',
+        ], $this->admin);
+
+        $this->orderService->updateStatus($order, 'delivered', [], $this->admin);
+
+        $response = $this->actingAs($this->driver, 'sanctum')
+            ->postJson('/api/driver/confirm-handover', [
+                'notes' => 'Missing payment proof.',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['payment_method', 'proof_image']);
+
+        $this->assertDatabaseMissing('handover_requests', ['driver_id' => $this->driver->id]);
+    }
+
+    public function test_confirm_handover_does_not_require_proof_when_no_cash_is_held()
+    {
+        $order = $this->orderService->createOrder([
+            'client_profile_id' => $this->client->id,
+            'driver_id' => $this->driver->id,
+            'payment_type' => 'cod',
+            'order_price' => 30.00,
+            'receiver_name' => 'Receiver Four',
+            'receiver_phone' => '0790000004',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'address_text' => '321 Abdali St',
+        ], $this->admin);
+
+        $this->orderService->updateStatus($order, 'rejected', [], $this->admin);
+
+        $response = $this->actingAs($this->driver, 'sanctum')
+            ->postJson('/api/driver/confirm-handover', [
+                'notes' => 'Only a return, no cash held.',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true);
+
+        $handoverRequest = HandoverRequest::where('driver_id', $this->driver->id)->first();
+        $this->assertNotNull($handoverRequest);
+        $this->assertNull($handoverRequest->payment_method);
+        $this->assertNull($handoverRequest->proof_image_path);
     }
 }

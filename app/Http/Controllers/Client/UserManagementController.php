@@ -50,7 +50,7 @@ class UserManagementController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'phone_country_code' => ['nullable', 'string', 'max:10'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
@@ -85,7 +85,9 @@ class UserManagementController extends Controller
         $this->syncPermissions($user->id, $profile->id, $data['permissions'] ?? []);
 
         $token = Password::createToken($user);
-        Mail::to($user->email)->send(new UserInvitationMail($user, $token));
+        if ($user->email) {
+            Mail::to($user->email)->send(new UserInvitationMail($user, $token));
+        }
 
         return redirect()->route('client.users.index')
             ->with('success', __('User created successfully.'));
@@ -113,7 +115,7 @@ class UserManagementController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users', 'username')->ignore($user->id)],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
             'phone_country_code' => ['nullable', 'string', 'max:10'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
