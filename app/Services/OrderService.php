@@ -138,6 +138,7 @@ class OrderService
                 $order->delivered_at     = now();
                 $order->signature_path   = $extra['signature_path'] ?? null;
                 $order->proof_image_path = $extra['proof_image_path'] ?? null;
+                $order->national_id_attachment_path = $extra['national_id_attachment_path'] ?? $order->national_id_attachment_path;
                 $order->rejection_reason_id = null;
 
                 $payment = $order->payment;
