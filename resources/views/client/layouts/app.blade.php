@@ -1017,6 +1017,26 @@ document.addEventListener('DOMContentLoaded', function () {
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script>
     (function () {
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') ctx.resume();
+                const now = ctx.currentTime;
+                [880, 1320].forEach((freq, i) => {
+                    const osc  = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0, now + i * 0.09);
+                    gain.gain.linearRampToValueAtTime(0.15, now + i * 0.09 + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.2);
+                    osc.connect(gain).connect(ctx.destination);
+                    osc.start(now + i * 0.09);
+                    osc.stop(now + i * 0.09 + 0.22);
+                });
+            } catch (e) {}
+        }
+
         const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
             cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}'
         });
@@ -1035,6 +1055,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (data.entity_type !== 'support_ticket') return;
+
+            playNotificationSound();
 
             fetch('{{ route('client.support.unread-count') }}')
                 .then(r => r.json())
