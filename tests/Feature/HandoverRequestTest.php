@@ -123,13 +123,19 @@ class HandoverRequestTest extends TestCase
             'title' => 'New Checkout Handover Request',
         ]);
 
-        // 4. Test driver cannot duplicate handover request while one is pending
+        // 4. Calling confirm-handover again is allowed even with a pending request;
+        // since order1/order2 are already claimed, this call just finds nothing left to hand over.
         $duplicateResponse = $this->actingAs($this->driver, 'sanctum')
             ->postJson('/api/driver/confirm-handover', [
                 'notes' => 'Duplicate attempt.',
             ]);
 
-        $duplicateResponse->assertStatus(500); // Throws Exception for already pending request
+        $duplicateResponse->assertStatus(200)
+            ->assertJsonPath('data.returned_count', 0)
+            ->assertJsonPath('data.settled_count', 0);
+
+        // Only the original handover request exists — the duplicate call didn't create another one.
+        $this->assertEquals(1, HandoverRequest::where('driver_id', $this->driver->id)->count());
 
         // 5. Admin approves handover
         $adminResponse = $this->actingAs($this->admin)
