@@ -44,7 +44,7 @@ class AdminUserController extends Controller
     {
         $data = $request->validate([
             'name'                => 'required|string|max:255',
-            'username'            => 'required|string|max:50|alpha_dash|unique:users,username',
+            'username'            => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
             'email'               => 'required|email|unique:users,email',
             'phone'               => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'  => 'nullable|string|max:10',
@@ -52,6 +52,8 @@ class AdminUserController extends Controller
             'password'            => 'nullable|string|min:8|confirmed',
             'permissions'         => 'nullable|array',
             'permissions.*'       => 'integer|exists:permissions,id',
+        ], [
+            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
         ]);
 
         $user = DB::transaction(function () use ($data) {
@@ -111,7 +113,7 @@ class AdminUserController extends Controller
     {
         $data = $request->validate([
             'name'                => 'required|string|max:255',
-            'username'            => ['required','string','max:50','alpha_dash', Rule::unique('users','username')->ignore($admin->id)],
+            'username'            => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($admin->id)],
             'email'               => ['required','email', Rule::unique('users','email')->ignore($admin->id)],
             'phone'               => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($admin->id)],
             'phone_country_code'  => 'nullable|string|max:10',
@@ -119,6 +121,8 @@ class AdminUserController extends Controller
             'status'              => ['nullable', Rule::in(['active','suspended','pending'])],
             'permissions'         => 'nullable|array',
             'permissions.*'       => 'integer|exists:permissions,id',
+        ], [
+            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
         ]);
 
         DB::transaction(function () use ($data, $admin) {

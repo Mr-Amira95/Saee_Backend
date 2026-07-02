@@ -63,7 +63,7 @@ class ClientController extends Controller
     {
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
-            'username'                    => 'required|string|max:50|alpha_dash|unique:users,username',
+            'username'                    => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
             'email'                       => 'required|email|unique:users,email',
             'phone'                       => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code'          => 'nullable|string|max:10',
@@ -98,6 +98,8 @@ class ClientController extends Controller
             'cliq_id'                     => 'nullable|string|max:50',
             'cliq_alias_type'             => ['nullable', Rule::in(['alias', 'phone'])],
             'bank_notes'                  => 'nullable|string|max:500',
+        ], [
+            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
         ]);
 
         $user = DB::transaction(function () use ($data, $request) {
@@ -196,7 +198,7 @@ class ClientController extends Controller
     {
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
-            'username'                    => ['required','string','max:50','alpha_dash', Rule::unique('users','username')->ignore($client->master_user_id)],
+            'username'                    => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($client->master_user_id)],
             'email'                       => ['required','email', Rule::unique('users','email')->ignore($client->master_user_id)],
             'phone'                       => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($client->master_user_id)],
             'phone_country_code'          => 'nullable|string|max:10',
@@ -232,6 +234,8 @@ class ClientController extends Controller
             'bank_notes'                  => 'nullable|string|max:500',
             'delivery_prices'             => 'nullable|array',
             'delivery_prices.*'           => 'nullable|numeric|min:0',
+        ], [
+            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
         ]);
 
         DB::transaction(function () use ($data, $request, $client) {

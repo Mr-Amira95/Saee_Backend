@@ -27,13 +27,15 @@ class ClientEmployeeController extends Controller
     {
         $data = $request->validate([
             'name'               => 'required|string|max:255',
-            'username'           => 'required|string|max:50|alpha_dash|unique:users,username',
+            'username'           => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
             'email'              => 'required|email|unique:users,email',
             'phone'              => 'nullable|string|max:20|unique:users,phone',
             'phone_country_code' => 'nullable|string|max:10',
             'job_title'          => 'nullable|string|max:100',
             'permissions'        => 'nullable|array',
             'permissions.*'      => 'integer|exists:permissions,id',
+        ], [
+            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
         ]);
 
         $user = null;
