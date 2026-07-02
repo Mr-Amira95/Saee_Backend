@@ -83,7 +83,7 @@ class HomeController extends Controller
 
         $ordersQuery = Order::with(['receiver.city', 'receiver.area', 'payment', 'rejectionReason'])
             ->where('driver_profile_id', $driverProfileId)
-            ->where('status', 'picked_up')
+            ->whereIn('status', ['picked_up', 'assigned'])
             ->latest();
 
         $checkInAlert = null;
