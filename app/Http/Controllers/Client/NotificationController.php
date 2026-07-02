@@ -23,11 +23,19 @@ class NotificationController extends Controller
         });
     }
 
-    public function index(): View
+    public function index(Request $request): View|JsonResponse
     {
         $notifications = $this->baseQuery()->latest()->paginate(20);
         $unreadCount   = $this->baseQuery()->whereNull('read_at')->count();
-        $profile       = $this->getClientProfile();
+
+        if ($request->query('json') || $request->expectsJson()) {
+            return response()->json([
+                'notifications' => $notifications->items(),
+                'unread_count'  => $unreadCount,
+            ]);
+        }
+
+        $profile = $this->getClientProfile();
 
         return view('client.notifications.index', compact('notifications', 'unreadCount', 'profile'));
     }

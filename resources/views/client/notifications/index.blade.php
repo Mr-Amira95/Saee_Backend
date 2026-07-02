@@ -25,8 +25,8 @@
         <div style="width:10px;height:10px;border-radius:50%;background:{{ !$read ? 'var(--red)' : 'rgba(255,255,255,.12)' }};flex-shrink:0;margin-top:6px;"></div>
         <div style="flex:1;min-width:0;">
             <div style="font-size:.88rem;font-weight:{{ !$read ? '600' : '500' }};color:var(--text);line-height:1.45;">{{ $notif->title }}</div>
-            @if($notif->body)
-            <div style="font-size:.82rem;color:var(--text-sub);margin-top:3px;line-height:1.45;">{{ $notif->body }}</div>
+            @if($notif->message)
+            <div style="font-size:.82rem;color:var(--text-sub);margin-top:3px;line-height:1.45;">{{ $notif->message }}</div>
             @endif
             <div style="font-size:.74rem;color:var(--text-dim);margin-top:5px;">{{ $notif->created_at->diffForHumans() }}</div>
         </div>

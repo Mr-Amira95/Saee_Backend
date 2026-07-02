@@ -255,7 +255,7 @@
         .act-btn-del:hover  { background: rgba(220,38,38,.2); }
 
         /* ── Notifications dropdown ──────────────────────── */
-        .notif-panel { position: absolute; top: calc(100% + 8px); right: 0; width: 340px; background: #0c1230; border: 1px solid var(--bdr); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.6); z-index: 200; overflow: hidden; display: none; }
+        .notif-panel { position: fixed; width: 340px; background: #0c1230; border: 1px solid var(--bdr); border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,.6); z-index: 99999; overflow: hidden; display: none; }
         .notif-panel.open { display: block; animation: fu .25s both; }
         .notif-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 12px; border-bottom: 1px solid var(--bdr); }
         .notif-head-title { font-size: .88rem; font-weight: 700; }
@@ -351,7 +351,6 @@
         html[dir="rtl"] .filter-select { background-position: left 9px center; padding-left: 30px; padding-right: 11px; }
         html[dir="rtl"] .form-select { background-position: left 11px center; padding-left: 32px; padding-right: 13px; }
         html[dir="rtl"] thead th { text-align: right; }
-        html[dir="rtl"] .notif-panel { right: auto; left: 0; }
 
         /* Table Sorting Styles */
         thead th.sortable-th {
@@ -537,19 +536,6 @@
                         <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                         <span class="notif-badge" id="notifCount" style="display:none;">0</span>
                     </button>
-
-                    <div class="notif-panel" id="notifPanel">
-                        <div class="notif-head">
-                            <span class="notif-head-title">{{ __('Notifications') }}</span>
-                            <button class="notif-mark-all" onclick="markAllRead()">{{ __('Mark all read') }}</button>
-                        </div>
-                        <div class="notif-list" id="notifList">
-                            <div class="notif-empty">{{ __('Loading…') }}</div>
-                        </div>
-                        <div class="notif-footer">
-                            <a href="{{ route('client.notifications.index') }}">{{ __('View all notifications') }}</a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </header>
@@ -606,17 +592,53 @@
 {{-- Toast stack — body-level so it's never clipped by any stacking context --}}
 <div id="toastStack"></div>
 
+{{-- Notification panel — rendered at body level to escape topbar stacking context --}}
+<div class="notif-panel" id="notifPanel">
+    <div class="notif-head">
+        <span class="notif-head-title">{{ __('Notifications') }}</span>
+        <button class="notif-mark-all" onclick="markAllRead()">{{ __('Mark all read') }}</button>
+    </div>
+    <div class="notif-list" id="notifList">
+        <div class="notif-empty">{{ __('Loading…') }}</div>
+    </div>
+    <div class="notif-footer">
+        <a href="{{ route('client.notifications.index') }}">{{ __('View all notifications') }}</a>
+    </div>
+</div>
+
 <script>
 // ── Notifications panel ───────────────────────────────
 function toggleNotifPanel() {
     const panel = document.getElementById('notifPanel');
-    panel.classList.toggle('open');
-    if (panel.classList.contains('open')) loadNotifications();
+    const btn = document.getElementById('notifBtn');
+    const isOpen = panel.classList.contains('open');
+    if (isOpen) { panel.classList.remove('open'); return; }
+
+    // Position relative to the bell button, escaping any stacking context
+    const rect = btn.getBoundingClientRect();
+    const panelW = 340;
+    const isRtl = document.documentElement.dir === 'rtl';
+    panel.style.top = (rect.bottom + 8) + 'px';
+    if (isRtl) {
+        let left = rect.left;
+        if (left + panelW > window.innerWidth - 8) left = window.innerWidth - panelW - 8;
+        panel.style.left = left + 'px';
+        panel.style.right = 'auto';
+    } else {
+        let left = rect.right - panelW;
+        if (left < 8) left = 8;
+        panel.style.left = left + 'px';
+        panel.style.right = 'auto';
+    }
+
+    panel.classList.add('open');
+    loadNotifications();
 }
 document.addEventListener('click', function(e) {
+    const panel = document.getElementById('notifPanel');
     const wrap = document.getElementById('notifWrap');
-    if (wrap && !wrap.contains(e.target)) {
-        document.getElementById('notifPanel').classList.remove('open');
+    if (panel.classList.contains('open') && !panel.contains(e.target) && !wrap.contains(e.target)) {
+        panel.classList.remove('open');
     }
 });
 
