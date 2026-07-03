@@ -129,17 +129,53 @@
             <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div class="nav-submenu {{ request()->routeIs('admin.cms.*') ? 'open' : '' }}" id="cmsMenu">
+            <a href="{{ route('admin.cms.hero.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.hero.*') || request()->routeIs('admin.cms.hero-stats.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Hero Section') }}
+            </a>
+            <a href="{{ route('admin.cms.flow.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.flow.*') || request()->routeIs('admin.cms.flow-steps.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Flow Section') }}
+            </a>
+            <a href="{{ route('admin.cms.industries-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.industries-page.*') || request()->routeIs('admin.cms.industries.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Industries') }}
+            </a>
+            <a href="{{ route('admin.cms.showcase-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.showcase-page.*') || request()->routeIs('admin.cms.showcase-capabilities.*') || request()->routeIs('admin.cms.showcase-how-it-works.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Showcases') }}
+            </a>
+            <a href="{{ route('admin.cms.why-saee-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.why-saee-page.*') || request()->routeIs('admin.cms.why-saee-reasons.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __("Why Sa'ee") }}
+            </a>
             <a href="{{ route('admin.cms.pages.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.pages.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Custom Pages') }}
             </a>
             <a href="{{ route('admin.cms.banners.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.banners.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Homepage Banners') }}
             </a>
+            <a href="{{ route('admin.cms.services-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.services-page.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Services Page') }}
+            </a>
             <a href="{{ route('admin.cms.services.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.services.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Logistical Services') }}
             </a>
+            <a href="{{ route('admin.cms.faq-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.faq-page.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('FAQ Page') }}
+            </a>
             <a href="{{ route('admin.cms.faqs.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.faqs.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('FAQs List') }}
+            </a>
+            <a href="{{ route('admin.cms.customer-stories-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.customer-stories-page.*') || request()->routeIs('admin.cms.customer-testimonials.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Customer Stories') }}
+            </a>
+            <a href="{{ route('admin.cms.for-business-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.for-business-page.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('For Businesses Page') }}
+            </a>
+            <a href="{{ route('admin.cms.contact-information.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.contact-information.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Contact Information') }}
+            </a>
+            <a href="{{ route('admin.cms.contact-submissions.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.contact-submissions.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Contact Form Submissions') }}
+            </a>
+            <a href="{{ route('admin.cms.about-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.about-page.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('About Page') }}
             </a>
             <a href="{{ route('admin.cms.login-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.login-page.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Login Page') }}

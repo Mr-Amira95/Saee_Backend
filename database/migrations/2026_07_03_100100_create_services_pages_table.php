@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('services_pages', function (Blueprint $table) {
+            $table->id();
+            $table->json('page_badge')->nullable();
+            $table->json('page_title')->nullable();
+            $table->json('page_subtitle')->nullable();
+            $table->json('section_badge')->nullable();
+            $table->json('section_title')->nullable();
+            $table->json('section_subtitle')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('services_pages');
+    }
+};

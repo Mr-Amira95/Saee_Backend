@@ -22,11 +22,13 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'required|string',
-            'icon'        => 'nullable|string|max:100',
-            'status'      => 'required|in:active,inactive',
-            'sort_order'  => 'required|integer|min:0',
+            'title.en'     => 'required|string|max:255',
+            'title.ar'     => 'required|string|max:255',
+            'subtitle.en'  => 'nullable|string',
+            'subtitle.ar'  => 'nullable|string',
+            'icon'         => 'nullable|string|max:100',
+            'status'       => 'required|in:active,inactive',
+            'sort_order'   => 'required|integer|min:0',
         ]);
 
         Service::create($validated);
@@ -43,11 +45,13 @@ class ServiceController extends Controller
     public function update(Request $request, Service $service)
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'required|string',
-            'icon'        => 'nullable|string|max:100',
-            'status'      => 'required|in:active,inactive',
-            'sort_order'  => 'required|integer|min:0',
+            'title.en'     => 'required|string|max:255',
+            'title.ar'     => 'required|string|max:255',
+            'subtitle.en'  => 'nullable|string',
+            'subtitle.ar'  => 'nullable|string',
+            'icon'         => 'nullable|string|max:100',
+            'status'       => 'required|in:active,inactive',
+            'sort_order'   => 'required|integer|min:0',
         ]);
 
         $service->update($validated);

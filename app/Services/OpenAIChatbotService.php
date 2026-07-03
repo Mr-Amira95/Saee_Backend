@@ -276,8 +276,10 @@ PROMPT;
         $faqs = Faq::where('status', 'active')
             ->where(function ($q) use ($keywords) {
                 foreach ($keywords as $kw) {
-                    $q->orWhere('question', 'LIKE', "%{$kw}%")
-                      ->orWhere('answer', 'LIKE', "%{$kw}%");
+                    $q->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(question, '$.en')) LIKE ?", ["%{$kw}%"])
+                      ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(question, '$.ar')) LIKE ?", ["%{$kw}%"])
+                      ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(answer, '$.en')) LIKE ?", ["%{$kw}%"])
+                      ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(answer, '$.ar')) LIKE ?", ["%{$kw}%"]);
                 }
             })
             ->orderBy('sort_order')
@@ -292,9 +294,8 @@ PROMPT;
 
         foreach ($faqs as $faq) {
             $lines[] = '';
-            $lines[] = "Q: {$faq->question}";
-            $lines[] = "A: {$faq->answer}";
-            $lines[] = "Category: {$faq->category}";
+            $lines[] = "Q: {$faq->trans('question')}";
+            $lines[] = "A: {$faq->trans('answer')}";
         }
 
         return implode("\n", $lines);

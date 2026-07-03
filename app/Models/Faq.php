@@ -2,19 +2,26 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
 
 class Faq extends Model
 {
+    use HasTranslations;
+
     protected $fillable = [
         'question',
         'answer',
-        'category',
         'status',
         'sort_order',
     ];
 
-    protected $casts = [
-        'sort_order' => 'integer',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'question' => 'array',
+            'answer' => 'array',
+            'sort_order' => 'integer',
+        ];
+    }
 }

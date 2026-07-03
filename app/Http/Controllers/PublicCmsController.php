@@ -18,7 +18,7 @@ class PublicCmsController extends Controller
     {
         $banners = Banner::where('status', 'active')->orderBy('sort_order')->get();
         $services = Service::where('status', 'active')->orderBy('sort_order')->get();
-        $faqs = Faq::where('status', 'active')->orderBy('sort_order')->get()->groupBy('category');
+        $faqs = Faq::where('status', 'active')->orderBy('sort_order')->get();
 
         $settings = [
             'site_name'        => SiteSetting::getVal('site_name', 'SAEE Logistics'),

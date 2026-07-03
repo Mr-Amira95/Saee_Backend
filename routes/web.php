@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AboutPageController;
 use App\Http\Controllers\Admin\AiConversationController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\AuthController;
@@ -8,6 +9,10 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BulkOrderController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\ClientBillingController;
+use App\Http\Controllers\Admin\ContactFormSubmissionController;
+use App\Http\Controllers\Admin\ContactInformationController;
+use App\Http\Controllers\Admin\CustomerStorySectionController;
+use App\Http\Controllers\Admin\CustomerTestimonialController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ClientEmployeeController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -15,16 +20,30 @@ use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\DriverPayrollController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\FaqPageController;
 use App\Http\Controllers\Admin\FinancialController;
+use App\Http\Controllers\Admin\FlowSectionController;
+use App\Http\Controllers\Admin\FlowStepController;
+use App\Http\Controllers\Admin\ForBusinessPageController;
 use App\Http\Controllers\Admin\HandoverRequestController;
+use App\Http\Controllers\Admin\HeroSectionController;
+use App\Http\Controllers\Admin\HeroStatController;
+use App\Http\Controllers\Admin\IndustryController;
+use App\Http\Controllers\Admin\IndustrySectionController;
 use App\Http\Controllers\Admin\LegalContentController;
  use App\Http\Controllers\Admin\LoginPageController;
+use App\Http\Controllers\Admin\WhySaeeReasonController;
+use App\Http\Controllers\Admin\WhySaeeSectionController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\RejectionReasonController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\ServicesPageController;
+use App\Http\Controllers\Admin\ShowcaseCapabilityController;
+use App\Http\Controllers\Admin\ShowcaseHowItWorkController;
+use App\Http\Controllers\Admin\ShowcasePageController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SupportController;
 use App\Http\Controllers\Admin\WhatsAppTemplateController;
@@ -106,10 +125,63 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // CMS Management
         Route::resource('cms/pages', PageController::class)->names('cms.pages');
         Route::resource('cms/banners', BannerController::class)->names('cms.banners');
+        Route::get('cms/services-page', [ServicesPageController::class, 'index'])->name('cms.services-page.index');
+        Route::put('cms/services-page', [ServicesPageController::class, 'update'])->name('cms.services-page.update');
         Route::resource('cms/services', ServiceController::class)->names('cms.services');
+        Route::get('cms/faq-page', [FaqPageController::class, 'index'])->name('cms.faq-page.index');
+        Route::put('cms/faq-page', [FaqPageController::class, 'update'])->name('cms.faq-page.update');
         Route::resource('cms/faqs', FaqController::class)->names('cms.faqs');
         Route::get('cms/login-page', [LoginPageController::class, 'index'])->name('cms.login-page.index');
         Route::put('cms/login-page', [LoginPageController::class, 'update'])->name('cms.login-page.update');
+
+        // Website CMS — Hero Section
+        Route::get('cms/hero', [HeroSectionController::class, 'index'])->name('cms.hero.index');
+        Route::put('cms/hero', [HeroSectionController::class, 'update'])->name('cms.hero.update');
+        Route::resource('cms/hero-stats', HeroStatController::class)->names('cms.hero-stats');
+
+        // Website CMS — Flow
+        Route::get('cms/flow', [FlowSectionController::class, 'index'])->name('cms.flow.index');
+        Route::put('cms/flow', [FlowSectionController::class, 'update'])->name('cms.flow.update');
+        Route::resource('cms/flow-steps', FlowStepController::class)->names('cms.flow-steps');
+
+        // Website CMS — Industries
+        Route::get('cms/industries-page', [IndustrySectionController::class, 'index'])->name('cms.industries-page.index');
+        Route::put('cms/industries-page', [IndustrySectionController::class, 'update'])->name('cms.industries-page.update');
+        Route::resource('cms/industries', IndustryController::class)->names('cms.industries');
+
+        // Website CMS — Customer Stories
+        Route::get('cms/customer-stories-page', [CustomerStorySectionController::class, 'index'])->name('cms.customer-stories-page.index');
+        Route::put('cms/customer-stories-page', [CustomerStorySectionController::class, 'update'])->name('cms.customer-stories-page.update');
+        Route::resource('cms/customer-testimonials', CustomerTestimonialController::class)->names('cms.customer-testimonials');
+
+        // Website CMS — Showcases
+        Route::get('cms/showcase-page', [ShowcasePageController::class, 'index'])->name('cms.showcase-page.index');
+        Route::put('cms/showcase-page', [ShowcasePageController::class, 'update'])->name('cms.showcase-page.update');
+        Route::resource('cms/showcase-capabilities', ShowcaseCapabilityController::class)->names('cms.showcase-capabilities');
+        Route::resource('cms/showcase-how-it-works', ShowcaseHowItWorkController::class)->names('cms.showcase-how-it-works');
+
+        // Website CMS — Why Sa'ee
+        Route::get('cms/why-saee-page', [WhySaeeSectionController::class, 'index'])->name('cms.why-saee-page.index');
+        Route::put('cms/why-saee-page', [WhySaeeSectionController::class, 'update'])->name('cms.why-saee-page.update');
+        Route::resource('cms/why-saee-reasons', WhySaeeReasonController::class)->names('cms.why-saee-reasons');
+
+        // Website CMS — Contact Information
+        Route::get('cms/contact-information', [ContactInformationController::class, 'index'])->name('cms.contact-information.index');
+        Route::put('cms/contact-information', [ContactInformationController::class, 'update'])->name('cms.contact-information.update');
+
+        // Website CMS — Contact Form Submissions
+        Route::get('cms/contact-submissions', [ContactFormSubmissionController::class, 'index'])->name('cms.contact-submissions.index');
+        Route::get('cms/contact-submissions/{contactFormSubmission}', [ContactFormSubmissionController::class, 'show'])->name('cms.contact-submissions.show');
+        Route::patch('cms/contact-submissions/{contactFormSubmission}/status', [ContactFormSubmissionController::class, 'updateStatus'])->name('cms.contact-submissions.update-status');
+        Route::delete('cms/contact-submissions/{contactFormSubmission}', [ContactFormSubmissionController::class, 'destroy'])->name('cms.contact-submissions.destroy');
+
+        // Website CMS — For Businesses Page
+        Route::get('cms/for-business-page', [ForBusinessPageController::class, 'index'])->name('cms.for-business-page.index');
+        Route::put('cms/for-business-page', [ForBusinessPageController::class, 'update'])->name('cms.for-business-page.update');
+
+        // Website CMS — About Page
+        Route::get('cms/about-page', [AboutPageController::class, 'index'])->name('cms.about-page.index');
+        Route::put('cms/about-page', [AboutPageController::class, 'update'])->name('cms.about-page.update');
         Route::get('settings/site', [SiteSettingController::class, 'index'])->name('settings.site.index');
         Route::post('settings/site', [SiteSettingController::class, 'update'])->name('settings.site.update');
         Route::get('settings/legal', [LegalContentController::class, 'index'])->name('settings.legal.index');

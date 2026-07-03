@@ -30,28 +30,38 @@
         @method('PUT')
 
         <div class="form-section">
-            <div class="form-section-title">FAQ Details</div>
+            <div class="form-section-title">Question</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Question <span class="req">*</span></label>
-                    <input type="text" name="question" class="form-input @error('question') err @enderror"
-                           value="{{ old('question', $faq->question) }}" placeholder="e.g. How can I track my package?" required>
-                    @error('question')<span class="form-error">{{ $message }}</span>@enderror
+                    <label class="form-label">Question (English) <span class="req">*</span></label>
+                    <input type="text" name="question[en]" class="form-input @error('question.en') err @enderror"
+                           value="{{ old('question.en', $faq->question['en'] ?? '') }}" placeholder="e.g. How can I track my package?" required>
+                    @error('question.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
-
                 <div class="form-group">
-                    <label class="form-label">Category <span class="req">*</span></label>
-                    <input type="text" name="category" class="form-input @error('category') err @enderror"
-                           value="{{ old('category', $faq->category) }}" placeholder="e.g. general, billing, shipping" required>
-                    @error('category')<span class="form-error">{{ $message }}</span>@enderror
+                    <label class="form-label">Question (Arabic) <span class="req">*</span></label>
+                    <input type="text" name="question[ar]" dir="rtl" class="form-input @error('question.ar') err @enderror"
+                           value="{{ old('question.ar', $faq->question['ar'] ?? '') }}" required>
+                    @error('question.ar')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
             </div>
+        </div>
 
-            <div class="form-group" style="margin-top:15px;">
-                <label class="form-label">Answer <span class="req">*</span></label>
-                <textarea name="answer" class="form-input @error('answer') err @enderror" rows="5" 
-                          placeholder="Provide the detailed answer to the question..." required style="height: auto;">{{ old('answer', $faq->answer) }}</textarea>
-                @error('answer')<span class="form-error">{{ $message }}</span>@enderror
+        <div class="form-section" style="margin-top:20px;">
+            <div class="form-section-title">Answer</div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Answer (English) <span class="req">*</span></label>
+                    <textarea name="answer[en]" class="form-input @error('answer.en') err @enderror" rows="5"
+                              placeholder="Provide the detailed answer to the question..." required style="height: auto;">{{ old('answer.en', $faq->answer['en'] ?? '') }}</textarea>
+                    @error('answer.en')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Answer (Arabic) <span class="req">*</span></label>
+                    <textarea name="answer[ar]" dir="rtl" class="form-input @error('answer.ar') err @enderror" rows="5"
+                              required style="height: auto;">{{ old('answer.ar', $faq->answer['ar'] ?? '') }}</textarea>
+                    @error('answer.ar')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
             </div>
         </div>
 

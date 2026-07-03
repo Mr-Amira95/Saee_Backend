@@ -1317,8 +1317,8 @@
                                 <div class="service-icon" style="font-size: 1.8rem; display: flex; align-items: center; justify-content: center;">
                                     {{ $service->icon ?: '📦' }}
                                 </div>
-                                <h3>{{ $service->title }}</h3>
-                                <p>{{ $service->description }}</p>
+                                <h3>{{ $service->trans('title') }}</h3>
+                                <p>{{ $service->trans('subtitle') }}</p>
                             </article>
                         @empty
                             <!-- Service 1 -->
@@ -1390,21 +1390,18 @@
                     </div>
 
                     <div style="max-width: 800px; margin: 4rem auto 0 auto; display: flex; flex-direction: column; gap: 1.2rem;">
-                        @foreach($faqs as $category => $catFaqs)
-                            <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); text-transform: uppercase; letter-spacing: 2px; margin-top: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">{{ $category }}</h3>
-                            @foreach($catFaqs as $faq)
-                                <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all var(--transition-normal);">
-                                    <button onclick="toggleFaq(this)" class="faq-question" style="width: 100%; text-align: left; background: none; border: none; padding: 1.25rem 1.5rem; font-size: 1.05rem; font-weight: 600; color: var(--text-light); cursor: pointer; display: flex; justify-content: space-between; align-items: center; outline: none; gap: 15px;">
-                                        <span>{{ $faq->question }}</span>
-                                        <svg class="faq-icon" style="width: 16px; height: 16px; transition: transform var(--transition-normal); opacity: 0.6; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                                    </button>
-                                    <div class="faq-answer-container" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-                                        <div style="padding: 0 1.5rem 1.5rem 1.5rem; font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
-                                            {!! nl2br(e($faq->answer)) !!}
-                                        </div>
+                        @foreach($faqs as $faq)
+                            <div class="faq-item" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all var(--transition-normal);">
+                                <button onclick="toggleFaq(this)" class="faq-question" style="width: 100%; text-align: left; background: none; border: none; padding: 1.25rem 1.5rem; font-size: 1.05rem; font-weight: 600; color: var(--text-light); cursor: pointer; display: flex; justify-content: space-between; align-items: center; outline: none; gap: 15px;">
+                                    <span>{{ $faq->trans('question') }}</span>
+                                    <svg class="faq-icon" style="width: 16px; height: 16px; transition: transform var(--transition-normal); opacity: 0.6; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+                                <div class="faq-answer-container" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                    <div style="padding: 0 1.5rem 1.5rem 1.5rem; font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
+                                        {!! nl2br(e($faq->trans('answer'))) !!}
                                     </div>
                                 </div>
-                            @endforeach
+                            </div>
                         @endforeach
                     </div>
                 </div>
