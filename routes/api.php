@@ -25,6 +25,18 @@ use App\Http\Controllers\Api\WhatsAppWebhookController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Public\LegalController;
+use App\Http\Controllers\Public\AboutController;
+use App\Http\Controllers\Public\ContactInformationController;
+use App\Http\Controllers\Public\ContactSubmissionController;
+use App\Http\Controllers\Public\CustomerStoriesController;
+use App\Http\Controllers\Public\FaqController as PublicFaqController;
+use App\Http\Controllers\Public\FlowController;
+use App\Http\Controllers\Public\ForBusinessController;
+use App\Http\Controllers\Public\HeroController;
+use App\Http\Controllers\Public\IndustriesController;
+use App\Http\Controllers\Public\ServicesController as PublicServicesController;
+use App\Http\Controllers\Public\ShowcasesController;
+use App\Http\Controllers\Public\WhySaeeController;
 use Illuminate\Support\Facades\Route;
 
 // Fallback login route — prevents Laravel redirecting API clients to a web login page.
@@ -39,6 +51,25 @@ Route::prefix('webhooks')->group(function () {
 // Public legal content endpoints (no auth required)
 Route::get('legal/terms',   [LegalController::class, 'terms'])->name('api.legal.terms');
 Route::get('legal/privacy', [LegalController::class, 'privacy'])->name('api.legal.privacy');
+
+// Public website content endpoints (no auth — consumed by the marketing website)
+Route::prefix('public')->name('api.public.')->group(function () {
+    Route::get('hero', [HeroController::class, 'show'])->name('hero');
+    Route::get('services', [PublicServicesController::class, 'show'])->name('services');
+    Route::get('flow', [FlowController::class, 'show'])->name('flow');
+    Route::get('industries', [IndustriesController::class, 'show'])->name('industries');
+    Route::get('showcases', [ShowcasesController::class, 'show'])->name('showcases');
+    Route::get('why-saee', [WhySaeeController::class, 'show'])->name('why-saee');
+    Route::get('customer-stories', [CustomerStoriesController::class, 'show'])->name('customer-stories');
+    Route::get('faq', [PublicFaqController::class, 'show'])->name('faq');
+    Route::get('for-business', [ForBusinessController::class, 'show'])->name('for-business');
+    Route::get('about', [AboutController::class, 'show'])->name('about');
+    Route::get('contact-information', [ContactInformationController::class, 'show'])->name('contact-information');
+
+    Route::post('contact-submissions', [ContactSubmissionController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('contact-submissions.store');
+});
 
 // Public order tracking (no auth — end-customers can track by name, reference, or phone)
 Route::get('track', [TrackOrderController::class, 'track'])

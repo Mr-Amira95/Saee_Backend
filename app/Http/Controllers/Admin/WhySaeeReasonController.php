@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\HandlesImageUploads;
 use App\Http\Controllers\Controller;
 use App\Models\WhySaeeReason;
 use Illuminate\Http\Request;
 
 class WhySaeeReasonController extends Controller
 {
+    use HandlesImageUploads;
+
     public function index()
     {
         $reasons = WhySaeeReason::orderBy('sort_order')->orderBy('created_at', 'desc')->get();
@@ -27,12 +30,23 @@ class WhySaeeReasonController extends Controller
             'title.ar'    => 'required|string|max:255',
             'subtitle.en' => 'nullable|string',
             'subtitle.ar' => 'nullable|string',
-            'icon'        => 'nullable|string|max:100',
+            'icon_file'   => 'nullable|file|mimes:svg|max:512',
             'status'      => 'required|in:active,inactive',
             'sort_order'  => 'required|integer|min:0',
         ]);
 
-        WhySaeeReason::create($validated);
+        $iconPath = null;
+        if ($request->hasFile('icon_file')) {
+            $iconPath = $this->storeUploadedImage($request->file('icon_file'), 'why-saee-reasons');
+        }
+
+        WhySaeeReason::create([
+            'title'      => $validated['title'],
+            'subtitle'   => $validated['subtitle'] ?? null,
+            'icon_path'  => $iconPath,
+            'status'     => $validated['status'],
+            'sort_order' => $validated['sort_order'],
+        ]);
 
         return redirect()->route('admin.cms.why-saee-reasons.index')
             ->with('success', 'Reason created successfully.');
@@ -50,12 +64,24 @@ class WhySaeeReasonController extends Controller
             'title.ar'    => 'required|string|max:255',
             'subtitle.en' => 'nullable|string',
             'subtitle.ar' => 'nullable|string',
-            'icon'        => 'nullable|string|max:100',
+            'icon_file'   => 'nullable|file|mimes:svg|max:512',
             'status'      => 'required|in:active,inactive',
             'sort_order'  => 'required|integer|min:0',
         ]);
 
-        $whySaeeReason->update($validated);
+        $iconPath = $whySaeeReason->icon_path;
+        if ($request->hasFile('icon_file')) {
+            $this->deleteUploadedImage($whySaeeReason->icon_path);
+            $iconPath = $this->storeUploadedImage($request->file('icon_file'), 'why-saee-reasons');
+        }
+
+        $whySaeeReason->update([
+            'title'      => $validated['title'],
+            'subtitle'   => $validated['subtitle'] ?? null,
+            'icon_path'  => $iconPath,
+            'status'     => $validated['status'],
+            'sort_order' => $validated['sort_order'],
+        ]);
 
         return redirect()->route('admin.cms.why-saee-reasons.index')
             ->with('success', 'Reason updated successfully.');
@@ -63,6 +89,7 @@ class WhySaeeReasonController extends Controller
 
     public function destroy(WhySaeeReason $whySaeeReason)
     {
+        $this->deleteUploadedImage($whySaeeReason->icon_path);
         $whySaeeReason->delete();
 
         return redirect()->route('admin.cms.why-saee-reasons.index')

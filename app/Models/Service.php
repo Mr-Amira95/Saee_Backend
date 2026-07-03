@@ -12,7 +12,7 @@ class Service extends Model
     protected $fillable = [
         'title',
         'subtitle',
-        'icon',
+        'icon_path',
         'status',
         'sort_order',
     ];

@@ -34,8 +34,10 @@
                 @foreach($reasons as $reason)
                 <tr>
                     <td>
-                        <span style="font-size: 1.5rem; background: rgba(255,255,255,.05); width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">
-                            {{ $reason->icon ?: '⭐' }}
+                        <span style="background: rgba(255,255,255,.05); width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">
+                            @if($reason->icon_path)
+                                <img src="{{ $reason->icon_path }}" alt="" style="width: 22px; height: 22px; object-fit: contain;">
+                            @endif
                         </span>
                     </td>
                     <td><div class="cell-main">{{ $reason->title['en'] ?? '' }}</div></td>

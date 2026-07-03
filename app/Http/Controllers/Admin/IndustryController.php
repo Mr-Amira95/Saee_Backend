@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\HandlesImageUploads;
 use App\Http\Controllers\Controller;
 use App\Models\Industry;
 use Illuminate\Http\Request;
 
 class IndustryController extends Controller
 {
+    use HandlesImageUploads;
+
     public function index()
     {
         $industries = Industry::orderBy('sort_order')->orderBy('created_at', 'desc')->get();
@@ -23,7 +26,7 @@ class IndustryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'icon'        => 'nullable|string|max:100',
+            'icon_file'   => 'nullable|file|mimes:svg|max:512',
             'title.en'    => 'required|string|max:255',
             'title.ar'    => 'required|string|max:255',
             'subtitle.en' => 'nullable|string|max:1000',
@@ -32,8 +35,13 @@ class IndustryController extends Controller
             'sort_order'  => 'required|integer|min:0',
         ]);
 
+        $iconPath = null;
+        if ($request->hasFile('icon_file')) {
+            $iconPath = $this->storeUploadedImage($request->file('icon_file'), 'industries');
+        }
+
         Industry::create([
-            'icon'       => $validated['icon'] ?? null,
+            'icon_path'  => $iconPath,
             'title'      => $validated['title'],
             'subtitle'   => $validated['subtitle'] ?? null,
             'status'     => $validated['status'],
@@ -52,7 +60,7 @@ class IndustryController extends Controller
     public function update(Request $request, Industry $industry)
     {
         $validated = $request->validate([
-            'icon'        => 'nullable|string|max:100',
+            'icon_file'   => 'nullable|file|mimes:svg|max:512',
             'title.en'    => 'required|string|max:255',
             'title.ar'    => 'required|string|max:255',
             'subtitle.en' => 'nullable|string|max:1000',
@@ -61,8 +69,14 @@ class IndustryController extends Controller
             'sort_order'  => 'required|integer|min:0',
         ]);
 
+        $iconPath = $industry->icon_path;
+        if ($request->hasFile('icon_file')) {
+            $this->deleteUploadedImage($industry->icon_path);
+            $iconPath = $this->storeUploadedImage($request->file('icon_file'), 'industries');
+        }
+
         $industry->update([
-            'icon'       => $validated['icon'] ?? null,
+            'icon_path'  => $iconPath,
             'title'      => $validated['title'],
             'subtitle'   => $validated['subtitle'] ?? null,
             'status'     => $validated['status'],
@@ -75,6 +89,7 @@ class IndustryController extends Controller
 
     public function destroy(Industry $industry)
     {
+        $this->deleteUploadedImage($industry->icon_path);
         $industry->delete();
 
         return redirect()->route('admin.cms.industries.index')

@@ -34,8 +34,10 @@
                 @foreach($industries as $industry)
                 <tr>
                     <td>
-                        <span style="font-size: 1.5rem; background: rgba(255,255,255,.05); width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">
-                            {{ $industry->icon ?: '🏭' }}
+                        <span style="background: rgba(255,255,255,.05); width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">
+                            @if($industry->icon_path)
+                                <img src="{{ $industry->icon_path }}" alt="" style="width: 22px; height: 22px; object-fit: contain;">
+                            @endif
                         </span>
                     </td>
                     <td><div class="cell-main">{{ $industry->title['en'] ?? '' }}</div></td>

@@ -25,7 +25,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.cms.why-saee-reasons.update', $reason) }}">
+    <form method="POST" action="{{ route('admin.cms.why-saee-reasons.update', $reason) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -60,9 +60,16 @@
             </div>
 
             <div class="form-group" style="margin-top:15px;">
-                <label class="form-label">Icon (Emoji or CSS class)</label>
-                <input type="text" name="icon" class="form-input"
-                       value="{{ old('icon', $reason->icon) }}" placeholder="e.g. ⭐, ✅, 🚀, shield">
+                <label class="form-label">Icon (SVG file)</label>
+                @if($reason->icon_path)
+                    <div style="margin-bottom: 10px;">
+                        <img src="{{ $reason->icon_path }}" alt="Current icon" style="width: 42px; height: 42px; object-fit: contain; border-radius: 8px; border: 1px solid var(--bdr); background: rgba(255,255,255,.05); padding: 6px;">
+                    </div>
+                @endif
+                <input type="file" name="icon_file" class="form-input @error('icon_file') err @enderror"
+                       accept="image/svg+xml" style="height: auto; padding: 8px;">
+                <span style="font-size: .75rem; color: var(--text-dim); margin-top: 4px;">Leave blank to keep current icon. Max size: 512KB.</span>
+                @error('icon_file')<span class="form-error">{{ $message }}</span>@enderror
             </div>
         </div>
 

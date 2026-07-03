@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\HandlesImageUploads;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
+    use HandlesImageUploads;
+
     public function index()
     {
         $services = Service::orderBy('sort_order')->orderBy('created_at', 'desc')->get();
@@ -26,12 +29,23 @@ class ServiceController extends Controller
             'title.ar'     => 'required|string|max:255',
             'subtitle.en'  => 'nullable|string',
             'subtitle.ar'  => 'nullable|string',
-            'icon'         => 'nullable|string|max:100',
+            'icon_file'    => 'nullable|file|mimes:svg|max:512',
             'status'       => 'required|in:active,inactive',
             'sort_order'   => 'required|integer|min:0',
         ]);
 
-        Service::create($validated);
+        $iconPath = null;
+        if ($request->hasFile('icon_file')) {
+            $iconPath = $this->storeUploadedImage($request->file('icon_file'), 'services');
+        }
+
+        Service::create([
+            'title'      => $validated['title'],
+            'subtitle'   => $validated['subtitle'] ?? null,
+            'icon_path'  => $iconPath,
+            'status'     => $validated['status'],
+            'sort_order' => $validated['sort_order'],
+        ]);
 
         return redirect()->route('admin.cms.services.index')
             ->with('success', 'Service created successfully.');
@@ -49,12 +63,24 @@ class ServiceController extends Controller
             'title.ar'     => 'required|string|max:255',
             'subtitle.en'  => 'nullable|string',
             'subtitle.ar'  => 'nullable|string',
-            'icon'         => 'nullable|string|max:100',
+            'icon_file'    => 'nullable|file|mimes:svg|max:512',
             'status'       => 'required|in:active,inactive',
             'sort_order'   => 'required|integer|min:0',
         ]);
 
-        $service->update($validated);
+        $iconPath = $service->icon_path;
+        if ($request->hasFile('icon_file')) {
+            $this->deleteUploadedImage($service->icon_path);
+            $iconPath = $this->storeUploadedImage($request->file('icon_file'), 'services');
+        }
+
+        $service->update([
+            'title'      => $validated['title'],
+            'subtitle'   => $validated['subtitle'] ?? null,
+            'icon_path'  => $iconPath,
+            'status'     => $validated['status'],
+            'sort_order' => $validated['sort_order'],
+        ]);
 
         return redirect()->route('admin.cms.services.index')
             ->with('success', 'Service updated successfully.');
@@ -62,6 +88,7 @@ class ServiceController extends Controller
 
     public function destroy(Service $service)
     {
+        $this->deleteUploadedImage($service->icon_path);
         $service->delete();
 
         return redirect()->route('admin.cms.services.index')

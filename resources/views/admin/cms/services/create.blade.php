@@ -25,7 +25,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.cms.services.store') }}">
+    <form method="POST" action="{{ route('admin.cms.services.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="form-section">
@@ -66,9 +66,11 @@
         <div class="form-section" style="margin-top:20px;">
             <div class="form-section-title">Icon</div>
             <div class="form-group">
-                <label class="form-label">Icon (Emoji or CSS class)</label>
-                <input type="text" name="icon" class="form-input"
-                       value="{{ old('icon', '📦') }}" placeholder="e.g. ⚡, ✈️, 📦, truck">
+                <label class="form-label">Icon (SVG file)</label>
+                <input type="file" name="icon_file" class="form-input @error('icon_file') err @enderror"
+                       accept="image/svg+xml" style="height: auto; padding: 8px;">
+                <span style="font-size: .75rem; color: var(--text-dim); margin-top: 4px;">Upload an SVG icon file. Max size: 512KB.</span>
+                @error('icon_file')<span class="form-error">{{ $message }}</span>@enderror
             </div>
         </div>
 

@@ -34,8 +34,10 @@
                 @foreach($services as $service)
                 <tr>
                     <td>
-                        <span style="font-size: 1.5rem; background: rgba(255,255,255,.05); width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">
-                            {{ $service->icon ?: '📦' }}
+                        <span style="background: rgba(255,255,255,.05); width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">
+                            @if($service->icon_path)
+                                <img src="{{ $service->icon_path }}" alt="" style="width: 22px; height: 22px; object-fit: contain;">
+                            @endif
                         </span>
                     </td>
                     <td><div class="cell-main">{{ $service->title['en'] ?? '' }}</div></td>

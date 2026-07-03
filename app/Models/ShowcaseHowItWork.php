@@ -10,7 +10,7 @@ class ShowcaseHowItWork extends Model
     use HasTranslations;
 
     protected $fillable = [
-        'icon',
+        'icon_path',
         'title',
         'subtitle',
         'sort_order',
