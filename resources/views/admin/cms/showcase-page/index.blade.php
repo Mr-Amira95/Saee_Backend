@@ -145,5 +145,10 @@
         <h2 style="font-size:1.05rem;font-weight:700;margin:0;">Metrics</h2>
         <a href="{{ route('admin.cms.showcase-metrics.index') }}" class="btn-secondary">Manage Metrics &rarr;</a>
     </div>
+
+    <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="font-size:1.05rem;font-weight:700;margin:0;">Screenshots</h2>
+        <a href="{{ route('admin.cms.showcase-screenshots.index') }}" class="btn-secondary">Manage Screenshots &rarr;</a>
+    </div>
 </div>
 @endsection

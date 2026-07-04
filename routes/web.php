@@ -45,6 +45,7 @@ use App\Http\Controllers\Admin\ShowcaseCapabilityController;
 use App\Http\Controllers\Admin\ShowcaseHowItWorkController;
 use App\Http\Controllers\Admin\ShowcaseMetricController;
 use App\Http\Controllers\Admin\ShowcasePageController;
+use App\Http\Controllers\Admin\ShowcaseScreenshotController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SupportController;
 use App\Http\Controllers\Admin\WhatsAppTemplateController;
@@ -158,6 +159,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('cms/showcase-capabilities', ShowcaseCapabilityController::class)->names('cms.showcase-capabilities');
         Route::resource('cms/showcase-how-it-works', ShowcaseHowItWorkController::class)->names('cms.showcase-how-it-works');
         Route::resource('cms/showcase-metrics', ShowcaseMetricController::class)->names('cms.showcase-metrics');
+        Route::resource('cms/showcase-screenshots', ShowcaseScreenshotController::class)->names('cms.showcase-screenshots');
 
         // Website CMS — Why Sa'ee
         Route::get('cms/why-saee-page', [WhySaeeSectionController::class, 'index'])->name('cms.why-saee-page.index');
