@@ -1,3 +1,9 @@
+<IfModule mod_dir.c>
+    # Prefer the prerendered React homepage (index.html) over Laravel's
+    # front controller (index.php) when a directory is requested directly.
+    DirectoryIndex index.html index.php
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
