@@ -87,7 +87,7 @@
             transition: max-height .3s cubic-bezier(.4,0,.2,1);
             padding-left: 12px;
         }
-        .nav-submenu.open { max-height: 400px; }
+        .nav-submenu.open { max-height: 800px; }
         .nav-sub-item {
             display: flex; align-items: center; gap: 9px;
             padding: 7px 11px; border-radius: 8px;

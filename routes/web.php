@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\AboutValueController;
 use App\Http\Controllers\Admin\AiConversationController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BulkOrderController;
 use App\Http\Controllers\Admin\BusinessBenefitController;
 use App\Http\Controllers\Admin\CityController;
@@ -38,7 +37,6 @@ use App\Http\Controllers\Admin\WhySaeeReasonController;
 use App\Http\Controllers\Admin\WhySaeeSectionController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\RejectionReasonController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ServiceController;
@@ -81,7 +79,6 @@ Route::get('/lang/{locale}', function ($locale) {
 })->name('lang.switch');
 
 Route::get('/', [PublicCmsController::class, 'home'])->name('public.home');
-Route::get('/page/{slug}', [PublicCmsController::class, 'showPage'])->name('public.page');
 
 // ─── Public Order Location Sharing & Support Chat ──────────────────────────────
 Route::get('/order/{order_number}/share-location', [PublicOrderLocationController::class, 'show'])->name('public.share-location');
@@ -126,8 +123,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
         // CMS Management
-        Route::resource('cms/pages', PageController::class)->names('cms.pages');
-        Route::resource('cms/banners', BannerController::class)->names('cms.banners');
         Route::get('cms/services-page', [ServicesPageController::class, 'index'])->name('cms.services-page.index');
         Route::put('cms/services-page', [ServicesPageController::class, 'update'])->name('cms.services-page.update');
         Route::resource('cms/services', ServiceController::class)->names('cms.services');

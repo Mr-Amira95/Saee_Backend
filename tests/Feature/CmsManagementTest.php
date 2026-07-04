@@ -3,14 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Models\Page;
-use App\Models\Banner;
 use App\Models\Service;
 use App\Models\Faq;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CmsManagementTest extends TestCase
@@ -23,78 +19,6 @@ class CmsManagementTest extends TestCase
     {
         parent::setUp();
         $this->admin = User::factory()->create(['role' => 'superadmin']);
-    }
-
-    public function test_admin_can_manage_pages()
-    {
-        $this->actingAs($this->admin);
-
-        // Create
-        $response = $this->post(route('admin.cms.pages.store'), [
-            'title' => 'About Us Page',
-            'slug' => 'about-us',
-            'content' => '<p>This is about us page content</p>',
-            'meta_title' => 'About Us SEO Title',
-            'meta_description' => 'About Us description',
-            'status' => 'published',
-        ]);
-        $response->assertRedirect(route('admin.cms.pages.index'));
-        $this->assertDatabaseHas('pages', ['slug' => 'about-us', 'title' => 'About Us Page']);
-
-        // Edit/Update
-        $page = Page::first();
-        $response = $this->put(route('admin.cms.pages.update', $page), [
-            'title' => 'Updated About Us Page',
-            'slug' => 'about-us-updated',
-            'content' => '<p>Updated content</p>',
-            'meta_title' => 'Updated SEO Title',
-            'meta_description' => 'Updated SEO desc',
-            'status' => 'published',
-        ]);
-        $response->assertRedirect(route('admin.cms.pages.index'));
-        $this->assertDatabaseHas('pages', ['slug' => 'about-us-updated', 'title' => 'Updated About Us Page']);
-
-        // Delete
-        $response = $this->delete(route('admin.cms.pages.destroy', $page));
-        $response->assertRedirect(route('admin.cms.pages.index'));
-        $this->assertDatabaseMissing('pages', ['id' => $page->id]);
-    }
-
-    public function test_admin_can_manage_banners()
-    {
-        $this->actingAs($this->admin);
-
-        // Create with URL
-        $response = $this->post(route('admin.cms.banners.store'), [
-            'title' => 'First Promo Banner',
-            'subtitle' => 'Promo Subtitle',
-            'image_path' => 'https://example.com/slide1.jpg',
-            'link_url' => '/shop',
-            'link_text' => 'Shop Now',
-            'status' => 'active',
-            'sort_order' => 1,
-        ]);
-        $response->assertRedirect(route('admin.cms.banners.index'));
-        $this->assertDatabaseHas('banners', ['title' => 'First Promo Banner', 'image_path' => 'https://example.com/slide1.jpg']);
-
-        // Update
-        $banner = Banner::first();
-        $response = $this->put(route('admin.cms.banners.update', $banner), [
-            'title' => 'Updated Promo Banner',
-            'subtitle' => 'Updated Subtitle',
-            'image_path' => 'https://example.com/slide1-updated.jpg',
-            'link_url' => '/shop-updated',
-            'link_text' => 'Shop Update',
-            'status' => 'active',
-            'sort_order' => 2,
-        ]);
-        $response->assertRedirect(route('admin.cms.banners.index'));
-        $this->assertDatabaseHas('banners', ['title' => 'Updated Promo Banner', 'image_path' => 'https://example.com/slide1-updated.jpg']);
-
-        // Delete
-        $response = $this->delete(route('admin.cms.banners.destroy', $banner));
-        $response->assertRedirect(route('admin.cms.banners.index'));
-        $this->assertDatabaseMissing('banners', ['id' => $banner->id]);
     }
 
     public function test_admin_can_manage_services()
@@ -192,14 +116,6 @@ class CmsManagementTest extends TestCase
     public function test_public_pages_and_homepage_render_cms_content()
     {
         // Setup database contents
-        Banner::create([
-            'title' => 'Fly with SAEE Banners',
-            'subtitle' => 'Unbeatable speed',
-            'image_path' => 'https://images.unsplash.com/photo-1',
-            'status' => 'active',
-            'sort_order' => 1
-        ]);
-
         Service::create([
             'title' => 'Custom Courier Service',
             'description' => 'Dynamic description here.',
@@ -220,30 +136,12 @@ class CmsManagementTest extends TestCase
         SiteSetting::setVal('site_phone', '+962777777777');
         SiteSetting::setVal('meta_title', 'Jordan Premier Logistics Service');
 
-        $page = Page::create([
-            'title' => 'Terms of Operations',
-            'slug' => 'terms',
-            'content' => '<h1>Operational Rules</h1><p>Rules content goes here.</p>',
-            'status' => 'published'
-        ]);
-
         // Request Homepage
         $response = $this->get(route('public.home'));
         $response->assertStatus(200);
-        $response->assertSee('Fly with SAEE');
-        $response->assertSee('Banners');
         $response->assertSee('Custom Courier Service');
         $response->assertSee('Can I return packages?');
         $response->assertSee('Dynamic SAEE Jordan');
         $response->assertSee('+962777777777');
-        $response->assertSee('Terms of Operations');
-
-        // Request custom page slug
-        $responsePage = $this->get(route('public.page', 'terms'));
-        $responsePage->assertStatus(200);
-        $responsePage->assertSee('Terms of Operations');
-        $responsePage->assertSee('Operational Rules');
-        $responsePage->assertSee('Rules content goes here.');
-        $responsePage->assertSee('Dynamic SAEE Jordan');
     }
 }

@@ -144,12 +144,6 @@
             <a href="{{ route('admin.cms.why-saee-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.why-saee-page.*') || request()->routeIs('admin.cms.why-saee-reasons.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __("Why Sa'ee") }}
             </a>
-            <a href="{{ route('admin.cms.pages.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.pages.*') ? 'active' : '' }}">
-                <span class="sub-dot"></span> {{ __('Custom Pages') }}
-            </a>
-            <a href="{{ route('admin.cms.banners.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.banners.*') ? 'active' : '' }}">
-                <span class="sub-dot"></span> {{ __('Homepage Banners') }}
-            </a>
             <a href="{{ route('admin.cms.services-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.services-page.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Services Page') }}
             </a>
