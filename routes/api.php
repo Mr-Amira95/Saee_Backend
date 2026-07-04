@@ -36,6 +36,7 @@ use App\Http\Controllers\Public\HeroController;
 use App\Http\Controllers\Public\IndustriesController;
 use App\Http\Controllers\Public\ServicesController as PublicServicesController;
 use App\Http\Controllers\Public\ShowcasesController;
+use App\Http\Controllers\Public\SiteSettingController as PublicSiteSettingController;
 use App\Http\Controllers\Public\WhySaeeController;
 use Illuminate\Support\Facades\Route;
 
@@ -65,6 +66,9 @@ Route::prefix('public')->name('api.public.')->group(function () {
     Route::get('for-business', [ForBusinessController::class, 'show'])->name('for-business');
     Route::get('about', [AboutController::class, 'show'])->name('about');
     Route::get('contact-information', [ContactInformationController::class, 'show'])->name('contact-information');
+    Route::get('privacy-policy', [LegalController::class, 'privacyBilingual'])->name('privacy-policy');
+    Route::get('terms-and-conditions', [LegalController::class, 'termsBilingual'])->name('terms-and-conditions');
+    Route::get('site-settings', [PublicSiteSettingController::class, 'show'])->name('site-settings');
 
     Route::post('contact-submissions', [ContactSubmissionController::class, 'store'])
         ->middleware('throttle:10,1')

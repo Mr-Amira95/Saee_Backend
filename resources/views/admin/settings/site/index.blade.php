@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Settings</span>
+    <span class="current">Website CMS</span>
     <span class="sep">/</span>
     <span class="current">General Settings</span>
 @endsection

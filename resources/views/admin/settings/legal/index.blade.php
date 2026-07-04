@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Settings</span>
+    <span class="current">Website CMS</span>
     <span class="sep">/</span>
     <span class="current">Legal Content</span>
 @endsection
@@ -31,6 +31,11 @@
         padding: 8px 12px; background: rgba(255,255,255,.03); border-radius: 6px; border: 1px solid var(--bdr);
     }
     .cke { border-radius: 8px; overflow: hidden; }
+    .lang-block { margin-bottom: 24px; }
+    .lang-block-title {
+        font-size: .82rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase;
+        letter-spacing: .04em; margin-bottom: 10px;
+    }
 </style>
 @endsection
 
@@ -65,11 +70,22 @@
             <div class="form-section">
                 <div class="form-section-title">Terms &amp; Conditions</div>
                 <p class="editor-note">
-                    Write the full Terms &amp; Conditions content below. The content supports rich formatting (headings, bold, lists, links, etc.).
-                    It will be served as HTML via the public API at <code>/api/legal/terms</code>.
+                    Write the full Terms &amp; Conditions content in both languages below. The content supports rich formatting (headings, bold, lists, links, etc.)
+                    and is served via the public API at <code>/api/legal/terms</code> and <code>/api/public/terms-and-conditions</code>.
                 </p>
-                <div class="form-group">
-                    <textarea name="terms_and_conditions" id="editor-terms" rows="20" style="width:100%;">{{ old('terms_and_conditions', $settings['terms_and_conditions']) }}</textarea>
+
+                <div class="lang-block">
+                    <div class="lang-block-title">English</div>
+                    <div class="form-group">
+                        <textarea name="terms_and_conditions[en]" id="editor-terms-en" rows="16" style="width:100%;">{{ old('terms_and_conditions.en', $settings['terms_and_conditions']['en']) }}</textarea>
+                    </div>
+                </div>
+
+                <div class="lang-block">
+                    <div class="lang-block-title">Arabic</div>
+                    <div class="form-group">
+                        <textarea name="terms_and_conditions[ar]" id="editor-terms-ar" dir="rtl" rows="16" style="width:100%;">{{ old('terms_and_conditions.ar', $settings['terms_and_conditions']['ar']) }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -79,11 +95,22 @@
             <div class="form-section">
                 <div class="form-section-title">Privacy Policy</div>
                 <p class="editor-note">
-                    Write the full Privacy Policy content below. The content supports rich formatting (headings, bold, lists, links, etc.).
-                    It will be served as HTML via the public API at <code>/api/legal/privacy</code>.
+                    Write the full Privacy Policy content in both languages below. The content supports rich formatting (headings, bold, lists, links, etc.)
+                    and is served via the public API at <code>/api/legal/privacy</code> and <code>/api/public/privacy-policy</code>.
                 </p>
-                <div class="form-group">
-                    <textarea name="privacy_policy" id="editor-privacy" rows="20" style="width:100%;">{{ old('privacy_policy', $settings['privacy_policy']) }}</textarea>
+
+                <div class="lang-block">
+                    <div class="lang-block-title">English</div>
+                    <div class="form-group">
+                        <textarea name="privacy_policy[en]" id="editor-privacy-en" rows="16" style="width:100%;">{{ old('privacy_policy.en', $settings['privacy_policy']['en']) }}</textarea>
+                    </div>
+                </div>
+
+                <div class="lang-block">
+                    <div class="lang-block-title">Arabic</div>
+                    <div class="form-group">
+                        <textarea name="privacy_policy[ar]" id="editor-privacy-ar" dir="rtl" rows="16" style="width:100%;">{{ old('privacy_policy.ar', $settings['privacy_policy']['ar']) }}</textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,31 +124,22 @@
 
 @section('scripts')
 <script>
-    // Initialise CKEditor on both textareas
-    CKEDITOR.replace('editor-terms', {
-        height: 450,
-        versionCheck: false,
-        toolbar: [
-            { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'] },
-            { name: 'paragraph',   items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'] },
-            { name: 'styles',      items: ['Format'] },
-            { name: 'links',       items: ['Link', 'Unlink'] },
-            { name: 'tools',       items: ['Maximize'] },
-            { name: 'document',    items: ['Source'] },
-        ],
-    });
+    var legalEditorIds = ['editor-terms-en', 'editor-terms-ar', 'editor-privacy-en', 'editor-privacy-ar'];
 
-    CKEDITOR.replace('editor-privacy', {
-        height: 450,
-        versionCheck: false,
-        toolbar: [
-            { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'] },
-            { name: 'paragraph',   items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'] },
-            { name: 'styles',      items: ['Format'] },
-            { name: 'links',       items: ['Link', 'Unlink'] },
-            { name: 'tools',       items: ['Maximize'] },
-            { name: 'document',    items: ['Source'] },
-        ],
+    legalEditorIds.forEach(function (id) {
+        CKEDITOR.replace(id, {
+            height: 380,
+            versionCheck: false,
+            contentsLangDirection: id.endsWith('-ar') ? 'rtl' : 'ltr',
+            toolbar: [
+                { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'] },
+                { name: 'paragraph',   items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'] },
+                { name: 'styles',      items: ['Format'] },
+                { name: 'links',       items: ['Link', 'Unlink'] },
+                { name: 'tools',       items: ['Maximize'] },
+                { name: 'document',    items: ['Source'] },
+            ],
+        });
     });
 
     // Sync CKEditor content back into the textareas before form submit
