@@ -1,0 +1,1 @@
+var e=`/assets/warehouse-night-BJq9zxHn.jpg`;export{e as t};

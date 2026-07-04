@@ -1,0 +1,1 @@
+function e(e,t){return e?e[t]??e.en??``:``}export{e as t};
