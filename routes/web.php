@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AboutPageController;
+use App\Http\Controllers\Admin\AboutValueController;
 use App\Http\Controllers\Admin\AiConversationController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BulkOrderController;
+use App\Http\Controllers\Admin\BusinessBenefitController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\ClientBillingController;
 use App\Http\Controllers\Admin\ContactFormSubmissionController;
@@ -43,6 +45,7 @@ use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ServicesPageController;
 use App\Http\Controllers\Admin\ShowcaseCapabilityController;
 use App\Http\Controllers\Admin\ShowcaseHowItWorkController;
+use App\Http\Controllers\Admin\ShowcaseMetricController;
 use App\Http\Controllers\Admin\ShowcasePageController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SupportController;
@@ -159,6 +162,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('cms/showcase-page', [ShowcasePageController::class, 'update'])->name('cms.showcase-page.update');
         Route::resource('cms/showcase-capabilities', ShowcaseCapabilityController::class)->names('cms.showcase-capabilities');
         Route::resource('cms/showcase-how-it-works', ShowcaseHowItWorkController::class)->names('cms.showcase-how-it-works');
+        Route::resource('cms/showcase-metrics', ShowcaseMetricController::class)->names('cms.showcase-metrics');
 
         // Website CMS — Why Sa'ee
         Route::get('cms/why-saee-page', [WhySaeeSectionController::class, 'index'])->name('cms.why-saee-page.index');
@@ -178,10 +182,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Website CMS — For Businesses Page
         Route::get('cms/for-business-page', [ForBusinessPageController::class, 'index'])->name('cms.for-business-page.index');
         Route::put('cms/for-business-page', [ForBusinessPageController::class, 'update'])->name('cms.for-business-page.update');
+        Route::resource('cms/business-benefits', BusinessBenefitController::class)->names('cms.business-benefits');
 
         // Website CMS — About Page
         Route::get('cms/about-page', [AboutPageController::class, 'index'])->name('cms.about-page.index');
         Route::put('cms/about-page', [AboutPageController::class, 'update'])->name('cms.about-page.update');
+        Route::resource('cms/about-values', AboutValueController::class)->names('cms.about-values');
         Route::get('settings/site', [SiteSettingController::class, 'index'])->name('settings.site.index');
         Route::post('settings/site', [SiteSettingController::class, 'update'])->name('settings.site.update');
         Route::get('settings/legal', [LegalContentController::class, 'index'])->name('settings.legal.index');

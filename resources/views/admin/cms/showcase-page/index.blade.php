@@ -140,5 +140,10 @@
         <h2 style="font-size:1.05rem;font-weight:700;margin:0;">How It Works</h2>
         <a href="{{ route('admin.cms.showcase-how-it-works.index') }}" class="btn-secondary">Manage How It Works &rarr;</a>
     </div>
+
+    <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="font-size:1.05rem;font-weight:700;margin:0;">Metrics</h2>
+        <a href="{{ route('admin.cms.showcase-metrics.index') }}" class="btn-secondary">Manage Metrics &rarr;</a>
+    </div>
 </div>
 @endsection

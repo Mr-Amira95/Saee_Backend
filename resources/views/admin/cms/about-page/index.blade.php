@@ -147,5 +147,10 @@
             <button type="submit" class="btn-primary">Save About Page</button>
         </div>
     </form>
+
+    <div style="margin-top:32px;display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="font-size:1.05rem;font-weight:700;margin:0;">Values</h2>
+        <a href="{{ route('admin.cms.about-values.index') }}" class="btn-secondary">Manage Values &rarr;</a>
+    </div>
 </div>
 @endsection

@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
         $this->seedAdminUser();
         $this->seedRejectionReasons();
         $this->seedJordanCitiesAndAreas();
+        $this->call(WebsiteContentSeeder::class);
     }
 
     private function seedAdminUser(): void

@@ -138,7 +138,7 @@
             <a href="{{ route('admin.cms.industries-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.industries-page.*') || request()->routeIs('admin.cms.industries.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Industries') }}
             </a>
-            <a href="{{ route('admin.cms.showcase-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.showcase-page.*') || request()->routeIs('admin.cms.showcase-capabilities.*') || request()->routeIs('admin.cms.showcase-how-it-works.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.cms.showcase-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.showcase-page.*') || request()->routeIs('admin.cms.showcase-capabilities.*') || request()->routeIs('admin.cms.showcase-how-it-works.*') || request()->routeIs('admin.cms.showcase-metrics.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Showcases') }}
             </a>
             <a href="{{ route('admin.cms.why-saee-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.why-saee-page.*') || request()->routeIs('admin.cms.why-saee-reasons.*') ? 'active' : '' }}">
@@ -165,7 +165,7 @@
             <a href="{{ route('admin.cms.customer-stories-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.customer-stories-page.*') || request()->routeIs('admin.cms.customer-testimonials.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Customer Stories') }}
             </a>
-            <a href="{{ route('admin.cms.for-business-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.for-business-page.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.cms.for-business-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.for-business-page.*') || request()->routeIs('admin.cms.business-benefits.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('For Businesses Page') }}
             </a>
             <a href="{{ route('admin.cms.contact-information.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.contact-information.*') ? 'active' : '' }}">
@@ -174,7 +174,7 @@
             <a href="{{ route('admin.cms.contact-submissions.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.contact-submissions.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Contact Form Submissions') }}
             </a>
-            <a href="{{ route('admin.cms.about-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.about-page.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.cms.about-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.about-page.*') || request()->routeIs('admin.cms.about-values.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('About Page') }}
             </a>
             <a href="{{ route('admin.cms.login-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.login-page.*') ? 'active' : '' }}">

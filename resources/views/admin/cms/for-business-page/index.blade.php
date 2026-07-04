@@ -88,5 +88,10 @@
             <button type="submit" class="btn-primary">Save For Businesses Page</button>
         </div>
     </form>
+
+    <div style="margin-top:32px;display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="font-size:1.05rem;font-weight:700;margin:0;">Benefits</h2>
+        <a href="{{ route('admin.cms.business-benefits.index') }}" class="btn-secondary">Manage Benefits &rarr;</a>
+    </div>
 </div>
 @endsection

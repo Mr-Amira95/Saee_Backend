@@ -18,6 +18,12 @@ class ContactInformationController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
+            'page_badge.en'             => 'nullable|string|max:255',
+            'page_badge.ar'             => 'nullable|string|max:255',
+            'page_title.en'             => 'nullable|string|max:255',
+            'page_title.ar'             => 'nullable|string|max:255',
+            'page_subtitle.en'          => 'nullable|string|max:1000',
+            'page_subtitle.ar'          => 'nullable|string|max:1000',
             'email'                     => 'nullable|email|max:255',
             'phone'                     => 'nullable|string|max:50',
             'address_link'              => 'nullable|string|max:2048',
@@ -30,6 +36,9 @@ class ContactInformationController extends Controller
         $contact = ContactInformation::instance();
 
         $contact->update([
+            'page_badge'          => $validated['page_badge'] ?? null,
+            'page_title'          => $validated['page_title'] ?? null,
+            'page_subtitle'       => $validated['page_subtitle'] ?? null,
             'email'               => $validated['email'] ?? null,
             'phone'               => $validated['phone'] ?? null,
             'address_link'        => $validated['address_link'] ?? null,

@@ -10,6 +10,9 @@ class ContactInformation extends Model
     use HasTranslations;
 
     protected $fillable = [
+        'page_badge',
+        'page_title',
+        'page_subtitle',
         'email',
         'phone',
         'address_link',
@@ -20,6 +23,9 @@ class ContactInformation extends Model
     protected function casts(): array
     {
         return [
+            'page_badge' => 'array',
+            'page_title' => 'array',
+            'page_subtitle' => 'array',
             'address_text' => 'array',
             'working_hours_text' => 'array',
         ];

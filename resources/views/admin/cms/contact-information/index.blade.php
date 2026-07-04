@@ -33,6 +33,46 @@
         @method('PUT')
 
         <div class="form-section">
+            <div class="form-section-title">Page Header</div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Badge (English)</label>
+                    <input type="text" name="page_badge[en]" class="form-input @error('page_badge.en') err @enderror"
+                           value="{{ old('page_badge.en', $contact->page_badge['en'] ?? '') }}">
+                    @error('page_badge.en')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Badge (Arabic)</label>
+                    <input type="text" name="page_badge[ar]" dir="rtl" class="form-input @error('page_badge.ar') err @enderror"
+                           value="{{ old('page_badge.ar', $contact->page_badge['ar'] ?? '') }}">
+                    @error('page_badge.ar')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Title (English)</label>
+                    <input type="text" name="page_title[en]" class="form-input @error('page_title.en') err @enderror"
+                           value="{{ old('page_title.en', $contact->page_title['en'] ?? '') }}">
+                    @error('page_title.en')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Title (Arabic)</label>
+                    <input type="text" name="page_title[ar]" dir="rtl" class="form-input @error('page_title.ar') err @enderror"
+                           value="{{ old('page_title.ar', $contact->page_title['ar'] ?? '') }}">
+                    @error('page_title.ar')<span class="form-error">{{ $message }}</span>@enderror
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:15px;">
+                <label class="form-label">Subtitle (English)</label>
+                <textarea name="page_subtitle[en]" class="form-input @error('page_subtitle.en') err @enderror" rows="2" style="height:auto;">{{ old('page_subtitle.en', $contact->page_subtitle['en'] ?? '') }}</textarea>
+                @error('page_subtitle.en')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+                <label class="form-label">Subtitle (Arabic)</label>
+                <textarea name="page_subtitle[ar]" dir="rtl" class="form-input @error('page_subtitle.ar') err @enderror" rows="2" style="height:auto;">{{ old('page_subtitle.ar', $contact->page_subtitle['ar'] ?? '') }}</textarea>
+                @error('page_subtitle.ar')<span class="form-error">{{ $message }}</span>@enderror
+            </div>
+        </div>
+
+        <div class="form-section" style="margin-top:20px;">
             <div class="form-section-title">Contact Details</div>
             <div class="form-grid-2">
                 <div class="form-group">

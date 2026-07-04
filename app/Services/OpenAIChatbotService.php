@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ChatSession;
+use App\Models\ContactInformation;
 use App\Models\Faq;
 use App\Models\Order;
 use Illuminate\Support\Collection;
@@ -12,7 +13,7 @@ use Throwable;
 
 class OpenAIChatbotService
 {
-    private const SYSTEM_PROMPT = <<<PROMPT
+    private const SYSTEM_PROMPT_TEMPLATE = <<<PROMPT
 You are SAEE Logistics Assistant.
 
 Your responsibilities:
@@ -29,6 +30,10 @@ When tracking a shipment:
   or (3) their full name as registered on the order. Do not make up tracking info.
 - If multiple orders are returned, present each one clearly and concisely.
 - If the order is not found, apologize and suggest the customer verify their details.
+
+Company contact information (use this exact information whenever asked for contact
+details, phone number, email, address or working hours — never invent different values):
+{CONTACT_INFO}
 PROMPT;
 
     private const TRACKING_KEYWORDS = [
@@ -368,13 +373,29 @@ PROMPT;
         return implode("\n", $lines);
     }
 
+    private function buildSystemPrompt(): string
+    {
+        $contact = ContactInformation::instance();
+
+        $lines = array_filter([
+            $contact->email ? "Email: {$contact->email}" : null,
+            $contact->phone ? "Phone: {$contact->phone}" : null,
+            $contact->address_text ? 'Address: ' . ($contact->trans('address_text')) : null,
+            $contact->working_hours_text ? 'Working hours: ' . ($contact->trans('working_hours_text')) : null,
+        ]);
+
+        $contactInfo = $lines ? implode("\n", $lines) : 'Not configured yet — ask the customer to check the website footer.';
+
+        return str_replace('{CONTACT_INFO}', $contactInfo, self::SYSTEM_PROMPT_TEMPLATE);
+    }
+
     private function buildMessages(
         Collection $history,
         string $userMessage,
         string $context,
     ): array {
         $messages = [
-            ['role' => 'system', 'content' => self::SYSTEM_PROMPT],
+            ['role' => 'system', 'content' => $this->buildSystemPrompt()],
         ];
 
         foreach ($history as $msg) {
