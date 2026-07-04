@@ -15,7 +15,9 @@
             <p>Track operational expenses: rent, utilities, fuel, and other costs.</p>
         </div>
         <div class="page-hd-right">
+            @if(auth()->user()->hasAdminAction('finances.expenses'))
             <a href="{{ route('admin.expenses.create') }}" class="btn-primary">+ Record Expense</a>
+            @endif
         </div>
     </div>
 
@@ -101,12 +103,14 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
                                     </a>
+                                    @if(auth()->user()->hasAdminAction('finances.expenses'))
                                     <button type="button" class="act-btn act-delete" title="Delete"
                                         onclick="confirmDelete('{{ route('admin.expenses.destroy', $exp) }}', '{{ addslashes($exp->category->label()) }} — {{ number_format($exp->amount, 2) }} JD')">
                                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
                                     </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

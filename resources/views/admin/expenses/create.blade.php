@@ -98,7 +98,9 @@
 
         <div class="form-actions">
             <a href="{{ route('admin.expenses.index') }}" class="btn-secondary">Cancel</a>
+            @if(auth()->user()->hasAdminAction('finances.expenses'))
             <button type="submit" class="btn-primary">Save Expense</button>
+            @endif
         </div>
     </form>
 @endsection

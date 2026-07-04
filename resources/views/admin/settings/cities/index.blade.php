@@ -42,7 +42,9 @@
             <a href="{{ route('admin.cities.index') }}" class="btn-secondary">Clear</a>
         @endif
     </form>
+    @if(auth()->user()->hasAdminAction('cities.add'))
     <a href="{{ route('admin.cities.create') }}" class="btn-primary">+ Add City</a>
+    @endif
 </div>
 
 {{-- Table --}}
@@ -84,6 +86,7 @@
                     </td>
                     <td>
                         <div class="actions">
+                            @if(auth()->user()->hasAdminAction('cities.activate'))
                             <form method="POST" action="{{ route('admin.cities.toggle', $city) }}" style="display:contents;">
                                 @csrf
                                 @method('PATCH')
@@ -92,13 +95,18 @@
                                     <span class="toggle-track"><span class="toggle-thumb"></span></span>
                                 </label>
                             </form>
+                            @endif
+                            @if(auth()->user()->hasAdminAction('cities.edit'))
                             <a href="{{ route('admin.cities.edit', $city) }}" class="act-btn act-edit" title="Edit & Manage Areas">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             </a>
+                            @endif
+                            @if(auth()->user()->hasAdminAction('cities.delete'))
                             <button class="act-btn act-delete" title="Delete"
                                 onclick="confirmDelete('{{ route('admin.cities.destroy', $city) }}','{{ addslashes($city->name) }}')">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             </button>
+                            @endif
                         </div>
                     </td>
                 </tr>
@@ -117,7 +125,9 @@
 <div class="empty-state">
     <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     <h3>No cities found</h3>
+    @if(auth()->user()->hasAdminAction('cities.add'))
     <p><a href="{{ route('admin.cities.create') }}" style="color:var(--red-lt);">Add the first city.</a></p>
+    @endif
 </div>
 @endif
 

@@ -30,6 +30,8 @@ class CityController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('cities.add'), 403);
+
         $data = $request->validate([
             'name'            => 'required|string|max:150',
             'name_ar'         => 'nullable|string|max:150',
@@ -67,6 +69,8 @@ class CityController extends Controller
 
     public function update(Request $request, City $city)
     {
+        abort_unless($request->user()->hasAdminAction('cities.edit'), 403);
+
         $data = $request->validate([
             'name'           => 'required|string|max:150',
             'name_ar'        => 'nullable|string|max:150',
@@ -87,6 +91,8 @@ class CityController extends Controller
 
     public function toggle(City $city)
     {
+        abort_unless(auth()->user()->hasAdminAction('cities.activate'), 403);
+
         $city->update(['is_active' => !$city->is_active]);
 
         return back()->with('success', 'Status updated.');
@@ -94,6 +100,8 @@ class CityController extends Controller
 
     public function destroy(City $city)
     {
+        abort_unless(auth()->user()->hasAdminAction('cities.delete'), 403);
+
         $city->delete();
         return redirect()->route('admin.cities.index')
             ->with('success', 'City deleted.');
@@ -101,6 +109,8 @@ class CityController extends Controller
 
     public function storeArea(Request $request, City $city)
     {
+        abort_unless($request->user()->hasAdminAction('cities.add'), 403);
+
         $data = $request->validate([
             'name'    => 'required|string|max:150',
             'name_ar' => 'nullable|string|max:150',
@@ -117,6 +127,8 @@ class CityController extends Controller
 
     public function destroyArea(City $city, Area $area)
     {
+        abort_unless(auth()->user()->hasAdminAction('cities.delete'), 403);
+
         $area->delete();
         return back()->with('success', 'Area deleted.');
     }

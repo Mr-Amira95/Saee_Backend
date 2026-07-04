@@ -114,7 +114,9 @@
 
             {{-- Profile Actions (Edit, Status Toggle, Resend, Delete) --}}
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                @if(auth()->user()->hasAdminAction('clients.edit'))
                 <a href="{{ route('admin.clients.edit', $client) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Client</a>
+                @endif
                 <form method="POST" action="{{ route('admin.clients.toggle-status', $client) }}" style="display:inline;">
                     @csrf
                     @method('PATCH')
@@ -135,10 +137,12 @@
                         Resend Invitation
                     </button>
                 </form>
+                @if(auth()->user()->hasAdminAction('clients.delete'))
                 <button class="btn-danger" style="font-size:.78rem;padding:6px 12px;"
                     onclick="confirmDelete('{{ route('admin.clients.destroy', $client) }}','{{ addslashes($client->company_name) }}')">
                     Delete
                 </button>
+                @endif
             </div>
         </div>
     </div>
@@ -322,11 +326,14 @@
 </div>
 
 {{-- ── Banking Details ── --}}
+@if(auth()->user()->hasAdminAction('clients.bank_details'))
 @if($client->bankDetail)
 <div class="section-card">
     <div class="section-card-hd">
         <span class="section-card-title">Banking Details</span>
+        @if(auth()->user()->hasAdminAction('clients.edit'))
         <a href="{{ route('admin.clients.edit', $client) }}" style="font-size:.78rem;color:var(--red);text-decoration:none;">Edit</a>
+        @endif
     </div>
     <div class="section-card-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
@@ -389,12 +396,15 @@
     </div>
 </div>
 @endif
+@endif
 
 {{-- ── Delivery Rates ── --}}
 <div class="section-card">
     <div class="section-card-hd">
         <span class="section-card-title">Delivery Rates per Governorate</span>
+        @if(auth()->user()->hasAdminAction('clients.edit'))
         <a href="{{ route('admin.clients.edit', $client) }}" style="font-size:.78rem;color:var(--red);text-decoration:none;">Edit Rates</a>
+        @endif
     </div>
     <div class="section-card-body">
         <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:12px;">

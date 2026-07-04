@@ -19,6 +19,8 @@ class ReportController extends Controller
      */
     public function index()
     {
+        abort_unless(auth()->user()->hasAdminAction('reports.center'), 403);
+
         $totalOrders  = Order::count();
         $statusCounts = Order::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
@@ -51,6 +53,8 @@ class ReportController extends Controller
      */
     public function kpis()
     {
+        abort_unless(auth()->user()->hasAdminAction('reports.kpi_insights'), 403);
+
         $totalOrders     = Order::count();
         $completedOrders = Order::whereIn('status', ['delivered', 'rejected', 'returned'])->count();
 
@@ -107,6 +111,7 @@ class ReportController extends Controller
      */
     public function driverKpi(User $driver)
     {
+        abort_unless(auth()->user()->hasAdminAction('reports.kpi_insights'), 403);
         abort_if($driver->role !== 'driver', 404);
 
         $profile   = $driver->driverProfile;
@@ -159,6 +164,8 @@ class ReportController extends Controller
      */
     public function ratings(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('reports.rating'), 403);
+
         $query = DriverRating::with(['driver', 'order'])
             ->latest('driver_ratings.created_at');
 

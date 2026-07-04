@@ -82,7 +82,9 @@
 
         <div class="form-actions">
             <a href="{{ route('admin.billing.index') }}" class="btn-secondary">Cancel</a>
+            @if(auth()->user()->hasAdminAction('finances.client_billing'))
             <button type="submit" class="btn-primary">Generate Draft Invoice</button>
+            @endif
         </div>
     </form>
 @endsection

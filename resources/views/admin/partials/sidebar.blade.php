@@ -14,6 +14,8 @@
         </a>
 
         {{-- Users parent --}}
+        @php $u = auth()->user(); @endphp
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('clients') || $u->hasAdminPermission('drivers') || $u->hasAdminPermission('admins'))
         <div class="nav-label">{{ __('Users') }}</div>
         <button
             id="usersBtn"
@@ -25,25 +27,35 @@
             <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div class="nav-submenu {{ request()->routeIs('admin.clients.*') || request()->routeIs('admin.drivers.*') || request()->routeIs('admin.admins.*') ? 'open' : '' }}" id="usersMenu">
+            @if($u->isSuperAdmin() || $u->hasAdminPermission('clients'))
             <a href="{{ route('admin.clients.index') }}" class="nav-sub-item {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Clients') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminPermission('drivers'))
             <a href="{{ route('admin.drivers.index') }}" class="nav-sub-item {{ request()->routeIs('admin.drivers.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Drivers') }}
             </a>
-            @if(auth()->user()->isSuperAdmin())
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminPermission('admins'))
             <a href="{{ route('admin.admins.index') }}" class="nav-sub-item {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Admins') }}
             </a>
             @endif
         </div>
+        @endif
 
         {{-- Operations --}}
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('orders') || $u->hasAdminPermission('support') || $u->hasAdminPermission('ai_conversations'))
         <div class="nav-label">{{ __('Operations') }}</div>
+        @endif
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('orders'))
         <a href="{{ route('admin.orders.index') }}" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             <span class="nav-label-text">{{ __('Orders') }}</span>
         </a>
+        @endif
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('support'))
         <a href="{{ route('admin.support.index') }}" class="nav-item {{ request()->routeIs('admin.support.*') ? 'active' : '' }}">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 12c0-4.97 4.03-9 9-9s9 4.03 9 9" />
@@ -54,12 +66,16 @@
             <span class="nav-label-text">{{ __('Support Tickets') }}</span>
             <span class="sidebar-badge" id="supportTicketBadge" style="display:{{ (isset($unreadSupportTicketsCount) && $unreadSupportTicketsCount > 0) ? 'inline-block' : 'none' }};">{{ $unreadSupportTicketsCount ?? 0 }}</span>
         </a>
+        @endif
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('ai_conversations'))
         <a href="{{ route('admin.ai-conversations.index') }}" class="nav-item {{ request()->routeIs('admin.ai-conversations.*') ? 'active' : '' }}">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .03 2.699-1.32 2.275l-2.28-.758M5 14.5l-1.402 1.402c-1 1-.03 2.699 1.32 2.275l2.28-.758"/></svg>
             <span class="nav-label-text">{{ __('AI Conversations') }}</span>
         </a>
+        @endif
 
         {{-- Finance --}}
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('finances'))
         <div class="nav-label">{{ __('Finance') }}</div>
         <button
             id="financeBtn"
@@ -71,30 +87,46 @@
             <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div class="nav-submenu {{ request()->routeIs('admin.financials.*') || request()->routeIs('admin.payroll.*') || request()->routeIs('admin.billing.*') || request()->routeIs('admin.expenses.*') ? 'open' : '' }}" id="financeMenu">
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.settlements'))
             <a href="{{ route('admin.financials.index') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.index') || request()->routeIs('admin.financials.settle-driver') || request()->routeIs('admin.financials.payout-client') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Settlements') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.checkout_approvals'))
             <a href="{{ route('admin.financials.handover-requests.index') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.handover-requests.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Checkout Approvals') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.cod_invoices'))
             <a href="{{ route('admin.financials.invoices') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.invoices*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('COD Invoices') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.reconciliation'))
             <a href="{{ route('admin.financials.reconciliation') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.reconciliation') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Reconciliation') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.driver_payroll'))
             <a href="{{ route('admin.payroll.index') }}" class="nav-sub-item {{ request()->routeIs('admin.payroll.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Driver Payroll') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.client_billing'))
             <a href="{{ route('admin.billing.index') }}" class="nav-sub-item {{ request()->routeIs('admin.billing.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Client Billing') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.expenses'))
             <a href="{{ route('admin.expenses.index') }}" class="nav-sub-item {{ request()->routeIs('admin.expenses.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Expenses') }}
             </a>
+            @endif
         </div>
+        @endif
 
         {{-- Reports --}}
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('reports'))
         <div class="nav-label">{{ __('Reports') }}</div>
         <button
             id="reportsBtn"
@@ -106,18 +138,26 @@
             <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div class="nav-submenu {{ request()->routeIs('admin.reports.*') ? 'open' : '' }}" id="reportsMenu">
+            @if($u->isSuperAdmin() || $u->hasAdminAction('reports.center'))
             <a href="{{ route('admin.reports.index') }}" class="nav-sub-item {{ request()->routeIs('admin.reports.index') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Reports Center') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminAction('reports.kpi_insights'))
             <a href="{{ route('admin.reports.kpis') }}" class="nav-sub-item {{ request()->routeIs('admin.reports.kpis') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('KPI Insights') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminAction('reports.rating'))
             <a href="{{ route('admin.reports.ratings') }}" class="nav-sub-item {{ request()->routeIs('admin.reports.ratings') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Ratings') }}
             </a>
+            @endif
         </div>
+        @endif
 
         {{-- Website CMS --}}
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('cms'))
         <div class="nav-label">{{ __('Website CMS') }}</div>
         <button
             id="cmsBtn"
@@ -178,35 +218,43 @@
                 <span class="sub-dot"></span> {{ __('Legal Content') }}
             </a>
         </div>
+        @endif
 
         {{-- Settings --}}
+        @if($u->isSuperAdmin() || $u->hasAdminPermission('cities') || $u->hasAdminPermission('rejection_reasons') || $u->hasAdminPermission('attendance') || $u->hasAdminPermission('notifications'))
         <div class="nav-label">{{ __('Settings') }}</div>
         <button
             id="settingsBtn"
-            class="nav-item nav-parent-btn {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') ? 'active parent-open' : '' }}"
+            class="nav-item nav-parent-btn {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') ? 'active parent-open' : '' }}"
             onclick="toggleSubmenu('settingsBtn','settingsMenu')"
         >
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span class="nav-label-text">{{ __('Settings') }}</span>
             <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
-        <div class="nav-submenu {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.whatsapp-templates.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') ? 'open' : '' }}" id="settingsMenu">
+        <div class="nav-submenu {{ request()->routeIs('admin.cities.*') || request()->routeIs('admin.rejection-reasons.*') || request()->routeIs('admin.attendance.*') || request()->routeIs('admin.notifications.*') ? 'open' : '' }}" id="settingsMenu">
+            @if($u->isSuperAdmin() || $u->hasAdminPermission('cities'))
             <a href="{{ route('admin.cities.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cities.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Cities & Areas') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminPermission('rejection_reasons'))
             <a href="{{ route('admin.rejection-reasons.index') }}" class="nav-sub-item {{ request()->routeIs('admin.rejection-reasons.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Rejection Reasons') }}
             </a>
-            <a href="{{ route('admin.whatsapp-templates.index') }}" class="nav-sub-item {{ request()->routeIs('admin.whatsapp-templates.*') ? 'active' : '' }}">
-                <span class="sub-dot"></span> {{ __('WhatsApp Templates') }}
-            </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminPermission('attendance'))
             <a href="{{ route('admin.attendance.index') }}" class="nav-sub-item {{ request()->routeIs('admin.attendance.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Attendance Logs') }}
             </a>
+            @endif
+            @if($u->isSuperAdmin() || $u->hasAdminPermission('notifications'))
             <a href="{{ route('admin.notifications.index') }}" class="nav-sub-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Broadcast Alerts') }}
             </a>
+            @endif
         </div>
+        @endif
     </nav>
 
     {{-- User info & logout --}}

@@ -142,33 +142,13 @@
     <div class="form-section">
         <div class="form-section-title">Permissions</div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <p style="font-size: .82rem; color: var(--text-sub);">Check all permissions this admin should have. Existing permissions will be replaced.</p>
+            <p style="font-size: .82rem; color: var(--text-sub);">Check a page to give this admin access to it. Existing permissions will be replaced.</p>
             <div style="display: flex; gap: 8px;">
-                <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-groups input[type=checkbox]').forEach(c=>c.checked=true)">Select All</button>
-                <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-groups input[type=checkbox]').forEach(c=>c.checked=false)">Clear All</button>
+                <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-page-groups input[type=checkbox]').forEach(c=>c.checked=true); window.syncAllPermCards && window.syncAllPermCards();">Select All</button>
+                <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-page-groups input[type=checkbox]').forEach(c=>c.checked=false); window.syncAllPermCards && window.syncAllPermCards();">Clear All</button>
             </div>
         </div>
-        <div class="perm-groups">
-            @foreach($allPermissions as $group => $perms)
-            <div>
-                <div class="perm-group-title">{{ ucwords(str_replace('_', ' ', $group)) }}</div>
-                <div class="perm-grid">
-                    @foreach($perms as $perm)
-                    <label class="perm-item">
-                        <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
-                            {{ in_array($perm->id, old('permissions', $grantedIds)) ? 'checked' : '' }}>
-                        <div>
-                            <div class="perm-name">{{ $perm->display_name }}</div>
-                            @if($perm->description)
-                                <div class="perm-desc">{{ $perm->description }}</div>
-                            @endif
-                        </div>
-                    </label>
-                    @endforeach
-                </div>
-            </div>
-            @endforeach
-        </div>
+        @include('admin.users.admins.partials.permissions', ['permissions' => $allPermissions, 'grantedIds' => old('permissions', $grantedIds)])
     </div>
     @endif
 

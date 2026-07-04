@@ -28,6 +28,8 @@ class RejectionReasonController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('rejection_reasons.add'), 403);
+
         $data = $request->validate([
             'reason'    => 'required|string|max:255',
             'reason_ar' => 'nullable|string|max:255',
@@ -51,6 +53,8 @@ class RejectionReasonController extends Controller
 
     public function update(Request $request, RejectionReason $rejectionReason)
     {
+        abort_unless($request->user()->hasAdminAction('rejection_reasons.edit'), 403);
+
         $data = $request->validate([
             'reason'    => 'required|string|max:255',
             'reason_ar' => 'nullable|string|max:255',
@@ -69,6 +73,8 @@ class RejectionReasonController extends Controller
 
     public function toggle(RejectionReason $rejectionReason)
     {
+        abort_unless(auth()->user()->hasAdminAction('rejection_reasons.activate'), 403);
+
         $rejectionReason->update(['is_active' => !$rejectionReason->is_active]);
 
         return back()->with('success', 'Status updated.');
@@ -76,6 +82,8 @@ class RejectionReasonController extends Controller
 
     public function destroy(RejectionReason $rejectionReason)
     {
+        abort_unless(auth()->user()->hasAdminAction('rejection_reasons.delete'), 403);
+
         $rejectionReason->delete();
 
         return redirect()->route('admin.rejection-reasons.index')

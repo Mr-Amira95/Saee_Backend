@@ -5,8 +5,10 @@
 
 @section('breadcrumb')
     <span class="sep">/</span>
+    @if(auth()->user()->hasAdminAction('reports.center'))
     <a href="{{ route('admin.reports.index') }}">Reports Center</a>
     <span class="sep">/</span>
+    @endif
     <span class="current">Ratings Log</span>
 @endsection
 
@@ -69,10 +71,12 @@
             <p>Monitor customer feedback and ratings left for drivers upon order deliveries.</p>
         </div>
         <div style="display:flex;gap:10px;">
+            @if(auth()->user()->hasAdminAction('reports.kpi_insights'))
             <a href="{{ route('admin.reports.kpis') }}" class="btn-secondary">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 KPI Insights
             </a>
+            @endif
             <a href="{{ route('admin.reports.export', 'ratings') }}" class="btn-primary" style="box-shadow:none;">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Export Ratings CSV

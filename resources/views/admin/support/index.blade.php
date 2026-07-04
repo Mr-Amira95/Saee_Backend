@@ -331,9 +331,11 @@
         <div class="chat-sidebar">
             <div class="chat-sidebar-head" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                 <h3>Tickets Queue</h3>
+                @if(auth()->user()->hasAdminAction('support.open_ticket'))
                 <a href="{{ route('admin.support.create') }}" class="btn-primary" style="padding: 4px 8px; font-size: .75rem; box-shadow: none; border-radius: 6px; text-decoration: none;">
                     + Open Ticket
                 </a>
+                @endif
             </div>
             <div class="ticket-list">
                 @forelse($tickets as $t)
@@ -378,6 +380,7 @@
                     
                     <div style="display:flex; gap: 8px;">
 @if($activeTicket->status !== 'resolved')
+                            @if(auth()->user()->hasAdminAction('support.resolve'))
                             <form id="resolveForm" action="{{ route('admin.support.resolve', $activeTicket) }}" method="POST" style="display:none;">
                                 @csrf
                             </form>
@@ -385,6 +388,7 @@
                                 onclick="document.getElementById('resolveConfirmModal').style.display='flex'">
                                 Resolve Ticket
                             </button>
+                            @endif
                         @else
                             <span class="badge badge-active" style="padding: 6px 12px; font-size: .78rem;">
                                 <span class="badge-dot"></span> Resolved
@@ -407,11 +411,13 @@
                 {{-- Chat Input Form --}}
                 <div class="chat-footer">
                     @if($activeTicket->status !== 'resolved')
+                        @if(auth()->user()->hasAdminAction('support.reply'))
                         <form id="adminChatForm" action="{{ route('admin.support.send', $activeTicket) }}" method="POST" class="chat-form">
                             @csrf
                             <textarea id="adminChatInput" name="message" class="chat-input" placeholder="Type your support reply…" rows="1"></textarea>
                             <button type="submit" id="adminSendBtn" class="chat-send-btn">Send Reply</button>
                         </form>
+                        @endif
                     @else
                         <div style="text-align: center; color: var(--text-dim); font-size: .8rem; font-style: italic; padding: 10px;">
                             This ticket has been resolved. Re-open by sending a WhatsApp trigger or creating a message.
@@ -437,6 +443,7 @@
     </div>
 
     {{-- Resolve Confirmation Modal --}}
+    @if(auth()->user()->hasAdminAction('support.resolve'))
     <div id="resolveConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;">
         <div style="background:#0c1230;border:1px solid var(--bdr);border-radius:16px;padding:28px 30px;max-width:400px;width:90%;text-align:center;">
             <div style="font-size:2.2rem;margin-bottom:14px;">✅</div>
@@ -448,6 +455,7 @@
             </div>
         </div>
     </div>
+    @endif
 @endsection
 
 @section('scripts')

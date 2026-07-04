@@ -20,10 +20,12 @@
             </p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
+            @if(auth()->user()->hasAdminAction('finances.expenses'))
             <button type="button" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);"
                 onclick="confirmDelete('{{ route('admin.expenses.destroy', $expense) }}', '{{ addslashes($expense->category->label()) }} — {{ number_format($expense->amount, 2) }} JD')">
                 Delete
             </button>
+            @endif
             <a href="{{ route('admin.expenses.index') }}" class="btn-secondary">← Back</a>
         </div>
     </div>

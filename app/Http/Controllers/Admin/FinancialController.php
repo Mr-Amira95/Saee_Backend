@@ -128,6 +128,8 @@ class FinancialController extends Controller
 
     public function settleDriver(Request $request, User $driver)
     {
+        abort_unless($request->user()->hasAdminAction('finances.settlements'), 403);
+
         $request->validate([
             'orders'           => 'required|array',
             'orders.*'         => 'exists:orders,id',
@@ -179,6 +181,8 @@ class FinancialController extends Controller
 
     public function payoutClient(Request $request, ClientProfile $client)
     {
+        abort_unless($request->user()->hasAdminAction('finances.settlements'), 403);
+
         $request->validate([
             'orders'           => 'required|array',
             'orders.*'         => 'exists:orders,id',

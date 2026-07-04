@@ -38,6 +38,8 @@ class BulkOrderController extends Controller
 
     public function importImage(Request $request, OpenAIService $openAIService)
     {
+        abort_unless($request->user()->hasAdminAction('orders.import'), 403);
+
         $request->validate([
             'image' => 'required|image|max:10240',
         ]);
@@ -260,6 +262,8 @@ class BulkOrderController extends Controller
 
     public function import(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('orders.import'), 403);
+
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt|max:4096',
         ]);
@@ -344,6 +348,8 @@ class BulkOrderController extends Controller
 
     public function storeConfirmed(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('orders.import'), 403);
+
         $rows = $request->input('rows', []);
 
         if (empty($rows)) {

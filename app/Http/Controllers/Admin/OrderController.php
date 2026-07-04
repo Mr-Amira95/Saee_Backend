@@ -134,6 +134,8 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('orders.add'), 403);
+
         $validated = $request->validate([
             'client_profile_id'        => 'required|exists:client_profiles,id',
             'order_description'        => 'nullable|string|max:255',
@@ -183,6 +185,8 @@ class OrderController extends Controller
 
     public function update(Request $request, Order $order)
     {
+        abort_unless($request->user()->hasAdminAction('orders.edit'), 403);
+
         // Check if updating order details
         if ($request->filled('receiver_name')) {
             $validated = $request->validate([
@@ -289,6 +293,8 @@ class OrderController extends Controller
 
     public function assignDriver(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('orders.assign_driver'), 403);
+
         $validated = $request->validate([
             'order_ids'   => 'required|array|min:1',
             'order_ids.*' => 'exists:orders,id',
@@ -331,6 +337,8 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
+        abort_unless(auth()->user()->hasAdminAction('orders.delete'), 403);
+
         $order->delete();
         return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
     }

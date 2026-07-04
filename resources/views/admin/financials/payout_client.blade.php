@@ -129,9 +129,11 @@
             </div>
 
             <div style="display: flex; gap: 12px;">
+                @if(auth()->user()->hasAdminAction('finances.settlements'))
                 <button type="submit" class="btn-primary" style="flex: 1; justify-content: center; height: 42px; background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 14px rgba(34,197,94,.25);" id="submitButton" disabled>
                     Confirm Payout to Client
                 </button>
+                @endif
                 <a href="{{ route('admin.financials.index') }}" class="btn-secondary" style="justify-content: center; height: 42px; padding: 0 24px; display: flex; align-items: center; box-sizing: border-box;">
                     Cancel
                 </a>

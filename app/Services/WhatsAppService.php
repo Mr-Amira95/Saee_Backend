@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\WhatsAppLog;
-use App\Models\WhatsAppTemplate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -33,10 +32,10 @@ class WhatsAppService
             return ['success' => false, 'error' => 'Missing phone number.'];
         }
 
-        // 2. Load template
-        $template = WhatsAppTemplate::where('event', $event)->first();
-        if (! $template) {
-            Log::warning("WhatsApp sendTemplate [{$event}]: template not found in database.");
+        // 2. Load template body
+        $templateBody = config("whatsapp.templates.{$event}");
+        if (! $templateBody) {
+            Log::warning("WhatsApp sendTemplate [{$event}]: template not found in config.");
             return ['success' => false, 'error' => "Template [{$event}] not found."];
         }
 
@@ -48,7 +47,7 @@ class WhatsAppService
 
         if ($provider === 'meta') {
             // Parse placeholders from the template body in order to match Meta's positional parameters ({{1}}, {{2}}, etc.)
-            preg_match_all('/\{\{([^}]+)\}\}/', $template->template_body, $matches);
+            preg_match_all('/\{\{([^}]+)\}\}/', $templateBody, $matches);
             $placeholderNames = $matches[1] ?? [];
 
             $parameters = [];
@@ -66,7 +65,7 @@ class WhatsAppService
         }
 
         // Fallback for non-meta providers
-        $message = $this->replacePlaceholders($template->template_body, $variables);
+        $message = $this->replacePlaceholders($templateBody, $variables);
         $apiResult = $this->sendRawMessage($normalizedPhone, $message);
 
         // Log to database

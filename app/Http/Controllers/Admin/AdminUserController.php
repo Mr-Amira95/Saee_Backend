@@ -42,6 +42,8 @@ class AdminUserController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('admins.add'), 403);
+
         $data = $request->validate([
             'name'                => 'required|string|max:255',
             'username'            => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
@@ -111,6 +113,8 @@ class AdminUserController extends Controller
 
     public function update(Request $request, User $admin)
     {
+        abort_unless($request->user()->hasAdminAction('admins.edit'), 403);
+
         $data = $request->validate([
             'name'                => 'required|string|max:255',
             'username'            => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($admin->id)],
@@ -158,6 +162,8 @@ class AdminUserController extends Controller
 
     public function destroy(User $admin)
     {
+        abort_unless(auth()->user()->hasAdminAction('admins.delete'), 403);
+
         DB::transaction(function () use ($admin) {
             DB::table('admin_permission_user')->where('admin_user_id', $admin->id)->delete();
             $admin->delete();
@@ -175,6 +181,8 @@ class AdminUserController extends Controller
 
     public function resetPassword(Request $request, User $admin)
     {
+        abort_unless($request->user()->hasAdminAction('admins.reset_password'), 403);
+
         $data = $request->validate([
             'password' => 'required|string|min:8|confirmed',
         ]);

@@ -48,7 +48,6 @@ use App\Http\Controllers\Admin\ShowcasePageController;
 use App\Http\Controllers\Admin\ShowcaseScreenshotController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SupportController;
-use App\Http\Controllers\Admin\WhatsAppTemplateController;
 use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\Client\AccountController as ClientAccountController;
 use App\Http\Controllers\Client\AiChatController;
@@ -119,7 +118,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 
     // Protected — must be authenticated admin/superadmin
-    Route::middleware('admin.auth')->group(function () {
+    Route::middleware(['admin.auth', 'admin.permission'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -199,9 +198,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Settings
         Route::resource('rejection-reasons', RejectionReasonController::class)->names('rejection-reasons');
         Route::patch('rejection-reasons/{rejectionReason}/toggle', [RejectionReasonController::class, 'toggle'])->name('rejection-reasons.toggle');
-
-        Route::get('whatsapp-templates', [WhatsAppTemplateController::class, 'index'])->name('whatsapp-templates.index');
-        Route::patch('whatsapp-templates/{whatsappTemplate}', [WhatsAppTemplateController::class, 'update'])->name('whatsapp-templates.update');
 
         Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
         Route::post('attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');

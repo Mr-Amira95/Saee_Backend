@@ -61,6 +61,8 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('clients.add'), 403);
+
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
             'username'                    => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
@@ -196,6 +198,8 @@ class ClientController extends Controller
 
     public function update(Request $request, ClientProfile $client)
     {
+        abort_unless($request->user()->hasAdminAction('clients.edit'), 403);
+
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
             'username'                    => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($client->master_user_id)],
@@ -314,6 +318,8 @@ class ClientController extends Controller
 
     public function destroy(ClientProfile $client)
     {
+        abort_unless(auth()->user()->hasAdminAction('clients.delete'), 403);
+
         DB::transaction(function () use ($client) {
             foreach ($client->attachments as $att) {
                 Storage::disk('public')->delete($att->file_path);
@@ -335,6 +341,8 @@ class ClientController extends Controller
 
     public function resetPassword(Request $request, ClientProfile $client)
     {
+        abort_unless($request->user()->hasAdminAction('clients.reset_password'), 403);
+
         $data = $request->validate([
             'password' => 'required|string|min:8|confirmed',
         ]);

@@ -20,28 +20,30 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
             @php $sv = $invoice->status->value; @endphp
-            @if($sv === 'draft')
-                <button type="button" class="btn-primary" onclick="document.getElementById('issue-form').style.display='block'">
-                    Issue Invoice
-                </button>
-                <form method="POST" action="{{ route('admin.billing.destroy', $invoice) }}"
-                      onsubmit="return confirm('Delete this draft invoice?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);">
-                        Delete Draft
+            @if(auth()->user()->hasAdminAction('finances.client_billing'))
+                @if($sv === 'draft')
+                    <button type="button" class="btn-primary" onclick="document.getElementById('issue-form').style.display='block'">
+                        Issue Invoice
                     </button>
-                </form>
-            @elseif($sv === 'issued' || $sv === 'overdue')
-                <button type="button" class="btn-primary" onclick="document.getElementById('pay-form').style.display='block'">
-                    Record Payment
-                </button>
+                    <form method="POST" action="{{ route('admin.billing.destroy', $invoice) }}"
+                          onsubmit="return confirm('Delete this draft invoice?')">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);">
+                            Delete Draft
+                        </button>
+                    </form>
+                @elseif($sv === 'issued' || $sv === 'overdue')
+                    <button type="button" class="btn-primary" onclick="document.getElementById('pay-form').style.display='block'">
+                        Record Payment
+                    </button>
+                @endif
             @endif
             <a href="{{ route('admin.billing.index') }}" class="btn-secondary">← Back</a>
         </div>
     </div>
 
     {{-- Issue form (shown on click) --}}
-    @if($sv === 'draft')
+    @if($sv === 'draft' && auth()->user()->hasAdminAction('finances.client_billing'))
     <div id="issue-form" style="display:none;" class="form-section">
         <form method="POST" action="{{ route('admin.billing.issue', $invoice) }}">
             @csrf
@@ -62,7 +64,7 @@
     @endif
 
     {{-- Pay form (shown on click) --}}
-    @if($sv === 'issued' || $sv === 'overdue')
+    @if(($sv === 'issued' || $sv === 'overdue') && auth()->user()->hasAdminAction('finances.client_billing'))
     <div id="pay-form" style="display:none;" class="form-section">
         <form method="POST" action="{{ route('admin.billing.pay', $invoice) }}">
             @csrf

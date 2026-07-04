@@ -8,7 +8,6 @@ use App\Models\DriverProfile;
 use App\Models\City;
 use App\Models\Area;
 use App\Models\Order;
-use App\Models\WhatsAppTemplate;
 use App\Models\WhatsAppLog;
 use App\Models\SystemNotification;
 use App\Services\OrderService;
@@ -54,20 +53,6 @@ class WhatsAppNotificationTest extends TestCase
             'national_id' => '1234567890',
             'license_number' => 'L-1234',
             'license_expiry_date' => now()->addYear(),
-        ]);
-
-        // Seed default templates
-        WhatsAppTemplate::create([
-            'event' => 'order_created',
-            'template_body' => 'Hello {customer_name}, order #{order_number} is created. Driver: {driver_name} ({driver_phone}). Link: {location_link}',
-        ]);
-        WhatsAppTemplate::create([
-            'event' => 'order_delivered',
-            'template_body' => 'Hello {customer_name}, order #{order_number} is delivered. Review: {location_link}',
-        ]);
-        WhatsAppTemplate::create([
-            'event' => 'order_rejected',
-            'template_body' => 'Hello {customer_name}, order #{order_number} is rejected. Reason: {rejection_reason}. Link: {location_link}',
         ]);
     }
 

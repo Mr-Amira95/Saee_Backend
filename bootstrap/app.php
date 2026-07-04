@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'admin.auth'    => \App\Http\Middleware\EnsureAdminRole::class,
+            'admin.permission' => \App\Http\Middleware\EnsureAdminPagePermission::class,
             'admin.guest'   => \App\Http\Middleware\RedirectIfAdmin::class,
             'client.auth'   => \App\Http\Middleware\EnsureClientRole::class,
             'client.permission' => \App\Http\Middleware\EnsureClientPagePermission::class,

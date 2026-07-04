@@ -57,6 +57,8 @@ class DriverPayrollController extends Controller
 
     public function store(Request $request, DriverProfile $driver)
     {
+        abort_unless($request->user()->hasAdminAction('finances.driver_payroll'), 403);
+
         $data = $request->validate([
             'period_start'       => 'required|date',
             'period_end'         => 'required|date|after_or_equal:period_start',
@@ -95,6 +97,8 @@ class DriverPayrollController extends Controller
 
     public function pay(Request $request, DriverPayment $payment)
     {
+        abort_unless($request->user()->hasAdminAction('finances.driver_payroll'), 403);
+
         abort_if($payment->status === DriverPaymentStatus::Paid, 403, 'Already paid.');
 
         $data = $request->validate([
@@ -114,6 +118,8 @@ class DriverPayrollController extends Controller
 
     public function destroy(DriverPayment $payment)
     {
+        abort_unless(auth()->user()->hasAdminAction('finances.driver_payroll'), 403);
+
         abort_if($payment->status === DriverPaymentStatus::Paid, 403, 'Paid records cannot be deleted.');
 
         $payment->delete();

@@ -73,6 +73,8 @@ class HandoverRequestController extends Controller
      */
     public function approve(HandoverRequest $handoverRequest)
     {
+        abort_unless(auth()->user()->hasAdminAction('finances.checkout_approvals'), 403);
+
         try {
             $this->orderService->approveHandover($handoverRequest, Auth::user());
 

@@ -192,7 +192,9 @@ html.light-theme #modal-notes {
             style="width:100%;"
         >
     </form>
-    <a href="{{ route('admin.clients.create') }}" class="btn-primary">+ Add Client</a>
+    @if(auth()->user()->hasAdminAction('clients.add'))
+        <a href="{{ route('admin.clients.create') }}" class="btn-primary">+ Add Client</a>
+    @endif
 </div>
 
 {{-- Table --}}
@@ -277,32 +279,35 @@ html.light-theme #modal-notes {
                                 'notes' => $client->bankDetail->notes ?: ''
                             ] : null;
                         @endphp
-                        @if($bankData)
-                            <button
-                                class="act-btn act-bank"
-                                title="Bank Details"
-                                style="cursor:pointer;"
-                                onclick="openBankModal({{ json_encode($bankData) }}, '{{ addslashes(app()->getLocale() === 'ar' ? ($client->company_name_ar ?: $client->company_name) : $client->company_name) }}')"
-                            >
-                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                                </svg>
-                            </button>
-                        @else
-                            <button
-                                class="act-btn act-bank"
-                                title="No Bank Details"
-                                style="opacity: 0.3; cursor: not-allowed;"
-                                disabled
-                            >
-                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                                </svg>
-                            </button>
+                        @if(auth()->user()->hasAdminAction('clients.bank_details'))
+                            @if($bankData)
+                                <button
+                                    class="act-btn act-bank"
+                                    title="Bank Details"
+                                    style="cursor:pointer;"
+                                    onclick="openBankModal({{ json_encode($bankData) }}, '{{ addslashes(app()->getLocale() === 'ar' ? ($client->company_name_ar ?: $client->company_name) : $client->company_name) }}')"
+                                >
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                                    </svg>
+                                </button>
+                            @else
+                                <button
+                                    class="act-btn act-bank"
+                                    title="No Bank Details"
+                                    style="opacity: 0.3; cursor: not-allowed;"
+                                    disabled
+                                >
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                                    </svg>
+                                </button>
+                            @endif
                         @endif
                         <a href="{{ route('admin.clients.show', $client) }}" class="act-btn act-view" title="View">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         </a>
+                        @if(auth()->user()->hasAdminAction('clients.reset_password'))
                         <button
                             class="act-btn act-reset-pw"
                             title="Reset Password"
@@ -310,9 +315,13 @@ html.light-theme #modal-notes {
                         >
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                         </button>
+                        @endif
+                        @if(auth()->user()->hasAdminAction('clients.edit'))
                         <a href="{{ route('admin.clients.edit', $client) }}" class="act-btn act-edit" title="Edit">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         </a>
+                        @endif
+                        @if(auth()->user()->hasAdminAction('clients.delete'))
                         <button
                             class="act-btn act-delete"
                             title="Delete"
@@ -320,6 +329,7 @@ html.light-theme #modal-notes {
                         >
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
+                        @endif
                     </div>
                 </td>
             </tr>

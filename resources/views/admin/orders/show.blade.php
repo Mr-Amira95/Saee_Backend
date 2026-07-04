@@ -103,7 +103,7 @@
             <p>Created by {{ $order->clientProfile->company_name }} on {{ $order->created_at->format('Y-m-d H:i') }}</p>
         </div>
         <div class="page-hd-right" style="display: flex; gap: 8px;">
-            @if($order->status === 'pending')
+            @if($order->status === 'pending' && auth()->user()->hasAdminAction('orders.edit'))
                 <button class="btn-danger" onclick="openModal('cancelOrderModal')">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     Cancel Order
@@ -113,14 +113,18 @@
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Print Waybill
             </a>
+            @if(auth()->user()->hasAdminAction('orders.edit'))
             <a href="{{ route('admin.orders.edit', $order) }}" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 Edit Order
             </a>
+            @endif
+            @if(auth()->user()->hasAdminAction('orders.assign_driver'))
             <button class="btn-primary" onclick="openModal('assignDriverModal')">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 {{ $order->driver ? 'Reassign Driver' : 'Assign Driver' }}
             </button>
+            @endif
         </div>
     </div>
 
@@ -415,6 +419,7 @@
     @endif
 
     {{-- MODAL 1: Assign Driver --}}
+    @if(auth()->user()->hasAdminAction('orders.assign_driver'))
     <div class="modal-overlay" id="assignDriverModal">
         <div class="modal-card" style="border-color: rgba(59,130,246,0.3); max-width: 440px;">
             <h3>Assign Driver to Order</h3>
@@ -423,7 +428,7 @@
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="status" value="{{ $order->status }}">
-                
+
                 <div class="form-group" style="text-align: left; margin-bottom: 22px;">
                     <label class="form-label" for="driver_id">Driver Name</label>
                     <select name="driver_id" class="form-select" required style="width:100%">
@@ -443,6 +448,7 @@
             </form>
         </div>
     </div>
+    @endif
 @endsection
 
 @section('scripts')

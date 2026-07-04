@@ -6,7 +6,6 @@ use App\Models\Area;
 use App\Models\City;
 use App\Models\RejectionReason;
 use App\Models\User;
-use App\Models\WhatsAppTemplate;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +21,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->seedPermissions();
-        $this->seedWhatsAppTemplates();
         $this->seedAdminUser();
         $this->seedRejectionReasons();
         $this->seedJordanCitiesAndAreas();
@@ -130,26 +128,66 @@ class DatabaseSeeder extends Seeder
     {
         $now = now();
 
+        // Admin permissions — one page-level permission per admin-panel page
+        // (name = page slug), plus one action-level permission per granular
+        // action on that page (name = "<page>.<action>"). A page permission
+        // alone makes the page visible (read-only if it has action rows and
+        // none are granted); superadmins bypass this system entirely.
+        $adminPages = [
+            'clients'           => ['label' => 'Clients',            'actions' => [
+                'add' => 'Add Client', 'delete' => 'Delete Client', 'edit' => 'Edit Client',
+                'reset_password' => 'Reset Password', 'bank_details' => 'Show Bank Details',
+            ]],
+            'drivers'           => ['label' => 'Drivers',            'actions' => [
+                'add' => 'Add Driver', 'delete' => 'Delete Driver', 'edit' => 'Edit Driver',
+                'reset_password' => 'Reset Password', 'bank_details' => 'Show Bank Details', 'live_map' => 'Show Live Map',
+            ]],
+            'admins'            => ['label' => 'Admins',             'actions' => [
+                'add' => 'Add Admin', 'delete' => 'Delete Admin', 'edit' => 'Edit Admin', 'reset_password' => 'Reset Password',
+            ]],
+            'orders'            => ['label' => 'Orders',             'actions' => [
+                'add' => 'Add Order', 'edit' => 'Edit Order', 'delete' => 'Delete Order',
+                'import' => 'Import CSV & Import Image', 'assign_driver' => 'Assign Driver',
+            ]],
+            'support'           => ['label' => 'Support Ticket',    'actions' => [
+                'open_ticket' => 'Open Ticket', 'reply' => 'Reply', 'resolve' => 'Resolve Ticket (Close)',
+            ]],
+            'ai_conversations'  => ['label' => 'AI Conversation',    'actions' => [
+                'delete' => 'Delete AI Conversation',
+            ]],
+            'reports'           => ['label' => 'Reports',            'actions' => [
+                'center' => 'View Reports Center', 'kpi_insights' => 'View KPI Insights', 'rating' => 'View Rating',
+            ]],
+            'cities'            => ['label' => 'Cities',             'actions' => [
+                'add' => 'Add City & Area', 'edit' => 'Edit City & Areas', 'delete' => 'Delete City & Areas', 'activate' => 'Activate City & Areas',
+            ]],
+            'rejection_reasons' => ['label' => 'Rejection Reasons',  'actions' => [
+                'add' => 'Add Rejection Reason', 'edit' => 'Edit Rejection Reason', 'delete' => 'Delete Rejection Reason', 'activate' => 'Activate Rejection Reason',
+            ]],
+            'finances'          => ['label' => 'Finances',           'actions' => [
+                'settlements' => 'Settlements', 'checkout_approvals' => 'Checkout Approvals', 'cod_invoices' => 'COD Invoices',
+                'reconciliation' => 'Reconciliation', 'driver_payroll' => 'Driver Payroll', 'client_billing' => 'Client Billing', 'expenses' => 'Expenses',
+            ]],
+            'cms'               => ['label' => 'Control Website CMS', 'actions' => []],
+            'attendance'        => ['label' => 'View Attendance',    'actions' => []],
+            'notifications'     => ['label' => 'View Notifications Center', 'actions' => []],
+        ];
+
+        $permissions = [];
+        foreach ($adminPages as $slug => $page) {
+            $permissions[] = ['name' => $slug, 'display_name' => $page['label'], 'scope' => 'admin', 'group' => $slug];
+            foreach ($page['actions'] as $actionSlug => $actionLabel) {
+                $permissions[] = ['name' => "{$slug}.{$actionSlug}", 'display_name' => $actionLabel, 'scope' => 'admin', 'group' => $slug];
+            }
+        }
+
+        // Drop the old flat admin permissions (and any stale page/action rows)
+        // that no longer exist in the page + sub-action model above.
+        $adminPermissionNames = array_column($permissions, 'name');
+        DB::table('permissions')->where('scope', 'admin')->whereNotIn('name', $adminPermissionNames)->delete();
+
         $permissions = [
-            // Admin permissions
-            ['name' => 'view_dashboard',           'display_name' => 'View Dashboard',              'scope' => 'admin', 'group' => 'dashboard'],
-            ['name' => 'view_all_orders',           'display_name' => 'View All Orders',             'scope' => 'admin', 'group' => 'orders'],
-            ['name' => 'manage_orders',             'display_name' => 'Manage Orders',               'scope' => 'admin', 'group' => 'orders'],
-            ['name' => 'assign_drivers',            'display_name' => 'Assign Drivers',              'scope' => 'admin', 'group' => 'orders'],
-            ['name' => 'view_clients',              'display_name' => 'View Clients',                'scope' => 'admin', 'group' => 'clients'],
-            ['name' => 'manage_clients',            'display_name' => 'Manage Clients',              'scope' => 'admin', 'group' => 'clients'],
-            ['name' => 'verify_client_documents',   'display_name' => 'Verify Client Documents',    'scope' => 'admin', 'group' => 'clients'],
-            ['name' => 'view_drivers',              'display_name' => 'View Drivers',                'scope' => 'admin', 'group' => 'drivers'],
-            ['name' => 'manage_drivers',            'display_name' => 'Manage Drivers',              'scope' => 'admin', 'group' => 'drivers'],
-            ['name' => 'verify_driver_documents',   'display_name' => 'Verify Driver Documents',    'scope' => 'admin', 'group' => 'drivers'],
-            ['name' => 'view_invoices',             'display_name' => 'View Invoices',               'scope' => 'admin', 'group' => 'billing'],
-            ['name' => 'manage_invoices',           'display_name' => 'Manage Invoices',             'scope' => 'admin', 'group' => 'billing'],
-            ['name' => 'manage_wallet',             'display_name' => 'Manage Client Wallets',       'scope' => 'admin', 'group' => 'billing'],
-            ['name' => 'view_reports',              'display_name' => 'View Reports',                'scope' => 'admin', 'group' => 'reports'],
-            ['name' => 'manage_admins',             'display_name' => 'Manage Admins',               'scope' => 'admin', 'group' => 'admin_mgmt'],
-            ['name' => 'grant_admin_permissions',   'display_name' => 'Grant Admin Permissions',    'scope' => 'admin', 'group' => 'admin_mgmt'],
-            ['name' => 'view_system_logs',          'display_name' => 'View System Logs',            'scope' => 'admin', 'group' => 'system'],
-            ['name' => 'manage_system_settings',    'display_name' => 'Manage System Settings',     'scope' => 'admin', 'group' => 'system'],
+            ...$permissions,
 
             // Client permissions — one page-level permission per client-portal page.
             // Having the permission grants full access to everything inside that page.
@@ -179,42 +217,5 @@ class DatabaseSeeder extends Seeder
             ['name', 'scope'],
             ['display_name', 'group', 'updated_at']
         );
-    }
-
-    private function seedWhatsAppTemplates(): void
-    {
-        $templates = [
-            [
-                'event'         => 'order_created',
-                'template_body' => "Hello {{customer_name}}, your order #{{order_number}} has been created and assigned to {{driver_name}} (Phone: {{driver_phone}}). Please share your location here: {{location_link}}",
-            ],
-            [
-                'event'         => 'order_picked_up',
-                'template_body' => "Hello {{customer_name}},\n\nYour order #{{order_number}} has been picked up by our driver {{driver_name}} 🚚\n\nPlease share your current location so we can deliver your package efficiently!\n\nThank you for choosing SAEE.",
-            ],
-            [
-                'event'         => 'order_delivered',
-                'template_body' => "Hello {{customer_name}}, your order #{{order_number}} has been delivered successfully by {{driver_name}}! Thank you for choosing SAEE.",
-            ],
-            [
-                'event'         => 'order_rejected',
-                'template_body' => "Hello {{customer_name}}, your order #{{order_number}} could not be delivered. Reason: {{rejection_reason}}. Please review and update your details here: {{location_link}}",
-            ],
-            [
-                'event'         => 'user_invitation',
-                'template_body' => "Welcome to Sa'ee Logistics, {{name}}! 👋\n\nYour account has been created. Please set your password using the link below:\n\n{{link}}\n\nThis link is valid for 24 hours. If you did not expect this message, please contact support.",
-            ],
-            [
-                'event'         => 'password_reset_otp',
-                'template_body' => "Your Sa'ee password reset code is: *{{code}}*\n\nThis code expires in 5 minutes. Do not share it with anyone.",
-            ],
-        ];
-
-        foreach ($templates as $tpl) {
-            WhatsAppTemplate::updateOrCreate(
-                ['event'         => $tpl['event']],
-                ['template_body' => $tpl['template_body']],
-            );
-        }
     }
 }

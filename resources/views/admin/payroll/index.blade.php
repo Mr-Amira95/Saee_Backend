@@ -46,7 +46,7 @@
     </div>
 
     {{-- Quick-create links per driver --}}
-    @if($drivers->isNotEmpty())
+    @if($drivers->isNotEmpty() && auth()->user()->hasAdminAction('finances.driver_payroll'))
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
         @foreach($drivers as $d)
             <a href="{{ route('admin.payroll.create', $d) }}"

@@ -87,6 +87,8 @@ class SupportController extends Controller
      */
     public function store(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('support.open_ticket'), 403);
+
         $validated = $request->validate([
             'user_id'  => 'required|exists:users,id',
             'order_id' => 'nullable|exists:orders,id',
@@ -122,6 +124,8 @@ class SupportController extends Controller
      */
     public function sendMessage(Request $request, SupportTicket $ticket)
     {
+        abort_unless($request->user()->hasAdminAction('support.reply'), 403);
+
         $request->validate([
             'message' => 'required|string',
         ]);
@@ -158,6 +162,8 @@ class SupportController extends Controller
      */
     public function resolveTicket(SupportTicket $ticket)
     {
+        abort_unless(auth()->user()->hasAdminAction('support.resolve'), 403);
+
         $ticket->update(['status' => 'resolved']);
         $ticket->touch();
 

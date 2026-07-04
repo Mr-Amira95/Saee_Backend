@@ -143,7 +143,9 @@
 
         <div class="form-actions">
             <a href="{{ route('admin.payroll.index') }}" class="btn-secondary">Cancel</a>
+            @if(auth()->user()->hasAdminAction('finances.driver_payroll'))
             <button type="submit" class="btn-primary">Create Draft</button>
+            @endif
         </div>
     </form>
 @endsection

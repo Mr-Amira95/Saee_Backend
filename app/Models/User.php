@@ -106,6 +106,54 @@ class User extends Authenticatable
             ->all();
     }
 
+    /**
+     * All granted admin-scope permission names for this account (pages and
+     * page.action rows), memoized for the lifetime of the request. Empty for
+     * non-admin roles; superadmins never need this (they bypass checks below).
+     */
+    public function adminPermissionNames(): array
+    {
+        if (isset($this->adminPermissionNamesCache)) {
+            return $this->adminPermissionNamesCache;
+        }
+
+        if (! $this->isAdmin()) {
+            return $this->adminPermissionNamesCache = [];
+        }
+
+        return $this->adminPermissionNamesCache = DB::table('admin_permission_user')
+            ->join('permissions', 'permissions.id', '=', 'admin_permission_user.permission_id')
+            ->where('admin_permission_user.admin_user_id', $this->id)
+            ->where('permissions.scope', 'admin')
+            ->pluck('permissions.name')
+            ->all();
+    }
+
+    /**
+     * Page-level admin permission check, e.g. hasAdminPermission('clients').
+     * Superadmins always pass; a plain admin needs the page permission itself.
+     */
+    public function hasAdminPermission(string $page): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return in_array($page, $this->adminPermissionNames(), true);
+    }
+
+    /**
+     * Action-level admin permission check, e.g. hasAdminAction('clients.add').
+     */
+    public function hasAdminAction(string $action): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return in_array($action, $this->adminPermissionNames(), true);
+    }
+
     // Relationships
     public function driverProfile(): HasOne
     {

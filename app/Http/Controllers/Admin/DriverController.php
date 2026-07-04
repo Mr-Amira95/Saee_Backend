@@ -51,6 +51,8 @@ class DriverController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('drivers.add'), 403);
+
         $data = $request->validate([
             'name'                   => 'required|string|max:255',
             'username'               => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
@@ -173,6 +175,8 @@ class DriverController extends Controller
 
     public function update(Request $request, DriverProfile $driver)
     {
+        abort_unless($request->user()->hasAdminAction('drivers.edit'), 403);
+
         $data = $request->validate([
             'name'                   => 'required|string|max:255',
             'username'               => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($driver->user_id)],
@@ -276,11 +280,15 @@ class DriverController extends Controller
 
     public function bankDetails(DriverProfile $driver)
     {
+        abort_unless(auth()->user()->hasAdminAction('drivers.bank_details'), 403);
+
         return response()->json($driver->bankDetail);
     }
 
     public function destroy(DriverProfile $driver)
     {
+        abort_unless(auth()->user()->hasAdminAction('drivers.delete'), 403);
+
         DB::transaction(function () use ($driver) {
             $driver->user->delete();
             $driver->delete();
@@ -323,6 +331,8 @@ class DriverController extends Controller
 
     public function liveMap()
     {
+        abort_unless(auth()->user()->hasAdminAction('drivers.live_map'), 403);
+
         $drivers = DriverProfile::with('user')
             ->whereNotNull('current_latitude')
             ->whereNotNull('current_longitude')
@@ -340,6 +350,8 @@ class DriverController extends Controller
 
     public function resetPassword(Request $request, DriverProfile $driver)
     {
+        abort_unless($request->user()->hasAdminAction('drivers.reset_password'), 403);
+
         $data = $request->validate([
             'password' => 'required|string|min:8|confirmed',
         ]);

@@ -44,6 +44,8 @@ class ExpenseController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->hasAdminAction('finances.expenses'), 403);
+
         $data = $request->validate([
             'category'         => ['required', Rule::enum(ExpenseCategory::class)],
             'amount'           => 'required|numeric|min:0.01',
@@ -73,6 +75,8 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense)
     {
+        abort_unless(auth()->user()->hasAdminAction('finances.expenses'), 403);
+
         $expense->delete();
 
         return redirect()->route('admin.expenses.index')

@@ -36,6 +36,8 @@ class ClientBillingController extends Controller
 
     public function store(Request $request, ClientProfile $client)
     {
+        abort_unless($request->user()->hasAdminAction('finances.client_billing'), 403);
+
         $data = $request->validate([
             'period_start'               => 'required|date',
             'period_end'                 => 'required|date|after_or_equal:period_start',
@@ -79,6 +81,8 @@ class ClientBillingController extends Controller
 
     public function issue(Request $request, ClientDeliveryInvoice $invoice)
     {
+        abort_unless($request->user()->hasAdminAction('finances.client_billing'), 403);
+
         $data = $request->validate([
             'due_date' => 'nullable|date|after_or_equal:today',
         ]);
@@ -94,6 +98,8 @@ class ClientBillingController extends Controller
 
     public function pay(Request $request, ClientDeliveryInvoice $invoice)
     {
+        abort_unless($request->user()->hasAdminAction('finances.client_billing'), 403);
+
         $data = $request->validate([
             'payment_method'   => ['required', Rule::in(['bank_transfer', 'cash', 'cliq'])],
             'reference_number' => 'nullable|string|max:100',
@@ -111,6 +117,8 @@ class ClientBillingController extends Controller
 
     public function destroy(ClientDeliveryInvoice $invoice)
     {
+        abort_unless(auth()->user()->hasAdminAction('finances.client_billing'), 403);
+
         abort_if($invoice->status !== DeliveryInvoiceStatus::Draft, 403, 'Only draft invoices can be deleted.');
 
         $invoice->delete();

@@ -84,7 +84,7 @@
         </div>
 
         {{-- Approval Action --}}
-        @if($handoverRequest->status === 'pending')
+        @if($handoverRequest->status === 'pending' && auth()->user()->hasAdminAction('finances.checkout_approvals'))
             <div class="table-card" style="padding: 20px; border: 1px solid rgba(245, 158, 11, 0.3);">
                 <h3 style="font-size: 0.95rem; font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>

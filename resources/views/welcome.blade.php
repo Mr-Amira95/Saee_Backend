@@ -11,6 +11,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ $settings['meta_title'] }}</title>
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
         <meta name="description" content="{{ $settings['meta_description'] }}">
 
         <!-- Google Fonts: Outfit -->

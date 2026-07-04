@@ -18,7 +18,7 @@
             <p>{{ $payment->period_start->format('d M Y') }} to {{ $payment->period_end->format('d M Y') }}</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
-            @if($payment->status->value === 'draft')
+            @if($payment->status->value === 'draft' && auth()->user()->hasAdminAction('finances.driver_payroll'))
                 <button type="button" class="btn-primary" onclick="document.getElementById('pay-form').style.display='block'">
                     Mark as Paid
                 </button>
@@ -35,7 +35,7 @@
     </div>
 
     {{-- Pay form (shown on click) --}}
-    @if($payment->status->value === 'draft')
+    @if($payment->status->value === 'draft' && auth()->user()->hasAdminAction('finances.driver_payroll'))
     <div id="pay-form" style="display:none;" class="form-section" style="margin-bottom:20px;">
         <form method="POST" action="{{ route('admin.payroll.pay', $payment) }}">
             @csrf

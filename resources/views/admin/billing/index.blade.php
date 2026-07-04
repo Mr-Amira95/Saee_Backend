@@ -49,7 +49,7 @@
     </div>
 
     {{-- Quick-create links per client --}}
-    @if($clients->isNotEmpty())
+    @if($clients->isNotEmpty() && auth()->user()->hasAdminAction('finances.client_billing'))
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
         @foreach($clients as $c)
             <a href="{{ route('admin.billing.create', $c) }}"

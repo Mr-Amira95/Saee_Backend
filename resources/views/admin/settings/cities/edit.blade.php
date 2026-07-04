@@ -139,6 +139,7 @@
                 @else
                     <span class="badge-suspended area-status">Inactive</span>
                 @endif
+                @if(auth()->user()->hasAdminAction('cities.delete'))
                 <div class="area-delete">
                     <form method="POST"
                           action="{{ route('admin.cities.areas.destroy', [$city, $area]) }}"
@@ -148,6 +149,7 @@
                         <button type="submit">&#10005; Delete</button>
                     </form>
                 </div>
+                @endif
             </div>
             @endforeach
         @else
@@ -157,6 +159,7 @@
         @endif
 
         {{-- Add area form --}}
+        @if(auth()->user()->hasAdminAction('cities.add'))
         <form method="POST" action="{{ route('admin.cities.areas.store', $city) }}">
             @csrf
             <div class="add-area-row">
@@ -173,6 +176,7 @@
                 </button>
             </div>
         </form>
+        @endif
     </div>
 
 </div>

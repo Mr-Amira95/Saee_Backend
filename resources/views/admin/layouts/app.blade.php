@@ -12,6 +12,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('Dashboard')) — Sa'ee Admin</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1264,7 +1266,7 @@ if (document.getElementById('notifBell')) {
         if (menu) menu.classList.add('open');
         if (btn)  btn.classList.add('parent-open');
     }
-    if (path.includes('/admin/cities') || path.includes('/admin/rejection-reasons') || path.includes('/admin/whatsapp-templates') || path.includes('/admin/attendance') || path.includes('/admin/notifications')) {
+    if (path.includes('/admin/cities') || path.includes('/admin/rejection-reasons') || path.includes('/admin/attendance') || path.includes('/admin/notifications')) {
         const menu = document.getElementById('settingsMenu');
         const btn  = document.getElementById('settingsBtn');
         if (menu) menu.classList.add('open');

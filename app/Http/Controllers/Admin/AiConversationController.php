@@ -53,6 +53,8 @@ class AiConversationController extends Controller
 
     public function destroy(ChatSession $aiConversation)
     {
+        abort_unless(auth()->user()->hasAdminAction('ai_conversations.delete'), 403);
+
         $aiConversation->delete();
 
         return redirect()->route('admin.ai-conversations.index')

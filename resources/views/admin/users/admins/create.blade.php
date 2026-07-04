@@ -128,28 +128,8 @@
     {{-- Permissions --}}
     <div class="form-section">
         <div class="form-section-title">Permissions</div>
-        <p style="font-size: .82rem; color: var(--text-sub); margin-bottom: 16px;">Grant specific permissions to this admin. Superadmins always have full access regardless.</p>
-        <div class="perm-groups">
-            @foreach($permissions as $group => $perms)
-            <div>
-                <div class="perm-group-title">{{ ucwords(str_replace('_', ' ', $group)) }}</div>
-                <div class="perm-grid">
-                    @foreach($perms as $perm)
-                    <label class="perm-item">
-                        <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
-                            {{ in_array($perm->id, old('permissions', [])) ? 'checked' : '' }}>
-                        <div>
-                            <div class="perm-name">{{ $perm->display_name }}</div>
-                            @if($perm->description)
-                                <div class="perm-desc">{{ $perm->description }}</div>
-                            @endif
-                        </div>
-                    </label>
-                    @endforeach
-                </div>
-            </div>
-            @endforeach
-        </div>
+        <p style="font-size: .82rem; color: var(--text-sub); margin-bottom: 16px;">Check a page to give this admin access to it. Superadmins always have full access regardless of these checkboxes.</p>
+        @include('admin.users.admins.partials.permissions', ['grantedIds' => old('permissions', [])])
     </div>
 
     <div class="form-actions" style="flex-wrap:wrap;gap:16px;">

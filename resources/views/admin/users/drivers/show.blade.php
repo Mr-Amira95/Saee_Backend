@@ -97,8 +97,10 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
             <a href="{{ route('admin.financials.settle-driver', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
                 💳 Finances
             </a>
+            @if(auth()->user()->hasAdminAction('drivers.edit'))
             <a href="{{ route('admin.drivers.edit', $driver) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Driver</a>
-            
+            @endif
+
             <form method="POST" action="{{ route('admin.drivers.toggle-status', $driver) }}" style="display:inline;">
                 @csrf
                 @method('PATCH')
@@ -120,10 +122,12 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
                     Resend Invitation
                 </button>
             </form>
+            @if(auth()->user()->hasAdminAction('drivers.delete'))
             <button class="btn-danger" style="font-size:.78rem;padding:6px 12px;"
                 onclick="confirmDelete('{{ route('admin.drivers.destroy', $driver) }}','{{ addslashes($driver->user->name ?? 'this driver') }}')">
                 Delete
             </button>
+            @endif
         </div>
     </div>
 </div>
@@ -270,6 +274,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     </div>
 
     {{-- Bank Details --}}
+    @if(auth()->user()->hasAdminAction('drivers.bank_details'))
     <div class="info-card">
         <div class="info-card-title">Bank Details</div>
         @if($driver->bankDetail && array_filter($driver->bankDetail->only(['bank_name','account_name','account_number','iban','swift_code','cliq_id'])))
@@ -316,10 +321,13 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
         @else
         <div style="padding:14px 0;text-align:center;color:var(--text-dim);font-size:.8rem;">
             No bank details added yet.
+            @if(auth()->user()->hasAdminAction('drivers.edit'))
             <a href="{{ route('admin.drivers.edit', $driver) }}#bank_name" style="color:var(--red-lt);margin-left:4px;">Add now →</a>
+            @endif
         </div>
         @endif
     </div>
+    @endif
 
     {{-- Last Known Location --}}
     <div class="info-card" style="grid-column: span 2;">
