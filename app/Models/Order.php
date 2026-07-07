@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -55,21 +56,39 @@ class Order extends Model
                 $dateStr = now()->format('ymd');
                 $prefix = $clientIdStr . $dateStr;
 
-                $latestOrder = static::where('order_number', 'like', "{$prefix}%")
-                    ->orderBy('order_number', 'desc')
-                    ->first();
-
-                if ($latestOrder) {
-                    $sequence = intval(substr($latestOrder->order_number, -4)) + 1;
-                } else {
-                    $sequence = 1;
-                }
-
+                $sequence = static::nextSequenceFor($prefix);
                 $sequence = ($sequence - 1) % 9999 + 1;
                 $sequenceStr = sprintf('%04d', $sequence);
 
                 $order->order_number = $prefix . $sequenceStr;
             }
+        });
+    }
+
+    /**
+     * Atomically reserve the next order-number sequence for a given prefix.
+     *
+     * Uses a locking read on a dedicated counter row (rather than
+     * MAX(order_number)+1 on the orders table) so that concurrent order
+     * creations for the same client/day can't read the same "next" value
+     * and collide on the order_number unique constraint.
+     */
+    protected static function nextSequenceFor(string $prefix): int
+    {
+        return DB::transaction(function () use ($prefix) {
+            $counter = DB::table('order_number_counters')
+                ->where('prefix', $prefix)
+                ->lockForUpdate()
+                ->first();
+
+            $next = $counter->next_sequence ?? 1;
+
+            DB::table('order_number_counters')->updateOrInsert(
+                ['prefix' => $prefix],
+                ['next_sequence' => $next + 1]
+            );
+
+            return $next;
         });
     }
 

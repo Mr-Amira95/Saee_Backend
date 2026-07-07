@@ -25,6 +25,9 @@ class OrderService
      */
     public function createOrder(array $data, User $actor): Order
     {
+        // $attempts > 1 lets Laravel automatically retry the whole transaction
+        // if two concurrent order creations deadlock while reserving the next
+        // order_number sequence for the same client/day.
         return DB::transaction(function () use ($data, $actor) {
             $client = ClientProfile::findOrFail($data['client_profile_id']);
 
@@ -94,7 +97,7 @@ class OrderService
             )->onQueue(config('whatsapp.queue', 'default'));
 
             return $order;
-        });
+        }, 5);
     }
 
     /**
