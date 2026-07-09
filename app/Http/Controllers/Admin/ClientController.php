@@ -66,10 +66,10 @@ class ClientController extends Controller
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
             'username'                    => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email'                       => 'nullable|email|unique:users,email',
-            'phone'                       => 'nullable|string|max:20|unique:users,phone',
+            'email'                       => ['required_if:otp_channel,email', 'nullable', 'email', 'unique:users,email'],
+            'phone'                       => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
             'phone_country_code'          => 'nullable|string|max:10',
-            'otp_channel'                 => ['nullable', Rule::in(['whatsapp', 'email'])],
+            'otp_channel'                 => ['required', Rule::in(['whatsapp', 'email'])],
             'password'                    => 'nullable|string|min:8|confirmed',
             'company_name'                => 'required|string|max:255',
             'company_name_ar'             => 'nullable|string|max:255',
@@ -101,7 +101,9 @@ class ClientController extends Controller
             'cliq_alias_type'             => ['nullable', Rule::in(['alias', 'phone'])],
             'bank_notes'                  => 'nullable|string|max:500',
         ], [
-            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
         $user = DB::transaction(function () use ($data, $request) {
@@ -203,10 +205,10 @@ class ClientController extends Controller
         $data = $request->validate([
             'name'                        => 'required|string|max:255',
             'username'                    => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($client->master_user_id)],
-            'email'                       => ['nullable','email', Rule::unique('users','email')->ignore($client->master_user_id)],
-            'phone'                       => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($client->master_user_id)],
+            'email'                       => ['required_if:otp_channel,email', 'nullable', 'email', Rule::unique('users','email')->ignore($client->master_user_id)],
+            'phone'                       => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', Rule::unique('users','phone')->ignore($client->master_user_id)],
             'phone_country_code'          => 'nullable|string|max:10',
-            'otp_channel'                 => ['nullable', Rule::in(['whatsapp', 'email'])],
+            'otp_channel'                 => ['required', Rule::in(['whatsapp', 'email'])],
             'company_name'                => 'required|string|max:255',
             'company_name_ar'             => 'nullable|string|max:255',
             'commercial_register_number'  => 'nullable|string|max:100',
@@ -239,7 +241,9 @@ class ClientController extends Controller
             'delivery_prices'             => 'nullable|array',
             'delivery_prices.*'           => 'nullable|numeric|min:0',
         ], [
-            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
         DB::transaction(function () use ($data, $request, $client) {

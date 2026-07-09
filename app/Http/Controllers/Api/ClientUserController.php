@@ -86,15 +86,21 @@ class ClientUserController extends Controller
             return $this->clientProfileNotFound();
         }
 
+        $request->merge(['otp_channel' => $request->input('otp_channel', 'whatsapp')]);
+
         $data = $request->validate([
             'name'               => ['required', 'string', 'max:255'],
-            'phone'              => ['required', 'string', 'max:20', 'unique:users,phone'],
+            'phone'              => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
             'phone_country_code' => ['nullable', 'string', 'max:10'],
-            'email'              => ['nullable', 'email', 'max:255', 'unique:users,email'],
+            'email'              => ['required_if:otp_channel,email', 'nullable', 'email', 'max:255', 'unique:users,email'],
+            'otp_channel'        => ['required', Rule::in(['whatsapp', 'email'])],
             'password'           => ['required', 'string', 'min:8'],
             'job_title'          => ['nullable', 'string', 'max:100'],
             'permissions'        => ['nullable', 'array'],
             'permissions.*'      => ['integer', 'exists:permissions,id'],
+        ], [
+            'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
         $employee = null;
@@ -105,6 +111,7 @@ class ClientUserController extends Controller
                 'phone'              => $request->input('phone'),
                 'phone_country_code' => $request->input('phone_country_code', '+962'),
                 'email'              => $request->input('email'),
+                'otp_channel'        => $request->input('otp_channel', 'whatsapp'),
                 'password'           => Hash::make($request->input('password')),
                 'role'               => 'client_employee',
                 'status'             => 'active',
@@ -164,11 +171,14 @@ class ClientUserController extends Controller
             ], 404);
         }
 
+        $channel = $request->input('otp_channel', $employee->user->otp_channel ?? 'whatsapp');
+
         $data = $request->validate([
             'name'               => ['sometimes', 'string', 'max:255'],
-            'phone'              => ['sometimes', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($employee->user_id)],
+            'phone'              => ['sometimes', Rule::requiredIf(fn () => $channel === 'whatsapp'), 'string', 'max:20', Rule::unique('users', 'phone')->ignore($employee->user_id)],
             'phone_country_code' => ['sometimes', 'nullable', 'string', 'max:10'],
-            'email'              => ['sometimes', 'nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($employee->user_id)],
+            'email'              => ['sometimes', 'nullable', Rule::requiredIf(fn () => $channel === 'email'), 'email', 'max:255', Rule::unique('users', 'email')->ignore($employee->user_id)],
+            'otp_channel'        => ['sometimes', Rule::in(['whatsapp', 'email'])],
             'job_title'          => ['sometimes', 'nullable', 'string', 'max:100'],
             'status'             => ['sometimes', Rule::in(['active', 'suspended'])],
             'permissions'        => ['sometimes', 'array'],
@@ -181,6 +191,7 @@ class ClientUserController extends Controller
                 'phone'              => $request->input('phone'),
                 'phone_country_code' => $request->input('phone_country_code'),
                 'email'              => $request->input('email'),
+                'otp_channel'        => $request->input('otp_channel'),
             ], fn ($v) => $v !== null);
 
             if (! empty($userFields)) {

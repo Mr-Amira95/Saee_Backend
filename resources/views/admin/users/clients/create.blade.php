@@ -174,12 +174,12 @@
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email Address <span class="opt">(optional)</span></label>
+                <label class="form-label" for="email">Email Address <span class="opt">(required for email channel)</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email') }}" placeholder="owner@company.com">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="phone">Personal Phone <span class="opt">(optional)</span></label>
+                <label class="form-label" for="phone">Personal Phone <span class="opt">(required for WhatsApp)</span></label>
                 <div style="position:relative;">
                     <div class="phone-wrap">
                         <button type="button" class="phone-ext-btn" id="personalExtBtn">

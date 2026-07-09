@@ -82,12 +82,12 @@
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email <span class="opt">(optional)</span></label>
+                <label class="form-label" for="email">Email <span class="opt">(required for email channel)</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email', $driver->user->email) }}">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group" style="position:relative; grid-column:span 2;">
-                <label class="form-label">Phone <span class="opt">(optional)</span></label>
+                <label class="form-label">Phone <span class="opt">(required for WhatsApp)</span></label>
                 <div class="phone-wrap">
                     <button type="button" class="phone-ext-btn" id="phoneExtBtn">
                         <span class="flag" id="phoneExtFlag">🇯🇴</span>

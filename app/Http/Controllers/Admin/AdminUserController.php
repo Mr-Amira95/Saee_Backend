@@ -47,15 +47,17 @@ class AdminUserController extends Controller
         $data = $request->validate([
             'name'                => 'required|string|max:255',
             'username'            => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email'               => 'nullable|email|unique:users,email',
-            'phone'               => 'nullable|string|max:20|unique:users,phone',
+            'email'               => ['required_if:otp_channel,email', 'nullable', 'email', 'unique:users,email'],
+            'phone'               => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
             'phone_country_code'  => 'nullable|string|max:10',
-            'otp_channel'         => ['nullable', Rule::in(['whatsapp', 'email'])],
+            'otp_channel'         => ['required', Rule::in(['whatsapp', 'email'])],
             'password'            => 'nullable|string|min:8|confirmed',
             'permissions'         => 'nullable|array',
             'permissions.*'       => 'integer|exists:permissions,id',
         ], [
-            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
         $user = DB::transaction(function () use ($data) {
@@ -118,15 +120,17 @@ class AdminUserController extends Controller
         $data = $request->validate([
             'name'                => 'required|string|max:255',
             'username'            => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($admin->id)],
-            'email'               => ['nullable','email', Rule::unique('users','email')->ignore($admin->id)],
-            'phone'               => ['nullable','string','max:20', Rule::unique('users','phone')->ignore($admin->id)],
+            'email'               => ['required_if:otp_channel,email', 'nullable', 'email', Rule::unique('users','email')->ignore($admin->id)],
+            'phone'               => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', Rule::unique('users','phone')->ignore($admin->id)],
             'phone_country_code'  => 'nullable|string|max:10',
-            'otp_channel'         => ['nullable', Rule::in(['whatsapp', 'email'])],
+            'otp_channel'         => ['required', Rule::in(['whatsapp', 'email'])],
             'status'              => ['nullable', Rule::in(['active','suspended','pending'])],
             'permissions'         => 'nullable|array',
             'permissions.*'       => 'integer|exists:permissions,id',
         ], [
-            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
         DB::transaction(function () use ($data, $admin) {

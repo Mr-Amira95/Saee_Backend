@@ -123,7 +123,7 @@
 
         <div class="form-grid-2" style="margin-bottom:16px;">
             <div class="form-group">
-                <label class="form-label" for="phone">{{ __('Phone Number *') }}</label>
+                <label class="form-label" for="phone">{{ __('Phone Number') }} <span class="opt" id="phoneReqHint">({{ __('required for WhatsApp') }})</span></label>
                 <div style="position:relative;">
                     <div class="phone-wrap">
                         <button type="button" class="phone-ext-btn" id="phoneExtBtn">
@@ -132,7 +132,7 @@
                             <span class="arrow">▼</span>
                         </button>
                         <input type="hidden" name="phone_country_code" id="phoneExtVal" value="{{ old('phone_country_code', '+962') }}">
-                        <input type="text" name="phone" id="phone" class="phone-input-field {{ $errors->has('phone') ? 'has-error' : '' }}" value="{{ old('phone') }}" placeholder="{{ __('7X XXX XXXX') }}" required>
+                        <input type="text" name="phone" id="phone" class="phone-input-field {{ $errors->has('phone') ? 'has-error' : '' }}" value="{{ old('phone') }}" placeholder="{{ __('7X XXX XXXX') }}">
                     </div>
                     <div class="phone-dropdown" id="phoneExtDropdown">
                         <input type="text" class="phone-dd-search" placeholder="{{ __('Search country or code…') }}">
@@ -143,10 +143,28 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="email">{{ __('Email Address') }} <span class="opt">({{ __('optional') }})</span></label>
+                <label class="form-label" for="email">{{ __('Email Address') }} <span class="opt" id="emailReqHint">({{ __('required for email channel') }})</span></label>
                 <input id="email" type="email" name="email" value="{{ old('email') }}" class="form-input {{ $errors->has('email') ? 'has-error' : '' }}" placeholder="{{ __('e.g. employee@company.com') }}">
                 @error('email') <div class="form-error">{{ $message }}</div> @enderror
             </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label">{{ __('Send invitation & OTP via') }}</label>
+            <div style="position:relative;display:inline-flex;align-items:center;background:var(--in-bg);border:1px solid var(--bdr);border-radius:8px;padding:3px;gap:2px;" id="otpChannelWrap">
+                <input type="hidden" name="otp_channel" id="otpChannelInput" value="{{ old('otp_channel', 'whatsapp') }}">
+                <button type="button" id="btnOtpWhatsapp"
+                    onclick="setOtpChannel('whatsapp')"
+                    style="display:flex;align-items:center;gap:6px;padding:5px 12px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s;background:#25D366;color:#fff;">
+                    {{ __('WhatsApp') }}
+                </button>
+                <button type="button" id="btnOtpEmail"
+                    onclick="setOtpChannel('email')"
+                    style="display:flex;align-items:center;gap:6px;padding:5px 12px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s;background:transparent;color:var(--text-sub);">
+                    {{ __('Email') }}
+                </button>
+            </div>
+            @error('otp_channel') <div class="form-error">{{ $message }}</div> @enderror
         </div>
 
         <div class="form-grid-2" style="margin-bottom:16px;">
@@ -304,8 +322,22 @@ function togglePwd(inputId, iconId) {
     document.getElementById(iconId).style.opacity = isText ? '1' : '0.5';
 }
 
+function setOtpChannel(ch) {
+    document.getElementById('otpChannelInput').value = ch;
+    const wa = document.getElementById('btnOtpWhatsapp');
+    const em = document.getElementById('btnOtpEmail');
+    if (ch === 'whatsapp') {
+        wa.style.background = '#25D366'; wa.style.color = '#fff';
+        em.style.background = 'transparent'; em.style.color = 'var(--text-sub)';
+    } else {
+        em.style.background = '#dc2626'; em.style.color = '#fff';
+        wa.style.background = 'transparent'; wa.style.color = 'var(--text-sub)';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initClientUserPhoneDropdown('phoneExtBtn', 'phoneExtFlag', 'phoneExtCode', 'phoneExtVal', 'phoneExtDropdown', 'phoneExtList');
+    setOtpChannel(document.getElementById('otpChannelInput').value);
 });
 </script>
 @endpush

@@ -6,6 +6,7 @@ use App\Mail\UserInvitationMail;
 use App\Models\ClientEmployee;
 use App\Models\Permission;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,15 +51,18 @@ class UserManagementController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
+            'email' => ['required_if:otp_channel,email', 'nullable', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
             'phone_country_code' => ['nullable', 'string', 'max:10'],
+            'otp_channel' => ['required', Rule::in(['whatsapp', 'email'])],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'job_title' => ['nullable', 'string', 'max:100'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ], [
             'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
         $profile = $this->getClientProfile();
@@ -69,7 +73,7 @@ class UserManagementController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'phone_country_code' => $data['phone_country_code'] ?? '+962',
-            'otp_channel' => Auth::user()->otp_channel ?? 'whatsapp',
+            'otp_channel' => $data['otp_channel'],
             'password' => $data['password'] ?? Str::random(40),
             'role' => 'client_employee',
             'status' => 'active',
@@ -85,8 +89,14 @@ class UserManagementController extends Controller
         $this->syncPermissions($user->id, $profile->id, $data['permissions'] ?? []);
 
         $token = Password::createToken($user);
-        if ($user->email) {
+        if ($data['otp_channel'] === 'email' && $user->email) {
             Mail::to($user->email)->send(new UserInvitationMail($user, $token));
+        } else {
+            $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email ?? ''));
+            app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
+                'name' => $user->name,
+                'link' => $setPasswordUrl,
+            ]);
         }
 
         return redirect()->route('client.users.index')
@@ -115,15 +125,18 @@ class UserManagementController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users', 'username')->ignore($user->id)],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'email' => ['required_if:otp_channel,email', 'nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
             'phone_country_code' => ['nullable', 'string', 'max:10'],
+            'otp_channel' => ['required', Rule::in(['whatsapp', 'email'])],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'job_title' => ['nullable', 'string', 'max:100'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ], [
             'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
         $user->name = $request->name;
@@ -131,6 +144,7 @@ class UserManagementController extends Controller
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->phone_country_code = $data['phone_country_code'] ?? '+962';
+        $user->otp_channel = $data['otp_channel'];
         if (! empty($data['password'])) {
             $user->password = $data['password'];
         }

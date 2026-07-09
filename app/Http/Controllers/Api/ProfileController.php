@@ -261,11 +261,16 @@ class ProfileController extends Controller
             ], 403);
         }
 
+        $channel = $user->otp_channel ?? 'whatsapp';
+
         $data = $request->validate([
             'name'                => ['sometimes', 'string', 'max:255'],
-            'email'               => ['sometimes', 'nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone'               => ['sometimes', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'email'               => ['sometimes', 'nullable', Rule::requiredIf($channel === 'email'), 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone'               => ['sometimes', Rule::requiredIf($channel === 'whatsapp'), 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
             'phone_country_code'  => ['sometimes', 'nullable', 'string', 'max:10'],
+        ], [
+            'email.required' => 'The email field is required when your notification channel is set to email.',
+            'phone.required' => 'The phone field is required when your notification channel is set to WhatsApp.',
         ]);
 
         $user->update($data);
