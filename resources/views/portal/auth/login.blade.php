@@ -146,6 +146,8 @@
 </head>
 <body>
 
+@include('portal.partials.mobile-block')
+
 <canvas id="cvs"></canvas>
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
