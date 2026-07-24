@@ -19,7 +19,7 @@ class WalletController extends Controller
         if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only client accounts can access wallet information.',
+                'message' => __('Only client accounts can access wallet information.'),
             ], 403);
         }
 
@@ -30,7 +30,7 @@ class WalletController extends Controller
         if (! $clientProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Client profile not found.',
+                'message' => __('Client profile not found.'),
                 'code'    => 'CLIENT_PROFILE_NOT_FOUND',
             ], 403);
         }
@@ -57,7 +57,7 @@ class WalletController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Wallet retrieved successfully.',
+            'message' => __('Wallet retrieved successfully.'),
             'data'    => [
                 'balance'      => (float) $clientProfile->balance,
                 'credit_limit' => (float) $clientProfile->credit_limit,

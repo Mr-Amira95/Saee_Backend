@@ -17,7 +17,7 @@ class RejectionReasonController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Rejection reasons retrieved successfully.',
+            'message' => __('Rejection reasons retrieved successfully.'),
             'data'    => RejectionReasonResource::collection($reasons),
         ]);
     }

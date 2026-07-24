@@ -21,7 +21,7 @@
     <div class="form-group">
         <label class="form-label" for="bank_name">{{ __('Bank Name *') }}</label>
         <input id="bank_name" name="bank_name" type="text" class="form-input {{ $errors->has('bank_name') ? 'has-error' : '' }}"
-               placeholder="e.g. Arab Bank" value="{{ old('bank_name', $bankDetail?->bank_name) }}" required>
+               placeholder="{{ __('e.g. Arab Bank') }}" value="{{ old('bank_name', $bankDetail?->bank_name) }}" required>
         @error('bank_name') <div class="form-error">{{ $message }}</div> @enderror
     </div>
 
@@ -77,7 +77,7 @@
     <div class="form-group">
         <label class="form-label" for="cliq_id">{{ __('CliQ Alias / Number') }}</label>
         <input id="cliq_id" name="cliq_id" type="text" class="form-input {{ $errors->has('cliq_id') ? 'has-error' : '' }}"
-               placeholder="yourname or 07xxxxxxxx" value="{{ old('cliq_id', $bankDetail?->cliq_id) }}">
+               placeholder="{{ __('yourname or 07xxxxxxxx') }}" value="{{ old('cliq_id', $bankDetail?->cliq_id) }}">
         @error('cliq_id') <div class="form-error">{{ $message }}</div> @enderror
     </div>
 </div>

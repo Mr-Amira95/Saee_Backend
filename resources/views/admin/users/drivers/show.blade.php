@@ -1,12 +1,12 @@
 @extends('admin.layouts.app')
 
-@section('title', $driver->user->name ?? 'Driver')
-@section('page-title', 'Driver Profile')
+@section('title', $driver->user->name ?? __('Driver'))
+@section('page-title', __('Driver Profile'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.drivers.index') }}">Drivers</a>
+    <a href="{{ route('admin.drivers.index') }}">{{ __('Drivers') }}</a>
     <span>/</span>
     <span>{{ $driver->user->name ?? '—' }}</span>
 @endsection
@@ -54,8 +54,10 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     function expiryLabel($exp): string {
         if (!$exp) return '—';
         $d = now()->startOfDay()->diffInDays($exp, false);
-        return $d < 0 ? $exp->format('d M Y').' — EXPIRED'
-                      : ($d === 0 ? $exp->format('d M Y').' (today)' : $exp->format('d M Y'));
+        if ($d < 0) return $exp->format('d M Y').' — '.__('EXPIRED');
+        if ($d === 0) return $exp->format('d M Y').' ('.__('today').')';
+        if ($d <= 30) return $exp->format('d M Y').' ('.__('Soon').')';
+        return $exp->format('d M Y');
     }
 @endphp
 
@@ -70,62 +72,62 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
         <h2 class="profile-name">{{ $driver->user->name ?? '—' }}</h2>
         <div style="font-size:.85rem;color:var(--text-dim);margin-top:4px;">{{ $driver->user->email ?? '—' }}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center;">
-            @if($driver->user?->status === 'active')        <span class="badge-active">Active</span>
-            @elseif($driver->user?->status === 'suspended') <span class="badge-suspended">Suspended</span>
-            @else                                           <span class="badge-pending">Pending</span>
+            @if($driver->user?->status === 'active')        <span class="badge-active">{{ __('Active') }}</span>
+            @elseif($driver->user?->status === 'suspended') <span class="badge-suspended">{{ __('Suspended') }}</span>
+            @else                                           <span class="badge-pending">{{ __('Pending') }}</span>
             @endif
 
             @if($driver->is_available)
-                <span class="badge-yes">Available</span>
+                <span class="badge-yes">{{ __('Available') }}</span>
             @else
-                <span class="badge-no">Busy</span>
+                <span class="badge-no">{{ __('Busy') }}</span>
             @endif
 
             @if($licExp && $licExp->isPast())
-                <span class="expiry-badge expiry-expired">⚠ License Expired</span>
+                <span class="expiry-badge expiry-expired">⚠ {{ __('License Expired') }}</span>
+            @endif
+            @if($carExp && $carExp->isPast())
+                <span class="expiry-badge expiry-expired">⚠ {{ __('Car License Expired') }}</span>
             @endif
         </div>
 
         {{-- Row containing Shortcuts and Main Actions together --}}
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:14px; width:100%;">
             <a href="{{ route('admin.attendance.index', ['search' => $driver->user->name]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                📅 Attendance History
+                📅 {{ __('Attendance History') }}
             </a>
             <a href="{{ route('admin.drivers.location-history', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                📍 Location History
-            </a>
-            <a href="{{ route('admin.financials.settle-driver', $driver) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                💳 Finances
+                📍 {{ __('Location History') }}
             </a>
             @if(auth()->user()->hasAdminAction('drivers.edit'))
-            <a href="{{ route('admin.drivers.edit', $driver) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Driver</a>
+            <a href="{{ route('admin.drivers.edit', $driver) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">{{ __('Edit Driver') }}</a>
             @endif
 
             <form method="POST" action="{{ route('admin.drivers.toggle-status', $driver) }}" style="display:inline;">
                 @csrf
                 @method('PATCH')
                 @if($driver->user?->status === 'active')
-                    <button type="submit" class="btn-secondary" title="Deactivate Driver" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#fbbf24;border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.1);">
-                        ⏸ Deactivate
+                    <button type="submit" class="btn-secondary" title="{{ __('Deactivate Driver') }}" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#fbbf24;border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.1);">
+                        ⏸ {{ __('Deactivate') }}
                     </button>
                 @else
-                    <button type="submit" class="btn-secondary" title="Activate Driver" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#4ade80;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);">
-                        ▶ Activate
+                    <button type="submit" class="btn-secondary" title="{{ __('Activate Driver') }}" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#4ade80;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);">
+                        ▶ {{ __('Activate') }}
                     </button>
                 @endif
             </form>
 
             <form method="POST" action="{{ route('admin.drivers.resend-invitation', $driver) }}" style="display:inline;">
                 @csrf
-                <button type="submit" class="btn-secondary" title="Resend invitation email" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
+                <button type="submit" class="btn-secondary" title="{{ __('Resend invitation email') }}" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    Resend Invitation
+                    {{ __('Resend Invitation') }}
                 </button>
             </form>
             @if(auth()->user()->hasAdminAction('drivers.delete'))
             <button class="btn-danger" style="font-size:.78rem;padding:6px 12px;"
                 onclick="confirmDelete('{{ route('admin.drivers.destroy', $driver) }}','{{ addslashes($driver->user->name ?? 'this driver') }}')">
-                Delete
+                {{ __('Delete') }}
             </button>
             @endif
         </div>
@@ -137,18 +139,18 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 
     {{-- Contact --}}
     <div class="info-card">
-        <div class="info-card-title">Contact</div>
+        <div class="info-card-title">{{ __('Contact') }}</div>
         <div class="info-rows">
             <div class="info-row">
-                <span class="info-row-key">Username</span>
+                <span class="info-row-key">{{ __('Username') }}</span>
                 <span class="info-row-val">{{ $driver->user->username ?? '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Email</span>
+                <span class="info-row-key">{{ __('Email') }}</span>
                 <span class="info-row-val" style="word-break:break-all;">{{ $driver->user->email ?? '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Phone</span>
+                <span class="info-row-key">{{ __('Phone') }}</span>
                 <span class="info-row-val">
                     @if($driver->user?->phone)
                         <span style="color:var(--text-dim);font-size:.8rem;margin-right:4px;">{{ $driver->user->phone_country_code ?? '' }}</span>{{ $driver->user->phone }}
@@ -157,26 +159,26 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Account Status</span>
+                <span class="info-row-key">{{ __('Account Status') }}</span>
                 <span class="info-row-val">
-                    @if($driver->user?->status === 'active')        <span class="badge-active">Active</span>
-                    @elseif($driver->user?->status === 'suspended') <span class="badge-suspended">Suspended</span>
-                    @else <span class="badge-pending">Pending</span>
+                    @if($driver->user?->status === 'active')        <span class="badge-active">{{ __('Active') }}</span>
+                    @elseif($driver->user?->status === 'suspended') <span class="badge-suspended">{{ __('Suspended') }}</span>
+                    @else <span class="badge-pending">{{ __('Pending') }}</span>
                     @endif
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Availability</span>
+                <span class="info-row-key">{{ __('Availability') }}</span>
                 <span class="info-row-val">
                     @if($driver->is_available)
-                        <span class="badge-yes">Available</span>
+                        <span class="badge-yes">{{ __('Available') }}</span>
                     @else
-                        <span class="badge-no">Busy / Unavailable</span>
+                        <span class="badge-no">{{ __('Busy / Unavailable') }}</span>
                     @endif
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Member Since</span>
+                <span class="info-row-key">{{ __('Member Since') }}</span>
                 <span class="info-row-val">{{ $driver->user?->created_at?->format('d M Y') ?? '—' }}</span>
             </div>
         </div>
@@ -184,19 +186,19 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 
     {{-- Identity & License --}}
     <div class="info-card">
-        <div class="info-card-title">Identity &amp; License</div>
+        <div class="info-card-title">{{ __('Identity & License') }}</div>
         <div class="info-rows">
             <div class="info-row">
-                <span class="info-row-key">National ID</span>
+                <span class="info-row-key">{{ __('National ID') }}</span>
                 <span class="info-row-val" style="font-family:monospace;letter-spacing:.03em;">{{ $driver->national_id }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">National ID File</span>
+                <span class="info-row-key">{{ __('National ID File') }}</span>
                 <span class="info-row-val">
                     @if($driver->national_id_attachment)
                         <a href="{{ Storage::disk('public')->url($driver->national_id_attachment) }}" target="_blank" class="file-link">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/></svg>
-                            View File
+                            {{ __('View File') }}
                         </a>
                     @else
                         <span style="color:var(--text-dim);">—</span>
@@ -204,11 +206,11 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">License No.</span>
+                <span class="info-row-key">{{ __('License No.') }}</span>
                 <span class="info-row-val" style="font-family:monospace;letter-spacing:.03em;">{{ $driver->license_number }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">License Expiry</span>
+                <span class="info-row-key">{{ __('License Expiry') }}</span>
                 <span class="info-row-val">
                     @if($licExp)
                         <span class="{{ expiryClass($licExp) ? 'expiry-badge '.expiryClass($licExp) : '' }}" style="{{ expiryClass($licExp) ? '' : 'color:var(--text);' }}">
@@ -219,12 +221,12 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">License File</span>
+                <span class="info-row-key">{{ __('License File') }}</span>
                 <span class="info-row-val">
                     @if($driver->license_attachment)
                         <a href="{{ Storage::disk('public')->url($driver->license_attachment) }}" target="_blank" class="file-link">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/></svg>
-                            View File
+                            {{ __('View File') }}
                         </a>
                     @else
                         <span style="color:var(--text-dim);">—</span>
@@ -236,18 +238,18 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 
     {{-- Vehicle --}}
     <div class="info-card">
-        <div class="info-card-title">Vehicle</div>
+        <div class="info-card-title">{{ __('Vehicle') }}</div>
         <div class="info-rows">
             <div class="info-row">
-                <span class="info-row-key">Vehicle Type</span>
+                <span class="info-row-key">{{ __('Vehicle Type') }}</span>
                 <span class="info-row-val">{{ $driver->vehicle_type ?: '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Plate Number</span>
+                <span class="info-row-key">{{ __('Plate Number') }}</span>
                 <span class="info-row-val" style="font-family:monospace;letter-spacing:.05em;font-weight:700;">{{ $driver->vehicle_plate ?: '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Car License Expiry</span>
+                <span class="info-row-key">{{ __('Car License Expiry') }}</span>
                 <span class="info-row-val">
                     @if($carExp)
                         <span class="{{ expiryClass($carExp) ? 'expiry-badge '.expiryClass($carExp) : '' }}" style="{{ expiryClass($carExp) ? '' : 'color:var(--text);' }}">
@@ -258,12 +260,12 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Car License File</span>
+                <span class="info-row-key">{{ __('Car License File') }}</span>
                 <span class="info-row-val">
                     @if($driver->car_license_attachment)
                         <a href="{{ Storage::disk('public')->url($driver->car_license_attachment) }}" target="_blank" class="file-link">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/></svg>
-                            View File
+                            {{ __('View File') }}
                         </a>
                     @else
                         <span style="color:var(--text-dim);">—</span>
@@ -276,36 +278,36 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     {{-- Bank Details --}}
     @if(auth()->user()->hasAdminAction('drivers.bank_details'))
     <div class="info-card">
-        <div class="info-card-title">Bank Details</div>
+        <div class="info-card-title">{{ __('Bank Details') }}</div>
         @if($driver->bankDetail && array_filter($driver->bankDetail->only(['bank_name','account_name','account_number','iban','swift_code','cliq_id'])))
         <div class="info-rows" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
             <div class="info-row" style="border-bottom:none;padding-bottom:0;">
-                <span class="info-row-key">Bank Name</span>
+                <span class="info-row-key">{{ __('Bank Name') }}</span>
                 <span class="info-row-val">{{ $driver->bankDetail->bank_name ?: '—' }}</span>
             </div>
             <div class="info-row" style="border-bottom:none;padding-bottom:0;">
-                <span class="info-row-key">Account Name</span>
+                <span class="info-row-key">{{ __('Account Name') }}</span>
                 <span class="info-row-val">{{ $driver->bankDetail->account_name ?: '—' }}</span>
             </div>
             <div class="info-row" style="border-bottom:none;padding-bottom:0;">
-                <span class="info-row-key">Account Number</span>
+                <span class="info-row-key">{{ __('Account Number') }}</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $driver->bankDetail->account_number ?: '—' }}</span>
             </div>
             <div class="info-row" style="border-bottom:none;padding-bottom:0;">
-                <span class="info-row-key">IBAN</span>
+                <span class="info-row-key">{{ __('IBAN') }}</span>
                 <span class="info-row-val" style="font-family:monospace;font-size:.82rem;">{{ $driver->bankDetail->iban ?: '—' }}</span>
             </div>
             <div class="info-row" style="border-bottom:none;padding-bottom:0;">
-                <span class="info-row-key">SWIFT / BIC</span>
+                <span class="info-row-key">{{ __('SWIFT / BIC') }}</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $driver->bankDetail->swift_code ?: '—' }}</span>
             </div>
             <div class="info-row" style="border-bottom:none;padding-bottom:0;">
-                <span class="info-row-key">CliQ ID</span>
+                <span class="info-row-key">{{ __('CliQ ID') }}</span>
                 <span class="info-row-val">
                     @if($driver->bankDetail->cliq_id)
                         {{ $driver->bankDetail->cliq_id }}
                         @if($driver->bankDetail->cliq_alias_type)
-                            <span style="font-size:.72rem;color:var(--text-dim);margin-left:4px;">({{ ucfirst($driver->bankDetail->cliq_alias_type) }})</span>
+                            <span style="font-size:.72rem;color:var(--text-dim);margin-left:4px;">({{ $driver->bankDetail->cliq_alias_type === 'alias' ? __('Alias') : __('Phone') }})</span>
                         @endif
                     @else —
                     @endif
@@ -314,15 +316,15 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
         </div>
         @if($driver->bankDetail->notes)
             <div style="margin-top:14px;padding:10px 14px;background:var(--in-bg);border-radius:8px;font-size:.82rem;color:var(--text-sub);">
-                <span style="font-size:.7rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:.05em;display:block;margin-bottom:4px;">Notes</span>
+                <span style="font-size:.7rem;text-transform:uppercase;color:var(--text-dim);letter-spacing:.05em;display:block;margin-bottom:4px;">{{ __('Notes') }}</span>
                 {{ $driver->bankDetail->notes }}
             </div>
         @endif
         @else
         <div style="padding:14px 0;text-align:center;color:var(--text-dim);font-size:.8rem;">
-            No bank details added yet.
+            {{ __('No bank details added yet.') }}
             @if(auth()->user()->hasAdminAction('drivers.edit'))
-            <a href="{{ route('admin.drivers.edit', $driver) }}#bank_name" style="color:var(--red-lt);margin-left:4px;">Add now →</a>
+            <a href="{{ route('admin.drivers.edit', $driver) }}#bank_name" style="color:var(--red-lt);margin-left:4px;">{{ __('Add now →') }}</a>
             @endif
         </div>
         @endif
@@ -331,18 +333,18 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 
     {{-- Last Known Location --}}
     <div class="info-card" style="grid-column: span 2;">
-        <div class="info-card-title">Last Known Location</div>
+        <div class="info-card-title">{{ __('Last Known Location') }}</div>
         <div class="info-rows" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
             <div class="info-row" style="border-bottom: none; padding-bottom: 0;">
-                <span class="info-row-key">Latitude</span>
+                <span class="info-row-key">{{ __('Latitude') }}</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $driver->current_latitude ?? '—' }}</span>
             </div>
             <div class="info-row" style="border-bottom: none; padding-bottom: 0;">
-                <span class="info-row-key">Longitude</span>
+                <span class="info-row-key">{{ __('Longitude') }}</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $driver->current_longitude ?? '—' }}</span>
             </div>
             <div class="info-row" style="border-bottom: none; padding-bottom: 0;">
-                <span class="info-row-key">Last Updated</span>
+                <span class="info-row-key">{{ __('Last Updated') }}</span>
                 <span class="info-row-val">
                     @if($driver->location_updated_at)
                         {{ \Carbon\Carbon::parse($driver->location_updated_at)->format('d M Y, H:i') }}
@@ -358,7 +360,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
             <div id="map" style="width: 100%; height: 350px; border-radius: 12px; border: 1px solid var(--bdr); margin-top: 20px; background: #0c1230; z-index: 0;"></div>
         @else
             <div style="margin-top:16px;padding:14px;background:var(--in-bg);border-radius:10px;text-align:center;">
-                <div style="font-size:.78rem;color:var(--text-dim);">No location data available yet.</div>
+                <div style="font-size:.78rem;color:var(--text-dim);">{{ __('No location data available yet.') }}</div>
             </div>
         @endif
     </div>
@@ -368,42 +370,42 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 {{-- Performance & Rating Section --}}
 <div class="page-hd" style="margin-top: 28px; margin-bottom: 15px;">
     <div class="page-hd-left">
-        <h2>Driver Performance &amp; Reviews</h2>
-        <p>Real-time KPIs, attendance history, and customer reviews.</p>
+        <h2>{{ __('Driver Performance & Reviews') }}</h2>
+        <p>{{ __('Real-time KPIs, attendance history, and customer reviews.') }}</p>
     </div>
 </div>
 
 <div class="info-grid" style="margin-bottom: 24px;">
     {{-- Performance KPI Scorecard --}}
     <div class="info-card">
-        <div class="info-card-title">Performance KPI Scorecard</div>
+        <div class="info-card-title">{{ __('Performance KPI Scorecard') }}</div>
         <div class="info-rows">
             <div class="info-row">
-                <span class="info-row-key">Average Rating</span>
+                <span class="info-row-key">{{ __('Average Rating') }}</span>
                 <span class="info-row-val" style="font-weight: 700; color: #fbbf24; font-size: 1.05rem; display: flex; align-items: center; gap: 6px;">
                     {{ $driver->user->average_rating }} ★
                     <span style="font-size: .78rem; color: var(--text-dim); font-weight: 400;">
-                        ({{ $driver->user->driverRatings()->count() }} reviews)
+                        ({{ $driver->user->driverRatings()->count() }} {{ __('reviews') }})
                     </span>
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Delivery Success</span>
+                <span class="info-row-key">{{ __('Delivery Success') }}</span>
                 <span class="info-row-val" style="font-weight: 700; color: #86efac; font-size: 1.05rem;">
                     {{ $driver->user->delivery_success_rate }}%
                     <span style="font-size: .76rem; color: var(--text-dim); font-weight: 400; display: block; margin-top: 2px;">
-                        ({{ $driver->user->driverOrders()->where('status', 'delivered')->count() }} delivered / {{ $driver->user->driverOrders()->count() }} total)
+                        ({{ $driver->user->driverOrders()->where('status', 'delivered')->count() }} {{ __('delivered') }} / {{ $driver->user->driverOrders()->count() }} {{ __('total') }})
                     </span>
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Avg Transit Duration</span>
+                <span class="info-row-key">{{ __('Avg Transit Duration') }}</span>
                 <span class="info-row-val" style="font-weight: 700; color: #60a5fa; font-size: 1.05rem;">
-                    {{ $driver->user->average_transit_hours ? $driver->user->average_transit_hours . ' hours' : '—' }}
+                    {{ $driver->user->average_transit_hours ? $driver->user->average_transit_hours . ' ' . __('hours') : '—' }}
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">On-Time Attendance</span>
+                <span class="info-row-key">{{ __('On-Time Attendance') }}</span>
                 <span class="info-row-val" style="font-weight: 700; color: #c084fc; font-size: 1.05rem;">
                     @php
                         $totalAttendance = $driver->user->attendances()->count();
@@ -412,7 +414,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
                     @endphp
                     {{ $onTimeRate }}%
                     <span style="font-size: .76rem; color: var(--text-dim); font-weight: 400; display: block; margin-top: 2px;">
-                        ({{ $totalAttendance - $lateAttendance }} on-time / {{ $totalAttendance }} total present)
+                        ({{ $totalAttendance - $lateAttendance }} {{ __('on-time') }} / {{ $totalAttendance }} {{ __('total present') }})
                     </span>
                 </span>
             </div>
@@ -421,7 +423,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 
     {{-- Recent Customer Reviews --}}
     <div class="info-card">
-        <div class="info-card-title">Recent Customer Reviews</div>
+        <div class="info-card-title">{{ __('Recent Customer Reviews') }}</div>
         @php
             $reviews = $driver->user->driverRatings()->with('order')->latest()->take(3)->get();
         @endphp
@@ -438,7 +440,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
                     </a>
                 </div>
                 <p style="font-size: .82rem; color: var(--text-sub); line-height: 1.4;">
-                    {{ $rev->comment ?: 'No written comment left.' }}
+                    {{ $rev->comment ?: __('No written comment left.') }}
                 </p>
                 <div style="font-size: .7rem; color: var(--text-dim); margin-top: 6px; text-align: right;">
                     {{ $rev->created_at->diffForHumans() }}
@@ -446,14 +448,14 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
             </div>
         @empty
             <div style="padding: 20px 0; text-align: center; color: var(--text-dim); font-size: .8rem;">
-                No customer reviews submitted yet.
+                {{ __('No customer reviews submitted yet.') }}
             </div>
         @endforelse
     </div>
 
     {{-- Attendance History Tab --}}
     <div class="info-card" style="grid-column: span 2;">
-        <div class="info-card-title">Recent Attendance Logs</div>
+        <div class="info-card-title">{{ __('Recent Attendance Logs') }}</div>
         @php
             $recentLogs = $driver->user->attendances()->latest()->take(5)->get();
         @endphp
@@ -461,12 +463,12 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="text-align: left; border-bottom: 1px solid var(--bdr);">
-                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">Date</th>
-                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">Check In</th>
-                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">Check In Location</th>
-                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">Check Out</th>
-                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">Check Out Location</th>
-                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">Status</th>
+                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">{{ __('Date') }}</th>
+                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">{{ __('Check In') }}</th>
+                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">{{ __('Check In Location') }}</th>
+                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">{{ __('Check Out') }}</th>
+                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">{{ __('Check Out Location') }}</th>
+                        <th style="padding: 8px; font-size: .7rem; text-transform: uppercase; color: var(--text-dim);">{{ __('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -491,16 +493,16 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
                             </td>
                             <td style="padding: 10px 8px;">
                                 @if($l->check_in_at->format('H:i:s') > '09:15:00')
-                                    <span class="badge badge-suspended" style="font-size: .68rem;"><span class="badge-dot"></span> Late Check-In</span>
+                                    <span class="badge badge-suspended" style="font-size: .68rem;"><span class="badge-dot"></span> {{ __('Late Check-In') }}</span>
                                 @else
-                                    <span class="badge badge-active" style="font-size: .68rem;"><span class="badge-dot"></span> On Time</span>
+                                    <span class="badge badge-active" style="font-size: .68rem;"><span class="badge-dot"></span> {{ __('On Time') }}</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="6" style="padding: 20px 8px; text-align: center; color: var(--text-dim); font-size: .8rem;">
-                                No attendance records found.
+                                {{ __('No attendance records found.') }}
                             </td>
                         </tr>
                     @endforelse
@@ -517,7 +519,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     document.addEventListener('DOMContentLoaded', function() {
         var lat = {{ $driver->current_latitude ?? 'null' }};
         var lng = {{ $driver->current_longitude ?? 'null' }};
-        
+
         if (lat !== null && lng !== null) {
             var map = L.map('map', { zoomControl: true }).setView([lat, lng], 14);
             var isLight = document.documentElement.classList.contains('light-theme');
@@ -541,7 +543,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
             });
 
             L.marker([lat, lng], { icon: driverIcon }).addTo(map)
-                .bindPopup("<b>{{ $driver->user->name ?? 'Driver' }}</b><br>Last known location.");
+                .bindPopup("<b>{{ $driver->user->name ?? 'Driver' }}</b><br>{{ __('Last known location.') }}");
         }
     });
 </script>

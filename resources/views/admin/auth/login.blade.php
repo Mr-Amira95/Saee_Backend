@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Login — Sa'ee LogisticsServices</title>
+    <title>{{ __('Admin Login') }} — {{ __('Sa\'ee LogisticsServices') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,6 +91,10 @@
             display: flex; align-items: center; justify-content: center;
             border-right: 1px solid rgba(220,38,38,0.08);
         }
+        html[dir="rtl"] .brand {
+            border-right: none;
+            border-left: 1px solid rgba(220,38,38,0.08);
+        }
 
         /* Subtle grid */
         .brand::before {
@@ -135,6 +139,9 @@
         @keyframes corner-float {
             0%   { transform: scale(1)   translate(0,0); }
             100% { transform: scale(1.2) translate(-40px,-40px); }
+        }
+        html[dir="rtl"] .brand::after {
+            right: auto; left: -80px;
         }
 
         /* Brand content wrapper */
@@ -299,6 +306,7 @@
             color: rgba(255,255,255,.2); pointer-events: none;
             transition: color .2s;
         }
+        html[dir="rtl"] .field-icon { left: auto; right: 14px; }
         .field-wrap:focus-within .field-icon { color: rgba(220,38,38,.55); }
 
         input[type="email"],
@@ -329,6 +337,7 @@
             color: rgba(255,255,255,.25); padding: 4px;
             transition: color .2s; line-height: 1;
         }
+        html[dir="rtl"] .pwd-btn { right: auto; left: 13px; }
         .pwd-btn:hover { color: rgba(255,255,255,.65); }
 
         /* ── Extras row ─────────────────── */
@@ -398,6 +407,8 @@
             transition: transform .2s;
         }
         .btn:hover .btn-arrow { transform: translateX(4px); }
+        html[dir="rtl"] .btn-arrow { transform: scaleX(-1); }
+        html[dir="rtl"] .btn:hover .btn-arrow { transform: scaleX(-1) translateX(4px); }
 
         /* ── Footer ─────────────────────── */
         .card-footer {
@@ -433,12 +444,16 @@
         .phone-wrap:focus-within { border-color:rgba(220,38,38,.4); background:rgba(220,38,38,.025); box-shadow:0 0 0 3px rgba(220,38,38,.07),0 0 18px rgba(220,38,38,.04); }
         .phone-wrap.has-error { border-color:rgba(220,38,38,.45) !important; }
         .country-btn { display:flex; align-items:center; gap:5px; padding:0 9px 0 12px; background:none; border:none; border-right:1px solid var(--input-bdr); color:rgba(255,255,255,.75); cursor:pointer; font-family:'Inter',sans-serif; font-size:.82rem; font-weight:500; white-space:nowrap; transition:background .2s; border-radius:11px 0 0 11px; }
+        html[dir="rtl"] .country-btn { padding:0 12px 0 9px; border-right:none; border-left:1px solid var(--input-bdr); border-radius:0 11px 11px 0; }
         .country-btn:hover,.country-btn.open { background:rgba(255,255,255,.045); }
         .country-flag { font-size:1rem; line-height:1; }
         .country-chevron { opacity:.4; transition:transform .2s; margin-left:2px; }
+        html[dir="rtl"] .country-chevron { margin-left:0; margin-right:2px; }
         .country-btn.open .country-chevron { transform:rotate(180deg); }
         .phone-wrap input[type="tel"] { background:transparent !important; border:none !important; box-shadow:none !important; border-radius:0 11px 11px 0 !important; padding-left:12px !important; padding-right:12px !important; width:auto !important; flex:1; min-width:0; }
+        html[dir="rtl"] .phone-wrap input[type="tel"] { border-radius:11px 0 0 11px !important; }
         .country-dropdown { position:absolute; top:calc(100% + 5px); left:0; width:215px; background:#0d0f22; border:1px solid rgba(255,255,255,.1); border-radius:11px; z-index:999; box-shadow:0 10px 28px rgba(0,0,0,.65); display:none; max-height:252px; overflow-y:auto; }
+        html[dir="rtl"] .country-dropdown { left:auto; right:0; }
         .country-dropdown.open { display:block; }
         .country-option { display:flex; align-items:center; gap:8px; padding:9px 12px; cursor:pointer; font-size:.81rem; color:rgba(255,255,255,.68); transition:background .15s; }
         .country-option:hover { background:rgba(255,255,255,.06); color:#fff; }
@@ -466,23 +481,23 @@
 
             {{-- Logo --}}
             <div class="brand-logo">
-                <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:320px;max-width:100%;filter:drop-shadow(0 4px 24px rgba(0,0,0,.45));">
+                <img src="{{ asset('saee_logo_dark.png') }}" alt="{{ __('Sa\'ee LogisticsServices') }}" style="width:320px;max-width:100%;filter:drop-shadow(0 4px 24px rgba(0,0,0,.45));">
             </div>
 
             <div>
-                <p class="brand-headline">The Admin<br><em>Command Center</em></p>
+                <p class="brand-headline">{{ __('The Admin') }}<br><em>{{ __('Command Center') }}</em></p>
             </div>
 
             <div class="stats">
-                <div class="stat"><span class="stat-num">500+</span><span class="stat-lbl">Drivers</span></div>
-                <div class="stat"><span class="stat-num">1.2K+</span><span class="stat-lbl">Clients</span></div>
-                <div class="stat"><span class="stat-num">50K+</span><span class="stat-lbl">Deliveries</span></div>
+                <div class="stat"><span class="stat-num">500+</span><span class="stat-lbl">{{ __('Drivers') }}</span></div>
+                <div class="stat"><span class="stat-num">1.2K+</span><span class="stat-lbl">{{ __('Clients') }}</span></div>
+                <div class="stat"><span class="stat-num">50K+</span><span class="stat-lbl">{{ __('Deliveries') }}</span></div>
             </div>
 
             <div class="pills">
-                <span class="pill"><span class="pill-dot"></span> Real-time Tracking</span>
-                <span class="pill"><span class="pill-dot"></span> Fleet Management</span>
-                <span class="pill"><span class="pill-dot"></span> Smart Analytics</span>
+                <span class="pill"><span class="pill-dot"></span> {{ __('Real-time Tracking') }}</span>
+                <span class="pill"><span class="pill-dot"></span> {{ __('Fleet Management') }}</span>
+                <span class="pill"><span class="pill-dot"></span> {{ __('Smart Analytics') }}</span>
             </div>
         </div>
     </div>
@@ -493,12 +508,12 @@
 
             {{-- Small logo mark --}}
             <div class="card-logo">
-                <img src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee" width="44" height="44" style="object-fit:contain;border-radius:10px;">
+                <img src="{{ asset('saee_logo_dark.png') }}" alt="{{ __('Sa\'ee') }}" width="44" height="44" style="object-fit:contain;border-radius:10px;">
             </div>
 
-            <span class="badge"><span class="badge-dot"></span>Admin Portal</span>
-            <h1>Welcome back</h1>
-            <p class="sub">Sign in to access the dashboard</p>
+            <span class="badge"><span class="badge-dot"></span>{{ __('Admin Portal') }}</span>
+            <h1>{{ __('Welcome back') }}</h1>
+            <p class="sub">{{ __('Sign in to access the dashboard') }}</p>
 
             {{-- Alerts --}}
             @if ($errors->any())
@@ -517,45 +532,45 @@
 
                 {{-- Phone --}}
                 <div class="field f1">
-                    <label class="field-label" for="phoneLocal">Phone Number</label>
+                    <label class="field-label" for="phoneLocal">{{ __('Phone Number') }}</label>
                     <div class="field-wrap phone-wrap{{ $errors->has('phone') ? ' has-error' : '' }}">
-                        <button type="button" class="country-btn" id="countryBtn" aria-label="Select country code">
+                        <button type="button" class="country-btn" id="countryBtn" aria-label="{{ __('Select country code') }}">
                             <span class="country-flag" id="countryFlag">🇯🇴</span>
                             <span class="country-dial" id="countryDial">+962</span>
                             <svg class="country-chevron" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div class="country-dropdown" id="countryDropdown">
-                            <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">Jordan</span><span class="opt-dial">+962</span></div>
-                            <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">Saudi Arabia</span><span class="opt-dial">+966</span></div>
-                            <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">UAE</span><span class="opt-dial">+971</span></div>
-                            <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">Kuwait</span><span class="opt-dial">+965</span></div>
-                            <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">Qatar</span><span class="opt-dial">+974</span></div>
-                            <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">Bahrain</span><span class="opt-dial">+973</span></div>
-                            <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">Oman</span><span class="opt-dial">+968</span></div>
-                            <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">Egypt</span><span class="opt-dial">+20</span></div>
-                            <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">Palestine</span><span class="opt-dial">+970</span></div>
-                            <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">Lebanon</span><span class="opt-dial">+961</span></div>
-                            <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">Iraq</span><span class="opt-dial">+964</span></div>
-                            <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">Syria</span><span class="opt-dial">+963</span></div>
+                            <div class="country-option active" data-dial="+962" data-flag="🇯🇴"><span class="opt-flag">🇯🇴</span><span class="opt-name">{{ __('Jordan') }}</span><span class="opt-dial">+962</span></div>
+                            <div class="country-option" data-dial="+966" data-flag="🇸🇦"><span class="opt-flag">🇸🇦</span><span class="opt-name">{{ __('Saudi Arabia') }}</span><span class="opt-dial">+966</span></div>
+                            <div class="country-option" data-dial="+971" data-flag="🇦🇪"><span class="opt-flag">🇦🇪</span><span class="opt-name">{{ __('UAE') }}</span><span class="opt-dial">+971</span></div>
+                            <div class="country-option" data-dial="+965" data-flag="🇰🇼"><span class="opt-flag">🇰🇼</span><span class="opt-name">{{ __('Kuwait') }}</span><span class="opt-dial">+965</span></div>
+                            <div class="country-option" data-dial="+974" data-flag="🇶🇦"><span class="opt-flag">🇶🇦</span><span class="opt-name">{{ __('Qatar') }}</span><span class="opt-dial">+974</span></div>
+                            <div class="country-option" data-dial="+973" data-flag="🇧🇭"><span class="opt-flag">🇧🇭</span><span class="opt-name">{{ __('Bahrain') }}</span><span class="opt-dial">+973</span></div>
+                            <div class="country-option" data-dial="+968" data-flag="🇴🇲"><span class="opt-flag">🇴🇲</span><span class="opt-name">{{ __('Oman') }}</span><span class="opt-dial">+968</span></div>
+                            <div class="country-option" data-dial="+20" data-flag="🇪🇬"><span class="opt-flag">🇪🇬</span><span class="opt-name">{{ __('Egypt') }}</span><span class="opt-dial">+20</span></div>
+                            <div class="country-option" data-dial="+970" data-flag="🇵🇸"><span class="opt-flag">🇵🇸</span><span class="opt-name">{{ __('Palestine') }}</span><span class="opt-dial">+970</span></div>
+                            <div class="country-option" data-dial="+961" data-flag="🇱🇧"><span class="opt-flag">🇱🇧</span><span class="opt-name">{{ __('Lebanon') }}</span><span class="opt-dial">+961</span></div>
+                            <div class="country-option" data-dial="+964" data-flag="🇮🇶"><span class="opt-flag">🇮🇶</span><span class="opt-name">{{ __('Iraq') }}</span><span class="opt-dial">+964</span></div>
+                            <div class="country-option" data-dial="+963" data-flag="🇸🇾"><span class="opt-flag">🇸🇾</span><span class="opt-name">{{ __('Syria') }}</span><span class="opt-dial">+963</span></div>
                         </div>
-                        <input id="phoneLocal" type="tel" placeholder="7xxxxxxxx" autocomplete="tel" autofocus>
+                        <input id="phoneLocal" type="tel" placeholder="{{ __('7xxxxxxxx') }}" autocomplete="tel" autofocus>
                         <input type="hidden" name="phone" id="phoneHidden">
                     </div>
                 </div>
 
                 {{-- Password --}}
                 <div class="field f2">
-                    <label class="field-label" for="password">Password</label>
+                    <label class="field-label" for="password">{{ __('Password') }}</label>
                     <div class="field-wrap">
                         <svg class="field-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
                         <input
                             id="password" name="password" type="password"
-                            placeholder="••••••••••"
+                            placeholder="{{ __('••••••••••') }}"
                             autocomplete="current-password"
                         >
-                        <button type="button" class="pwd-btn" id="pwdToggle" aria-label="Toggle password">
+                        <button type="button" class="pwd-btn" id="pwdToggle" aria-label="{{ __('Toggle password') }}">
                             <svg id="eyeIcon" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>

@@ -80,18 +80,19 @@
             @csrf
 
             <div style="padding: 30px; border: 2px dashed var(--bdr); border-radius: 12px; text-align: center; background: rgba(255,255,255,0.01); transition: border-color 0.2s;" id="dropzone">
-                <input type="file" name="csv_file" id="csv_file" style="display: none;" accept=".csv,.txt" required>
+                <input type="file" name="csv_file" id="csv_file" style="display: none;" accept=".csv" required>
                 <div style="font-size: 2.2rem; color: var(--text-dim); margin-bottom: 12px;">
                     <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="display: inline-block;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px;">
                     Drag and drop your template CSV here, or <span style="color: var(--red-lt); cursor: pointer;" onclick="document.getElementById('csv_file').click()">browse</span>
                 </div>
-                <div style="font-size: 0.76rem; color: var(--text-dim);" id="file-name-display">Only CSV format is supported. Max file size: 4MB.</div>
+                <div style="font-size: 0.76rem; color: var(--text-dim);" id="file-name-display">Only CSV format is supported. Max file size: 10MB.</div>
+                <div style="font-size: 0.8rem; font-weight: 600; color: #ef4444; margin-top: 8px; display: none;" id="file-error-display"></div>
             </div>
 
             <div class="form-actions" style="margin-top: 18px;">
-                <a href="{{ route('client.orders.index') }}" class="btn-secondary">Cancel</a>
+                <a href="{{ route('client.orders.import') }}" class="btn-secondary">Cancel</a>
                 <button type="submit" class="btn-primary" id="submitBtn" disabled>Upload and Parse</button>
             </div>
         </form>
@@ -104,7 +105,7 @@
             Cities &amp; Areas Reference — use these IDs in <code>city_id</code> and <code>area_id</code>
         </div>
         <div style="max-height: 220px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--bdr);">
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;" data-no-export="true">
                 <thead>
                     <tr style="position: sticky; top: 0; background: var(--card);">
                         <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 80px;">City ID</th>
@@ -177,16 +178,49 @@
     const submitBtn = document.getElementById('submitBtn');
     const dropzone  = document.getElementById('dropzone');
     const fileNameDisplay = document.getElementById('file-name-display');
+    const fileErrorDisplay = document.getElementById('file-error-display');
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const DEFAULT_HINT = 'Only CSV format is supported. Max file size: 10MB.';
+
+    function showFileError(message) {
+        fileErrorDisplay.textContent = message;
+        fileErrorDisplay.style.display = 'block';
+        fileNameDisplay.textContent = DEFAULT_HINT;
+        fileNameDisplay.style.color = 'var(--text-dim)';
+        submitBtn.disabled = true;
+        dropzone.style.borderColor = '#ef4444';
+        fileInput.value = '';
+    }
+
+    function clearFileError() {
+        fileErrorDisplay.textContent = '';
+        fileErrorDisplay.style.display = 'none';
+    }
 
     fileInput.addEventListener('change', function () {
+        clearFileError();
+
         if (this.files && this.files.length > 0) {
             const file = this.files[0];
+            const isCsv = /\.csv$/i.test(file.name);
+
+            if (!isCsv) {
+                showFileError('Unsupported file format. Only CSV files are accepted.');
+                return;
+            }
+
+            if (file.size > MAX_FILE_SIZE) {
+                showFileError('File size exceeds the 10MB limit. Please upload a smaller file.');
+                return;
+            }
+
             fileNameDisplay.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
             fileNameDisplay.style.color = '#3b82f6';
             submitBtn.disabled = false;
             dropzone.style.borderColor = 'rgba(59, 130, 246, 0.4)';
         } else {
-            fileNameDisplay.textContent = 'Only CSV format is supported. Max file size: 4MB.';
+            fileNameDisplay.textContent = DEFAULT_HINT;
             fileNameDisplay.style.color = 'var(--text-dim)';
             submitBtn.disabled = true;
             dropzone.style.borderColor = 'var(--bdr)';

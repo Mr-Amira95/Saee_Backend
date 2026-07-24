@@ -48,6 +48,6 @@ class HeroSectionController extends Controller
         ]);
 
         return redirect()->route('admin.cms.hero.index')
-            ->with('success', 'Hero section updated successfully.');
+            ->with('success', __('Hero section updated successfully.'));
     }
 }

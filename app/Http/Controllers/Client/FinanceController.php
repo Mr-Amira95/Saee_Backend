@@ -49,11 +49,25 @@ class FinanceController extends Controller
 
     public function showInvoice(Invoice $invoice): View
     {
+        [$invoice, $orders] = $this->loadInvoiceForClient($invoice);
+
+        return view('client.finances.invoice_show', compact('invoice', 'orders'));
+    }
+
+    public function printInvoice(Invoice $invoice): View
+    {
+        [$invoice, $orders] = $this->loadInvoiceForClient($invoice);
+
+        return view('client.finances.invoice_print', compact('invoice', 'orders'));
+    }
+
+    private function loadInvoiceForClient(Invoice $invoice): array
+    {
         $profile = $this->getClientProfile();
 
         abort_if((int) $invoice->client_profile_id !== $profile->id, 403);
 
-        $invoice->load('clientProfile.city', 'clientProfile.area', 'payoutLedgerEntry');
+        $invoice->load('clientProfile.city', 'clientProfile.area', 'payoutLedgerEntry.recordedBy');
 
         $ref = $invoice->payoutLedgerEntry?->reference_number;
 
@@ -72,6 +86,6 @@ class FinanceController extends Controller
                 ->get();
         }
 
-        return view('client.finances.invoice_show', compact('invoice', 'orders'));
+        return [$invoice, $orders];
     }
 }

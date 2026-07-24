@@ -35,6 +35,6 @@ class FaqPageController extends Controller
         ]);
 
         return redirect()->route('admin.cms.faq-page.index')
-            ->with('success', 'FAQ page updated successfully.');
+            ->with('success', __('FAQ page updated successfully.'));
     }
 }

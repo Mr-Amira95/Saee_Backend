@@ -48,7 +48,7 @@ class ServiceController extends Controller
         ]);
 
         return redirect()->route('admin.cms.services.index')
-            ->with('success', 'Service created successfully.');
+            ->with('success', __('Service created successfully.'));
     }
 
     public function edit(Service $service)
@@ -83,7 +83,7 @@ class ServiceController extends Controller
         ]);
 
         return redirect()->route('admin.cms.services.index')
-            ->with('success', 'Service updated successfully.');
+            ->with('success', __('Service updated successfully.'));
     }
 
     public function destroy(Service $service)
@@ -92,6 +92,6 @@ class ServiceController extends Controller
         $service->delete();
 
         return redirect()->route('admin.cms.services.index')
-            ->with('success', 'Service deleted successfully.');
+            ->with('success', __('Service deleted successfully.'));
     }
 }

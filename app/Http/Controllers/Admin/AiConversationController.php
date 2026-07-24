@@ -58,6 +58,6 @@ class AiConversationController extends Controller
         $aiConversation->delete();
 
         return redirect()->route('admin.ai-conversations.index')
-            ->with('success', 'Conversation session deleted.');
+            ->with('success', __('Conversation session deleted.'));
     }
 }

@@ -47,7 +47,7 @@ class NotificationController extends Controller
         if (!$notification) {
             return response()->json([
                 'success' => false,
-                'message' => 'Notification not found',
+                'message' => __('Notification not found'),
                 'code'    => 'NOTIFICATION_NOT_FOUND',
             ], 404);
         }
@@ -58,7 +58,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Notification marked as read',
+            'message' => __('Notification marked as read'),
             'data'    => new SystemNotificationResource($notification),
         ]);
     }
@@ -74,7 +74,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'All notifications marked as read',
+            'message' => __('All notifications marked as read'),
             'data'    => ['marked_count' => $updated],
         ]);
     }

@@ -38,7 +38,7 @@ class LegalContentController extends Controller
         ]);
 
         return redirect()->route('admin.settings.legal.index')
-            ->with('success', 'Legal content saved successfully.');
+            ->with('success', __('Legal content saved successfully.'));
     }
 
     /**

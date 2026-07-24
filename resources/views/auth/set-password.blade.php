@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
+    <script>
+        (function() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light-theme');
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ __('Set Your Password') }} — Sa'ee Logistics</title>
@@ -133,9 +140,46 @@
         html[dir="rtl"] .field-icon { right: 14px; left: auto; }
         html[dir="rtl"] .pwd-btn { left: 12px; right: auto; }
         html[dir="rtl"] .field-input { padding: 12px 44px 12px 44px; }
+
+        /* ─── Language & Theme Switches ───────────────────── */
+        .auth-switches { position: fixed; top: 20px; right: 20px; z-index: 60; display: flex; align-items: center; gap: 8px; }
+        html[dir="rtl"] .auth-switches { right: auto; left: 20px; }
+        .auth-switches .icon-btn { width: 36px; height: 36px; border-radius: 9px; background: var(--in-bg); border: 1px solid var(--in-bdr); display: flex; align-items: center; justify-content: center; color: var(--text-sub); cursor: pointer; transition: background .15s, color .15s; text-decoration: none; font-weight: 700; font-size: .78rem; }
+        .auth-switches .icon-btn:hover { background: rgba(220,38,38,.1); color: var(--text); }
+
+        /* ─── Light Theme Overrides ────────────────────────── */
+        html.light-theme {
+            --bg:      #f8fafc;
+            --bg-2:    #f1f5f9;
+            --card:    rgba(255, 255, 255, 0.85);
+            --bdr:     rgba(15, 23, 42, 0.08);
+            --text:    #0f172a;
+            --text-sub:#475569;
+            --text-dim:#64748b;
+            --in-bg:   rgba(15, 23, 42, 0.035);
+            --in-bdr:  rgba(15, 23, 42, 0.09);
+        }
+        html.light-theme .card { box-shadow: 0 32px 80px rgba(15,23,42,.12), 0 0 0 1px rgba(15,23,42,.04), inset 0 1px 0 rgba(255,255,255,.6); }
+        html.light-theme .field-icon { color: rgba(15,23,42,.3); }
+        html.light-theme .pwd-btn { color: rgba(15,23,42,.35); }
+        html.light-theme .pwd-btn:hover { color: rgba(15,23,42,.75); }
+        html.light-theme .reqs { background: rgba(15,23,42,.02); }
+        html.light-theme .field-label { color: #0f172a; }
     </style>
 </head>
 <body>
+
+<div class="auth-switches">
+    @if(app()->getLocale() === 'en')
+        <a href="{{ route('lang.switch', 'ar') }}" class="icon-btn" title="تغيير اللغة إلى العربية">عربي</a>
+    @else
+        <a href="{{ route('lang.switch', 'en') }}" class="icon-btn" title="Switch to English">EN</a>
+    @endif
+    <button type="button" class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="{{ __('Toggle Theme') }}">
+        <svg id="themeMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+        <svg id="themeSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m8.942-8.942h-2.25M4.313 12H2.063m15.122-6.938l-1.591 1.591M6.818 17.182l-1.591 1.591m12.94 0l-1.591-1.591M6.818 6.818L5.227 5.227M12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
+    </button>
+</div>
 
 <div class="bg-wrap">
     <canvas id="particles"></canvas>
@@ -215,7 +259,7 @@
                 <div class="reqs-title">{{ __('Password Requirements') }}</div>
                 <div class="req-item" id="req-len"><span class="req-icon">✓</span> {{ __('At least 8 characters') }}</div>
                 <div class="req-item" id="req-upper"><span class="req-icon">✓</span> {{ __('At least one uppercase letter') }}</div>
-                <div class="req-item" id="req-num"><span class="req-icon">✓</span> {{ __('At least one number') }}</div>
+                <div class="req-item" id="req-lower"><span class="req-icon">✓</span> {{ __('At least one lowercase letter') }}</div>
                 <div class="req-item" id="req-special"><span class="req-icon">✓</span> {{ __('At least one special character') }}</div>
             </div>
 
@@ -244,15 +288,15 @@ function setReq(id, met) {
 function checkStrength(val) {
     const len     = val.length >= 8;
     const upper   = /[A-Z]/.test(val);
-    const num     = /\d/.test(val);
+    const lower   = /[a-z]/.test(val);
     const special = /[^A-Za-z0-9]/.test(val);
 
     setReq('req-len',     len);
     setReq('req-upper',   upper);
-    setReq('req-num',     num);
+    setReq('req-lower',   lower);
     setReq('req-special', special);
 
-    const score = [len, upper, num, special].filter(Boolean).length;
+    const score = [len, upper, lower, special].filter(Boolean).length;
     const fill  = document.getElementById('strengthFill');
     const label = document.getElementById('strengthLabel');
 
@@ -311,6 +355,23 @@ function checkStrength(val) {
     }
     draw();
 })();
+
+/* ── Theme toggle ─────────────────────────────── */
+function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateThemeIcons();
+}
+function updateThemeIcons() {
+    const isLight = document.documentElement.classList.contains('light-theme');
+    const sun  = document.getElementById('themeSun');
+    const moon = document.getElementById('themeMoon');
+    if (sun && moon) {
+        sun.style.display  = isLight ? 'none'  : 'block';
+        moon.style.display = isLight ? 'block' : 'none';
+    }
+}
+document.addEventListener('DOMContentLoaded', updateThemeIcons);
 </script>
 </body>
 </html>

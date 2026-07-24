@@ -44,6 +44,6 @@ class ShowcasePageController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-page.index')
-            ->with('success', 'Showcase section updated successfully.');
+            ->with('success', __('Showcase section updated successfully.'));
     }
 }

@@ -1,18 +1,18 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Financial Reconciliation')
-@section('page-title', 'Financial Reconciliation')
+@section('title', __('Financial Reconciliation'))
+@section('page-title', __('Financial Reconciliation'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Reconciliation</span>
+    <span class="current">{{ __('Reconciliation') }}</span>
 @endsection
 
 @section('content')
     <div class="page-hd">
         <div class="page-hd-left">
-            <h1>Financial Reconciliation</h1>
-            <p>Perform automated audits on driver cash collections vs settlements to ensure zero cash loss.</p>
+            <h1>{{ __('Financial Reconciliation') }}</h1>
+            <p>{{ __('Perform automated audits on driver cash collections vs settlements to ensure zero cash loss.') }}</p>
         </div>
     </div>
 
@@ -26,7 +26,7 @@
             </div>
             <div>
                 <div class="ms-val" style="color: #60a5fa;">{{ number_format($totalCollected, 2) }} JD</div>
-                <div class="ms-lbl">Gross Driver Cash Collections</div>
+                <div class="ms-lbl">{{ __('Gross Driver Cash Collections') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -37,7 +37,7 @@
             </div>
             <div>
                 <div class="ms-val" style="color: #4ade80;">{{ number_format($totalSettled, 2) }} JD</div>
-                <div class="ms-lbl">Total Cash Settled to Company</div>
+                <div class="ms-lbl">{{ __('Total Cash Settled to Company') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -50,7 +50,7 @@
                 <div class="ms-val" style="color: {{ $netDiscrepancy > 0 ? 'var(--red-lt)' : '#4ade80' }};">
                     {{ number_format($netDiscrepancy, 2) }} JD
                 </div>
-                <div class="ms-lbl">Total Cash Remaining in Field</div>
+                <div class="ms-lbl">{{ __('Total Cash Remaining in Field') }}</div>
             </div>
         </div>
     </div>
@@ -58,19 +58,19 @@
     {{-- Drivers Cash Discrepancy Audit Card --}}
     <div class="table-card" style="margin-top: 20px;">
         <div style="padding: 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em;">Driver Ledger Balance Audit</h3>
-            <span style="font-size: 0.72rem; color: var(--text-dim);">Verify driver cash holdings matches office logs</span>
+            <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em;">{{ __('Driver Ledger Balance Audit') }}</h3>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">{{ __('Verify driver cash holdings matches office logs') }}</span>
         </div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Driver / Agent</th>
-                        <th>Total Cash Collected</th>
-                        <th>Total Cash Settled</th>
-                        <th>Outstanding Cash Held</th>
-                        <th style="text-align: center;">Audit Status</th>
-                        <th style="width: 120px; text-align: center;">Actions</th>
+                        <th>{{ __('Driver / Agent') }}</th>
+                        <th>{{ __('Total Cash Collected') }}</th>
+                        <th>{{ __('Total Cash Settled') }}</th>
+                        <th>{{ __('Outstanding Cash Held') }}</th>
+                        <th style="text-align: center;">{{ __('Audit Status') }}</th>
+                        <th style="width: 120px; text-align: center;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -90,22 +90,22 @@
                             <td style="text-align: center;">
                                 @if($d['mismatch'])
                                     <span class="badge badge-suspended">
-                                        <span class="badge-dot"></span> Discrepancy Alert
+                                        <span class="badge-dot"></span> {{ __('Discrepancy Alert') }}
                                     </span>
                                 @elseif($d['cash_held'] > 0)
                                     <span class="badge badge-pending">
-                                        <span class="badge-dot"></span> Pending Settle
+                                        <span class="badge-dot"></span> {{ __('Pending Settle') }}
                                     </span>
                                 @else
                                     <span class="badge badge-active">
-                                        <span class="badge-dot"></span> Balanced
+                                        <span class="badge-dot"></span> {{ __('Balanced') }}
                                     </span>
                                 @endif
                             </td>
                             <td>
                                 <div class="act-btns" style="justify-content: center;">
                                     <a href="{{ route('admin.drivers.show', $d['driver']->driverProfile) }}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">
-                                        View Profile
+                                        {{ __('View Profile') }}
                                     </a>
                                 </div>
                             </td>
@@ -113,7 +113,7 @@
                     @empty
                         <tr>
                             <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 30px;">
-                                No drivers are currently registered in the database.
+                                {{ __('No drivers are currently registered in the database.') }}
                             </td>
                         </tr>
                     @endforelse

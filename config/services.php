@@ -38,6 +38,7 @@ return [
     'openai' => [
         'key'   => env('OPENAI_API_KEY'),
         'model' => env('OPENAI_MODEL', 'gpt-5.5'),
+        'classifier_model' => env('OPENAI_CLASSIFIER_MODEL', env('OPENAI_MODEL', 'gpt-5.5')),
     ],
 
     'google' => [

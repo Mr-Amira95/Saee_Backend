@@ -1,20 +1,20 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Edit Industry')
-@section('page-title', 'Edit Industry')
+@section('title', __('Edit Industry'))
+@section('page-title', __('Edit Industry'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.cms.industries.index') }}">Industries</a>
+    <a href="{{ route('admin.cms.industries.index') }}">{{ __('Industries') }}</a>
     <span class="sep">/</span>
-    <span class="current">Edit</span>
+    <span class="current">{{ __('Edit') }}</span>
 @endsection
 
 @section('content')
 <div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-        <a href="{{ route('admin.cms.industries.index') }}" class="btn-secondary">&#8592; Back</a>
-        <h1 style="font-size:1.2rem;font-weight:700;margin:0;">Edit Industry: {{ $industry->title['en'] ?? '' }}</h1>
+        <a href="{{ route('admin.cms.industries.index') }}" class="btn-secondary">&#8592; {{ __('Back') }}</a>
+        <h1 style="font-size:1.2rem;font-weight:700;margin:0;">{{ __('Edit Industry:') }} {{ $industry->title['en'] ?? '' }}</h1>
     </div>
 
     @if($errors->any())
@@ -30,16 +30,16 @@
         @method('PUT')
 
         <div class="form-section">
-            <div class="form-section-title">Title</div>
+            <div class="form-section-title">{{ __('Title') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Title (English) <span class="req">*</span></label>
+                    <label class="form-label">{{ __('Title (English)') }} <span class="req">*</span></label>
                     <input type="text" name="title[en]" class="form-input @error('title.en') err @enderror"
                            value="{{ old('title.en', $industry->title['en'] ?? '') }}" required>
                     @error('title.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Title (Arabic) <span class="req">*</span></label>
+                    <label class="form-label">{{ __('Title (Arabic)') }} <span class="req">*</span></label>
                     <input type="text" name="title[ar]" dir="rtl" class="form-input @error('title.ar') err @enderror"
                            value="{{ old('title.ar', $industry->title['ar'] ?? '') }}" required>
                     @error('title.ar')<span class="form-error">{{ $message }}</span>@enderror
@@ -48,15 +48,15 @@
         </div>
 
         <div class="form-section" style="margin-top:20px;">
-            <div class="form-section-title">Subtitle</div>
+            <div class="form-section-title">{{ __('Subtitle') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Subtitle (English)</label>
+                    <label class="form-label">{{ __('Subtitle (English)') }}</label>
                     <textarea name="subtitle[en]" class="form-input @error('subtitle.en') err @enderror" rows="3" style="height:auto;">{{ old('subtitle.en', $industry->subtitle['en'] ?? '') }}</textarea>
                     @error('subtitle.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Subtitle (Arabic)</label>
+                    <label class="form-label">{{ __('Subtitle (Arabic)') }}</label>
                     <textarea name="subtitle[ar]" dir="rtl" class="form-input @error('subtitle.ar') err @enderror" rows="3" style="height:auto;">{{ old('subtitle.ar', $industry->subtitle['ar'] ?? '') }}</textarea>
                     @error('subtitle.ar')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
@@ -64,40 +64,40 @@
         </div>
 
         <div class="form-section" style="margin-top:20px;">
-            <div class="form-section-title">Icon & Ordering</div>
+            <div class="form-section-title">{{ __('Icon & Ordering') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Icon (SVG file)</label>
+                    <label class="form-label">{{ __('Icon (SVG file)') }}</label>
                     @if($industry->icon_path)
                         <div style="margin-bottom: 10px;">
-                            <img src="{{ $industry->icon_path }}" alt="Current icon" style="width: 42px; height: 42px; object-fit: contain; border-radius: 8px; border: 1px solid var(--bdr); background: rgba(255,255,255,.05); padding: 6px;">
+                            <img src="{{ $industry->icon_path }}" alt="{{ __('Current icon') }}" style="width: 42px; height: 42px; object-fit: contain; border-radius: 8px; border: 1px solid var(--bdr); background: rgba(255,255,255,.05); padding: 6px;">
                         </div>
                     @endif
                     <input type="file" name="icon_file" class="form-input @error('icon_file') err @enderror"
                            accept="image/svg+xml" style="height: auto; padding: 8px;">
-                    <span style="font-size: .75rem; color: var(--text-dim); margin-top: 4px;">Leave blank to keep current icon. Max size: 512KB.</span>
+                    <span style="font-size: .75rem; color: var(--text-dim); margin-top: 4px;">{{ __('Leave blank to keep current icon. Max size: 512KB.') }}</span>
                     @error('icon_file')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Sort Order <span class="req">*</span></label>
+                    <label class="form-label">{{ __('Sort Order') }} <span class="req">*</span></label>
                     <input type="number" name="sort_order" class="form-input"
                            value="{{ old('sort_order', $industry->sort_order) }}" min="0" required>
                 </div>
             </div>
 
             <div class="form-group" style="margin-top:15px;">
-                <label class="form-label">Status</label>
+                <label class="form-label">{{ __('Status') }}</label>
                 <select name="status" class="form-input" style="background: var(--in-bg); color: var(--text);">
-                    <option value="active" {{ old('status', $industry->status) === 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="inactive" {{ old('status', $industry->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    <option value="active" {{ old('status', $industry->status) === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                    <option value="inactive" {{ old('status', $industry->status) === 'inactive' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
                 </select>
             </div>
         </div>
 
         <div class="form-actions" style="margin-top:20px;">
-            <a href="{{ route('admin.cms.industries.index') }}" class="btn-secondary">Cancel</a>
-            <button type="submit" class="btn-primary">Update Industry</button>
+            <a href="{{ route('admin.cms.industries.index') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+            <button type="submit" class="btn-primary">{{ __('Update Industry') }}</button>
         </div>
     </form>
 </div>

@@ -1,20 +1,20 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Client Payout')
-@section('page-title', 'Client Payout')
+@section('title', __('Client Payout'))
+@section('page-title', __('Client Payout'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.financials.index') }}">Finance Dashboard</a>
+    <a href="{{ route('admin.financials.index') }}">{{ __('Finance Dashboard') }}</a>
     <span class="sep">/</span>
-    <span class="current">Client Payout</span>
+    <span class="current">{{ __('Client Payout') }}</span>
 @endsection
 
 @section('content')
     <div class="page-hd">
         <div class="page-hd-left">
-            <h1>Process Payout for Client: {{ $client->company_name }}</h1>
-            <p>Select COD orders to pay to the client, minus the shipping charges if applicable.</p>
+            <h1>{{ __('Process Payout for Client:') }} {{ $client->company_name }}</h1>
+            <p>{{ __('Select COD orders to pay to the client, minus the shipping charges if applicable.') }}</p>
         </div>
     </div>
 
@@ -26,21 +26,21 @@
             <div style="padding: 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="selectAll" style="width: 16px; height: 16px; accent-color: var(--red);">
-                    <label for="selectAll" style="font-size: .8rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; cursor: pointer; user-select: none;">Select All Orders</label>
+                    <label for="selectAll" style="font-size: .8rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; cursor: pointer; user-select: none;">{{ __('Select All Orders') }}</label>
                 </div>
-                <span style="font-size: 0.75rem; color: var(--text-dim);">Only delivered COD orders needing payout are listed</span>
+                <span style="font-size: 0.75rem; color: var(--text-dim);">{{ __('Only delivered COD orders needing payout are listed') }}</span>
             </div>
 
             <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 40px; text-align: center;">Select</th>
-                            <th>Order #</th>
-                            <th>Receiver Info</th>
-                            <th>COD Collected</th>
-                            <th>Customer Delivery</th>
-                            <th>Net Payout</th>
+                            <th style="width: 40px; text-align: center;">{{ __('Select') }}</th>
+                            <th>{{ __('Order #') }}</th>
+                            <th>{{ __('Receiver Info') }}</th>
+                            <th>{{ __('COD Collected') }}</th>
+                            <th>{{ __('Customer Delivery') }}</th>
+                            <th>{{ __('Net Payout') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,7 +79,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 35px;">
-                                    No pending payouts registered for this client.
+                                    {{ __('No pending payouts registered for this client.') }}
                                 </td>
                             </tr>
                         @endforelse
@@ -90,24 +90,24 @@
 
         {{-- Payout Settlement Box --}}
         <div class="form-section">
-            <div class="form-section-title">Payout Settlement</div>
+            <div class="form-section-title">{{ __('Payout Settlement') }}</div>
 
             {{-- Summary stat cards --}}
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
                 <div style="background: var(--bg); border: 1px solid var(--bdr); border-radius: 10px; padding: 14px 16px;">
-                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">Total Balance Due</div>
+                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">{{ __('Total Balance Due') }}</div>
                     <div style="font-size: 1.2rem; font-weight: 700; color: var(--text);">{{ number_format($netPayoutAmount, 2) }} JD</div>
                 </div>
                 <div style="background: var(--bg); border: 1px solid var(--bdr); border-radius: 10px; padding: 14px 16px;">
-                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">Selected COD</div>
+                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">{{ __('Selected COD') }}</div>
                     <div style="font-size: 1.2rem; font-weight: 700; color: var(--text);" id="selectedCod">0.00 JD</div>
                 </div>
                 <div style="background: var(--bg); border: 1px solid var(--bdr); border-radius: 10px; padding: 14px 16px;">
-                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">Customer Delivery</div>
+                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">{{ __('Customer Delivery') }}</div>
                     <div style="font-size: 1.2rem; font-weight: 700; color: var(--text);" id="selectedShipping">+0.00 JD</div>
                 </div>
                 <div style="background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.25); border-radius: 10px; padding: 14px 16px;">
-                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">Net Payout · <span id="selectedCount">0</span> orders</div>
+                    <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">{{ __('Net Payout') }} · <span id="selectedCount">0</span> {{ __('orders') }}</div>
                     <div style="font-size: 1.2rem; font-weight: 700; color: #22c55e;" id="selectedNet">0.00 JD</div>
                 </div>
             </div>
@@ -115,27 +115,27 @@
             {{-- Form inputs --}}
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label" for="reference_number">Bank Transfer Reference</label>
-                    <input type="text" name="reference_number" id="reference_number" class="form-input" placeholder="e.g. Bank Ref #TXN982173">
+                    <label class="form-label" for="reference_number">{{ __('Bank Transfer Reference') }}</label>
+                    <input type="text" name="reference_number" id="reference_number" class="form-input" placeholder="{{ __('e.g. Bank Ref #TXN982173') }}">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label" for="attachment">Attachment (e.g. Bank Receipt)</label>
+                    <label class="form-label" for="attachment">{{ __('Attachment (e.g. Bank Receipt)') }}</label>
                     <input type="file" name="attachment" id="attachment" class="form-input" style="padding: 8px 12px; height: 42px; display: flex; align-items: center;">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label" for="notes">Payout Notes</label>
-                    <textarea name="notes" id="notes" class="form-textarea" rows="1" placeholder="Optional notes..." style="height: 42px; resize: none;"></textarea>
+                    <label class="form-label" for="notes">{{ __('Payout Notes') }}</label>
+                    <textarea name="notes" id="notes" class="form-textarea" rows="1" placeholder="{{ __('Optional notes...') }}" style="height: 42px; resize: none;"></textarea>
                 </div>
             </div>
 
             <div style="display: flex; gap: 12px;">
                 @if(auth()->user()->hasAdminAction('finances.settlements'))
                 <button type="submit" class="btn-primary" style="flex: 1; justify-content: center; height: 42px; background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 4px 14px rgba(34,197,94,.25);" id="submitButton" disabled>
-                    Confirm Payout to Client
+                    {{ __('Confirm Payout to Client') }}
                 </button>
                 @endif
                 <a href="{{ route('admin.financials.index') }}" class="btn-secondary" style="justify-content: center; height: 42px; padding: 0 24px; display: flex; align-items: center; box-sizing: border-box;">
-                    Cancel
+                    {{ __('Cancel') }}
                 </a>
             </div>
         </div>
@@ -145,6 +145,10 @@
 
 @section('scripts')
     <script>
+        const i18n = {
+            orderSingular: @json(__('order')),
+            orderPlural: @json(__('orders')),
+        };
         const selectAll = document.getElementById('selectAll');
         const checkboxes = document.querySelectorAll('.order-checkbox');
         const selectedCodSpan = document.getElementById('selectedCod');
@@ -171,7 +175,7 @@
             selectedCodSpan.textContent = cod.toFixed(2) + ' JD';
             selectedShippingSpan.textContent = '+' + shipping.toFixed(2) + ' JD';
             selectedNetSpan.textContent = net.toFixed(2) + ' JD';
-            selectedCountSpan.textContent = count + ' order' + (count !== 1 ? 's' : '');
+            selectedCountSpan.textContent = count + ' ' + (count !== 1 ? i18n.orderPlural : i18n.orderSingular);
             
             if (count > 0) {
                 submitButton.disabled = false;

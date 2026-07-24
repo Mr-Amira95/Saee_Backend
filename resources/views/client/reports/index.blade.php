@@ -227,7 +227,7 @@
         @php
             $trendValues = $dailyTrend->pluck('count')->toArray();
             $trendDates  = $dailyTrend->pluck('date')->toArray();
-            $maxTrend    = max(1, max($trendValues));
+            $maxTrend    = max(1, $trendValues ? max($trendValues) : 0);
             $dayCount    = count($trendValues);
 
             $trendPoints = [];

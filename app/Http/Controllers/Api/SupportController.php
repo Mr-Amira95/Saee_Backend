@@ -50,7 +50,7 @@ class SupportController extends Controller
         if (!$ticket) {
             return response()->json([
                 'success' => false,
-                'message' => 'Support ticket not found',
+                'message' => __('Support ticket not found'),
                 'code'    => 'TICKET_NOT_FOUND',
             ], 404);
         }
@@ -100,7 +100,7 @@ class SupportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Support ticket created successfully',
+            'message' => __('Support ticket created successfully'),
             'data'    => new SupportTicketResource($ticket),
         ], 201);
     }
@@ -115,7 +115,7 @@ class SupportController extends Controller
         if (!$ticket) {
             return response()->json([
                 'success' => false,
-                'message' => 'Support ticket not found',
+                'message' => __('Support ticket not found'),
                 'code'    => 'TICKET_NOT_FOUND',
             ], 404);
         }
@@ -123,7 +123,7 @@ class SupportController extends Controller
         if ($ticket->status === 'resolved') {
             return response()->json([
                 'success' => false,
-                'message' => 'Ticket is already closed',
+                'message' => __('Ticket is already closed'),
                 'code'    => 'TICKET_ALREADY_CLOSED',
             ], 422);
         }
@@ -132,7 +132,7 @@ class SupportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Support ticket closed successfully',
+            'message' => __('Support ticket closed successfully'),
             'data'    => new SupportTicketResource($ticket),
         ]);
     }
@@ -147,7 +147,7 @@ class SupportController extends Controller
         if (!$ticket) {
             return response()->json([
                 'success' => false,
-                'message' => 'Support ticket not found',
+                'message' => __('Support ticket not found'),
                 'code'    => 'TICKET_NOT_FOUND',
             ], 404);
         }
@@ -155,7 +155,7 @@ class SupportController extends Controller
         if ($ticket->status === 'resolved') {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot send a message to a resolved ticket',
+                'message' => __('Cannot send a message to a resolved ticket'),
                 'code'    => 'TICKET_RESOLVED',
             ], 422);
         }
@@ -177,7 +177,7 @@ class SupportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Message sent successfully',
+            'message' => __('Message sent successfully'),
             'data'    => new SupportMessageResource($message),
         ], 201);
     }

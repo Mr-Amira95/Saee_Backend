@@ -1,8 +1,8 @@
 <aside class="sidebar">
     {{-- Logo --}}
     <div class="sidebar-logo">
-        <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;">
-        <img id="logoLight" src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;display:none;">
+        <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}" alt="{{ __('Sa\'ee LogisticsServices') }}" style="width:130px;height:auto;object-fit:contain;">
+        <img id="logoLight" src="{{ asset('saee_logo_light.png') }}" alt="{{ __('Sa\'ee LogisticsServices') }}" style="width:130px;height:auto;object-fit:contain;display:none;">
     </div>
 
     <nav class="sidebar-nav">

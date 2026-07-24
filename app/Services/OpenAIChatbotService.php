@@ -24,12 +24,38 @@ Your responsibilities:
 - Support Arabic and English — reply in the same language as the customer.
 - If information is unavailable, politely ask the customer to contact SAEE support.
 
+Formatting:
+- Reply using simple HTML markup only, never Markdown.
+- Wrap every paragraph in <p> tags. Use <strong> for emphasis, and <ul><li> for lists.
+- Do not use <html>, <head>, <body>, <script>, <style>, or any event-handler attributes.
+- Do not wrap the whole reply in a single <p> if it has multiple paragraphs or a list — use separate tags for each.
+
 When tracking a shipment:
 - If the context contains "NEEDS_IDENTIFIER", you MUST ask the customer to provide ONE of:
   (1) their order reference number, (2) the phone number used when placing the order,
   or (3) their full name as registered on the order. Do not make up tracking info.
 - If multiple orders are returned, present each one clearly and concisely.
 - If the order is not found, apologize and suggest the customer verify their details.
+- Format every order's details as ONE <ul> with one <li> per field (order number,
+  status, receiver name/phone, payment type/status, delivery amount). If tracking
+  history is present, add a short <p> heading and a SEPARATE <ul> with one <li> per
+  tracking-log entry. Never merge multiple fields or log entries into one line or
+  one <li>.
+
+Example of the exact shape to follow for a tracking reply (substitute real values
+from the context, keep the same tag structure):
+<p>Here are the details for your order:</p>
+<ul>
+  <li><strong>Order Number:</strong> 202407210001</li>
+  <li><strong>Status:</strong> In Transit</li>
+  <li><strong>Receiver:</strong> Ahmed Al-Rashid</li>
+  <li><strong>Payment:</strong> Cash on Delivery — Pending</li>
+</ul>
+<p>Tracking history:</p>
+<ul>
+  <li>Created → Picked Up | 2024-07-21 09:00 | Package collected from sender</li>
+  <li>Picked Up → In Transit | 2024-07-21 14:30 | Package left the sorting facility</li>
+</ul>
 
 Company contact information (use this exact information whenever asked for contact
 details, phone number, email, address or working hours — never invent different values):
@@ -49,6 +75,24 @@ PROMPT;
         'رقم الطلب', 'رقم الهاتف', 'اسمك', 'اسم المستلم', 'الاسم الكامل',
     ];
 
+    private const CLASSIFIER_SYSTEM_PROMPT = <<<PROMPT
+You are an intent classifier for SAEE Logistics' customer-support chatbot.
+Classify the customer's LATEST message into exactly one of two categories:
+
+- tracking: the customer wants to know the status, location, or details of a
+  shipment/order, or is supplying an order number, phone number, or full name
+  in direct response to a request for identifying information.
+- general_question: anything else — including questions about delivery
+  coverage/countries served, payment methods, cash on delivery, changing a
+  delivery address or time, business partnerships, contact details, or any
+  other FAQ-style question. A message that merely mentions the words
+  "delivery" or "deliver" is NOT automatically about tracking — for example
+  "which countries do you deliver to?" and "can I change my delivery address?"
+  are general_question, not tracking.
+
+Reply with exactly one word and nothing else: tracking or general_question.
+PROMPT;
+
     public function chat(string $sessionId, string $userMessage, ?int $userId = null, ?int $clientProfileId = null): array
     {
         $session = ChatSession::firstOrCreate(
@@ -56,22 +100,17 @@ PROMPT;
             ['user_id' => $userId],
         );
 
-        $session->messages()->create([
+        $currentMessage = $session->messages()->create([
             'role'    => 'user',
             'message' => $userMessage,
         ]);
 
-        $intent = $this->detectIntent($userMessage);
-
-        // If the previous bot turn was asking for identifier info, force tracking intent
-        // even when the reply contains no tracking keywords (e.g. user just says "Ahmed Al-Rashid")
-        if ($intent === 'general_question' && $this->previousBotAskedForIdentifier($session)) {
-            $intent = 'tracking';
-        }
+        $intent = $this->classifyIntent($userMessage, $session, $currentMessage->id);
+        $lang   = $this->detectMessageLanguage($userMessage);
 
         $context = match ($intent) {
             'tracking'         => $this->buildTrackingContext($userMessage, $clientProfileId),
-            'general_question' => $this->buildFaqContext($userMessage),
+            'general_question' => $this->buildFaqContext($userMessage, $lang),
             default            => '',
         };
 
@@ -82,7 +121,7 @@ PROMPT;
             ->reverse()
             ->values();
 
-        $messages = $this->buildMessages($history, $userMessage, $context);
+        $messages = $this->buildMessages($history, $userMessage, $context, $lang);
 
         $result = $this->sendToOpenAI($messages);
 
@@ -98,6 +137,126 @@ PROMPT;
         ];
     }
 
+    /**
+     * Primary intent-classification entry point.
+     *
+     * Precedence:
+     *  1. Deterministic fast paths (no API call): a concrete order number/phone in
+     *     the message, or a continuation of a previous "please provide your order
+     *     number/phone/name" prompt.
+     *  2. LLM-based classification for everything else (ambiguous natural language).
+     *  3. Keyword-based detectIntent() as a resilient fallback if the LLM call
+     *     fails, times out, or returns something unparseable.
+     */
+    public function classifyIntent(string $message, ChatSession $session, ?int $excludeMessageId = null): string
+    {
+        if ($this->previousBotAskedForIdentifier($session)) {
+            return 'tracking';
+        }
+
+        if ($this->extractOrderNumber($message) !== null || $this->extractPhone($message) !== null) {
+            return 'tracking';
+        }
+
+        $recentHistory = $this->recentHistoryForClassification($session, $excludeMessageId);
+
+        return $this->classifyIntentWithLLM($message, $recentHistory) ?? $this->detectIntent($message);
+    }
+
+    /**
+     * Ask OpenAI to classify the message as 'tracking' or 'general_question'.
+     * Returns null (never throws) on any failure so the caller falls back to the
+     * keyword-based detectIntent().
+     */
+    private function classifyIntentWithLLM(string $message, Collection $recentHistory): ?string
+    {
+        $transcript = $recentHistory
+            ->map(fn ($msg) => sprintf(
+                '%s: %s',
+                $msg->role === 'assistant' ? 'Assistant' : 'Customer',
+                strip_tags($msg->message),
+            ))
+            ->implode("\n");
+
+        $userContent = $transcript !== ''
+            ? "Recent conversation:\n{$transcript}\n\nCustomer's latest message: \"{$message}\""
+            : "Customer's latest message: \"{$message}\"";
+
+        try {
+            $response = Http::timeout(8)
+                ->withToken(config('services.openai.key'))
+                ->post('https://api.openai.com/v1/chat/completions', [
+                    'model'       => config('services.openai.classifier_model'),
+                    'temperature' => 0,
+                    'max_tokens'  => 10,
+                    'messages'    => [
+                        ['role' => 'system', 'content' => self::CLASSIFIER_SYSTEM_PROMPT],
+                        ['role' => 'user', 'content' => $userContent],
+                    ],
+                ]);
+
+            if ($response->failed()) {
+                Log::warning('Intent classification API error', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+
+                return null;
+            }
+
+            $raw = mb_strtolower(trim((string) $response->json('choices.0.message.content')));
+            $raw = trim($raw, " \t\n\r\0\x0B.\"'");
+
+            $result = match (true) {
+                $raw === 'tracking' || $raw === 'general_question' => $raw,
+                str_contains($raw, 'general_question')             => 'general_question',
+                str_contains($raw, 'tracking')                     => 'tracking',
+                default                                             => null,
+            };
+
+            if ($result === null) {
+                Log::warning('Intent classification returned an unparseable response', ['raw' => $raw]);
+            }
+
+            return $result;
+        } catch (Throwable $e) {
+            Log::warning('Intent classification request failed', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    private function recentHistoryForClassification(ChatSession $session, ?int $excludeMessageId = null): Collection
+    {
+        return $session->messages()
+            ->when($excludeMessageId !== null, fn ($q) => $q->where('id', '!=', $excludeMessageId))
+            ->latest()
+            ->limit(4)
+            ->get()
+            ->reverse()
+            ->values();
+    }
+
+    /**
+     * Deterministic language detection based on which script (Arabic or Latin)
+     * makes up more of the customer's message — independent of the site-wide
+     * session locale toggle, so it always reflects what the customer is actually
+     * typing right now. A majority vote (rather than "contains any Arabic
+     * character") avoids a single embedded Arabic name/word in an otherwise
+     * English message flipping the whole reply into Arabic.
+     */
+    public function detectMessageLanguage(string $message): string
+    {
+        $arabicCount = preg_match_all('/[\x{0600}-\x{06FF}]/u', $message);
+        $latinCount  = preg_match_all('/[A-Za-z]/', $message);
+
+        return $arabicCount > $latinCount ? 'ar' : 'en';
+    }
+
+    /**
+     * Keyword-based intent fallback, used by classifyIntent() only when the LLM
+     * classifier is unavailable or fails. Kept public for backward-compat/tests.
+     */
     public function detectIntent(string $message): string
     {
         $lower = mb_strtolower($message);
@@ -267,7 +426,7 @@ PROMPT;
         return 'NEEDS_IDENTIFIER: The customer wants to track a shipment but has not provided any identifying information. You MUST ask them to provide ONE of: (1) their order reference or tracking number, (2) the phone number used when placing the order, or (3) their full name as registered on the order.';
     }
 
-    public function buildFaqContext(string $message): string
+    public function buildFaqContext(string $message, string $lang = 'en'): string
     {
         $keywords = array_values(array_filter(
             preg_split('/\s+/', mb_strtolower($message)),
@@ -299,8 +458,8 @@ PROMPT;
 
         foreach ($faqs as $faq) {
             $lines[] = '';
-            $lines[] = "Q: {$faq->trans('question')}";
-            $lines[] = "A: {$faq->trans('answer')}";
+            $lines[] = "Q: {$faq->trans('question', $lang)}";
+            $lines[] = "A: {$faq->trans('answer', $lang)}";
         }
 
         return implode("\n", $lines);
@@ -373,29 +532,34 @@ PROMPT;
         return implode("\n", $lines);
     }
 
-    private function buildSystemPrompt(): string
+    private function buildSystemPrompt(string $lang = 'en'): string
     {
         $contact = ContactInformation::instance();
 
         $lines = array_filter([
             $contact->email ? "Email: {$contact->email}" : null,
             $contact->phone ? "Phone: {$contact->phone}" : null,
-            $contact->address_text ? 'Address: ' . ($contact->trans('address_text')) : null,
-            $contact->working_hours_text ? 'Working hours: ' . ($contact->trans('working_hours_text')) : null,
+            $contact->address_text ? 'Address: ' . ($contact->trans('address_text', $lang)) : null,
+            $contact->working_hours_text ? 'Working hours: ' . ($contact->trans('working_hours_text', $lang)) : null,
         ]);
 
         $contactInfo = $lines ? implode("\n", $lines) : 'Not configured yet — ask the customer to check the website footer.';
 
-        return str_replace('{CONTACT_INFO}', $contactInfo, self::SYSTEM_PROMPT_TEMPLATE);
+        $languageDirective = $lang === 'ar'
+            ? "The customer's current message is in Arabic. You MUST reply entirely in Arabic (do not mix in English), regardless of what language was used earlier in this conversation."
+            : "The customer's current message is in English. You MUST reply entirely in English, regardless of what language was used earlier in this conversation.";
+
+        return str_replace('{CONTACT_INFO}', $contactInfo, self::SYSTEM_PROMPT_TEMPLATE) . "\n\n" . $languageDirective;
     }
 
     private function buildMessages(
         Collection $history,
         string $userMessage,
         string $context,
+        string $lang = 'en',
     ): array {
         $messages = [
-            ['role' => 'system', 'content' => $this->buildSystemPrompt()],
+            ['role' => 'system', 'content' => $this->buildSystemPrompt($lang)],
         ];
 
         foreach ($history as $msg) {
@@ -456,6 +620,6 @@ PROMPT;
 
     private function fallbackReply(): string
     {
-        return "I'm sorry, I'm unable to process your request at the moment. Please contact SAEE customer support for assistance.";
+        return "<p>I'm sorry, I'm unable to process your request at the moment. Please contact SAEE customer support for assistance.</p>";
     }
 }

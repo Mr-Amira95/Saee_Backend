@@ -26,13 +26,18 @@ class CompanyController extends Controller
 
         $validated = $request->validate([
             'company_name'                => ['required', 'string', 'max:255'],
-            'commercial_register_number'  => ['nullable', 'string', 'max:100'],
-            'vat_number'                  => ['nullable', 'string', 'max:50'],
-            'email'                       => ['nullable', 'email', 'max:255'],
-            'company_phone'               => ['nullable', 'string', 'max:20'],
+            'commercial_register_number'  => ['nullable', 'string', 'max:100', 'regex:/^[0-9]+$/'],
+            'vat_number'                  => ['nullable', 'string', 'max:50', 'regex:/^[0-9]+$/'],
+            'email'                       => ['nullable', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
+            'company_phone'               => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/'],
             'city_id'                     => ['nullable', 'exists:cities,id'],
             'area_id'                     => ['nullable', 'exists:areas,id'],
             'address_line1'               => ['nullable', 'string', 'max:500'],
+        ], [
+            'commercial_register_number.regex' => 'The commercial registration number must contain numbers only.',
+            'vat_number.regex' => 'The VAT number must contain numbers only.',
+            'email.regex' => 'The email must be a valid address in the format name@domain.com.',
+            'company_phone.regex' => 'The company phone must contain 6 to 15 digits only.',
         ]);
 
         $profile->update($validated);

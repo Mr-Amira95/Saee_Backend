@@ -1,20 +1,20 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Checkout Approvals')
-@section('page-title', 'Checkout Approvals')
+@section('title', __('Checkout Approvals'))
+@section('page-title', __('Checkout Approvals'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.financials.index') }}">Finance Dashboard</a>
+    <a href="{{ route('admin.financials.index') }}">{{ __('Finance Dashboard') }}</a>
     <span class="sep">/</span>
-    <span class="current">Checkout Approvals</span>
+    <span class="current">{{ __('Checkout Approvals') }}</span>
 @endsection
 
 @section('content')
     {{-- Page Header --}}
     <div class="page-hd">
         <div class="page-hd-left">
-            <h1>Checkout Handover Approvals</h1>
-            <p>Review and approve driver checkout requests, cash transfers, and order returns.</p>
+            <h1>{{ __('Checkout Handover Approvals') }}</h1>
+            <p>{{ __('Review and approve driver checkout requests, cash transfers, and order returns.') }}</p>
         </div>
     </div>
 
@@ -39,8 +39,8 @@
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div style="text-align: left;">
-                    <div>Pending Approvals</div>
-                    <div style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.1;">{{ $pendingRequests->count() }} requests</div>
+                    <div>{{ __('Pending Approvals') }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.1;">{{ $pendingRequests->count() }} {{ __('requests') }}</div>
                 </div>
             </button>
             <button id="tab-approved-btn" onclick="switchTab('approved')"
@@ -49,8 +49,8 @@
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div style="text-align: left;">
-                    <div>Approved Handovers</div>
-                    <div style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.1;">{{ $approvedRequests->count() }} requests</div>
+                    <div>{{ __('Approved Handovers') }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-dim); line-height: 1.1;">{{ $approvedRequests->count() }} {{ __('requests') }}</div>
                 </div>
             </button>
         </div>
@@ -59,16 +59,16 @@
         <div id="tab-pending" style="margin-top: 18px;">
             <div class="table-card">
                 <div style="padding: 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em;">Pending Handover Requests</h3>
+                    <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em;">{{ __('Pending Handover Requests') }}</h3>
                 </div>
                 <div class="table-wrap">
                     <table>
                         <thead>
                             <tr>
-                                <th>Driver Name</th>
-                                <th>Submitted At</th>
-                                <th>Driver Notes</th>
-                                <th style="width: 150px; text-align: center;">Actions</th>
+                                <th>{{ __('Driver Name') }}</th>
+                                <th>{{ __('Submitted At') }}</th>
+                                <th>{{ __('Driver Notes') }}</th>
+                                <th style="width: 150px; text-align: center;">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -83,12 +83,12 @@
                                         <div class="cell-sub">{{ $request->created_at->diffForHumans() }}</div>
                                     </td>
                                     <td>
-                                        <span class="cell-sub" style="font-style: italic;">{{ $request->notes ?: 'No notes provided' }}</span>
+                                        <span class="cell-sub" style="font-style: italic;">{{ $request->notes ?: __('No notes provided') }}</span>
                                     </td>
                                     <td>
                                         <div class="act-btns" style="justify-content: center;">
                                             <a href="{{ route('admin.financials.handover-requests.show', $request) }}" class="btn-primary" style="padding: 6px 12px; font-size: 0.78rem; text-decoration: none; box-shadow: none;">
-                                                Review & Approve
+                                                {{ __('Review & Approve') }}
                                             </a>
                                         </div>
                                     </td>
@@ -96,7 +96,7 @@
                             @empty
                                 <tr>
                                     <td colspan="4" style="text-align: center; color: var(--text-dim); padding: 40px 20px;">
-                                        No pending checkout approvals. All driver handovers are up to date!
+                                        {{ __('No pending checkout approvals. All driver handovers are up to date!') }}
                                     </td>
                                 </tr>
                             @endforelse
@@ -110,17 +110,17 @@
         <div id="tab-approved" style="margin-top: 18px; display: none;">
             <div class="table-card">
                 <div style="padding: 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em;">Approved Handover History</h3>
+                    <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.08em;">{{ __('Approved Handover History') }}</h3>
                 </div>
                 <div class="table-wrap">
                     <table>
                         <thead>
                             <tr>
-                                <th>Driver Name</th>
-                                <th>Submitted At</th>
-                                <th>Approved By</th>
-                                <th>Approved At</th>
-                                <th style="width: 120px; text-align: center;">Actions</th>
+                                <th>{{ __('Driver Name') }}</th>
+                                <th>{{ __('Submitted At') }}</th>
+                                <th>{{ __('Approved By') }}</th>
+                                <th>{{ __('Approved At') }}</th>
+                                <th style="width: 120px; text-align: center;">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -135,7 +135,7 @@
                                         <div class="cell-sub">{{ $request->created_at->diffForHumans() }}</div>
                                     </td>
                                     <td>
-                                        <div class="cell-main">{{ $request->approver?->name ?? 'System' }}</div>
+                                        <div class="cell-main">{{ $request->approver?->name ?? __('System') }}</div>
                                     </td>
                                     <td>
                                         <div class="cell-main">{{ $request->approved_at?->format('Y-m-d H:i') ?? '-' }}</div>
@@ -144,7 +144,7 @@
                                     <td>
                                         <div class="act-btns" style="justify-content: center;">
                                             <a href="{{ route('admin.financials.handover-requests.show', $request) }}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.78rem; text-decoration: none; display: flex; align-items: center; gap: 4px;">
-                                                View Details
+                                                {{ __('View Details') }}
                                             </a>
                                         </div>
                                     </td>
@@ -152,7 +152,7 @@
                             @empty
                                 <tr>
                                     <td colspan="5" style="text-align: center; color: var(--text-dim); padding: 40px 20px;">
-                                        No approved handovers found in history.
+                                        {{ __('No approved handovers found in history.') }}
                                     </td>
                                 </tr>
                             @endforelse

@@ -51,7 +51,7 @@ class FlowStepController extends Controller
         ]);
 
         return redirect()->route('admin.cms.flow-steps.index')
-            ->with('success', 'Flow step created successfully.');
+            ->with('success', __('Flow step created successfully.'));
     }
 
     public function edit(FlowStep $flowStep)
@@ -88,7 +88,7 @@ class FlowStepController extends Controller
         ]);
 
         return redirect()->route('admin.cms.flow-steps.index')
-            ->with('success', 'Flow step updated successfully.');
+            ->with('success', __('Flow step updated successfully.'));
     }
 
     public function destroy(FlowStep $flowStep)
@@ -98,6 +98,6 @@ class FlowStepController extends Controller
         $flowStep->delete();
 
         return redirect()->route('admin.cms.flow-steps.index')
-            ->with('success', 'Flow step deleted successfully.');
+            ->with('success', __('Flow step deleted successfully.'));
     }
 }

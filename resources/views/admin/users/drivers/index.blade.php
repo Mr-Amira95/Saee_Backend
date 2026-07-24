@@ -1,32 +1,32 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Drivers')
+@section('title', __('Drivers'))
 
-@section('page-title', 'Drivers')
+@section('page-title', __('Drivers'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <span>Drivers</span>
+    <span>{{ __('Drivers') }}</span>
 @endsection
 
 @section('content')
 <div class="mini-stats">
     <div class="mini-stat">
         <div class="ms-val">{{ \App\Models\DriverProfile::count() }}</div>
-        <div class="ms-lbl">Total Drivers</div>
+        <div class="ms-lbl">{{ __('Total Drivers') }}</div>
     </div>
     <div class="mini-stat">
         <div class="ms-val">{{ \App\Models\DriverProfile::where('is_available', true)->count() }}</div>
-        <div class="ms-lbl">Available</div>
+        <div class="ms-lbl">{{ __('Available') }}</div>
     </div>
     <div class="mini-stat">
         <div class="ms-val">{{ \App\Models\DriverProfile::where('is_available', false)->count() }}</div>
-        <div class="ms-lbl">Busy</div>
+        <div class="ms-lbl">{{ __('Busy') }}</div>
     </div>
     <div class="mini-stat">
         <div class="ms-val">{{ \App\Models\DriverProfile::whereHas('user', fn($q) => $q->where('status','suspended'))->count() }}</div>
-        <div class="ms-lbl">Suspended</div>
+        <div class="ms-lbl">{{ __('Suspended') }}</div>
     </div>
 </div>
 
@@ -38,7 +38,7 @@
             name="search"
             id="search-input"
             value="{{ request('search') }}"
-            placeholder="Search name, plate, national ID…"
+            placeholder="{{ __('Search name, plate, national ID…') }}"
             style="width:100%;"
         >
     </form>
@@ -46,11 +46,11 @@
         @if(auth()->user()->hasAdminAction('drivers.live_map'))
         <a href="{{ route('admin.drivers.live-map') }}" class="btn-secondary">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Live Map
+            {{ __('Live Map') }}
         </a>
         @endif
         @if(auth()->user()->hasAdminAction('drivers.add'))
-        <a href="{{ route('admin.drivers.create') }}" class="btn-primary">+ Add Driver</a>
+        <a href="{{ route('admin.drivers.create') }}" class="btn-primary">+ {{ __('Add Driver') }}</a>
         @endif
     </div>
 </div>
@@ -60,11 +60,12 @@
     <table>
         <thead>
             <tr>
-                <th>Driver</th>
-                <th>Vehicle</th>
-                <th>License</th>
-                <th>License Expiry</th>
-                <th>Actions</th>
+                <th>{{ __('Driver') }}</th>
+                <th>{{ __('Vehicle') }}</th>
+                <th>{{ __('License') }}</th>
+                <th>{{ __('License Expiry') }}</th>
+                <th>{{ __('Car License Expiry') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -92,36 +93,53 @@
                     @endphp
                     <span style="color: {{ $isExpired ? 'var(--red-lt)' : ($isSoon ? 'var(--warning)' : 'inherit') }}">
                         {{ $expiry->format('d M Y') }}
-                        @if($isExpired) <small>(Expired)</small>
-                        @elseif($isSoon) <small>(Soon)</small>
+                        @if($isExpired) <small>({{ __('Expired') }})</small>
+                        @elseif($isSoon) <small>({{ __('Soon') }})</small>
                         @endif
                     </span>
+                </td>
+                <td>
+                    @if($driver->car_license_expiry)
+                        @php
+                            $carExpiry = \Carbon\Carbon::parse($driver->car_license_expiry);
+                            $isCarExpired = $carExpiry->isPast();
+                            $isCarSoon = !$isCarExpired && $carExpiry->diffInDays(now()) <= 30;
+                        @endphp
+                        <span style="color: {{ $isCarExpired ? 'var(--red-lt)' : ($isCarSoon ? 'var(--warning)' : 'inherit') }}">
+                            {{ $carExpiry->format('d M Y') }}
+                            @if($isCarExpired) <small>({{ __('Expired') }})</small>
+                            @elseif($isCarSoon) <small>({{ __('Soon') }})</small>
+                            @endif
+                        </span>
+                    @else
+                        <span class="cell-sub">—</span>
+                    @endif
                 </td>
 
                 <td>
                     <div class="act-btns">
-                        <a href="{{ route('admin.drivers.show', $driver) }}" class="act-btn act-view" title="View">
+                        <a href="{{ route('admin.drivers.show', $driver) }}" class="act-btn act-view" title="{{ __('View') }}">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         </a>
                         @if(auth()->user()->hasAdminAction('drivers.bank_details'))
-                        <button class="act-btn" title="Bank Details" style="color:#60a5fa;"
+                        <button class="act-btn" title="{{ __('Bank Details') }}" style="color:#60a5fa;"
                             onclick="showBankDetails('{{ route('admin.drivers.bank-details', $driver) }}', '{{ addslashes($driver->user->name ?? 'Driver') }}')">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                         </button>
                         @endif
                         @if(auth()->user()->hasAdminAction('drivers.reset_password'))
-                        <button class="act-btn act-reset-pw" title="Reset Password"
+                        <button class="act-btn act-reset-pw" title="{{ __('Reset Password') }}"
                             onclick="openResetPasswordModal('{{ route('admin.drivers.reset-password', $driver) }}', '{{ addslashes($driver->user->name ?? 'this driver') }}')">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                         </button>
                         @endif
                         @if(auth()->user()->hasAdminAction('drivers.edit'))
-                        <a href="{{ route('admin.drivers.edit', $driver) }}" class="act-btn act-edit" title="Edit">
+                        <a href="{{ route('admin.drivers.edit', $driver) }}" class="act-btn act-edit" title="{{ __('Edit') }}">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         </a>
                         @endif
                         @if(auth()->user()->hasAdminAction('drivers.delete'))
-                        <button class="act-btn act-delete" title="Delete"
+                        <button class="act-btn act-delete" title="{{ __('Delete') }}"
                             onclick="confirmDelete('{{ route('admin.drivers.destroy', $driver) }}','{{ addslashes($driver->user->name ?? 'this driver') }}')">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
@@ -137,7 +155,7 @@
 @else
 <div class="empty-state">
     <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-    <p>No drivers found. <a href="{{ route('admin.drivers.create') }}">Add the first driver.</a></p>
+    <p>{{ __('No drivers found.') }} <a href="{{ route('admin.drivers.create') }}">{{ __('Add the first driver.') }}</a></p>
 </div>
 @endif
 {{-- Bank Details Modal --}}
@@ -145,16 +163,16 @@
     <div style="background:var(--bg-2);border:1px solid var(--bdr);border-radius:14px;padding:28px;width:100%;max-width:520px;margin:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
             <div>
-                <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:3px;">Bank Details</div>
+                <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:3px;">{{ __('Bank Details') }}</div>
                 <div id="bankModalName" style="font-size:1rem;font-weight:700;color:var(--text);"></div>
             </div>
             <button onclick="closeBankModal()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.2rem;padding:4px 8px;line-height:1;">✕</button>
         </div>
         <div id="bankModalBody">
-            <div style="text-align:center;padding:24px 0;color:var(--text-dim);font-size:.85rem;">Loading…</div>
+            <div style="text-align:center;padding:24px 0;color:var(--text-dim);font-size:.85rem;">{{ __('Loading…') }}</div>
         </div>
         <div style="margin-top:18px;text-align:right;">
-            <button onclick="closeBankModal()" class="btn-secondary" style="font-size:.82rem;padding:6px 16px;">Close</button>
+            <button onclick="closeBankModal()" class="btn-secondary" style="font-size:.82rem;padding:6px 16px;">{{ __('Close') }}</button>
         </div>
     </div>
 </div>
@@ -164,9 +182,24 @@
 @section('scripts')
 <script>
     // Bank details modal
+    var bankDetailsLabels = @json([
+        'bankName' => __('Bank Name'),
+        'accountName' => __('Account Name'),
+        'accountNumber' => __('Account Number'),
+        'iban' => __('IBAN'),
+        'swiftBic' => __('SWIFT / BIC'),
+        'cliqId' => __('CliQ ID'),
+        'alias' => __('Alias'),
+        'phone' => __('Phone'),
+        'notes' => __('Notes'),
+        'noBankDetails' => __('No bank details have been added for this driver.'),
+        'failedToLoad' => __('Failed to load bank details.'),
+        'loading' => __('Loading…'),
+    ]);
+
     function showBankDetails(url, name) {
         document.getElementById('bankModalName').textContent = name;
-        document.getElementById('bankModalBody').innerHTML = '<div style="text-align:center;padding:24px 0;color:var(--text-dim);font-size:.85rem;">Loading…</div>';
+        document.getElementById('bankModalBody').innerHTML = '<div style="text-align:center;padding:24px 0;color:var(--text-dim);font-size:.85rem;">' + bankDetailsLabels.loading + '</div>';
         var modal = document.getElementById('bankModal');
         modal.style.display = 'flex';
 
@@ -174,18 +207,18 @@
             .then(function(r) { return r.json(); })
             .then(function(d) {
                 var rows = [
-                    ['Bank Name',       d && d.bank_name      ? d.bank_name      : '—'],
-                    ['Account Name',    d && d.account_name   ? d.account_name   : '—'],
-                    ['Account Number',  d && d.account_number ? d.account_number : '—', true],
-                    ['IBAN',            d && d.iban            ? d.iban           : '—', true],
-                    ['SWIFT / BIC',     d && d.swift_code     ? d.swift_code     : '—', true],
-                    ['CliQ ID',         d && d.cliq_id        ? d.cliq_id + (d.cliq_alias_type ? ' (' + (d.cliq_alias_type.charAt(0).toUpperCase() + d.cliq_alias_type.slice(1)) + ')' : '') : '—'],
+                    [bankDetailsLabels.bankName,      d && d.bank_name      ? d.bank_name      : '—'],
+                    [bankDetailsLabels.accountName,   d && d.account_name   ? d.account_name   : '—'],
+                    [bankDetailsLabels.accountNumber, d && d.account_number ? d.account_number : '—', true],
+                    [bankDetailsLabels.iban,          d && d.iban            ? d.iban           : '—', true],
+                    [bankDetailsLabels.swiftBic,      d && d.swift_code     ? d.swift_code     : '—', true],
+                    [bankDetailsLabels.cliqId,        d && d.cliq_id        ? d.cliq_id + (d.cliq_alias_type ? ' (' + (d.cliq_alias_type === 'alias' ? bankDetailsLabels.alias : bankDetailsLabels.phone) + ')' : '') : '—'],
                 ];
 
                 var hasAny = d && (d.bank_name || d.account_name || d.account_number || d.iban || d.swift_code || d.cliq_id);
                 if (!hasAny) {
                     document.getElementById('bankModalBody').innerHTML =
-                        '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:.82rem;">No bank details have been added for this driver.</div>';
+                        '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:.82rem;">' + bankDetailsLabels.noBankDetails + '</div>';
                     return;
                 }
 
@@ -200,7 +233,7 @@
 
                 if (d && d.notes) {
                     html += '<div style="margin-top:14px;padding:10px 12px;background:var(--in-bg);border-radius:8px;">' +
-                        '<div style="font-size:.68rem;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;">Notes</div>' +
+                        '<div style="font-size:.68rem;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;">' + bankDetailsLabels.notes + '</div>' +
                         '<div style="font-size:.82rem;color:var(--text-sub);">' + d.notes + '</div>' +
                         '</div>';
                 }
@@ -209,7 +242,7 @@
             })
             .catch(function() {
                 document.getElementById('bankModalBody').innerHTML =
-                    '<div style="text-align:center;padding:20px 0;color:#f87171;font-size:.82rem;">Failed to load bank details.</div>';
+                    '<div style="text-align:center;padding:20px 0;color:#f87171;font-size:.82rem;">' + bankDetailsLabels.failedToLoad + '</div>';
             });
     }
 

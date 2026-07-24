@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Dashboard')
-@section('page-title', 'Dashboard')
+@section('title', __('Dashboard'))
+@section('page-title', __('Dashboard'))
 
 @section('breadcrumb')
     <span>/</span>
-    <span>Overview</span>
+    <span>{{ __('Overview') }}</span>
 @endsection
 
 @section('head')
@@ -50,6 +50,9 @@
         content: ''; position: absolute; inset: 0;
         background: radial-gradient(circle at 100% 0%, var(--m-icon-bg, rgba(220,38,38,.1)) 0%, transparent 60%);
         pointer-events: none;
+    }
+    html[dir="rtl"] .metric::before {
+        background: radial-gradient(circle at 0% 0%, var(--m-icon-bg, rgba(220,38,38,.1)) 0%, transparent 60%);
     }
     .metric:hover { border-color: rgba(var(--m-color, 220,38,38),.18); }
     .metric-head  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
@@ -109,8 +112,8 @@
 {{-- Welcome & Shift Log row --}}
 <div class="welcome-row">
     <div class="welcome-text" style="flex: 1; min-width: 200px;">
-        <h2>Good {{ now()->format('G') < 12 ? 'morning' : (now()->format('G') < 17 ? 'afternoon' : 'evening') }}, <em>{{ explode(' ', auth()->user()->name)[0] }}</em></h2>
-        <p>Here's what's happening at Sa'ee Logistics today.</p>
+        <h2>{{ now()->format('G') < 12 ? __('Good morning') : (now()->format('G') < 17 ? __('Good afternoon') : __('Good evening')) }}, <em>{{ explode(' ', auth()->user()->name)[0] }}</em></h2>
+        <p>{{ __("Here's what's happening at Sa'ee Logistics today.") }}</p>
     </div>
 
     {{-- Geolocation Shift Widget --}}
@@ -125,20 +128,20 @@
                 ->count();
         @endphp
         <div class="attendance-widget" style="background: rgba(255,255,255,.03); border: 1px solid var(--bdr); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 15px; min-width: 280px; backdrop-filter: blur(8px);">
-            <div style="flex: 1; text-align: left;">
+            <div style="flex: 1; text-align: {{ app()->getLocale() === 'ar' ? 'right' : 'left' }};">
                 <div style="font-size: .68rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em;">
-                    Shift Logs
+                    {{ __('Shift Logs') }}
                     @if($todaySessionCount > 1)
-                        <span style="color: var(--red-lt); margin-left: 4px;">({{ $todaySessionCount }} sessions)</span>
+                        <span style="color: var(--red-lt); margin-left: 4px;">({{ $todaySessionCount }} {{ __('sessions') }})</span>
                     @endif
                 </div>
                 <div id="attendanceStatus" style="font-size: .84rem; font-weight: 600; margin-top: 3px; color: var(--text);">
                     @if(!$todayAttendance)
-                        Not Checked In
+                        {{ __('Not Checked In') }}
                     @elseif(!$todayAttendance->check_out_at)
-                        Working since {{ $todayAttendance->check_in_at->format('H:i') }}
+                        {{ __('Working since') }} {{ $todayAttendance->check_in_at->format('H:i') }}
                     @else
-                        Last shift: {{ $todayAttendance->check_in_at->format('H:i') }} – {{ $todayAttendance->check_out_at->format('H:i') }}
+                        {{ __('Last shift:') }} {{ $todayAttendance->check_in_at->format('H:i') }} – {{ $todayAttendance->check_out_at->format('H:i') }}
                     @endif
                 </div>
                 @if($todayAttendance && !$todayAttendance->check_out_at)

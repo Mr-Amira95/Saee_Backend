@@ -38,7 +38,7 @@ class CustomerTestimonialController extends Controller
         ]);
 
         return redirect()->route('admin.cms.customer-testimonials.index')
-            ->with('success', 'Testimonial created successfully.');
+            ->with('success', __('Testimonial created successfully.'));
     }
 
     public function edit(CustomerTestimonial $customerTestimonial)
@@ -64,7 +64,7 @@ class CustomerTestimonialController extends Controller
         ]);
 
         return redirect()->route('admin.cms.customer-testimonials.index')
-            ->with('success', 'Testimonial updated successfully.');
+            ->with('success', __('Testimonial updated successfully.'));
     }
 
     public function destroy(CustomerTestimonial $customerTestimonial)
@@ -72,6 +72,6 @@ class CustomerTestimonialController extends Controller
         $customerTestimonial->delete();
 
         return redirect()->route('admin.cms.customer-testimonials.index')
-            ->with('success', 'Testimonial deleted successfully.');
+            ->with('success', __('Testimonial deleted successfully.'));
     }
 }

@@ -142,9 +142,51 @@
         html[dir="rtl"] .field-icon { right: 14px; left: auto; }
         html[dir="rtl"] .pwd-btn { left: 13px; right: auto; }
         html[dir="rtl"] .btn:hover .btn-arrow { transform: translateX(-4px); }
+
+        /* ─── Language & Theme Switches ───────────────────── */
+        .auth-switches { position: fixed; top: 20px; right: 20px; z-index: 60; display: flex; align-items: center; gap: 8px; }
+        html[dir="rtl"] .auth-switches { right: auto; left: 20px; }
+        .auth-switches .icon-btn { width: 36px; height: 36px; border-radius: 9px; background: var(--input-bg); border: 1px solid var(--input-bdr); display: flex; align-items: center; justify-content: center; color: var(--text-sub); cursor: pointer; transition: background .15s, color .15s; text-decoration: none; font-weight: 700; font-size: .78rem; }
+        .auth-switches .icon-btn:hover { background: rgba(220,38,38,.1); color: var(--text); }
+
+        /* ─── Light Theme Overrides ────────────────────────── */
+        html.light-theme {
+            --bg:         #f8fafc;
+            --bg-card:    rgba(255, 255, 255, 0.85);
+            --text:       #0f172a;
+            --text-sub:   #475569;
+            --text-dim:   #64748b;
+            --input-bg:   rgba(15, 23, 42, 0.035);
+            --input-bdr:  rgba(15, 23, 42, 0.09);
+        }
+        html.light-theme .brand { background: #07091a; }
+        html.light-theme .card { box-shadow: 0 0 0 1px rgba(15,23,42,0.05), 0 32px 80px rgba(15,23,42,0.12); }
+        html.light-theme .card h1 { color: var(--text); }
+        html.light-theme .field-label { color: #0f172a; }
+        html.light-theme .field-icon { color: rgba(15,23,42,.3); }
+        html.light-theme input[type="text"], html.light-theme input[type="tel"], html.light-theme input[type="password"], html.light-theme input[type="number"] { color: var(--text); }
+        html.light-theme .pwd-btn { color: rgba(15,23,42,.35); }
+        html.light-theme .pwd-btn:hover { color: rgba(15,23,42,.75); }
+        html.light-theme .country-btn { color: rgba(15,23,42,.75); }
+        html.light-theme .country-dropdown { background: #ffffff; border-color: rgba(15,23,42,.1); }
+        html.light-theme .country-option { color: rgba(15,23,42,.68); }
+        html.light-theme .country-option:hover { background: rgba(15,23,42,.05); color: var(--text); }
+        html.light-theme .country-option .opt-dial { color: rgba(15,23,42,.4); }
     </style>
 </head>
 <body>
+
+<div class="auth-switches">
+    @if(app()->getLocale() === 'en')
+        <a href="{{ route('lang.switch', 'ar') }}" class="icon-btn" title="تغيير اللغة إلى العربية">عربي</a>
+    @else
+        <a href="{{ route('lang.switch', 'en') }}" class="icon-btn" title="Switch to English">EN</a>
+    @endif
+    <button type="button" class="icon-btn" id="themeToggler" onclick="toggleTheme()" title="{{ __('Toggle Theme') }}">
+        <svg id="themeMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+        <svg id="themeSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m8.942-8.942h-2.25M4.313 12H2.063m15.122-6.938l-1.591 1.591M6.818 17.182l-1.591 1.591m12.94 0l-1.591-1.591M6.818 6.818L5.227 5.227M12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
+    </button>
+</div>
 
 @include('portal.partials.mobile-block')
 
@@ -259,7 +301,7 @@
         constructor() { this.init(); }
         init() { this.x = Math.random()*W; this.y = Math.random()*H; this.vx = (Math.random()-.5)*.35; this.vy = (Math.random()-.5)*.35; this.r = Math.random()*1.2+.4; this.a = Math.random()*.35+.08; }
         step() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>W)this.vx*=-1; if(this.y<0||this.y>H)this.vy*=-1; }
-        draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,255,255,${this.a})`; ctx.fill(); }
+        draw() { const isLight = document.documentElement.classList.contains('light-theme'); ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle = isLight ? `rgba(15,23,42,${this.a})` : `rgba(255,255,255,${this.a})`; ctx.fill(); }
     }
     for(let i=0;i<N;i++) pts.push(new Pt());
     function loop() {
@@ -290,6 +332,23 @@
         document.getElementById('submitBtn').classList.add('loading');
     });
 })();
+
+/* ── Theme toggle ─────────────────────────────── */
+function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateThemeIcons();
+}
+function updateThemeIcons() {
+    const isLight = document.documentElement.classList.contains('light-theme');
+    const sun  = document.getElementById('themeSun');
+    const moon = document.getElementById('themeMoon');
+    if (sun && moon) {
+        sun.style.display  = isLight ? 'none'  : 'block';
+        moon.style.display = isLight ? 'block' : 'none';
+    }
+}
+document.addEventListener('DOMContentLoaded', updateThemeIcons);
 </script>
 </body>
 </html>

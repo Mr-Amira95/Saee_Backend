@@ -1,13 +1,13 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Screenshots')
-@section('page-title', 'Screenshots')
+@section('title', __('Screenshots'))
+@section('page-title', __('Screenshots'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.cms.showcase-page.index') }}">Showcases</a>
+    <a href="{{ route('admin.cms.showcase-page.index') }}">{{ __('Showcases') }}</a>
     <span class="sep">/</span>
-    <span class="current">Screenshots</span>
+    <span class="current">{{ __('Screenshots') }}</span>
 @endsection
 
 @section('head')
@@ -31,8 +31,8 @@
 @section('content')
 
 <div class="shot-tabs-nav">
-    <button type="button" class="shot-tab-btn active" onclick="switchShotTab('application')">Application</button>
-    <button type="button" class="shot-tab-btn" onclick="switchShotTab('portal')">Portals</button>
+    <button type="button" class="shot-tab-btn active" onclick="switchShotTab('application')">{{ __('Application') }}</button>
+    <button type="button" class="shot-tab-btn" onclick="switchShotTab('portal')">{{ __('Portals') }}</button>
 </div>
 
 @php
@@ -45,7 +45,13 @@
 @foreach($tabs as $key => $tab)
 <div class="shot-tab-pane {{ $key === 'application' ? 'active' : '' }}" id="shot-tab-{{ $key }}">
     <div class="filter-bar" style="justify-content: flex-end;">
-        <a href="{{ route('admin.cms.showcase-screenshots.create', ['category' => $key]) }}" class="btn-primary">+ Add {{ $tab['label'] }} Screenshot</a>
+        <a href="{{ route('admin.cms.showcase-screenshots.create', ['category' => $key]) }}" class="btn-primary">
+            @if($key === 'application')
+                + {{ __('Add Application Screenshot') }}
+            @else
+                + {{ __('Add Portals Screenshot') }}
+            @endif
+        </a>
     </div>
 
     @if($tab['items']->count())
@@ -54,11 +60,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Screenshot</th>
-                        <th>Caption (EN)</th>
-                        <th>Sort Order</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>{{ __('Screenshot') }}</th>
+                        <th>{{ __('Caption (EN)') }}</th>
+                        <th>{{ __('Sort Order') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,17 +81,17 @@
                         <td><div class="cell-main" style="font-weight: 700;">{{ $shot->sort_order }}</div></td>
                         <td>
                             @if($shot->status === 'active')
-                                <span class="badge-active">Active</span>
+                                <span class="badge-active">{{ __('Active') }}</span>
                             @else
-                                <span class="badge-suspended">Inactive</span>
+                                <span class="badge-suspended">{{ __('Inactive') }}</span>
                             @endif
                         </td>
                         <td>
                             <div class="actions">
-                                <a href="{{ route('admin.cms.showcase-screenshots.edit', $shot) }}" class="act-btn act-edit" title="Edit Screenshot">
+                                <a href="{{ route('admin.cms.showcase-screenshots.edit', $shot) }}" class="act-btn act-edit" title="{{ __('Edit Screenshot') }}">
                                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </a>
-                                <button class="act-btn act-delete" title="Delete Screenshot"
+                                <button class="act-btn act-delete" title="{{ __('Delete Screenshot') }}"
                                     onclick="confirmDelete('{{ route('admin.cms.showcase-screenshots.destroy', $shot) }}','{{ addslashes($shot->title['en'] ?? 'this screenshot') }}')">
                                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 </button>
@@ -100,8 +106,14 @@
     @else
     <div class="empty-state">
         <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <h3>No {{ strtolower($tab['label']) }} screenshots yet</h3>
-        <p><a href="{{ route('admin.cms.showcase-screenshots.create', ['category' => $key]) }}" style="color:var(--red-lt);">Upload the first screenshot.</a></p>
+        <h3>
+            @if($key === 'application')
+                {{ __('No application screenshots yet') }}
+            @else
+                {{ __('No portals screenshots yet') }}
+            @endif
+        </h3>
+        <p><a href="{{ route('admin.cms.showcase-screenshots.create', ['category' => $key]) }}" style="color:var(--red-lt);">{{ __('Upload the first screenshot.') }}</a></p>
     </div>
     @endif
 </div>

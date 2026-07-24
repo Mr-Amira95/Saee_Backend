@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\View\View;
 
 class AccountController extends Controller
@@ -33,9 +34,13 @@ class AccountController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone' => ['nullable', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'name'  => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
+            'email' => ['nullable', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', Rule::unique('users', 'phone')->ignore($user->id)],
+        ], [
+            'name.regex' => 'The full name field must only contain letters and spaces.',
+            'email.regex' => 'The email must be a valid address in the format name@domain.com.',
+            'phone.regex' => 'The phone field must contain 6 to 15 digits only.',
         ]);
 
         $user->name  = $request->name;
@@ -56,7 +61,7 @@ class AccountController extends Controller
     {
         $request->validate([
             'current_password' => ['required', 'string'],
-            'password'         => ['required', 'string', 'min:8', 'confirmed'],
+            'password'         => ['required', 'string', 'confirmed', PasswordRule::min(8)->mixedCase()->symbols()],
         ]);
 
         $user = Auth::user();

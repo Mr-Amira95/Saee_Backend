@@ -1,22 +1,22 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Expenses')
-@section('page-title', 'Expenses')
+@section('title', __('Expenses'))
+@section('page-title', __('Expenses'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Expenses</span>
+    <span class="current">{{ __('Expenses') }}</span>
 @endsection
 
 @section('content')
     <div class="page-hd">
         <div class="page-hd-left">
-            <h1>Expenses</h1>
-            <p>Track operational expenses: rent, utilities, fuel, and other costs.</p>
+            <h1>{{ __('Expenses') }}</h1>
+            <p>{{ __('Track operational expenses: rent, utilities, fuel, and other costs.') }}</p>
         </div>
         <div class="page-hd-right">
             @if(auth()->user()->hasAdminAction('finances.expenses'))
-            <a href="{{ route('admin.expenses.create') }}" class="btn-primary">+ Record Expense</a>
+            <a href="{{ route('admin.expenses.create') }}" class="btn-primary">+ {{ __('Record Expense') }}</a>
             @endif
         </div>
     </div>
@@ -27,12 +27,12 @@
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
             </svg>
-            <input type="text" id="tableSearch" class="filter-input" placeholder="Search..." autocomplete="off">
+            <input type="text" id="tableSearch" class="filter-input" placeholder="{{ __('Search...') }}" autocomplete="off">
         </div>
 
         <form action="{{ route('admin.expenses.index') }}" method="GET" style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;flex:1;">
             <select name="category" class="filter-select" style="flex-shrink:0;">
-                <option value="">All Categories</option>
+                <option value="">{{ __('All Categories') }}</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat->value }}" {{ request('category') === $cat->value ? 'selected' : '' }}>
                         {{ $cat->label() }}
@@ -40,11 +40,11 @@
                 @endforeach
             </select>
 
-            <input type="date" name="from" class="filter-input" style="width:auto;min-width:130px;padding-left:12px;flex-shrink:0;" value="{{ request('from') }}">
-            <input type="date" name="to"   class="filter-input" style="width:auto;min-width:130px;padding-left:12px;flex-shrink:0;" value="{{ request('to') }}">
+            <input type="text" id="filterFrom" name="from" class="filter-input" style="width:auto;min-width:130px;padding-left:12px;flex-shrink:0;" placeholder="DD-MM-YYYY" maxlength="10" autocomplete="off" value="{{ request('from') }}">
+            <input type="text" id="filterTo"   name="to"   class="filter-input" style="width:auto;min-width:130px;padding-left:12px;flex-shrink:0;" placeholder="DD-MM-YYYY" maxlength="10" autocomplete="off" value="{{ request('to') }}">
 
-            <button type="submit" class="btn-primary" style="box-shadow:none;padding:8px 16px;white-space:nowrap;flex-shrink:0;">Filter</button>
-            <a href="{{ route('admin.expenses.index') }}" class="btn-secondary" style="padding:8px 16px;white-space:nowrap;flex-shrink:0;">Reset</a>
+            <button type="submit" class="btn-primary" style="box-shadow:none;padding:8px 16px;white-space:nowrap;flex-shrink:0;">{{ __('Filter') }}</button>
+            <a href="{{ route('admin.expenses.index') }}" class="btn-secondary" style="padding:8px 16px;white-space:nowrap;flex-shrink:0;">{{ __('Reset') }}</a>
         </form>
     </div>
 
@@ -68,12 +68,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Vendor</th>
-                        <th>Amount</th>
-                        <th style="width: 90px; text-align: center;">Actions</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Category') }}</th>
+                        <th>{{ __('Description') }}</th>
+                        <th>{{ __('Vendor') }}</th>
+                        <th>{{ __('Amount') }}</th>
+                        <th style="width: 90px; text-align: center;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -97,14 +97,14 @@
                             </td>
                             <td>
                                 <div class="act-btns" style="justify-content: center;">
-                                    <a href="{{ route('admin.expenses.show', $exp) }}" class="act-btn act-view" title="View">
+                                    <a href="{{ route('admin.expenses.show', $exp) }}" class="act-btn act-view" title="{{ __('View') }}">
                                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
                                     </a>
                                     @if(auth()->user()->hasAdminAction('finances.expenses'))
-                                    <button type="button" class="act-btn act-delete" title="Delete"
+                                    <button type="button" class="act-btn act-delete" title="{{ __('Delete') }}"
                                         onclick="confirmDelete('{{ route('admin.expenses.destroy', $exp) }}', '{{ addslashes($exp->category->label()) }} — {{ number_format($exp->amount, 2) }} JD')">
                                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -117,7 +117,7 @@
                     @empty
                         <tr>
                             <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 40px;">
-                                No expenses found.
+                                {{ __('No expenses found.') }}
                             </td>
                         </tr>
                     @endforelse
@@ -127,7 +127,7 @@
 
         @if($expenses->hasPages())
             <div class="pagination-wrap">
-                <div class="pag-info">Showing {{ $expenses->firstItem() }}-{{ $expenses->lastItem() }} of {{ $expenses->total() }}</div>
+                <div class="pag-info">{{ __('Showing') }} {{ $expenses->firstItem() }}-{{ $expenses->lastItem() }} {{ __('of') }} {{ $expenses->total() }}</div>
                 <div class="pag-links">{{ $expenses->links() }}</div>
             </div>
         @endif
@@ -142,5 +142,19 @@ document.getElementById('tableSearch').addEventListener('input', function () {
         row.style.display = !q || row.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
 });
+
+function attachDateMask(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function () {
+        const digits = el.value.replace(/[^0-9]/g, '').slice(0, 8);
+        let out = digits.slice(0, 2);
+        if (digits.length > 2) out += '-' + digits.slice(2, 4);
+        if (digits.length > 4) out += '-' + digits.slice(4, 8);
+        el.value = out;
+    });
+}
+attachDateMask('filterFrom');
+attachDateMask('filterTo');
 </script>
 @endsection

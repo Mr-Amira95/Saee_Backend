@@ -52,6 +52,7 @@ trait NormalizesOrderImportValues
 
         return array_map(function ($header) use ($arabicToField) {
             $trimmed = trim((string) $header);
+            $trimmed = preg_replace('/^\xEF\xBB\xBF/', '', $trimmed);
 
             return $arabicToField[$trimmed] ?? $trimmed;
         }, $headers);
@@ -64,13 +65,20 @@ trait NormalizesOrderImportValues
     protected function normalizeYesNoValue($value): string
     {
         $trimmed = trim((string) $value);
+        $lower = mb_strtolower($trimmed, 'UTF-8');
 
-        $map = [
-            'نعم' => 'true',
-            'لا'  => 'false',
-        ];
+        $yesValues = ['yes', 'y', 'نعم'];
+        $noValues  = ['no', 'n', 'لا', 'لأ'];
 
-        return $map[$trimmed] ?? $trimmed;
+        if (in_array($lower, $yesValues, true)) {
+            return 'true';
+        }
+
+        if (in_array($lower, $noValues, true)) {
+            return 'false';
+        }
+
+        return $trimmed;
     }
 
     /**

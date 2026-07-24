@@ -49,7 +49,7 @@ class IndustryController extends Controller
         ]);
 
         return redirect()->route('admin.cms.industries.index')
-            ->with('success', 'Industry created successfully.');
+            ->with('success', __('Industry created successfully.'));
     }
 
     public function edit(Industry $industry)
@@ -84,7 +84,7 @@ class IndustryController extends Controller
         ]);
 
         return redirect()->route('admin.cms.industries.index')
-            ->with('success', 'Industry updated successfully.');
+            ->with('success', __('Industry updated successfully.'));
     }
 
     public function destroy(Industry $industry)
@@ -93,6 +93,6 @@ class IndustryController extends Controller
         $industry->delete();
 
         return redirect()->route('admin.cms.industries.index')
-            ->with('success', 'Industry deleted successfully.');
+            ->with('success', __('Industry deleted successfully.'));
     }
 }

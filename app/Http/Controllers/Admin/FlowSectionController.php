@@ -35,6 +35,6 @@ class FlowSectionController extends Controller
         ]);
 
         return redirect()->route('admin.cms.flow.index')
-            ->with('success', 'Flow section updated successfully.');
+            ->with('success', __('Flow section updated successfully.'));
     }
 }

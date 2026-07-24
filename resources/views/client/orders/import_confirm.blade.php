@@ -108,6 +108,34 @@
     .col-notes    { min-width: 160px; }
     .col-shift    { min-width: 140px; }
     .col-errors   { min-width: 250px; }
+    .col-action   { width: 50px; text-align: center; }
+
+    .btn-row-delete {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 8px;
+        background: rgba(239, 68, 68, 0.08);
+        color: #ef4444;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-row-delete:hover {
+        background: rgba(239, 68, 68, 0.18);
+        border-color: rgba(239, 68, 68, 0.55);
+    }
+    html.light-theme .btn-row-delete {
+        background: rgba(220, 38, 38, 0.06);
+        border-color: rgba(220, 38, 38, 0.3);
+        color: #dc2626;
+    }
+    html.light-theme .btn-row-delete:hover {
+        background: rgba(220, 38, 38, 0.14);
+    }
 
     .form-actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; margin-top: 22px; }
 
@@ -147,7 +175,7 @@
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
         <h1 style="font-size:1.3rem;font-weight:800;">Confirm Import</h1>
-        <p style="font-size:.82rem;color:var(--text-sub);">Review and adjust the {{ count($rows) }} order(s) below, then click <strong>Confirm &amp; Import</strong> to save them.</p>
+        <p style="font-size:.82rem;color:var(--text-sub);">Review and adjust the <span id="rowCountLabel">{{ count($rows) }}</span> order(s) below, then click <strong>Confirm &amp; Import</strong> to save them. You can remove any row using the delete icon.</p>
     </div>
     <a href="{{ route('client.orders.import') }}" class="btn-secondary">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -195,6 +223,7 @@
                     @if(!empty($rowErrors))
                     <th class="col-errors" style="color: var(--red-lt);">Validation Errors</th>
                     @endif
+                    <th class="col-action">Delete</th>
                 </tr>
             </thead>
             <tbody>
@@ -380,6 +409,13 @@
                         @endif
                     </td>
                     @endif
+
+                    {{-- Delete --}}
+                    <td class="col-action">
+                        <button type="button" class="btn-row-delete" data-row="{{ $i }}" title="Remove this row" aria-label="Remove this row">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v13a2 2 0 01-2 2H8a2 2 0 01-2-2V7h12zM10 11v6m4-6v6"/></svg>
+                        </button>
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
@@ -388,9 +424,9 @@
 
     <div class="form-actions">
         <a href="{{ route('client.orders.import') }}" class="btn-secondary">Cancel</a>
-        <button type="submit" class="btn-primary">
+        <button type="submit" class="btn-primary" id="confirmSubmitBtn">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            Confirm &amp; Import {{ count($rows) }} Order{{ count($rows) !== 1 ? 's' : '' }}
+            Confirm &amp; Import <span id="submitRowCount">{{ count($rows) }}</span> Order<span id="submitRowPlural">{{ count($rows) !== 1 ? 's' : '' }}</span>
         </button>
     </div>
 </form>
@@ -433,6 +469,29 @@
             const row = this.dataset.row;
             document.querySelector(`.area-select[data-row="${row}"]`).dataset.selectedArea = '';
             populateAreas(this);
+        });
+    });
+
+    // Row deletion
+    function updateRowCount() {
+        const remaining = document.querySelectorAll('.confirm-table tbody tr').length;
+        document.getElementById('rowCountLabel').textContent = remaining;
+        document.getElementById('submitRowCount').textContent = remaining;
+        document.getElementById('submitRowPlural').textContent = remaining !== 1 ? 's' : '';
+
+        const submitBtn = document.getElementById('confirmSubmitBtn');
+        submitBtn.disabled = remaining === 0;
+        submitBtn.style.opacity = remaining === 0 ? '0.5' : '';
+        submitBtn.style.cursor = remaining === 0 ? 'not-allowed' : '';
+    }
+
+    document.querySelectorAll('.btn-row-delete').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const tr = this.closest('tr');
+            if (tr) {
+                tr.remove();
+                updateRowCount();
+            }
         });
     });
 </script>

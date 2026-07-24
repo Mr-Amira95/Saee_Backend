@@ -32,13 +32,13 @@ class TrackOrderController extends Controller
         if ($orders->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No orders found matching your search.',
+                'message' => __('No orders found matching your search.'),
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Orders found.',
+            'message' => __('Orders found.'),
             'data'    => $orders->map(fn ($order) => [
                 'order_id'      => $order->id,
                 'order_number'  => $order->order_number,
@@ -54,7 +54,7 @@ class TrackOrderController extends Controller
                     'name'    => $order->receiver->area->name,
                     'name_ar' => $order->receiver->area->name_ar,
                 ] : null,
-                'tracking'      => $order->trackingLogs->map(fn ($log) => [
+                'tracking'      => $this->visibleTrackingLogs($order)->map(fn ($log) => [
                     'from_status' => $log->from_status,
                     'to_status'   => $log->to_status,
                     'description' => $log->description,
@@ -63,5 +63,25 @@ class TrackOrderController extends Controller
                 'created_at'    => $order->created_at?->toDateTimeString(),
             ]),
         ]);
+    }
+
+    /**
+     * Hide any tracking events logged after the order reached a terminal
+     * status (delivered/rejected), so the customer never sees internal
+     * post-delivery/return handling.
+     */
+    private function visibleTrackingLogs(Order $order)
+    {
+        $chronological = $order->trackingLogs->sortBy('created_at')->values();
+
+        $terminalIndex = $chronological->search(
+            fn ($log) => in_array($log->to_status, ['delivered', 'rejected'], true)
+        );
+
+        if ($terminalIndex !== false) {
+            $chronological = $chronological->slice(0, $terminalIndex + 1);
+        }
+
+        return $chronological->sortByDesc('created_at')->values();
     }
 }

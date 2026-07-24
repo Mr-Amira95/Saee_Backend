@@ -26,7 +26,7 @@ class NotificationPreferenceController extends Controller
         if (! $device) {
             return response()->json([
                 'success' => false,
-                'message' => 'Device not found',
+                'message' => __('Device not found'),
                 'code'    => 'DEVICE_NOT_FOUND',
             ], 404);
         }
@@ -36,8 +36,8 @@ class NotificationPreferenceController extends Controller
         return response()->json([
             'success'               => true,
             'message'               => $device->notifications_enabled
-                ? 'Notifications enabled for this device'
-                : 'Notifications disabled for this device',
+                ? __('Notifications enabled for this device')
+                : __('Notifications disabled for this device'),
             'notifications_enabled' => $device->notifications_enabled,
         ]);
     }

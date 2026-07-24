@@ -101,7 +101,7 @@
 @endif
 
 <div class="form-wrap">
-<form method="POST" action="{{ route('client.users.store') }}">
+<form method="POST" action="{{ route('client.users.store') }}" id="clientUserForm" novalidate>
     @csrf
 
     <div class="form-section" style="position:relative;z-index:2;">
@@ -171,11 +171,12 @@
             <div class="form-group">
                 <label class="form-label" for="password">{{ __('Password') }} <span style="text-transform:none;font-weight:400;">({{ __('optional — leave blank to auto-generate') }})</span></label>
                 <div class="pwd-field-wrap">
-                    <input id="password" type="password" name="password" autocomplete="new-password" class="form-input {{ $errors->has('password') ? 'has-error' : '' }}" placeholder="{{ __('Minimum 8 characters') }}" style="padding-right:40px;">
+                    <input id="password" type="password" name="password" autocomplete="new-password" class="form-input {{ $errors->has('password') ? 'has-error' : '' }}" placeholder="{{ __('Min 8 chars, upper, lower & symbol') }}" style="padding-right:40px;" oninput="updatePasswordRequirements(this.value, 'clientUserPwReqs')">
                     <button type="button" class="pwd-toggle-btn" onclick="togglePwd('password','eyePwd')">
                         <svg id="eyePwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
                 </div>
+                @include('client.partials.password-requirements', ['id' => 'clientUserPwReqs'])
                 @error('password') <div class="form-error">{{ $message }}</div> @enderror
             </div>
 
@@ -339,5 +340,84 @@ document.addEventListener('DOMContentLoaded', function() {
     initClientUserPhoneDropdown('phoneExtBtn', 'phoneExtFlag', 'phoneExtCode', 'phoneExtVal', 'phoneExtDropdown', 'phoneExtList');
     setOtpChannel(document.getElementById('otpChannelInput').value);
 });
+
+/* ── Client User Form Validation ── */
+(function() {
+    var form = document.getElementById('clientUserForm');
+    if (!form) return;
+
+    function getField(n) { return form.querySelector('[name="' + n + '"]'); }
+
+    function showFieldError(el, msg) {
+        var container = el.closest('.form-group') || el.parentElement;
+        el.classList.add('has-error', 'js-marked');
+        var err = document.createElement('div');
+        err.className = 'form-error js-err';
+        err.textContent = msg;
+        container.appendChild(err);
+    }
+
+    function clearFieldError(el) {
+        var container = el.closest('.form-group') || el.parentElement;
+        el.classList.remove('has-error', 'js-marked');
+        var err = container.querySelector('.js-err');
+        if (err) err.remove();
+    }
+
+    function isValidName(v) { return /^[\p{L}\s]+$/u.test(v.trim()); }
+    function isValidUsername(v) { return /^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/.test(v.trim()); }
+    function isEmail(v) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim()); }
+    function isValidPhone(v) { return /^[0-9]{6,15}$/.test(v.trim()); }
+
+    function wireLiveValidation(name, validator, msg) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            if (el.value.trim() && !validator(el.value)) showFieldError(el, msg);
+        });
+    }
+
+    wireLiveValidation('name', isValidName, '{{ __('Full name must only contain letters and spaces (no numbers or special characters).') }}');
+    wireLiveValidation('username', isValidUsername, '{{ __('Username must contain at least one letter, start with a letter or number, and cannot end with a special character.') }}');
+    wireLiveValidation('email', isEmail, '{{ __('Please enter a valid email address in the format name@domain.com.') }}');
+    wireLiveValidation('phone', isValidPhone, '{{ __('Phone must contain 6 to 15 digits only.') }}');
+
+    form.addEventListener('submit', function(e) {
+        form.querySelectorAll('.js-marked').forEach(function(el) { clearFieldError(el); });
+        var first = null;
+
+        [
+            ['name', isValidName, '{{ __('Full name must only contain letters and spaces (no numbers or special characters).') }}'],
+            ['username', isValidUsername, '{{ __('Username must contain at least one letter, start with a letter or number, and cannot end with a special character.') }}'],
+            ['email', isEmail, '{{ __('Please enter a valid email address in the format name@domain.com.') }}'],
+            ['phone', isValidPhone, '{{ __('Phone must contain 6 to 15 digits only.') }}'],
+        ].forEach(function(rule) {
+            var el = getField(rule[0]);
+            if (el && el.value.trim() && !rule[1](el.value)) {
+                showFieldError(el, rule[2]);
+                if (!first) first = el;
+            }
+        });
+
+        var pEl  = getField('password');
+        var pcEl = getField('password_confirmation');
+        if (pEl && pEl.value) {
+            if (!isStrongPassword(pEl.value)) {
+                showFieldError(pEl, '{{ __('Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a special character.') }}');
+                if (!first) first = pEl;
+            } else if (pEl.value !== pcEl.value) {
+                showFieldError(pcEl, '{{ __('Passwords do not match.') }}');
+                if (!first) first = pcEl;
+            }
+        }
+
+        if (first) {
+            e.preventDefault();
+            first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            first.focus();
+        }
+    });
+})();
 </script>
 @endpush

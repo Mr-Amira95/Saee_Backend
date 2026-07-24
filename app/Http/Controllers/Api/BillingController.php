@@ -27,7 +27,7 @@ class BillingController extends Controller
         if (!$clientProfileId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access denied. Client profile not found.',
+                'message' => __('Access denied. Client profile not found.'),
             ], 403);
         }
 
@@ -43,7 +43,7 @@ class BillingController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Billing invoices retrieved successfully.',
+            'message' => __('Billing invoices retrieved successfully.'),
             'data' => $invoices->items(),
             'meta' => [
                 'current_page' => $invoices->currentPage(),
@@ -70,7 +70,7 @@ class BillingController extends Controller
         if (!$clientProfileId || (int) $invoice->client_profile_id !== $clientProfileId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access denied. You do not own this invoice.',
+                'message' => __('Access denied. You do not own this invoice.'),
             ], 403);
         }
 
@@ -88,7 +88,7 @@ class BillingController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Billing invoice details retrieved successfully.',
+            'message' => __('Billing invoice details retrieved successfully.'),
             'invoice' => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
@@ -132,7 +132,7 @@ class BillingController extends Controller
         if (!$clientProfileId || (int) $invoice->client_profile_id !== $clientProfileId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access denied. You do not own this invoice.',
+                'message' => __('Access denied. You do not own this invoice.'),
             ], 403);
         }
 
@@ -140,7 +140,7 @@ class BillingController extends Controller
         if (!in_array($statusValue, ['issued', 'overdue'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only issued or overdue invoices can be marked as paid.',
+                'message' => __('Only issued or overdue invoices can be marked as paid.'),
             ], 400);
         }
 
@@ -158,7 +158,7 @@ class BillingController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Payment recorded. Invoice marked as paid.',
+            'message' => __('Payment recorded. Invoice marked as paid.'),
             'invoice' => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,

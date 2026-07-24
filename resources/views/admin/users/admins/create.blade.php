@@ -1,15 +1,15 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Add Admin')
+@section('title', __('Add Admin'))
 
-@section('page-title', 'Add Admin')
+@section('page-title', __('Add Admin'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.admins.index') }}">Admins</a>
+    <a href="{{ route('admin.admins.index') }}">{{ __('Admins') }}</a>
     <span>/</span>
-    <span>Add Admin</span>
+    <span>{{ __('Add Admin') }}</span>
 @endsection
 
 @section('head')
@@ -42,6 +42,7 @@
     display: none; overflow: hidden;
 }
 .phone-dropdown.open { display: block; }
+.phone-dropdown.drop-up { top: auto; bottom: calc(100% + 4px); }
 .phone-dd-search {
     width: 100%; padding: 10px 12px; background: var(--bg);
     border: none; border-bottom: 1px solid var(--bdr);
@@ -57,6 +58,23 @@
 .phone-dd-item .dd-flag { font-size: 1.1rem; }
 .phone-dd-item .dd-name { flex: 1; color: var(--text); }
 .phone-dd-item .dd-code { color: var(--red); font-weight: 600; font-size: .8rem; }
+
+html[dir="rtl"] .phone-ext-btn {
+    border-right: 1px solid var(--bdr);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+}
+html[dir="rtl"] .phone-input-field {
+    border-radius: 8px 0 0 8px;
+}
+html[dir="rtl"] .phone-ext-btn .arrow {
+    margin-left: 0;
+    margin-right: auto;
+}
+html[dir="rtl"] .phone-dropdown {
+    left: auto;
+    right: 0;
+}
 </style>
 @endsection
 
@@ -66,25 +84,25 @@
 
     {{-- Account --}}
     <div class="form-section">
-        <div class="form-section-title">Account Details</div>
+        <div class="form-section-title">{{ __('Account Details') }}</div>
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="name">Full Name <span class="req">*</span></label>
+                <label class="form-label" for="name">{{ __('Full Name') }} <span class="req">*</span></label>
                 <input class="form-input @error('name') is-error @enderror" id="name" type="text" name="name" value="{{ old('name') }}" required>
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <label class="form-label" for="username">{{ __('Username') }} <span class="req">*</span></label>
                 <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username" value="{{ old('username') }}" required>
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email <span class="opt" id="emailReqHint">(required for email channel)</span></label>
+                <label class="form-label" for="email">{{ __('Email') }} <span class="opt" id="emailReqHint">({{ __('required for email channel') }})</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email') }}">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="phone">Phone <span class="opt" id="phoneReqHint">(required for WhatsApp)</span></label>
+                <label class="form-label" for="phone">{{ __('Phone') }} <span class="opt" id="phoneReqHint">({{ __('required for WhatsApp') }})</span></label>
                 <div style="position:relative;">
                     <div class="phone-wrap">
                         <button type="button" class="phone-ext-btn" id="phoneExtBtn">
@@ -97,26 +115,27 @@
                                value="{{ old('phone') }}" placeholder="7X XXX XXXX">
                     </div>
                     <div class="phone-dropdown" id="phoneExtDropdown">
-                        <input type="text" class="phone-dd-search" placeholder="Search country or code…">
+                        <input type="text" class="phone-dd-search" placeholder="{{ __('Search country or code…') }}">
                         <div class="phone-dd-list" id="phoneExtList"></div>
                     </div>
                 </div>
                 @error('phone')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="password">Password <span class="opt">(optional — leave blank to auto-generate &amp; send invitation)</span></label>
+                <label class="form-label" for="password">{{ __('Password') }} <span class="opt">({{ __('optional — leave blank to auto-generate & send invitation') }})</span></label>
                 <div style="position:relative;">
-                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="Minimum 8 characters" style="width:100%;padding-right:40px;box-sizing:border-box;">
+                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="{{ __('Min 8 chars, upper, lower & symbol') }}" style="width:100%;padding-right:40px;box-sizing:border-box;" oninput="updatePasswordRequirements(this.value, 'createPwReqs')">
                     <button type="button" onclick="togglePwd('password','eyePwd')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
                         <svg id="eyePwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
                 </div>
+                @include('admin.partials.password-requirements', ['id' => 'createPwReqs'])
                 @error('password')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="password_confirmation">Confirm Password <span class="opt">(optional)</span></label>
+                <label class="form-label" for="password_confirmation">{{ __('Confirm Password') }} <span class="opt">({{ __('optional') }})</span></label>
                 <div style="position:relative;">
-                    <input class="form-input" id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="Repeat password" style="width:100%;padding-right:40px;box-sizing:border-box;">
+                    <input class="form-input" id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="{{ __('Repeat password') }}" style="width:100%;padding-right:40px;box-sizing:border-box;">
                     <button type="button" onclick="togglePwd('password_confirmation','eyePwdConf')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
                         <svg id="eyePwdConf" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
@@ -127,15 +146,15 @@
 
     {{-- Permissions --}}
     <div class="form-section">
-        <div class="form-section-title">Permissions</div>
-        <p style="font-size: .82rem; color: var(--text-sub); margin-bottom: 16px;">Check a page to give this admin access to it. Superadmins always have full access regardless of these checkboxes.</p>
+        <div class="form-section-title">{{ __('Permissions') }}</div>
+        <p style="font-size: .82rem; color: var(--text-sub); margin-bottom: 16px;">{{ __('Check a page to give this admin access to it. Superadmins always have full access regardless of these checkboxes.') }}</p>
         @include('admin.users.admins.partials.permissions', ['grantedIds' => old('permissions', [])])
     </div>
 
     <div class="form-actions" style="flex-wrap:wrap;gap:16px;">
         {{-- Invitation / OTP channel toggle --}}
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-right:auto;user-select:none;">
-            <span style="font-size:.85rem;color:var(--text-sub);white-space:nowrap;">Send invitation &amp; OTP via</span>
+            <span style="font-size:.85rem;color:var(--text-sub);white-space:nowrap;">{{ __('Send invitation & OTP via') }}</span>
             <div style="position:relative;display:inline-flex;align-items:center;background:var(--in-bg);border:1px solid var(--bdr);border-radius:8px;padding:3px;gap:2px;" id="invChannelWrap">
                 <input type="hidden" name="otp_channel" id="invChannelInput" value="whatsapp">
                 <button type="button" id="btnWhatsapp"
@@ -148,13 +167,13 @@
                     onclick="setChannel('email')"
                     style="display:flex;align-items:center;gap:6px;padding:5px 12px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s;background:transparent;color:var(--text-sub);">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    Email
+                    {{ __('Email') }}
                 </button>
             </div>
         </label>
 
-        <a href="{{ route('admin.admins.index') }}" class="btn-secondary">Cancel</a>
-        <button type="submit" class="btn-primary">Create Admin</button>
+        <a href="{{ route('admin.admins.index') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+        <button type="submit" class="btn-primary">{{ __('Create Admin') }}</button>
     </div>
 
     <script>
@@ -266,7 +285,14 @@ function initPhoneDropdown(btnId, flagId, codeId, valId, ddId, listId) {
     btn.addEventListener('click', function(e) {
         e.stopPropagation();
         dd.classList.toggle('open');
-        if (dd.classList.contains('open')) searchEl.focus();
+        if (dd.classList.contains('open')) {
+            const btnRect = btn.getBoundingClientRect();
+            const ddHeight = dd.offsetHeight;
+            const spaceBelow = window.innerHeight - btnRect.bottom;
+            const spaceAbove = btnRect.top;
+            dd.classList.toggle('drop-up', spaceBelow < ddHeight && spaceAbove > spaceBelow);
+            searchEl.focus();
+        }
     });
     searchEl.addEventListener('input', function() { renderList(this.value); });
     document.addEventListener('click', function(e) {
@@ -297,8 +323,19 @@ function togglePwd(inputId, iconId) {
 
 /* ── Admin Form Validation ── */
 (function() {
-    var form = document.querySelector('form');
+    var form = document.querySelector('form[novalidate]');
     if (!form) return;
+
+    var i18n = {
+        nameFormat: @json(__('Full name must only contain letters and spaces (no numbers or special characters).')),
+        usernameFormat: @json(__('Username must contain at least one letter, start with a letter or number, and cannot end with a special character.')),
+        emailFormat: @json(__('Please enter a valid email address in the format name@domain.com.')),
+        phoneFormat: @json(__('Phone must contain 6 to 15 digits only.')),
+        nameRequired: @json(__('Full name is required.')),
+        usernameRequired: @json(__('Username is required.')),
+        passwordStrength: @json(__('Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a special character.')),
+        passwordMismatch: @json(__('Passwords do not match.')),
+    };
 
     function getField(n) {
         return document.getElementById(n) || form.querySelector('[name="' + n + '"]');
@@ -319,7 +356,38 @@ function togglePwd(inputId, iconId) {
         form.querySelectorAll('.js-marked').forEach(function(e) { e.classList.remove('is-error', 'js-marked'); });
     }
 
-    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+    function isEmail(v) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim()); }
+    function isValidName(v) { return /^[\p{L}\s]+$/u.test(v.trim()); }
+    function isValidUsername(v) { return /^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/.test(v.trim()); }
+    function isValidPhone(v) { return /^[0-9]{6,15}$/.test(v.trim()); }
+
+    function clearFieldError(el) {
+        var container = el.closest ? (el.closest('.form-group') || el.parentElement) : el.parentElement;
+        el.classList.remove('is-error', 'js-marked');
+        var err = container.querySelector('.js-err');
+        if (err) err.remove();
+    }
+
+    function wireLiveValidation(name, validator, msg) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            if (el.value.trim() && !validator(el.value)) showFieldError(el, msg);
+        });
+    }
+
+    wireLiveValidation('name', isValidName, i18n.nameFormat);
+    wireLiveValidation('username', isValidUsername, i18n.usernameFormat);
+    wireLiveValidation('email', isEmail, i18n.emailFormat);
+    wireLiveValidation('phone', isValidPhone, i18n.phoneFormat);
+
+    function isStrongPassword(pw) {
+        return pw.length >= 8
+            && /[A-Z]/.test(pw)
+            && /[a-z]/.test(pw)
+            && /[^A-Za-z0-9]/.test(pw);
+    }
 
     form.addEventListener('submit', function(e) {
         clearErrors();
@@ -332,23 +400,41 @@ function togglePwd(inputId, iconId) {
             if (!first) first = el;
         }
 
-        req('name',     'Full name is required.');
-        req('username', 'Username is required.');
+        req('name',     i18n.nameRequired);
+        req('username', i18n.usernameRequired);
+
+        var nEl = getField('name');
+        if (nEl && nEl.value.trim() && !isValidName(nEl.value)) {
+            showFieldError(nEl, i18n.nameFormat);
+            if (!first) first = nEl;
+        }
+
+        var uEl = getField('username');
+        if (uEl && uEl.value.trim() && !isValidUsername(uEl.value)) {
+            showFieldError(uEl, i18n.usernameFormat);
+            if (!first) first = uEl;
+        }
 
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
-            showFieldError(eEl, 'Please enter a valid email address.');
+            showFieldError(eEl, i18n.emailFormat);
             if (!first) first = eEl;
+        }
+
+        var phEl = getField('phone');
+        if (phEl && phEl.value.trim() && !isValidPhone(phEl.value)) {
+            showFieldError(phEl, i18n.phoneFormat);
+            if (!first) first = phEl;
         }
 
         var pEl  = getField('password');
         var pcEl = getField('password_confirmation');
         if (pEl && pEl.value) {
-            if (pEl.value.length < 8) {
-                showFieldError(pEl, 'Password must be at least 8 characters.');
+            if (!isStrongPassword(pEl.value)) {
+                showFieldError(pEl, i18n.passwordStrength);
                 if (!first) first = pEl;
             } else if (pEl.value !== pcEl.value) {
-                showFieldError(pcEl, 'Passwords do not match.');
+                showFieldError(pcEl, i18n.passwordMismatch);
                 if (!first) first = pcEl;
             }
         }

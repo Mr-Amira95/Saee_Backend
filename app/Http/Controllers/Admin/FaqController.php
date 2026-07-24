@@ -38,7 +38,7 @@ class FaqController extends Controller
         ]);
 
         return redirect()->route('admin.cms.faqs.index')
-            ->with('success', 'FAQ created successfully.');
+            ->with('success', __('FAQ created successfully.'));
     }
 
     public function edit(Faq $faq)
@@ -65,7 +65,7 @@ class FaqController extends Controller
         ]);
 
         return redirect()->route('admin.cms.faqs.index')
-            ->with('success', 'FAQ updated successfully.');
+            ->with('success', __('FAQ updated successfully.'));
     }
 
     public function destroy(Faq $faq)
@@ -73,6 +73,6 @@ class FaqController extends Controller
         $faq->delete();
 
         return redirect()->route('admin.cms.faqs.index')
-            ->with('success', 'FAQ deleted successfully.');
+            ->with('success', __('FAQ deleted successfully.'));
     }
 }

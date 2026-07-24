@@ -54,6 +54,6 @@ class AboutPageController extends Controller
         ]);
 
         return redirect()->route('admin.cms.about-page.index')
-            ->with('success', 'About page updated successfully.');
+            ->with('success', __('About page updated successfully.'));
     }
 }

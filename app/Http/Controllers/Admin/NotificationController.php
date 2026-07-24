@@ -63,7 +63,7 @@ class NotificationController extends Controller
         ]);
 
         return redirect()->route('admin.notifications.index')
-            ->with('success', 'Notification dispatched successfully.');
+            ->with('success', __('Notification dispatched successfully.'));
     }
 
     /**

@@ -52,6 +52,12 @@ class AuthController extends Controller
                 ->withInput($request->only('phone'));
         }
 
+        if ($user->hasExpiredClientContract()) {
+            return back()
+                ->withErrors(['phone' => 'Your contract has been expired, please get in touch with the admin.'])
+                ->withInput($request->only('phone'));
+        }
+
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 

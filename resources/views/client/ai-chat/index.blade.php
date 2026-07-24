@@ -41,10 +41,10 @@
 
     {{-- Suggestions --}}
     <div class="chat-suggestions">
-        <button type="button" class="suggestion-chip" onclick="applySuggestion('{{ __('Track my order') }}')">🔍 {{ __('Track my order') }}</button>
-        <button type="button" class="suggestion-chip" onclick="applySuggestion('{{ __('What is SA\'EE delivery coverage?') }}')">📍 {{ __('Service coverage') }}</button>
-        <button type="button" class="suggestion-chip" onclick="applySuggestion('{{ __('How can I contact support?') }}')">📞 {{ __('Contact support') }}</button>
-        <button type="button" class="suggestion-chip" onclick="applySuggestion('{{ __('What are the payment methods?') }}')">💳 {{ __('Payment methods') }}</button>
+        <button type="button" class="suggestion-chip" data-suggestion="{{ __('Track my order') }}">🔍 {{ __('Track my order') }}</button>
+        <button type="button" class="suggestion-chip" data-suggestion="{{ __('What is SA\'EE delivery coverage?') }}">📍 {{ __('Service coverage') }}</button>
+        <button type="button" class="suggestion-chip" data-suggestion="{{ __('How can I contact support?') }}">📞 {{ __('Contact support') }}</button>
+        <button type="button" class="suggestion-chip" data-suggestion="{{ __('What are the payment methods?') }}">💳 {{ __('Payment methods') }}</button>
     </div>
 
     {{-- Input Bar --}}
@@ -217,8 +217,38 @@
         margin-bottom: 0;
     }
 
+    .msg-bubble ul,
+    .msg-bubble ol {
+        margin: 0 0 10px 0;
+        padding-inline-start: 20px;
+    }
+
+    .msg-bubble ul:last-child,
+    .msg-bubble ol:last-child {
+        margin-bottom: 0;
+    }
+
+    .msg-bubble li {
+        margin: 0 0 4px 0;
+    }
+
+    .msg-bubble li:last-child {
+        margin-bottom: 0;
+    }
+
     .msg-bubble strong {
         color: #ffffff;
+    }
+
+    /* Per-message text direction — independent of the page's global lang toggle */
+    .msg-bubble[dir="rtl"] {
+        text-align: right;
+        font-family: 'Tajawal', 'Inter', sans-serif;
+    }
+
+    .msg-bubble[dir="ltr"] {
+        text-align: left;
+        font-family: 'Inter', sans-serif;
     }
 
     /* Suggestions chips */
@@ -442,6 +472,22 @@
         from { opacity: 0; transform: translateY(8px); }
         to   { opacity: 1; transform: translateY(0); }
     }
+
+    /* ─── Light Mode Overrides ───────────────────────── */
+    html.light-theme .chat-container { background: rgba(255, 255, 255, .6); border-color: var(--bdr); }
+    html.light-theme .chat-header { background: rgba(255, 255, 255, .5); border-bottom-color: var(--bdr); }
+    html.light-theme .chat-title { color: var(--text); }
+    html.light-theme .btn-reset { background: rgba(220, 38, 38, .08); border-color: rgba(220, 38, 38, .25); color: #b91c1c; }
+    html.light-theme .btn-reset:hover { background: rgba(220, 38, 38, .15); border-color: rgba(220, 38, 38, .4); color: #7f1d1d; }
+    html.light-theme .bot-msg .msg-bubble { background: rgba(15, 23, 42, .04); border-color: rgba(15, 23, 42, .08); color: var(--text); }
+    html.light-theme .msg-bubble strong { color: var(--text); }
+    html.light-theme .chat-suggestions { background: rgba(15, 23, 42, .02); border-top-color: var(--bdr); }
+    html.light-theme .suggestion-chip { background: rgba(15, 23, 42, .03); border-color: rgba(15, 23, 42, .1); color: var(--text-sub); }
+    html.light-theme .suggestion-chip:hover { background: rgba(220, 38, 38, .08); border-color: rgba(220, 38, 38, .3); color: #7f1d1d; }
+    html.light-theme .chat-input-bar { background: rgba(255, 255, 255, .4); border-top-color: var(--bdr); }
+    html.light-theme #userInput { background: #ffffff; border-color: rgba(15, 23, 42, .12); color: var(--text); }
+    html.light-theme #userInput:focus { background: #ffffff; border-color: rgba(220, 38, 38, .4); box-shadow: 0 0 10px rgba(220, 38, 38, .08); }
+    html.light-theme #userInput::placeholder { color: var(--text-dim); }
 </style>
 @endsection
 
@@ -465,11 +511,55 @@
         return formatted;
     }
 
+    // Escape plain text and wrap it in a <p>, preserving line breaks
+    function escapeToParagraph(text) {
+        const div = document.createElement('div');
+        div.textContent = text || '';
+        return `<p>${div.innerHTML.replace(/\n/g, '<br>')}</p>`;
+    }
+
+    // Strip anything dangerous out of AI-generated HTML before it's inserted
+    function sanitizeAiHtml(html) {
+        const template = document.createElement('template');
+        template.innerHTML = html || '';
+
+        template.content.querySelectorAll('script, style, iframe, object, embed, link, meta, form').forEach(el => el.remove());
+
+        template.content.querySelectorAll('*').forEach(el => {
+            [...el.attributes].forEach(attr => {
+                const name = attr.name.toLowerCase();
+                const value = attr.value.trim().toLowerCase();
+                const isUnsafeUrl = (name === 'href' || name === 'src') && value.startsWith('javascript:');
+                if (name.startsWith('on') || isUnsafeUrl) {
+                    el.removeAttribute(attr.name);
+                }
+            });
+        });
+
+        return template.innerHTML;
+    }
+
+    // Detect whether text is predominantly Arabic-script (majority vote against
+    // Latin letters, so a single embedded Arabic name in an English reply
+    // doesn't flip the whole bubble to RTL), to set per-bubble text direction
+    // independent of the page's global <html dir="...">.
+    function detectTextDirection(text) {
+        const arabicCount = (text || '').match(/[؀-ۿ]/g)?.length || 0;
+        const latinCount = (text || '').match(/[A-Za-z]/g)?.length || 0;
+        return arabicCount > latinCount ? 'rtl' : 'ltr';
+    }
+
     // Apply suggestion chip to input field
     function applySuggestion(text) {
         userInput.value = text;
         userInput.focus();
     }
+
+    document.querySelectorAll('.suggestion-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+            applySuggestion(chip.dataset.suggestion);
+        });
+    });
 
     // Load session chat history on page load
     async function loadHistory() {
@@ -493,7 +583,16 @@
 
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
-        bubble.innerHTML = formatMarkdown(text);
+        bubble.dir = detectTextDirection(text);
+
+        if (role === 'user') {
+            bubble.innerHTML = escapeToParagraph(text);
+        } else {
+            // Assistant replies are HTML from our backend; older plain-text
+            // history (no tags) still gets wrapped in a <p> for consistent spacing.
+            const looksLikeHtml = /<[a-z][\s\S]*>/i.test(text || '');
+            bubble.innerHTML = sanitizeAiHtml(looksLikeHtml ? text : `<p>${formatMarkdown(text)}</p>`);
+        }
 
         msgDiv.appendChild(bubble);
         chatMessages.appendChild(msgDiv);

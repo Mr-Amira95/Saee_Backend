@@ -240,6 +240,12 @@
         .form-textarea:focus { border-color: rgba(220,38,38,.4); }
         .form-error { font-size: .77rem; color: #f87171; margin-top: 5px; }
         .form-hint  { font-size: .77rem; color: var(--text-dim); margin-top: 5px; }
+        .pw-reqs { margin-top: 8px; padding: 10px 13px; background: var(--in-bg); border: 1px solid var(--in-bdr); border-radius: 9px; }
+        .pw-req-item { display: flex; align-items: center; gap: 8px; font-size: .74rem; color: var(--text-dim); margin-bottom: 4px; transition: color .2s; }
+        .pw-req-item:last-child { margin-bottom: 0; }
+        .pw-req-item.met { color: var(--success); }
+        .pw-req-icon { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 8px; transition: background .2s; }
+        .pw-req-item.met .pw-req-icon { background: var(--success); border-color: var(--success); color: #052e16; }
 
         /* ── Pagination ──────────────────────────────────── */
         .pagination { display: flex; align-items: center; gap: 6px; padding: 14px 16px; border-top: 1px solid var(--bdr); }
@@ -344,6 +350,16 @@
         html.light-theme .smartedge-logo { background: rgba(15, 23, 42, 0.035); border-color: rgba(15, 23, 42, 0.08); }
         html.light-theme .smartedge-logo .smart { color: #0f172a; }
         html.light-theme .smartedge-logo .badge-tech { color: rgba(15, 23, 42, 0.6); background: rgba(15, 23, 42, 0.05); }
+        html.light-theme .form-label { color: #0f172a; }
+
+        /* AI Assistant button (sidebar) */
+        html.light-theme .ai-assist-btn { background: linear-gradient(135deg, rgba(220,38,38,.10), rgba(127,29,29,.05) 55%, rgba(239,68,68,.08)); border-color: rgba(220,38,38,.25); box-shadow: 0 4px 14px rgba(220,38,38,.12); }
+        html.light-theme .ai-assist-btn:hover { border-color: rgba(220,38,38,.45); box-shadow: 0 6px 20px rgba(220,38,38,.18); }
+        html.light-theme .ai-assist-btn.active { border-color: rgba(220,38,38,.4); box-shadow: 0 0 0 1px rgba(220,38,38,.15), 0 6px 18px rgba(220,38,38,.12); }
+        html.light-theme .ai-assist-title { color: #7f1d1d; }
+        html.light-theme .ai-assist-sub { color: rgba(51,65,85,.75); }
+        html.light-theme .ai-assist-arrow { color: rgba(51,65,85,.6); }
+        html.light-theme .ai-assist-btn:hover .ai-assist-arrow { color: #7f1d1d; }
 
 
         /* ─── RTL Directional Overrides ──────────────────── */
@@ -743,6 +759,28 @@ function dismissToast(el) {
     el.addEventListener('animationend', () => el.remove(), { once: true });
 }
 
+// ── Password strength ────────────────────────────────
+function isStrongPassword(pw) {
+    return pw.length >= 8
+        && /[A-Z]/.test(pw)
+        && /[a-z]/.test(pw)
+        && /[^A-Za-z0-9]/.test(pw);
+}
+function updatePasswordRequirements(pw, boxId) {
+    var box = document.getElementById(boxId);
+    if (!box) return;
+    var checks = {
+        len:     pw.length >= 8,
+        upper:   /[A-Z]/.test(pw),
+        lower:   /[a-z]/.test(pw),
+        special: /[^A-Za-z0-9]/.test(pw),
+    };
+    Object.keys(checks).forEach(function(key) {
+        var item = box.querySelector('[data-req="' + key + '"]');
+        if (item) item.classList.toggle('met', checks[key]);
+    });
+}
+
 // ── Theme toggle ─────────────────────────────────────
 function toggleTheme() {
     const isLight = document.documentElement.classList.toggle('light-theme');
@@ -854,6 +892,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (headers.length < 2) return;
 
         if (table.dataset.hasExportButton) return;
+        if (table.dataset.noExport) return;
         table.dataset.hasExportButton = 'true';
 
         const bar = document.createElement('div');
@@ -882,6 +921,23 @@ document.addEventListener('DOMContentLoaded', function () {
             const csv = [];
             const rows = table.querySelectorAll('tr');
 
+            const excludedCols = {};
+            const actionHeaderLabels = ['actions', 'action', 'إجراءات', 'إجراء'];
+            table.querySelectorAll('thead th').forEach(function(th, idx) {
+                const label = (th.textContent || '').trim().toLowerCase();
+                if (actionHeaderLabels.includes(label)) {
+                    excludedCols[idx] = true;
+                }
+            });
+            table.querySelectorAll('tbody tr').forEach(function(bodyRow) {
+                const bodyCols = bodyRow.querySelectorAll('th, td');
+                for (let k = 0; k < bodyCols.length; k++) {
+                    if (!excludedCols[k] && (isMediaCell(bodyCols[k]) || isActionsCell(bodyCols[k]))) {
+                        excludedCols[k] = true;
+                    }
+                }
+            });
+
             for (let i = 0; i < rows.length; i++) {
                 if (rows[i].offsetParent === null) continue;
 
@@ -889,29 +945,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 const cols = rows[i].querySelectorAll('th, td');
 
                 for (let j = 0; j < cols.length; j++) {
+                    if (excludedCols[j]) continue;
                     const col = cols[j];
-                    
-                    if (col.classList.contains('actions') || col.classList.contains('col-actions') || col.querySelector('button') || col.querySelector('input[type="checkbox"]')) {
-                        const select = col.querySelector('select');
-                        const input = col.querySelector('input:not([type="checkbox"]):not([type="hidden"])');
-                        if (select) {
-                            row.push(cleanCSVValue(select.options[select.selectedIndex]?.text || ''));
-                        } else if (input) {
-                            row.push(cleanCSVValue(input.value));
-                        } else {
-                            continue;
-                        }
+
+                    const select = col.querySelector('select');
+                    const input = col.querySelector('input:not([type="checkbox"]):not([type="hidden"])');
+                    if (select) {
+                        row.push(cleanCSVValue(select.options[select.selectedIndex]?.text || ''));
+                    } else if (input) {
+                        row.push(cleanCSVValue(input.value));
                     } else {
-                        const select = col.querySelector('select');
-                        const input = col.querySelector('input:not([type="checkbox"]):not([type="hidden"])');
-                        if (select) {
-                            row.push(cleanCSVValue(select.options[select.selectedIndex]?.text || ''));
-                        } else if (input) {
-                            row.push(cleanCSVValue(input.value));
-                        } else {
-                            let text = col.innerText || col.textContent || '';
-                            row.push(cleanCSVValue(text));
-                        }
+                        let text = col.innerText || col.textContent || '';
+                        row.push(cleanCSVValue(text));
                     }
                 }
                 if (row.length > 0) {
@@ -952,6 +997,26 @@ document.addEventListener('DOMContentLoaded', function () {
             clean = `"${clean}"`;
         }
         return clean;
+    }
+
+    function isMediaCell(col) {
+        if (col.querySelector('img, video, audio, source, picture')) return true;
+        const links = col.querySelectorAll('a[href]');
+        for (let m = 0; m < links.length; m++) {
+            const a = links[m];
+            if (a.hasAttribute('download')) return true;
+            const href = a.getAttribute('href') || '';
+            if (/\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|jpe?g|png|gif|webp|svg|bmp|mp4|mov|avi|webm|mkv|mp3|wav)(\?|#|$)/i.test(href)) return true;
+        }
+        return false;
+    }
+
+    function isActionsCell(col) {
+        if (col.classList.contains('actions') || col.classList.contains('col-actions')) return true;
+        if (col.querySelector('.act-btns, .act-btn, .actions, .col-actions')) return true;
+        if (col.querySelector('button')) return true;
+        if (col.querySelector('input[type="checkbox"]')) return true;
+        return false;
     }
 });
 </script>

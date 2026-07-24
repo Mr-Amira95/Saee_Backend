@@ -43,7 +43,7 @@ class RejectionReasonController extends Controller
         ]);
 
         return redirect()->route('admin.rejection-reasons.index')
-            ->with('success', 'Rejection reason added successfully.');
+            ->with('success', __('Rejection reason added successfully.'));
     }
 
     public function edit(RejectionReason $rejectionReason)
@@ -68,7 +68,7 @@ class RejectionReasonController extends Controller
         ]);
 
         return redirect()->route('admin.rejection-reasons.index')
-            ->with('success', 'Rejection reason updated successfully.');
+            ->with('success', __('Rejection reason updated successfully.'));
     }
 
     public function toggle(RejectionReason $rejectionReason)
@@ -77,7 +77,7 @@ class RejectionReasonController extends Controller
 
         $rejectionReason->update(['is_active' => !$rejectionReason->is_active]);
 
-        return back()->with('success', 'Status updated.');
+        return back()->with('success', __('Status updated.'));
     }
 
     public function destroy(RejectionReason $rejectionReason)
@@ -87,6 +87,6 @@ class RejectionReasonController extends Controller
         $rejectionReason->delete();
 
         return redirect()->route('admin.rejection-reasons.index')
-            ->with('success', 'Rejection reason deleted.');
+            ->with('success', __('Rejection reason deleted.'));
     }
 }

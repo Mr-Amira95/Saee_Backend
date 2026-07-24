@@ -30,7 +30,7 @@ class ContactFormSubmissionController extends Controller
 
         $contactFormSubmission->update(['status' => $data['status']]);
 
-        return back()->with('success', 'Status updated.');
+        return back()->with('success', __('Status updated.'));
     }
 
     public function destroy(ContactFormSubmission $contactFormSubmission)
@@ -38,6 +38,6 @@ class ContactFormSubmissionController extends Controller
         $contactFormSubmission->delete();
 
         return redirect()->route('admin.cms.contact-submissions.index')
-            ->with('success', 'Submission deleted.');
+            ->with('success', __('Submission deleted.'));
     }
 }

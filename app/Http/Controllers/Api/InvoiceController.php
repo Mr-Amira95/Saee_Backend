@@ -26,7 +26,7 @@ class InvoiceController extends Controller
         if (!$clientProfileId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access denied. Client profile not found.',
+                'message' => __('Access denied. Client profile not found.'),
             ], 403);
         }
 
@@ -56,7 +56,7 @@ class InvoiceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Invoices retrieved successfully.',
+            'message' => __('Invoices retrieved successfully.'),
             'statistics' => [
                 'cod_collected' => $codCollected,
                 'customer_delivery' => $customerDelivery,
@@ -87,7 +87,7 @@ class InvoiceController extends Controller
         if (!$clientProfileId || (int) $invoice->client_profile_id !== $clientProfileId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access denied. You do not own this invoice.',
+                'message' => __('Access denied. You do not own this invoice.'),
             ], 403);
         }
 
@@ -125,7 +125,7 @@ class InvoiceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Invoice details retrieved successfully.',
+            'message' => __('Invoice details retrieved successfully.'),
             'invoice' => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,

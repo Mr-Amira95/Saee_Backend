@@ -36,7 +36,7 @@ class AboutValueController extends Controller
         ]);
 
         return redirect()->route('admin.cms.about-values.index')
-            ->with('success', 'Value created successfully.');
+            ->with('success', __('Value created successfully.'));
     }
 
     public function edit(AboutValue $aboutValue)
@@ -60,7 +60,7 @@ class AboutValueController extends Controller
         ]);
 
         return redirect()->route('admin.cms.about-values.index')
-            ->with('success', 'Value updated successfully.');
+            ->with('success', __('Value updated successfully.'));
     }
 
     public function destroy(AboutValue $aboutValue)
@@ -68,6 +68,6 @@ class AboutValueController extends Controller
         $aboutValue->delete();
 
         return redirect()->route('admin.cms.about-values.index')
-            ->with('success', 'Value deleted successfully.');
+            ->with('success', __('Value deleted successfully.'));
     }
 }

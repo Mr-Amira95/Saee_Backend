@@ -32,10 +32,11 @@
     .mobile-block-card h1 { font-family: 'Inter', system-ui, sans-serif; font-size: 1.3rem; font-weight: 800; color: #f1f5f9; margin: 0 0 10px; letter-spacing: -.02em; }
     .mobile-block-card p { font-family: 'Inter', system-ui, sans-serif; font-size: .9rem; color: #94a3b8; line-height: 1.55; margin: 0 0 26px; }
     .mobile-block-card button {
-        display: flex; align-items: center; gap: 8px;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
         padding: 12px 24px; background: #dc2626; color: #fff; border: none; border-radius: 10px;
-        font-family: 'Inter', system-ui, sans-serif; font-size: .88rem; font-weight: 700; cursor: pointer;
+        font-family: 'Inter', system-ui, sans-serif; font-size: .88rem; font-weight: 700; line-height: 1; cursor: pointer;
     }
+    .mobile-block-card button svg { display: block; flex-shrink: 0; }
     html[dir="rtl"] .mobile-block-card button svg { transform: scaleX(-1); }
 
     @media (max-width: 767px) {
@@ -45,10 +46,6 @@
 
 <script>
     document.getElementById('mobileBlockBack').addEventListener('click', function () {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            window.location.href = '/';
-        }
+        window.location.href = 'https://saee-logistics.com/';
     });
 </script>

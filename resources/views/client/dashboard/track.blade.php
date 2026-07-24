@@ -22,13 +22,13 @@
     <div style="text-align:center;padding:48px;color:var(--text-dim);">
         <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.3" viewBox="0 0 24 24" style="margin-bottom:10px;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         <div style="font-size:.93rem;font-weight:600;color:var(--text-sub);">{{ __('No orders found') }}</div>
-        <div style="font-size:.82rem;margin-top:5px;">No results for "{{ $query }}"</div>
+        <div style="font-size:.82rem;margin-top:5px;">{{ __('No results for') }} "{{ $query }}"</div>
     </div>
 @elseif($orders->isNotEmpty())
     <div class="page-hd" style="margin-bottom:16px;">
         <div class="page-hd-left">
-            <h1>{{ $orders->count() }} result{{ $orders->count() !== 1 ? 's' : '' }}</h1>
-            <p>Showing orders matching "{{ $query }}"</p>
+            <h1>{{ $orders->count() }} {{ $orders->count() === 1 ? __('result') : __('results') }}</h1>
+            <p>{{ __('Showing orders matching') }} "{{ $query }}"</p>
         </div>
     </div>
 

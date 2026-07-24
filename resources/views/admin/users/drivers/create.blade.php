@@ -79,6 +79,25 @@
     transition: background .2s; margin-top: 4px;
 }
 .btn-add-att:hover { background: rgba(220,38,38,.2); }
+
+/* ── Field tooltip ── */
+.field-tip {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(220,38,38,.12); color: var(--red);
+    font-size: .68rem; font-weight: 700; cursor: help;
+    margin-left: 6px; vertical-align: middle;
+}
+.field-tip .field-tip-bubble {
+    position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: var(--bg-2); border: 1px solid var(--bdr); color: var(--text);
+    padding: 8px 10px; border-radius: 8px; font-size: .72rem; font-weight: 400;
+    line-height: 1.4; white-space: normal; width: max-content; max-width: 220px;
+    opacity: 0; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    transition: opacity .18s ease, transform .18s ease; z-index: 50;
+}
+.field-tip:hover .field-tip-bubble { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 @endsection
 
@@ -133,11 +152,12 @@
             <div class="form-group">
                 <label class="form-label" for="password">Password <span class="opt">(optional — leave blank to auto-generate &amp; send invitation)</span></label>
                 <div style="position:relative;">
-                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="Minimum 8 characters" style="width:100%;padding-right:40px;box-sizing:border-box;">
+                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="Min 8 chars, upper, lower &amp; symbol" style="width:100%;padding-right:40px;box-sizing:border-box;" oninput="updatePasswordRequirements(this.value, 'createPwReqs')">
                     <button type="button" onclick="togglePwd('password','eyePwd')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
                         <svg id="eyePwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
                 </div>
+                @include('admin.partials.password-requirements', ['id' => 'createPwReqs'])
                 @error('password')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
@@ -158,26 +178,30 @@
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label" for="national_id">National ID <span class="req">*</span></label>
-                <input class="form-input @error('national_id') is-error @enderror" id="national_id" type="text" name="national_id" value="{{ old('national_id') }}" required>
+                <input class="form-input @error('national_id') is-error @enderror" id="national_id" type="text" name="national_id" value="{{ old('national_id') }}" placeholder="10 digit number" maxlength="10" inputmode="numeric" required>
                 @error('national_id')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="national_id_attachment">National ID Attachment <span class="opt">(optional)</span></label>
+                <label class="form-label" for="national_id_attachment">National ID Attachment <span class="opt">(optional)</span>
+                    <span class="field-tip">ⓘ<span class="field-tip-bubble">Max file size: 10 MB. Supported formats: JPG, PNG, PDF.</span></span>
+                </label>
                 <input class="form-input @error('national_id_attachment') is-error @enderror" id="national_id_attachment" type="file" name="national_id_attachment" accept="image/*,.pdf" style="padding:8px 12px;">
                 @error('national_id_attachment')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label class="form-label" for="license_number">License Number <span class="req">*</span></label>
-                <input class="form-input @error('license_number') is-error @enderror" id="license_number" type="text" name="license_number" value="{{ old('license_number') }}" required>
+                <input class="form-input @error('license_number') is-error @enderror" id="license_number" type="text" name="license_number" value="{{ old('license_number') }}" placeholder="Letters and numbers only" required>
                 @error('license_number')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label class="form-label" for="license_expiry_date">License Expiry <span class="req">*</span></label>
-                <input class="form-input @error('license_expiry_date') is-error @enderror" id="license_expiry_date" type="date" name="license_expiry_date" value="{{ old('license_expiry_date') }}" required>
+                <input class="form-input @error('license_expiry_date') is-error @enderror" id="license_expiry_date" type="text" name="license_expiry_date" value="{{ old('license_expiry_date') }}" placeholder="DD-MM-YYYY" maxlength="10" autocomplete="off" required>
                 @error('license_expiry_date')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="license_attachment">License Attachment <span class="opt">(optional)</span></label>
+                <label class="form-label" for="license_attachment">License Attachment <span class="opt">(optional)</span>
+                    <span class="field-tip">ⓘ<span class="field-tip-bubble">Max file size: 10 MB. Supported formats: JPG, PNG, PDF.</span></span>
+                </label>
                 <input class="form-input @error('license_attachment') is-error @enderror" id="license_attachment" type="file" name="license_attachment" accept="image/*,.pdf" style="padding:8px 12px;">
                 @error('license_attachment')<span class="form-error">{{ $message }}</span>@enderror
             </div>
@@ -194,16 +218,18 @@
             </div>
             <div class="form-group">
                 <label class="form-label" for="vehicle_plate">Plate Number <span class="opt">(optional)</span></label>
-                <input class="form-input @error('vehicle_plate') is-error @enderror" id="vehicle_plate" type="text" name="vehicle_plate" value="{{ old('vehicle_plate') }}" placeholder="e.g. ABC 1234">
+                <input class="form-input @error('vehicle_plate') is-error @enderror" id="vehicle_plate" type="text" name="vehicle_plate" value="{{ old('vehicle_plate') }}" placeholder="e.g. 12-345">
                 @error('vehicle_plate')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label class="form-label" for="car_license_expiry">Car License Expiry <span class="opt">(optional)</span></label>
-                <input class="form-input @error('car_license_expiry') is-error @enderror" id="car_license_expiry" type="date" name="car_license_expiry" value="{{ old('car_license_expiry') }}">
+                <input class="form-input @error('car_license_expiry') is-error @enderror" id="car_license_expiry" type="text" name="car_license_expiry" value="{{ old('car_license_expiry') }}" placeholder="DD-MM-YYYY" maxlength="10" autocomplete="off">
                 @error('car_license_expiry')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="car_license_attachment">Car License Attachment <span class="opt">(optional)</span></label>
+                <label class="form-label" for="car_license_attachment">Car License Attachment <span class="opt">(optional)</span>
+                    <span class="field-tip">ⓘ<span class="field-tip-bubble">Max file size: 10 MB. Supported formats: JPG, PNG, PDF.</span></span>
+                </label>
                 <input class="form-input @error('car_license_attachment') is-error @enderror" id="car_license_attachment" type="file" name="car_license_attachment" accept="image/*,.pdf" style="padding:8px 12px;">
                 @error('car_license_attachment')<span class="form-error">{{ $message }}</span>@enderror
             </div>
@@ -244,12 +270,12 @@
             <div class="form-group">
                 <label class="form-label" for="cliq_id">CliQ ID</label>
                 <div style="display:flex;gap:8px;">
-                    <select class="form-input @error('cliq_alias_type') is-error @enderror" name="cliq_alias_type" style="width:130px;flex-shrink:0;">
+                    <select class="form-input @error('cliq_alias_type') is-error @enderror" id="cliq_alias_type" name="cliq_alias_type" style="width:130px;flex-shrink:0;">
                         <option value="">— Type —</option>
                         <option value="alias" {{ old('cliq_alias_type') === 'alias' ? 'selected' : '' }}>Alias</option>
                         <option value="phone" {{ old('cliq_alias_type') === 'phone' ? 'selected' : '' }}>Phone</option>
                     </select>
-                    <input class="form-input @error('cliq_id') is-error @enderror" id="cliq_id" type="text" name="cliq_id" value="{{ old('cliq_id') }}" placeholder="Alias or phone number" style="flex:1;">
+                    <input class="form-input @error('cliq_id') is-error @enderror" id="cliq_id" type="text" name="cliq_id" value="{{ old('cliq_id') }}" placeholder="Phone number or Alias" style="flex:1;">
                 </div>
                 @error('cliq_id')<span class="form-error">{{ $message }}</span>@enderror
                 @error('cliq_alias_type')<span class="form-error">{{ $message }}</span>@enderror
@@ -488,7 +514,7 @@ function togglePwd(inputId, iconId) {
 
 /* ── Driver Form Validation ── */
 (function() {
-    var form = document.querySelector('form');
+    var form = document.querySelector('form[novalidate]');
     if (!form) return;
 
     function getField(n) {
@@ -510,7 +536,148 @@ function togglePwd(inputId, iconId) {
         form.querySelectorAll('.js-marked').forEach(function(e) { e.classList.remove('is-error', 'js-marked'); });
     }
 
-    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+    function isEmail(v) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim()); }
+    function isValidName(v) { return /^[\p{L}\s]+$/u.test(v.trim()); }
+    function isValidUsername(v) { return /^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/.test(v.trim()); }
+    function isValidPhone(v) { return /^[0-9]{6,15}$/.test(v.trim()); }
+    function isValidEnglishName(v) { return /^[A-Za-z\s'.-]+$/.test(v.trim()); }
+    function isValidIban(v) { return /^[A-Za-z]{2}[0-9]{2}[A-Za-z0-9]{1,30}$/.test(v.trim()); }
+    function isValidSwift(v) { return /^[A-Za-z0-9]{8,11}$/.test(v.trim()); }
+    function isValidAccountNumber(v) { return /^[0-9]+$/.test(v.trim()); }
+    function isValidCliqPhone(v) { return /^7[789][0-9]{7}$/.test(v.trim()); }
+    function isValidCliqAlias(v) { return /^[A-Za-z0-9]+$/.test(v.trim()); }
+    function isValidNationalId(v) { return /^[0-9]{10}$/.test(v.trim()); }
+    function isValidLicenseNumber(v) { return /^[A-Za-z0-9]+$/.test(v.trim()); }
+    function isValidPlateNumber(v) { return /^\d{1,2}-\d{1,5}$/.test(v.trim()); }
+    function isValidExpiryDate(v) {
+        var m = v.trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (!m) return false;
+        var day = parseInt(m[1], 10), month = parseInt(m[2], 10), year = parseInt(m[3], 10);
+        var d = new Date(year, month - 1, day);
+        return d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day;
+    }
+
+    function clearFieldError(el) {
+        var container = el.closest ? (el.closest('.form-group') || el.parentElement) : el.parentElement;
+        el.classList.remove('is-error', 'js-marked');
+        var err = container.querySelector('.js-err');
+        if (err) err.remove();
+    }
+
+    /* ── File size pre-submit checks (max 10 MB) ── */
+    ['national_id_attachment', 'license_attachment', 'car_license_attachment'].forEach(function(name) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('change', function() {
+            clearFieldError(el);
+            if (el.files[0] && el.files[0].size > 10 * 1024 * 1024) {
+                showFieldError(el, 'File size must not exceed 10 MB.');
+                el.value = '';
+            }
+        });
+    });
+
+    /* ── CliQ ID validation depends on selected type ── */
+    var cliqTypeEl = getField('cliq_alias_type');
+    var cliqIdEl   = getField('cliq_id');
+    function validateCliq() {
+        if (!cliqIdEl) return;
+        clearFieldError(cliqIdEl);
+        var type = cliqTypeEl ? cliqTypeEl.value : '';
+        var val  = cliqIdEl.value.trim();
+        if (!val) return;
+        if (type === 'phone' && !isValidCliqPhone(val)) {
+            showFieldError(cliqIdEl, 'Phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+        } else if (type === 'alias' && !isValidCliqAlias(val)) {
+            showFieldError(cliqIdEl, 'Alias must only contain letters and numbers.');
+        }
+    }
+    if (cliqIdEl) cliqIdEl.addEventListener('input', validateCliq);
+    if (cliqTypeEl) cliqTypeEl.addEventListener('change', validateCliq);
+
+    /* ── National ID: digits only, exactly 10 ── */
+    var nationalIdEl = getField('national_id');
+    if (nationalIdEl) {
+        nationalIdEl.addEventListener('input', function() {
+            nationalIdEl.value = nationalIdEl.value.replace(/[^0-9]/g, '').slice(0, 10);
+            clearFieldError(nationalIdEl);
+        });
+        nationalIdEl.addEventListener('blur', function() {
+            if (nationalIdEl.value.trim() && !isValidNationalId(nationalIdEl.value)) {
+                showFieldError(nationalIdEl, 'National ID must be exactly 10 digits.');
+            }
+        });
+    }
+
+    /* ── License Number: alphanumeric only ── */
+    var licenseNumberEl = getField('license_number');
+    if (licenseNumberEl) {
+        licenseNumberEl.addEventListener('input', function() {
+            var filtered = licenseNumberEl.value.replace(/[^A-Za-z0-9]/g, '');
+            if (filtered !== licenseNumberEl.value) licenseNumberEl.value = filtered;
+            clearFieldError(licenseNumberEl);
+        });
+    }
+
+    /* ── Plate Number: {1-2 digits}-{1-5 digits} ── */
+    var platePlateEl = getField('vehicle_plate');
+    if (platePlateEl) {
+        platePlateEl.addEventListener('input', function() {
+            var filtered = platePlateEl.value.replace(/[^0-9-]/g, '');
+            if (filtered !== platePlateEl.value) platePlateEl.value = filtered;
+            clearFieldError(platePlateEl);
+        });
+        platePlateEl.addEventListener('blur', function() {
+            if (platePlateEl.value.trim() && !isValidPlateNumber(platePlateEl.value)) {
+                showFieldError(platePlateEl, 'Plate number must be in the format 1-2 digits, a dash, then 1-5 digits (e.g. 12-345).');
+            }
+        });
+    }
+
+    /* ── Expiry date masks (DD-MM-YYYY) ── */
+    function attachDateMask(name, msg) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            var digits = el.value.replace(/[^0-9]/g, '').slice(0, 8);
+            var out = digits.slice(0, 2);
+            if (digits.length > 2) out += '-' + digits.slice(2, 4);
+            if (digits.length > 4) out += '-' + digits.slice(4, 8);
+            el.value = out;
+            clearFieldError(el);
+            if (out.length === 10 && !isValidExpiryDate(out)) {
+                showFieldError(el, msg);
+            }
+        });
+    }
+    attachDateMask('license_expiry_date', 'Please enter a valid date in the format DD-MM-YYYY.');
+    attachDateMask('car_license_expiry', 'Please enter a valid date in the format DD-MM-YYYY.');
+
+    function wireLiveValidation(name, validator, msg) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            if (el.value.trim() && !validator(el.value)) showFieldError(el, msg);
+        });
+    }
+
+    wireLiveValidation('name', isValidName, 'Full name must only contain letters and spaces (no numbers or special characters).');
+    wireLiveValidation('username', isValidUsername, 'Username must contain at least one letter, start with a letter or number, and cannot end with a special character.');
+    wireLiveValidation('email', isEmail, 'Please enter a valid email address in the format name@domain.com.');
+    wireLiveValidation('phone', isValidPhone, 'Phone must contain 6 to 15 digits only.');
+    wireLiveValidation('bank_name', isValidEnglishName, 'Bank name must only contain English letters.');
+    wireLiveValidation('account_name', isValidEnglishName, 'Account holder name must only contain English letters.');
+    wireLiveValidation('iban', isValidIban, 'IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.');
+    wireLiveValidation('swift_code', isValidSwift, 'SWIFT / BIC code must be 8-11 letters/numbers only.');
+    wireLiveValidation('account_number', isValidAccountNumber, 'Account number must contain digits only.');
+
+    function isStrongPassword(pw) {
+        return pw.length >= 8
+            && /[A-Z]/.test(pw)
+            && /[a-z]/.test(pw)
+            && /[^A-Za-z0-9]/.test(pw);
+    }
 
     form.addEventListener('submit', function(e) {
         clearErrors();
@@ -529,17 +696,107 @@ function togglePwd(inputId, iconId) {
         req('license_number',      'License number is required.');
         req('license_expiry_date', 'License expiry date is required.');
 
+        var niEl = getField('national_id');
+        if (niEl && niEl.value.trim() && !isValidNationalId(niEl.value)) {
+            showFieldError(niEl, 'National ID must be exactly 10 digits.');
+            if (!first) first = niEl;
+        }
+
+        var lnEl = getField('license_number');
+        if (lnEl && lnEl.value.trim() && !isValidLicenseNumber(lnEl.value)) {
+            showFieldError(lnEl, 'License number must contain letters and numbers only.');
+            if (!first) first = lnEl;
+        }
+
+        var vpEl = getField('vehicle_plate');
+        if (vpEl && vpEl.value.trim() && !isValidPlateNumber(vpEl.value)) {
+            showFieldError(vpEl, 'Plate number must be in the format 1-2 digits, a dash, then 1-5 digits (e.g. 12-345).');
+            if (!first) first = vpEl;
+        }
+
+        var leEl = getField('license_expiry_date');
+        if (leEl && leEl.value.trim() && !isValidExpiryDate(leEl.value)) {
+            showFieldError(leEl, 'Please enter a valid date in the format DD-MM-YYYY.');
+            if (!first) first = leEl;
+        }
+
+        var cleEl = getField('car_license_expiry');
+        if (cleEl && cleEl.value.trim() && !isValidExpiryDate(cleEl.value)) {
+            showFieldError(cleEl, 'Please enter a valid date in the format DD-MM-YYYY.');
+            if (!first) first = cleEl;
+        }
+
+        var nEl = getField('name');
+        if (nEl && nEl.value.trim() && !isValidName(nEl.value)) {
+            showFieldError(nEl, 'Full name must only contain letters and spaces (no numbers or special characters).');
+            if (!first) first = nEl;
+        }
+
+        var uEl = getField('username');
+        if (uEl && uEl.value.trim() && !isValidUsername(uEl.value)) {
+            showFieldError(uEl, 'Username must contain at least one letter, start with a letter or number, and cannot end with a special character.');
+            if (!first) first = uEl;
+        }
+
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
-            showFieldError(eEl, 'Please enter a valid email address.');
+            showFieldError(eEl, 'Please enter a valid email address in the format name@domain.com.');
             if (!first) first = eEl;
+        }
+
+        var phEl = getField('phone');
+        if (phEl && phEl.value.trim() && !isValidPhone(phEl.value)) {
+            showFieldError(phEl, 'Phone must contain 6 to 15 digits only.');
+            if (!first) first = phEl;
+        }
+
+        var bnEl = getField('bank_name');
+        if (bnEl && bnEl.value.trim() && !isValidEnglishName(bnEl.value)) {
+            showFieldError(bnEl, 'Bank name must only contain English letters.');
+            if (!first) first = bnEl;
+        }
+
+        var anEl = getField('account_name');
+        if (anEl && anEl.value.trim() && !isValidEnglishName(anEl.value)) {
+            showFieldError(anEl, 'Account holder name must only contain English letters.');
+            if (!first) first = anEl;
+        }
+
+        var ibEl = getField('iban');
+        if (ibEl && ibEl.value.trim() && !isValidIban(ibEl.value)) {
+            showFieldError(ibEl, 'IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.');
+            if (!first) first = ibEl;
+        }
+
+        var swEl = getField('swift_code');
+        if (swEl && swEl.value.trim() && !isValidSwift(swEl.value)) {
+            showFieldError(swEl, 'SWIFT / BIC code must be 8-11 letters/numbers only.');
+            if (!first) first = swEl;
+        }
+
+        var acEl = getField('account_number');
+        if (acEl && acEl.value.trim() && !isValidAccountNumber(acEl.value)) {
+            showFieldError(acEl, 'Account number must contain digits only.');
+            if (!first) first = acEl;
+        }
+
+        if (cliqIdEl && cliqIdEl.value.trim()) {
+            var cType = cliqTypeEl ? cliqTypeEl.value : '';
+            var cVal  = cliqIdEl.value.trim();
+            if (cType === 'phone' && !isValidCliqPhone(cVal)) {
+                showFieldError(cliqIdEl, 'Phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+                if (!first) first = cliqIdEl;
+            } else if (cType === 'alias' && !isValidCliqAlias(cVal)) {
+                showFieldError(cliqIdEl, 'Alias must only contain letters and numbers.');
+                if (!first) first = cliqIdEl;
+            }
         }
 
         var pEl  = getField('password');
         var pcEl = getField('password_confirmation');
         if (pEl && pEl.value) {
-            if (pEl.value.length < 8) {
-                showFieldError(pEl, 'Password must be at least 8 characters.');
+            if (!isStrongPassword(pEl.value)) {
+                showFieldError(pEl, 'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a special character.');
                 if (!first) first = pEl;
             } else if (pEl.value !== pcEl.value) {
                 showFieldError(pcEl, 'Passwords do not match.');

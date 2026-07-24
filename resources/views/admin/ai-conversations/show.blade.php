@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Conversation — ' . Str::limit($session->session_id, 16))
-@section('page-title', 'AI Conversation')
+@section('title', __('Conversation') . ' — ' . Str::limit($session->session_id, 16))
+@section('page-title', __('AI Conversation'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.ai-conversations.index') }}">AI Conversations</a>
+    <a href="{{ route('admin.ai-conversations.index') }}">{{ __('AI Conversations') }}</a>
     <span class="sep">/</span>
     <span class="current">{{ Str::limit($session->session_id, 20, '…') }}</span>
 @endsection
@@ -94,13 +94,13 @@
 <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px">
     <a href="{{ route('admin.ai-conversations.index') }}" class="btn-secondary" style="padding:8px 14px;font-size:.82rem">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        Back
+        {{ __('Back') }}
     </a>
     @if(auth()->user()->hasAdminAction('ai_conversations.delete'))
     <button type="button" class="btn-danger" style="font-size:.82rem"
-        onclick="confirmDelete('{{ route('admin.ai-conversations.destroy', $session) }}', 'this conversation session')">
+        onclick="confirmDelete('{{ route('admin.ai-conversations.destroy', $session) }}', '{{ __('this conversation session') }}')">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-        Delete Session
+        {{ __('Delete Session') }}
     </button>
     @endif
 </div>
@@ -109,37 +109,37 @@
 
     {{-- Meta sidebar --}}
     <div class="convo-meta">
-        <div class="convo-meta-title">Session Info</div>
+        <div class="convo-meta-title">{{ __('Session Info') }}</div>
 
         <div class="meta-row">
-            <span class="meta-lbl">Session ID</span>
+            <span class="meta-lbl">{{ __('Session ID') }}</span>
             <span class="meta-val" style="font-family:monospace;font-size:.78rem">{{ $session->session_id }}</span>
         </div>
 
         <div class="meta-row">
-            <span class="meta-lbl">User</span>
+            <span class="meta-lbl">{{ __('User') }}</span>
             @if($session->user)
                 <span class="meta-val" style="font-weight:600">{{ $session->user->name }}</span>
                 <span style="font-size:.74rem;color:var(--text-sub)">{{ $session->user->email }}</span>
                 <span class="badge badge-pv" style="margin-top:4px;width:fit-content">{{ $session->user->role }}</span>
             @else
-                <span class="badge badge-no" style="width:fit-content">Anonymous Guest</span>
+                <span class="badge badge-no" style="width:fit-content">{{ __('Anonymous Guest') }}</span>
             @endif
         </div>
 
         <div class="meta-row">
-            <span class="meta-lbl">Messages</span>
+            <span class="meta-lbl">{{ __('Messages') }}</span>
             <span class="meta-val" style="font-size:1.2rem;font-weight:800">{{ $session->messages->count() }}</span>
         </div>
 
         <div class="meta-row">
-            <span class="meta-lbl">Started</span>
+            <span class="meta-lbl">{{ __('Started') }}</span>
             <span class="meta-val">{{ $session->created_at->format('d M Y') }}</span>
             <span style="font-size:.74rem;color:var(--text-sub)">{{ $session->created_at->format('H:i:s') }}</span>
         </div>
 
         <div class="meta-row">
-            <span class="meta-lbl">Last Activity</span>
+            <span class="meta-lbl">{{ __('Last Activity') }}</span>
             <span class="meta-val">{{ $session->updated_at->diffForHumans() }}</span>
         </div>
 
@@ -151,17 +151,17 @@
 
         @if($totalTokens > 0)
         <div class="meta-row">
-            <span class="meta-lbl">Total Tokens</span>
+            <span class="meta-lbl">{{ __('Total Tokens') }}</span>
             <span class="meta-val" style="font-weight:700">{{ number_format($totalTokens) }}</span>
         </div>
         @endif
 
         <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
             <span style="font-size:.72rem;color:var(--text-sub)">
-                <span style="color:#fca5a5;font-weight:700">{{ $userMsgs }}</span> user
+                <span style="color:#fca5a5;font-weight:700">{{ $userMsgs }}</span> {{ __('user') }}
             </span>
             <span style="font-size:.72rem;color:var(--text-sub)">
-                <span style="color:#818cf8;font-weight:700">{{ $asstMsgs }}</span> assistant
+                <span style="color:#818cf8;font-weight:700">{{ $asstMsgs }}</span> {{ __('assistant') }}
             </span>
         </div>
     </div>
@@ -171,13 +171,13 @@
         <div class="chat-header">
             <div class="chat-header-icon">AI</div>
             <div>
-                <div style="font-size:.88rem;font-weight:700">Conversation Thread</div>
-                <div style="font-size:.74rem;color:var(--text-sub)">{{ $session->messages->count() }} messages</div>
+                <div style="font-size:.88rem;font-weight:700">{{ __('Conversation Thread') }}</div>
+                <div style="font-size:.74rem;color:var(--text-sub)">{{ $session->messages->count() }} {{ __('messages') }}</div>
             </div>
         </div>
 
         @if($session->messages->isEmpty())
-            <div class="chat-empty">No messages in this session.</div>
+            <div class="chat-empty">{{ __('No messages in this session.') }}</div>
         @else
         <div class="chat-body">
             @foreach($session->messages as $message)
@@ -187,7 +187,7 @@
                         <div>
                             <div class="msg-bubble bubble-system">
                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline;margin-right:4px;vertical-align:-1px"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                System prompt
+                                {{ __('System prompt') }}
                             </div>
                         </div>
                     </div>
@@ -202,7 +202,7 @@
                             <div class="msg-meta">
                                 {{ $message->created_at->format('H:i') }}
                                 @if($message->tokens)
-                                    <span class="msg-tokens">{{ $message->tokens }} tok</span>
+                                    <span class="msg-tokens">{{ $message->tokens }} {{ __('tok') }}</span>
                                 @endif
                             </div>
                         </div>
@@ -216,7 +216,7 @@
                             <div class="msg-meta">
                                 {{ $message->created_at->format('H:i') }}
                                 @if($message->tokens)
-                                    <span class="msg-tokens">{{ $message->tokens }} tok</span>
+                                    <span class="msg-tokens">{{ $message->tokens }} {{ __('tok') }}</span>
                                 @endif
                             </div>
                         </div>

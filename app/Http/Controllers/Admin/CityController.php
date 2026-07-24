@@ -58,7 +58,7 @@ class CityController extends Controller
         }
 
         return redirect()->route('admin.cities.index')
-            ->with('success', 'City added successfully.');
+            ->with('success', __('City added successfully.'));
     }
 
     public function edit(City $city)
@@ -86,7 +86,7 @@ class CityController extends Controller
         ]);
 
         return redirect()->route('admin.cities.edit', $city)
-            ->with('success', 'City updated successfully.');
+            ->with('success', __('City updated successfully.'));
     }
 
     public function toggle(City $city)
@@ -95,7 +95,7 @@ class CityController extends Controller
 
         $city->update(['is_active' => !$city->is_active]);
 
-        return back()->with('success', 'Status updated.');
+        return back()->with('success', __('Status updated.'));
     }
 
     public function destroy(City $city)
@@ -104,7 +104,7 @@ class CityController extends Controller
 
         $city->delete();
         return redirect()->route('admin.cities.index')
-            ->with('success', 'City deleted.');
+            ->with('success', __('City deleted.'));
     }
 
     public function storeArea(Request $request, City $city)
@@ -122,7 +122,7 @@ class CityController extends Controller
             'is_active' => true,
         ]);
 
-        return back()->with('success', "Area \"{$data['name']}\" added.");
+        return back()->with('success', __('Area ":name" added.', ['name' => $data['name']]));
     }
 
     public function destroyArea(City $city, Area $area)
@@ -130,6 +130,6 @@ class CityController extends Controller
         abort_unless(auth()->user()->hasAdminAction('cities.delete'), 403);
 
         $area->delete();
-        return back()->with('success', 'Area deleted.');
+        return back()->with('success', __('Area deleted.'));
     }
 }

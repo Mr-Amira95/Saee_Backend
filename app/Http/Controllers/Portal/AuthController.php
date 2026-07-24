@@ -34,6 +34,8 @@ class AuthController extends Controller
         $request->validate([
             'login'    => ['required', 'string'],
             'password' => ['required'],
+        ], [
+            'login.required' => 'The username or phone field is required.',
         ]);
 
         $submitted = trim($request->input('login'));
@@ -53,9 +55,21 @@ class AuthController extends Controller
                 ->withInput($request->only('login'));
         }
 
+        if ($user->status === 'pending') {
+            return back()
+                ->withErrors(['login' => 'Your account is pending activation. Please wait until it is activated or contact the admin.'])
+                ->withInput($request->only('login'));
+        }
+
         if ($user->status !== 'active') {
             return back()
                 ->withErrors(['login' => 'Your account has been suspended. Please contact support.'])
+                ->withInput($request->only('login'));
+        }
+
+        if ($user->hasExpiredClientContract()) {
+            return back()
+                ->withErrors(['login' => 'Your contract has been expired, please get in touch with the admin.'])
                 ->withInput($request->only('login'));
         }
 
@@ -76,7 +90,9 @@ class AuthController extends Controller
 
     public function sendResetLink(Request $request): RedirectResponse
     {
-        $request->validate(['login' => ['required', 'string']]);
+        $request->validate(['login' => ['required', 'string']], [
+            'login.required' => 'The username or phone field is required.',
+        ]);
 
         $submitted = trim($request->input('login'));
 

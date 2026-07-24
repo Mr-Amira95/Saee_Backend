@@ -70,7 +70,7 @@ class ClientBillingController extends Controller
         ]);
 
         return redirect()->route('admin.billing.show', $invoice)
-            ->with('success', "Draft invoice created with {$invoice->billable_orders} billable orders.");
+            ->with('success', __('Draft invoice created with :count billable orders.', ['count' => $invoice->billable_orders]));
     }
 
     public function show(ClientDeliveryInvoice $invoice)
@@ -93,7 +93,7 @@ class ClientBillingController extends Controller
             auth()->user()
         );
 
-        return back()->with('success', 'Invoice issued.');
+        return back()->with('success', __('Invoice issued.'));
     }
 
     public function pay(Request $request, ClientDeliveryInvoice $invoice)
@@ -112,18 +112,18 @@ class ClientBillingController extends Controller
             auth()->user()
         );
 
-        return back()->with('success', 'Payment recorded. Invoice marked as paid.');
+        return back()->with('success', __('Payment recorded. Invoice marked as paid.'));
     }
 
     public function destroy(ClientDeliveryInvoice $invoice)
     {
         abort_unless(auth()->user()->hasAdminAction('finances.client_billing'), 403);
 
-        abort_if($invoice->status !== DeliveryInvoiceStatus::Draft, 403, 'Only draft invoices can be deleted.');
+        abort_if($invoice->status !== DeliveryInvoiceStatus::Draft, 403, __('Only draft invoices can be deleted.'));
 
         $invoice->delete();
 
         return redirect()->route('admin.billing.index')
-            ->with('success', 'Draft invoice deleted.');
+            ->with('success', __('Draft invoice deleted.'));
     }
 }

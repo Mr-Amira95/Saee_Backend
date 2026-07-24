@@ -24,7 +24,7 @@ class ClientUserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Permissions retrieved successfully.',
+            'message' => __('Permissions retrieved successfully.'),
             'data'    => $permissions,
         ]);
     }
@@ -56,7 +56,7 @@ class ClientUserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Users retrieved successfully.',
+            'message' => __('Users retrieved successfully.'),
             'data'    => $employees->map(fn ($emp) => $this->formatEmployee(
                 $emp,
                 ($grants->get($emp->user_id) ?? collect())->pluck('permission_id')->values()
@@ -76,7 +76,7 @@ class ClientUserController extends Controller
         if (! $user->isClientMaster() && ! $user->hasClientPermission('team')) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to add users.',
+                'message' => __('You do not have permission to add users.'),
             ], 403);
         }
 
@@ -131,7 +131,7 @@ class ClientUserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'User created successfully.',
+            'message' => __('User created successfully.'),
             'data'    => $this->formatEmployee($employee, collect($data['permissions'] ?? [])),
         ], 201);
     }
@@ -149,7 +149,7 @@ class ClientUserController extends Controller
         if (! $user->isClientMaster() && ! $user->hasClientPermission('team')) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to edit users.',
+                'message' => __('You do not have permission to edit users.'),
             ], 403);
         }
 
@@ -167,7 +167,7 @@ class ClientUserController extends Controller
         if (! $employee) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found.',
+                'message' => __('User not found.'),
             ], 404);
         }
 
@@ -221,7 +221,7 @@ class ClientUserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'User updated successfully.',
+            'message' => __('User updated successfully.'),
             'data'    => $this->formatEmployee($employee, $grantedIds),
         ]);
     }
@@ -239,7 +239,7 @@ class ClientUserController extends Controller
         if (! $user->isClientMaster() && ! $user->hasClientPermission('team')) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to remove users.',
+                'message' => __('You do not have permission to remove users.'),
             ], 403);
         }
 
@@ -257,14 +257,14 @@ class ClientUserController extends Controller
         if (! $employee) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found.',
+                'message' => __('User not found.'),
             ], 404);
         }
 
         if ($employee->user_id === $user->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'You cannot remove your own account.',
+                'message' => __('You cannot remove your own account.'),
             ], 422);
         }
 
@@ -280,7 +280,7 @@ class ClientUserController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'User removed successfully.',
+            'message' => __('User removed successfully.'),
         ]);
     }
 
@@ -323,7 +323,7 @@ class ClientUserController extends Controller
     {
         return response()->json([
             'success' => false,
-            'message' => 'Client profile not found.',
+            'message' => __('Client profile not found.'),
             'code'    => 'CLIENT_PROFILE_NOT_FOUND',
         ], 403);
     }

@@ -25,12 +25,14 @@ class ContactInformationController extends Controller
             'page_subtitle.en'          => 'nullable|string|max:1000',
             'page_subtitle.ar'          => 'nullable|string|max:1000',
             'email'                     => 'nullable|email|max:255',
-            'phone'                     => 'nullable|string|max:50',
+            'phone'                     => 'nullable|string|max:50|regex:/^[0-9]+$/',
             'address_link'              => 'nullable|string|max:2048',
             'address_text.en'           => 'nullable|string|max:1000',
             'address_text.ar'           => 'nullable|string|max:1000',
             'working_hours_text.en'     => 'nullable|string|max:500',
             'working_hours_text.ar'     => 'nullable|string|max:500',
+        ], [
+            'phone.regex' => 'The phone field must contain numbers only.',
         ]);
 
         $contact = ContactInformation::instance();
@@ -47,6 +49,6 @@ class ContactInformationController extends Controller
         ]);
 
         return redirect()->route('admin.cms.contact-information.index')
-            ->with('success', 'Contact information updated successfully.');
+            ->with('success', __('Contact information updated successfully.'));
     }
 }

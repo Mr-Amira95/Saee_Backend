@@ -37,7 +37,7 @@ class ShowcaseMetricController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-metrics.index')
-            ->with('success', 'Metric created successfully.');
+            ->with('success', __('Metric created successfully.'));
     }
 
     public function edit(ShowcaseMetric $showcaseMetric)
@@ -62,7 +62,7 @@ class ShowcaseMetricController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-metrics.index')
-            ->with('success', 'Metric updated successfully.');
+            ->with('success', __('Metric updated successfully.'));
     }
 
     public function destroy(ShowcaseMetric $showcaseMetric)
@@ -70,6 +70,6 @@ class ShowcaseMetricController extends Controller
         $showcaseMetric->delete();
 
         return redirect()->route('admin.cms.showcase-metrics.index')
-            ->with('success', 'Metric deleted successfully.');
+            ->with('success', __('Metric deleted successfully.'));
     }
 }

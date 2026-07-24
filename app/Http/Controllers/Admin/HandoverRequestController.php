@@ -79,7 +79,7 @@ class HandoverRequestController extends Controller
             $this->orderService->approveHandover($handoverRequest, Auth::user());
 
             return redirect()->route('admin.financials.handover-requests.index')
-                ->with('success', "Handover request for driver {$handoverRequest->driver->name} has been successfully approved.");
+                ->with('success', __('Handover request for driver :name has been successfully approved.', ['name' => $handoverRequest->driver->name]));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Invoice ' . $invoice->invoice_number)
-@section('page-title', 'Invoice Detail')
+@section('title', __('Invoice') . ' ' . $invoice->invoice_number)
+@section('page-title', __('Invoice Detail'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.billing.index') }}">Billing</a>
+    <a href="{{ route('admin.billing.index') }}">{{ __('Billing') }}</a>
     <span class="sep">/</span>
     <span class="current">{{ $invoice->invoice_number }}</span>
 @endsection
@@ -23,41 +23,45 @@
             @if(auth()->user()->hasAdminAction('finances.client_billing'))
                 @if($sv === 'draft')
                     <button type="button" class="btn-primary" onclick="document.getElementById('issue-form').style.display='block'">
-                        Issue Invoice
+                        {{ __('Issue Invoice') }}
                     </button>
                     <form method="POST" action="{{ route('admin.billing.destroy', $invoice) }}"
-                          onsubmit="return confirm('Delete this draft invoice?')">
+                          onsubmit="return confirm(i18n.deleteDraftConfirm)">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);">
-                            Delete Draft
+                            {{ __('Delete Draft') }}
                         </button>
                     </form>
                 @elseif($sv === 'issued' || $sv === 'overdue')
                     <button type="button" class="btn-primary" onclick="document.getElementById('pay-form').style.display='block'">
-                        Record Payment
+                        {{ __('Record Payment') }}
                     </button>
                 @endif
             @endif
-            <a href="{{ route('admin.billing.index') }}" class="btn-secondary">← Back</a>
+            <a href="{{ route('admin.billing.index') }}" class="btn-secondary">← {{ __('Back') }}</a>
         </div>
     </div>
+
+    <script>
+        const i18n = { deleteDraftConfirm: @json(__('Delete this draft invoice?')) };
+    </script>
 
     {{-- Issue form (shown on click) --}}
     @if($sv === 'draft' && auth()->user()->hasAdminAction('finances.client_billing'))
     <div id="issue-form" style="display:none;" class="form-section">
         <form method="POST" action="{{ route('admin.billing.issue', $invoice) }}">
             @csrf
-            <div class="form-section-title">Issue Invoice</div>
+            <div class="form-section-title">{{ __('Issue Invoice') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Due Date <span class="opt">(optional)</span></label>
+                    <label class="form-label">{{ __('Due Date') }} <span class="opt">{{ __('(optional)') }}</span></label>
                     <input type="date" name="due_date" class="form-input"
                            value="{{ now()->addDays(14)->format('Y-m-d') }}">
                 </div>
             </div>
             <div class="form-actions" style="padding-top:0;">
-                <button type="button" class="btn-secondary" onclick="document.getElementById('issue-form').style.display='none'">Cancel</button>
-                <button type="submit" class="btn-primary">Confirm Issue</button>
+                <button type="button" class="btn-secondary" onclick="document.getElementById('issue-form').style.display='none'">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-primary">{{ __('Confirm Issue') }}</button>
             </div>
         </form>
     </div>
@@ -68,24 +72,24 @@
     <div id="pay-form" style="display:none;" class="form-section">
         <form method="POST" action="{{ route('admin.billing.pay', $invoice) }}">
             @csrf
-            <div class="form-section-title">Record Payment</div>
+            <div class="form-section-title">{{ __('Record Payment') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Payment Method <span class="req">*</span></label>
+                    <label class="form-label">{{ __('Payment Method') }} <span class="req">*</span></label>
                     <select name="payment_method" class="form-input" required>
-                        <option value="bank_transfer">Bank Transfer</option>
-                        <option value="cash">Cash</option>
-                        <option value="cliq">CliQ</option>
+                        <option value="bank_transfer">{{ __('Bank Transfer') }}</option>
+                        <option value="cash">{{ __('Cash') }}</option>
+                        <option value="cliq">{{ __('CliQ') }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Reference Number</label>
-                    <input type="text" name="reference_number" class="form-input" placeholder="Optional">
+                    <label class="form-label">{{ __('Reference Number') }}</label>
+                    <input type="text" name="reference_number" class="form-input" placeholder="{{ __('Optional') }}">
                 </div>
             </div>
             <div class="form-actions" style="padding-top:0;">
-                <button type="button" class="btn-secondary" onclick="document.getElementById('pay-form').style.display='none'">Cancel</button>
-                <button type="submit" class="btn-primary">Confirm Payment</button>
+                <button type="button" class="btn-secondary" onclick="document.getElementById('pay-form').style.display='none'">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-primary">{{ __('Confirm Payment') }}</button>
             </div>
         </form>
     </div>
@@ -99,7 +103,7 @@
             </div>
             <div>
                 <div class="ms-val">{{ $invoice->billable_orders }}</div>
-                <div class="ms-lbl">Billable Orders</div>
+                <div class="ms-lbl">{{ __('Billable Orders') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -108,7 +112,7 @@
             </div>
             <div>
                 <div class="ms-val">{{ number_format($invoice->delivery_amount, 2) }} JD</div>
-                <div class="ms-lbl">Delivery Fees</div>
+                <div class="ms-lbl">{{ __('Delivery Fees') }}</div>
             </div>
         </div>
         @if($invoice->discount_amount > 0)
@@ -118,7 +122,7 @@
             </div>
             <div>
                 <div class="ms-val" style="color:#f87171;">-{{ number_format($invoice->discount_amount, 2) }} JD</div>
-                <div class="ms-lbl">Discount</div>
+                <div class="ms-lbl">{{ __('Discount') }}</div>
             </div>
         </div>
         @endif
@@ -128,7 +132,7 @@
             </div>
             <div>
                 <div class="ms-val" style="color:#22c55e;">{{ number_format($invoice->net_amount, 2) }} JD</div>
-                <div class="ms-lbl">Net Due</div>
+                <div class="ms-lbl">{{ __('Net Due') }}</div>
             </div>
         </div>
     </div>
@@ -137,64 +141,64 @@
         {{-- Invoice info --}}
         <div class="table-card" style="height:fit-content;">
             <div style="padding:16px;border-bottom:1px solid var(--bdr);">
-                <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Invoice Details</h3>
+                <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Invoice Details') }}</h3>
             </div>
             <div style="padding:16px;">
                 <div class="info-rows">
                     <div class="info-row">
-                        <span class="info-row-key">Status</span>
+                        <span class="info-row-key">{{ __('Status') }}</span>
                         <span class="info-row-val">
-                            @if($sv === 'draft')     <span class="badge badge-pending">Draft</span>
-                            @elseif($sv === 'issued') <span class="badge badge-info">Issued</span>
-                            @elseif($sv === 'paid')   <span class="badge badge-active">Paid</span>
-                            @elseif($sv === 'overdue')<span class="badge badge-suspended">Overdue</span>
-                            @else                     <span class="badge">Cancelled</span>
+                            @if($sv === 'draft')     <span class="badge badge-pending">{{ __('Draft') }}</span>
+                            @elseif($sv === 'issued') <span class="badge badge-info">{{ __('Issued') }}</span>
+                            @elseif($sv === 'paid')   <span class="badge badge-active">{{ __('Paid') }}</span>
+                            @elseif($sv === 'overdue')<span class="badge badge-suspended">{{ __('Overdue') }}</span>
+                            @else                     <span class="badge">{{ __('Cancelled') }}</span>
                             @endif
                         </span>
                     </div>
                     <div class="info-row">
-                        <span class="info-row-key">Due Date</span>
+                        <span class="info-row-key">{{ __('Due Date') }}</span>
                         <span class="info-row-val">{{ $invoice->due_date?->format('d M Y') ?? '—' }}</span>
                     </div>
                     @if($invoice->payment_method)
                     <div class="info-row">
-                        <span class="info-row-key">Payment Method</span>
+                        <span class="info-row-key">{{ __('Payment Method') }}</span>
                         <span class="info-row-val">{{ ucfirst(str_replace('_', ' ', $invoice->payment_method)) }}</span>
                     </div>
                     @endif
                     @if($invoice->reference_number)
                     <div class="info-row">
-                        <span class="info-row-key">Reference</span>
+                        <span class="info-row-key">{{ __('Reference') }}</span>
                         <span class="info-row-val" style="font-family:monospace;">{{ $invoice->reference_number }}</span>
                     </div>
                     @endif
                     @if($invoice->paid_at)
                     <div class="info-row">
-                        <span class="info-row-key">Paid At</span>
+                        <span class="info-row-key">{{ __('Paid At') }}</span>
                         <span class="info-row-val" style="color:#22c55e;">{{ $invoice->paid_at->format('d M Y H:i') }}</span>
                     </div>
                     @endif
                     <div class="info-row">
-                        <span class="info-row-key">Created By</span>
+                        <span class="info-row-key">{{ __('Created By') }}</span>
                         <span class="info-row-val">{{ $invoice->createdBy->name ?? '—' }}</span>
                     </div>
                     @if($invoice->electronic_invoice_number)
                     <div class="info-row">
-                        <span class="info-row-key">Electronic Invoice #</span>
+                        <span class="info-row-key">{{ __('Electronic Invoice #') }}</span>
                         <span class="info-row-val" style="font-weight:600;">{{ $invoice->electronic_invoice_number }}</span>
                     </div>
                     @endif
                     @if($invoice->notes)
                     <div class="info-row" style="display:block;">
-                        <span class="info-row-key">Notes</span>
+                        <span class="info-row-key">{{ __('Notes') }}</span>
                         <div style="margin-top:6px;font-size:.85rem;color:var(--text-sub);">{{ $invoice->notes }}</div>
                     </div>
                     @endif
                     @if($invoice->qr_attachment_path)
                     <div class="info-row" style="display:block; border-top: 1px solid var(--bdr); padding-top: 12px; margin-top: 8px;">
-                        <span class="info-row-key" style="margin-bottom:8px; display:block;">QR Code Invoice</span>
+                        <span class="info-row-key" style="margin-bottom:8px; display:block;">{{ __('QR Code Invoice') }}</span>
                         <div style="background: white; padding: 10px; border-radius: 8px; display: inline-block;">
-                            <img src="{{ asset('storage/' . $invoice->qr_attachment_path) }}" alt="QR Code" style="max-height: 150px; width: auto; display: block; object-fit: contain;">
+                            <img src="{{ asset('storage/' . $invoice->qr_attachment_path) }}" alt="{{ __('QR Code') }}" style="max-height: 150px; width: auto; display: block; object-fit: contain;">
                         </div>
                     </div>
                     @endif
@@ -205,21 +209,21 @@
         {{-- Client info --}}
         <div class="table-card" style="height:fit-content;">
             <div style="padding:16px;border-bottom:1px solid var(--bdr);">
-                <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Client Information</h3>
+                <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Client Information') }}</h3>
             </div>
             <div style="padding:16px;">
                 <div class="info-rows">
                     @php $c = $invoice->clientProfile @endphp
                     <div class="info-row">
-                        <span class="info-row-key">Business Name</span>
+                        <span class="info-row-key">{{ __('Business Name') }}</span>
                         <span class="info-row-val">{{ $c->company_name ?? '—' }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-row-key">Contact</span>
+                        <span class="info-row-key">{{ __('Contact') }}</span>
                         <span class="info-row-val">{{ $c->masterUser?->name ?? '—' }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-row-key">Phone</span>
+                        <span class="info-row-key">{{ __('Phone') }}</span>
                         <span class="info-row-val" style="font-family:monospace;">{{ $c->masterUser?->phone ?? '—' }}</span>
                     </div>
                 </div>
@@ -230,17 +234,17 @@
     {{-- Orders table --}}
     <div class="table-card">
         <div style="padding:16px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;">
-            <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Included Orders</h3>
-            <span style="font-size:.8rem;color:var(--text-dim);">{{ $invoice->orders->count() }} orders</span>
+            <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Included Orders') }}</h3>
+            <span style="font-size:.8rem;color:var(--text-dim);">{{ $invoice->orders->count() }} {{ __('orders') }}</span>
         </div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Order #</th>
-                        <th>Recipient</th>
-                        <th>Delivered</th>
-                        <th style="text-align:right;">Delivery Fee</th>
+                        <th>{{ __('Order #') }}</th>
+                        <th>{{ __('Recipient') }}</th>
+                        <th>{{ __('Delivered') }}</th>
+                        <th style="text-align:right;">{{ __('Delivery Fee') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -261,7 +265,7 @@
                     @empty
                         <tr>
                             <td colspan="4" style="text-align:center;color:var(--text-dim);padding:30px;">
-                                No orders attached.
+                                {{ __('No orders attached.') }}
                             </td>
                         </tr>
                     @endforelse
@@ -269,7 +273,7 @@
                 @if($invoice->orders->count())
                 <tfoot>
                     <tr style="border-top:2px solid var(--bdr);">
-                        <td colspan="3" style="text-align:right;font-weight:700;padding:12px 16px;">Total</td>
+                        <td colspan="3" style="text-align:right;font-weight:700;padding:12px 16px;">{{ __('Total') }}</td>
                         <td style="text-align:right;font-weight:800;font-size:1rem;padding:12px 16px;color:#22c55e;">
                             {{ number_format($invoice->delivery_amount, 2) }} JD
                         </td>

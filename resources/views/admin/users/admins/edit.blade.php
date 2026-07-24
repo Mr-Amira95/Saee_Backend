@@ -1,17 +1,17 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Edit – '.$admin->name)
+@section('title', __('Edit').' – '.$admin->name)
 
-@section('page-title', 'Edit Admin')
+@section('page-title', __('Edit Admin'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.admins.index') }}">Admins</a>
+    <a href="{{ route('admin.admins.index') }}">{{ __('Admins') }}</a>
     <span>/</span>
     <span>{{ $admin->name }}</span>
     <span>/</span>
-    <span>Edit</span>
+    <span>{{ __('Edit') }}</span>
 @endsection
 
 @section('head')
@@ -59,6 +59,23 @@
 .phone-dd-item .dd-flag { font-size: 1.1rem; }
 .phone-dd-item .dd-name { flex: 1; color: var(--text); }
 .phone-dd-item .dd-code { color: var(--red); font-weight: 600; font-size: .8rem; }
+
+html[dir="rtl"] .phone-ext-btn {
+    border-right: 1px solid var(--bdr);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+}
+html[dir="rtl"] .phone-input-field {
+    border-radius: 8px 0 0 8px;
+}
+html[dir="rtl"] .phone-ext-btn .arrow {
+    margin-left: 0;
+    margin-right: auto;
+}
+html[dir="rtl"] .phone-dropdown {
+    left: auto;
+    right: 0;
+}
 </style>
 @endsection
 
@@ -69,25 +86,25 @@
 
     {{-- Account --}}
     <div class="form-section">
-        <div class="form-section-title">Account Details</div>
+        <div class="form-section-title">{{ __('Account Details') }}</div>
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="name">Full Name <span class="req">*</span></label>
+                <label class="form-label" for="name">{{ __('Full Name') }} <span class="req">*</span></label>
                 <input class="form-input @error('name') is-error @enderror" id="name" type="text" name="name" value="{{ old('name', $admin->name) }}" required>
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <label class="form-label" for="username">{{ __('Username') }} <span class="req">*</span></label>
                 <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username" value="{{ old('username', $admin->username) }}" required>
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email <span class="opt">(required for email channel)</span></label>
+                <label class="form-label" for="email">{{ __('Email') }} <span class="opt">({{ __('required for email channel') }})</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email', $admin->email) }}">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="phone">Phone <span class="opt">(required for WhatsApp)</span></label>
+                <label class="form-label" for="phone">{{ __('Phone') }} <span class="opt">({{ __('required for WhatsApp') }})</span></label>
                 <div style="position:relative;">
                     <div class="phone-wrap">
                         <button type="button" class="phone-ext-btn" id="phoneExtBtn">
@@ -100,22 +117,22 @@
                                value="{{ old('phone', $admin->phone) }}" placeholder="7X XXX XXXX">
                     </div>
                     <div class="phone-dropdown" id="phoneExtDropdown">
-                        <input type="text" class="phone-dd-search" placeholder="Search country or code…">
+                        <input type="text" class="phone-dd-search" placeholder="{{ __('Search country or code…') }}">
                         <div class="phone-dd-list" id="phoneExtList"></div>
                     </div>
                 </div>
                 @error('phone')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="status">Account Status</label>
+                <label class="form-label" for="status">{{ __('Account Status') }}</label>
                 <select class="form-select" id="status" name="status">
-                    <option value="active"    {{ old('status', $admin->status) === 'active'    ? 'selected' : '' }}>Active</option>
-                    <option value="suspended" {{ old('status', $admin->status) === 'suspended' ? 'selected' : '' }}>Suspended</option>
-                    <option value="pending"   {{ old('status', $admin->status) === 'pending'   ? 'selected' : '' }}>Pending</option>
+                    <option value="active"    {{ old('status', $admin->status) === 'active'    ? 'selected' : '' }}>{{ __('Active') }}</option>
+                    <option value="suspended" {{ old('status', $admin->status) === 'suspended' ? 'selected' : '' }}>{{ __('Suspended') }}</option>
+                    <option value="pending"   {{ old('status', $admin->status) === 'pending'   ? 'selected' : '' }}>{{ __('Pending') }}</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">OTP / Notification Channel</label>
+                <label class="form-label">{{ __('OTP / Notification Channel') }}</label>
                 @php $currentOtpChannel = old('otp_channel', $admin->otp_channel ?? 'whatsapp'); @endphp
                 <div style="position:relative;display:inline-flex;align-items:center;background:var(--in-bg);border:1px solid var(--bdr);border-radius:8px;padding:3px;gap:2px;" id="otpChannelWrap">
                     <input type="hidden" name="otp_channel" id="otpChannelInput" value="{{ $currentOtpChannel }}">
@@ -129,10 +146,10 @@
                         onclick="setOtpChannel('email')"
                         style="display:flex;align-items:center;gap:6px;padding:5px 12px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s;{{ $currentOtpChannel === 'email' ? 'background:var(--red);color:#fff;' : 'background:transparent;color:var(--text-sub);' }}">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        Email
+                        {{ __('Email') }}
                     </button>
                 </div>
-                <span style="font-size:.75rem;color:var(--text-dim);display:block;margin-top:6px;">Used for password-reset OTPs and future invitations.</span>
+                <span style="font-size:.75rem;color:var(--text-dim);display:block;margin-top:6px;">{{ __('Used for password-reset OTPs and future invitations.') }}</span>
             </div>
         </div>
     </div>
@@ -140,12 +157,12 @@
     {{-- Permissions (only for non-superadmin) --}}
     @if($admin->role !== 'superadmin')
     <div class="form-section">
-        <div class="form-section-title">Permissions</div>
+        <div class="form-section-title">{{ __('Permissions') }}</div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <p style="font-size: .82rem; color: var(--text-sub);">Check a page to give this admin access to it. Existing permissions will be replaced.</p>
+            <p style="font-size: .82rem; color: var(--text-sub);">{{ __('Check a page to give this admin access to it. Existing permissions will be replaced.') }}</p>
             <div style="display: flex; gap: 8px;">
-                <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-page-groups input[type=checkbox]').forEach(c=>c.checked=true); window.syncAllPermCards && window.syncAllPermCards();">Select All</button>
-                <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-page-groups input[type=checkbox]').forEach(c=>c.checked=false); window.syncAllPermCards && window.syncAllPermCards();">Clear All</button>
+                <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-page-groups input[type=checkbox]').forEach(c=>c.checked=true); window.syncAllPermCards && window.syncAllPermCards();">{{ __('Select All') }}</button>
+                <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-page-groups input[type=checkbox]').forEach(c=>c.checked=false); window.syncAllPermCards && window.syncAllPermCards();">{{ __('Clear All') }}</button>
             </div>
         </div>
         @include('admin.users.admins.partials.permissions', ['permissions' => $allPermissions, 'grantedIds' => old('permissions', $grantedIds)])
@@ -153,8 +170,8 @@
     @endif
 
     <div class="form-actions">
-        <a href="{{ route('admin.admins.index') }}" class="btn-secondary">Cancel</a>
-        <button type="submit" class="btn-primary">Save Changes</button>
+        <a href="{{ route('admin.admins.index') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+        <button type="submit" class="btn-primary">{{ __('Save Changes') }}</button>
     </div>
 </form>
 @endsection
@@ -288,8 +305,17 @@ function setOtpChannel(ch) {
 
 /* ── Admin Form Validation ── */
 (function() {
-    var form = document.querySelector('form');
+    var form = document.querySelector('form[novalidate]');
     if (!form) return;
+
+    var i18n = {
+        nameFormat: @json(__('Full name must only contain letters and spaces (no numbers or special characters).')),
+        usernameFormat: @json(__('Username must contain at least one letter, start with a letter or number, and cannot end with a special character.')),
+        emailFormat: @json(__('Please enter a valid email address in the format name@domain.com.')),
+        phoneFormat: @json(__('Phone must contain 6 to 15 digits only.')),
+        nameRequired: @json(__('Full name is required.')),
+        usernameRequired: @json(__('Username is required.')),
+    };
 
     function getField(n) {
         return document.getElementById(n) || form.querySelector('[name="' + n + '"]');
@@ -310,7 +336,31 @@ function setOtpChannel(ch) {
         form.querySelectorAll('.js-marked').forEach(function(e) { e.classList.remove('is-error', 'js-marked'); });
     }
 
-    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+    function isEmail(v) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim()); }
+    function isValidName(v) { return /^[\p{L}\s]+$/u.test(v.trim()); }
+    function isValidUsername(v) { return /^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/.test(v.trim()); }
+    function isValidPhone(v) { return /^[0-9]{6,15}$/.test(v.trim()); }
+
+    function clearFieldError(el) {
+        var container = el.closest ? (el.closest('.form-group') || el.parentElement) : el.parentElement;
+        el.classList.remove('is-error', 'js-marked');
+        var err = container.querySelector('.js-err');
+        if (err) err.remove();
+    }
+
+    function wireLiveValidation(name, validator, msg) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            if (el.value.trim() && !validator(el.value)) showFieldError(el, msg);
+        });
+    }
+
+    wireLiveValidation('name', isValidName, i18n.nameFormat);
+    wireLiveValidation('username', isValidUsername, i18n.usernameFormat);
+    wireLiveValidation('email', isEmail, i18n.emailFormat);
+    wireLiveValidation('phone', isValidPhone, i18n.phoneFormat);
 
     form.addEventListener('submit', function(e) {
         clearErrors();
@@ -323,13 +373,31 @@ function setOtpChannel(ch) {
             if (!first) first = el;
         }
 
-        req('name',     'Full name is required.');
-        req('username', 'Username is required.');
+        req('name',     i18n.nameRequired);
+        req('username', i18n.usernameRequired);
+
+        var nEl = getField('name');
+        if (nEl && nEl.value.trim() && !isValidName(nEl.value)) {
+            showFieldError(nEl, i18n.nameFormat);
+            if (!first) first = nEl;
+        }
+
+        var uEl = getField('username');
+        if (uEl && uEl.value.trim() && !isValidUsername(uEl.value)) {
+            showFieldError(uEl, i18n.usernameFormat);
+            if (!first) first = uEl;
+        }
 
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
-            showFieldError(eEl, 'Please enter a valid email address.');
+            showFieldError(eEl, i18n.emailFormat);
             if (!first) first = eEl;
+        }
+
+        var phEl = getField('phone');
+        if (phEl && phEl.value.trim() && !isValidPhone(phEl.value)) {
+            showFieldError(phEl, i18n.phoneFormat);
+            if (!first) first = phEl;
         }
 
         if (first) {

@@ -49,7 +49,7 @@ class BusinessBenefitController extends Controller
         ]);
 
         return redirect()->route('admin.cms.business-benefits.index')
-            ->with('success', 'Benefit created successfully.');
+            ->with('success', __('Benefit created successfully.'));
     }
 
     public function edit(BusinessBenefit $businessBenefit)
@@ -84,7 +84,7 @@ class BusinessBenefitController extends Controller
         ]);
 
         return redirect()->route('admin.cms.business-benefits.index')
-            ->with('success', 'Benefit updated successfully.');
+            ->with('success', __('Benefit updated successfully.'));
     }
 
     public function destroy(BusinessBenefit $businessBenefit)
@@ -93,6 +93,6 @@ class BusinessBenefitController extends Controller
         $businessBenefit->delete();
 
         return redirect()->route('admin.cms.business-benefits.index')
-            ->with('success', 'Benefit deleted successfully.');
+            ->with('success', __('Benefit deleted successfully.'));
     }
 }

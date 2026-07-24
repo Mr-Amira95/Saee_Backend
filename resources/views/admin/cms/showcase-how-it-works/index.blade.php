@@ -1,19 +1,19 @@
 @extends('admin.layouts.app')
 
-@section('title', 'How It Works')
-@section('page-title', 'How It Works')
+@section('title', __('How It Works'))
+@section('page-title', __('How It Works'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.cms.showcase-page.index') }}">Showcases</a>
+    <a href="{{ route('admin.cms.showcase-page.index') }}">{{ __('Showcases') }}</a>
     <span class="sep">/</span>
-    <span class="current">How It Works</span>
+    <span class="current">{{ __('How It Works') }}</span>
 @endsection
 
 @section('content')
 
 <div class="filter-bar" style="justify-content: flex-end;">
-    <a href="{{ route('admin.cms.showcase-how-it-works.create') }}" class="btn-primary">+ Add New Step</a>
+    <a href="{{ route('admin.cms.showcase-how-it-works.create') }}" class="btn-primary">+ {{ __('Add New Step') }}</a>
 </div>
 
 @if($steps->count())
@@ -22,12 +22,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>Icon</th>
-                    <th>Title (EN)</th>
-                    <th>Subtitle (EN)</th>
-                    <th>Sort Order</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>{{ __('Icon') }}</th>
+                    <th>{{ __('Title (EN)') }}</th>
+                    <th>{{ __('Subtitle (EN)') }}</th>
+                    <th>{{ __('Sort Order') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,17 +45,17 @@
                     <td><div class="cell-main" style="font-weight: 700;">{{ $step->sort_order }}</div></td>
                     <td>
                         @if($step->status === 'active')
-                            <span class="badge-active">Active</span>
+                            <span class="badge-active">{{ __('Active') }}</span>
                         @else
-                            <span class="badge-suspended">Inactive</span>
+                            <span class="badge-suspended">{{ __('Inactive') }}</span>
                         @endif
                     </td>
                     <td>
                         <div class="actions">
-                            <a href="{{ route('admin.cms.showcase-how-it-works.edit', $step) }}" class="act-btn act-edit" title="Edit Step">
+                            <a href="{{ route('admin.cms.showcase-how-it-works.edit', $step) }}" class="act-btn act-edit" title="{{ __('Edit Step') }}">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                             </a>
-                            <button class="act-btn act-delete" title="Delete Step"
+                            <button class="act-btn act-delete" title="{{ __('Delete Step') }}"
                                 onclick="confirmDelete('{{ route('admin.cms.showcase-how-it-works.destroy', $step) }}','{{ addslashes($step->title['en'] ?? '') }}')">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             </button>
@@ -70,8 +70,8 @@
 @else
 <div class="empty-state">
     <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-    <h3>No steps found</h3>
-    <p><a href="{{ route('admin.cms.showcase-how-it-works.create') }}" style="color:var(--red-lt);">Create the first step.</a></p>
+    <h3>{{ __('No steps found') }}</h3>
+    <p><a href="{{ route('admin.cms.showcase-how-it-works.create') }}" style="color:var(--red-lt);">{{ __('Create the first step.') }}</a></p>
 </div>
 @endif
 

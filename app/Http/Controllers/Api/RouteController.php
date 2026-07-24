@@ -19,7 +19,7 @@ class RouteController extends Controller
         if (! $user->isDriver()) {
             return response()->json([
                 'success' => false,
-                'message' => 'This endpoint is for drivers only.',
+                'message' => __('This endpoint is for drivers only.'),
             ], 403);
         }
 
@@ -79,7 +79,7 @@ class RouteController extends Controller
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
+                'message' => __('Unauthorized.'),
             ], 403);
         }
 
@@ -90,7 +90,7 @@ class RouteController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Route recalculation queued.',
+            'message' => __('Route recalculation queued.'),
             'data'    => ['driver_id' => $driverId],
         ]);
     }

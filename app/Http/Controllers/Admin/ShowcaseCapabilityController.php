@@ -49,7 +49,7 @@ class ShowcaseCapabilityController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-capabilities.index')
-            ->with('success', 'Capability created successfully.');
+            ->with('success', __('Capability created successfully.'));
     }
 
     public function edit(ShowcaseCapability $showcaseCapability)
@@ -84,7 +84,7 @@ class ShowcaseCapabilityController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-capabilities.index')
-            ->with('success', 'Capability updated successfully.');
+            ->with('success', __('Capability updated successfully.'));
     }
 
     public function destroy(ShowcaseCapability $showcaseCapability)
@@ -93,6 +93,6 @@ class ShowcaseCapabilityController extends Controller
         $showcaseCapability->delete();
 
         return redirect()->route('admin.cms.showcase-capabilities.index')
-            ->with('success', 'Capability deleted successfully.');
+            ->with('success', __('Capability deleted successfully.'));
     }
 }

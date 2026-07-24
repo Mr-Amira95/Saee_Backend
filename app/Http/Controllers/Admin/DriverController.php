@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class DriverController extends Controller
 {
@@ -31,8 +32,6 @@ class DriverController extends Controller
                           ->orWhere('phone', 'like', "%$s%")
                     )
                     ->orWhere('vehicle_plate', 'like', "%$s%")
-                    ->orWhere('vehicle_model', 'like', "%$s%")
-                    ->orWhere('vehicle_color', 'like', "%$s%")
                     ->orWhere('national_id', 'like', "%$s%")
                     ->orWhere('license_number', 'like', "%$s%");
                 })
@@ -54,39 +53,40 @@ class DriverController extends Controller
         abort_unless($request->user()->hasAdminAction('drivers.add'), 403);
 
         $data = $request->validate([
-            'name'                   => 'required|string|max:255',
-            'username'               => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email'                  => ['required_if:otp_channel,email', 'nullable', 'email', 'unique:users,email'],
-            'phone'                  => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
+            'name'                   => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
+            'username'               => ['required', 'string', 'max:50', 'regex:/^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/', 'unique:users,username'],
+            'email'                  => ['required_if:otp_channel,email', 'nullable', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'unique:users,email'],
+            'phone'                  => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', 'unique:users,phone'],
             'phone_country_code'     => 'nullable|string|max:10',
             'otp_channel'            => ['required', Rule::in(['whatsapp', 'email'])],
-            'password'               => 'nullable|string|min:8|confirmed',
-            'national_id'            => 'required|string|max:20|unique:driver_profiles,national_id',
-            'national_id_attachment' => 'nullable|image|max:10240',
-            'license_number'         => 'required|string|max:50|unique:driver_profiles,license_number',
-            'license_expiry_date'    => 'required|date',
-            'license_attachment'     => 'nullable|image|max:10240',
+            'password'               => ['nullable', 'string', 'confirmed', PasswordRule::min(8)->mixedCase()->symbols()],
+            'national_id'            => ['required', 'regex:/^[0-9]{10}$/', 'unique:driver_profiles,national_id'],
+            'national_id_attachment' => 'nullable|mimes:jpg,jpeg,png,pdf|max:10240',
+            'license_number'         => ['required', 'string', 'max:50', 'regex:/^[A-Za-z0-9]+$/', 'unique:driver_profiles,license_number'],
+            'license_expiry_date'    => ['required', 'date_format:d-m-Y'],
+            'license_attachment'     => 'nullable|mimes:jpg,jpeg,png,pdf|max:10240',
             'vehicle_type'           => 'nullable|string|max:50',
-            'vehicle_plate'          => 'nullable|string|max:20|unique:driver_profiles,vehicle_plate',
-            'car_license_expiry'     => 'nullable|date',
-            'car_license_attachment' => 'nullable|image|max:10240',
+            'vehicle_plate'          => ['nullable', 'string', 'max:20', 'regex:/^\d{1,2}-\d{1,5}$/', 'unique:driver_profiles,vehicle_plate'],
+            'car_license_expiry'     => ['nullable', 'date_format:d-m-Y'],
+            'car_license_attachment' => 'nullable|mimes:jpg,jpeg,png,pdf|max:10240',
             'basic_salary'           => 'nullable|numeric|min:0',
             'car_allowance'          => 'nullable|numeric|min:0',
             'daily_order_threshold'  => 'nullable|integer|min:0',
             'bonus_per_extra_order'  => 'nullable|numeric|min:0',
-            'bank_name'              => 'nullable|string|max:100',
-            'account_name'           => 'nullable|string|max:100',
-            'account_number'         => 'nullable|string|max:30',
-            'iban'                   => 'nullable|string|max:34',
-            'swift_code'             => 'nullable|string|max:11',
-            'cliq_id'                => 'nullable|string|max:50',
+            'bank_name'              => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s\'.-]+$/'],
+            'account_name'           => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s\'.-]+$/'],
+            'account_number'         => ['nullable', 'string', 'max:30', 'regex:/^[0-9]+$/'],
+            'iban'                   => ['nullable', 'string', 'max:34', 'regex:/^[A-Za-z]{2}[0-9]{2}[A-Za-z0-9]{1,30}$/'],
+            'swift_code'             => ['nullable', 'string', 'min:8', 'max:11', 'regex:/^[A-Za-z0-9]+$/'],
             'cliq_alias_type'        => 'nullable|in:alias,phone',
+            'cliq_id'                => ['nullable', 'string', 'max:50', $this->cliqIdRule($request)],
             'bank_notes'             => 'nullable|string',
-        ], [
-            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
-            'email.required_if' => 'The email field is required when the notification channel is set to email.',
-            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
-        ]);
+        ], $this->bankValidationMessages());
+
+        $data['license_expiry_date'] = Carbon::createFromFormat('d-m-Y', $data['license_expiry_date'])->format('Y-m-d');
+        if (!empty($data['car_license_expiry'])) {
+            $data['car_license_expiry'] = Carbon::createFromFormat('d-m-Y', $data['car_license_expiry'])->format('Y-m-d');
+        }
 
         $user = DB::transaction(function () use ($data, $request) {
             $user = User::create([
@@ -156,11 +156,11 @@ class DriverController extends Controller
 
             $via = $channel === 'email' ? 'email' : 'WhatsApp';
             return redirect()->route('admin.drivers.index')
-                ->with('success', "Driver account created. An invitation has been sent via {$via}.");
+                ->with('success', __('Driver account created. An invitation has been sent via :channel.', ['channel' => $via]));
         }
 
         return redirect()->route('admin.drivers.index')
-            ->with('success', 'Driver account created successfully.');
+            ->with('success', __('Driver account created successfully.'));
     }
 
     public function show(DriverProfile $driver)
@@ -180,38 +180,39 @@ class DriverController extends Controller
         abort_unless($request->user()->hasAdminAction('drivers.edit'), 403);
 
         $data = $request->validate([
-            'name'                   => 'required|string|max:255',
-            'username'               => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($driver->user_id)],
-            'email'                  => ['required_if:otp_channel,email', 'nullable', 'email', Rule::unique('users','email')->ignore($driver->user_id)],
-            'phone'                  => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', Rule::unique('users','phone')->ignore($driver->user_id)],
+            'name'                   => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
+            'username'               => ['required','string','max:50','regex:/^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/', Rule::unique('users','username')->ignore($driver->user_id)],
+            'email'                  => ['required_if:otp_channel,email', 'nullable', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', Rule::unique('users','email')->ignore($driver->user_id)],
+            'phone'                  => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', Rule::unique('users','phone')->ignore($driver->user_id)],
             'phone_country_code'     => 'nullable|string|max:10',
             'otp_channel'            => ['required', Rule::in(['whatsapp', 'email'])],
-            'national_id'            => ['required','string','max:20', Rule::unique('driver_profiles','national_id')->ignore($driver->id)],
-            'national_id_attachment' => 'nullable|image|max:10240',
-            'license_number'         => ['required','string','max:50', Rule::unique('driver_profiles','license_number')->ignore($driver->id)],
-            'license_expiry_date'    => 'required|date',
-            'license_attachment'     => 'nullable|image|max:10240',
+            'national_id'            => ['required', 'regex:/^[0-9]{10}$/', Rule::unique('driver_profiles','national_id')->ignore($driver->id)],
+            'national_id_attachment' => 'nullable|mimes:jpg,jpeg,png,pdf|max:10240',
+            'license_number'         => ['required', 'string', 'max:50', 'regex:/^[A-Za-z0-9]+$/', Rule::unique('driver_profiles','license_number')->ignore($driver->id)],
+            'license_expiry_date'    => ['required', 'date_format:d-m-Y'],
+            'license_attachment'     => 'nullable|mimes:jpg,jpeg,png,pdf|max:10240',
             'vehicle_type'           => 'nullable|string|max:50',
-            'vehicle_plate'          => ['nullable','string','max:20', Rule::unique('driver_profiles','vehicle_plate')->ignore($driver->id)],
-            'car_license_expiry'     => 'nullable|date',
-            'car_license_attachment' => 'nullable|image|max:10240',
+            'vehicle_plate'          => ['nullable', 'string', 'max:20', 'regex:/^\d{1,2}-\d{1,5}$/', Rule::unique('driver_profiles','vehicle_plate')->ignore($driver->id)],
+            'car_license_expiry'     => ['nullable', 'date_format:d-m-Y'],
+            'car_license_attachment' => 'nullable|mimes:jpg,jpeg,png,pdf|max:10240',
             'basic_salary'           => 'nullable|numeric|min:0',
             'car_allowance'          => 'nullable|numeric|min:0',
             'daily_order_threshold'  => 'nullable|integer|min:0',
             'bonus_per_extra_order'  => 'nullable|numeric|min:0',
-            'bank_name'              => 'nullable|string|max:100',
-            'account_name'           => 'nullable|string|max:100',
-            'account_number'         => 'nullable|string|max:30',
-            'iban'                   => 'nullable|string|max:34',
-            'swift_code'             => 'nullable|string|max:11',
-            'cliq_id'                => 'nullable|string|max:50',
+            'bank_name'              => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s\'.-]+$/'],
+            'account_name'           => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s\'.-]+$/'],
+            'account_number'         => ['nullable', 'string', 'max:30', 'regex:/^[0-9]+$/'],
+            'iban'                   => ['nullable', 'string', 'max:34', 'regex:/^[A-Za-z]{2}[0-9]{2}[A-Za-z0-9]{1,30}$/'],
+            'swift_code'             => ['nullable', 'string', 'min:8', 'max:11', 'regex:/^[A-Za-z0-9]+$/'],
             'cliq_alias_type'        => 'nullable|in:alias,phone',
+            'cliq_id'                => ['nullable', 'string', 'max:50', $this->cliqIdRule($request)],
             'bank_notes'             => 'nullable|string',
-        ], [
-            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
-            'email.required_if' => 'The email field is required when the notification channel is set to email.',
-            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
-        ]);
+        ], $this->bankValidationMessages());
+
+        $data['license_expiry_date'] = Carbon::createFromFormat('d-m-Y', $data['license_expiry_date'])->format('Y-m-d');
+        if (!empty($data['car_license_expiry'])) {
+            $data['car_license_expiry'] = Carbon::createFromFormat('d-m-Y', $data['car_license_expiry'])->format('Y-m-d');
+        }
 
         DB::transaction(function () use ($data, $request, $driver) {
             $driver->user->update([
@@ -279,7 +280,7 @@ class DriverController extends Controller
         });
 
         return redirect()->route('admin.drivers.show', $driver)
-            ->with('success', 'Driver updated successfully.');
+            ->with('success', __('Driver updated successfully.'));
     }
 
     public function bankDetails(DriverProfile $driver)
@@ -299,7 +300,7 @@ class DriverController extends Controller
         });
 
         return redirect()->route('admin.drivers.index')
-            ->with('success', 'Driver deleted successfully.');
+            ->with('success', __('Driver deleted successfully.'));
     }
 
     public function locationHistory(Request $request, DriverProfile $driver)
@@ -349,7 +350,7 @@ class DriverController extends Controller
     {
         $this->sendInvitation($driver->user, $driver->user->otp_channel ?? 'whatsapp');
 
-        return back()->with('success', "Invitation sent to {$driver->user->name}.");
+        return back()->with('success', __('Invitation sent to :name.', ['name' => $driver->user->name]));
     }
 
     public function resetPassword(Request $request, DriverProfile $driver)
@@ -357,12 +358,12 @@ class DriverController extends Controller
         abort_unless($request->user()->hasAdminAction('drivers.reset_password'), 403);
 
         $data = $request->validate([
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', 'confirmed', PasswordRule::min(8)->mixedCase()->symbols()],
         ]);
 
         $driver->user->update(['password' => Hash::make($data['password'])]);
 
-        return back()->with('success', "Password reset for {$driver->user->name}.");
+        return back()->with('success', __('Password reset for :name.', ['name' => $driver->user->name]));
     }
 
     public function toggleStatus(DriverProfile $driver)
@@ -372,7 +373,7 @@ class DriverController extends Controller
             $user->status = $user->status === 'active' ? 'suspended' : 'active';
             $user->save();
         }
-        return back()->with('success', 'Driver status updated successfully.');
+        return back()->with('success', __('Driver status updated successfully.'));
     }
 
     private function haversineKm(float $lat1, float $lon1, float $lat2, float $lon2): float
@@ -398,5 +399,43 @@ class DriverController extends Controller
                 'link' => $setPasswordUrl,
             ]);
         }
+    }
+
+    private function cliqIdRule(Request $request)
+    {
+        return function ($attribute, $value, $fail) use ($request) {
+            if (!$value) return;
+
+            $type = $request->input('cliq_alias_type');
+            if ($type === 'phone' && !preg_match('/^7[789][0-9]{7}$/', $value)) {
+                $fail('The CliQ phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+            } elseif ($type === 'alias' && !preg_match('/^[A-Za-z0-9]+$/', $value)) {
+                $fail('The CliQ alias must only contain letters and numbers.');
+            }
+        };
+    }
+
+    private function bankValidationMessages(): array
+    {
+        return [
+            'name.regex'      => 'The full name field must only contain letters and spaces.',
+            'username.regex'  => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
+            'email.regex'     => 'The email must be a valid address in the format name@domain.com.',
+            'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.regex'     => 'The phone field must contain 6 to 15 digits only.',
+            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
+            'national_id.regex' => 'The national ID must be exactly 10 digits.',
+            'license_number.regex' => 'The license number must contain letters and numbers only.',
+            'license_expiry_date.date_format' => 'The license expiry date must be in the format DD-MM-YYYY.',
+            'car_license_expiry.date_format' => 'The car license expiry date must be in the format DD-MM-YYYY.',
+            'vehicle_plate.regex' => 'The plate number must be in the format 1-2 digits, a dash, then 1-5 digits (e.g. 12-345).',
+            'bank_name.regex' => 'The bank name must only contain English letters.',
+            'account_name.regex' => 'The account holder name must only contain English letters.',
+            'account_number.regex' => 'The account number must contain digits only.',
+            'iban.regex' => 'The IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.',
+            'swift_code.regex' => 'The SWIFT / BIC code must only contain letters and numbers.',
+            'swift_code.min' => 'The SWIFT / BIC code must be between 8 and 11 characters.',
+            'swift_code.max' => 'The SWIFT / BIC code must be between 8 and 11 characters.',
+        ];
     }
 }

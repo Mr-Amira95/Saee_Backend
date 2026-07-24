@@ -53,6 +53,28 @@ class User extends Authenticatable
     public function isClientMaster(): bool { return $this->role === 'client_master'; }
     public function isClientEmployee(): bool { return $this->role === 'client_employee'; }
 
+    public function resolveClientProfile(): ?ClientProfile
+    {
+        if ($this->isClientMaster()) {
+            return $this->clientProfile;
+        }
+
+        if ($this->isClientEmployee()) {
+            return $this->clientEmployee?->clientProfile;
+        }
+
+        return null;
+    }
+
+    public function hasExpiredClientContract(): bool
+    {
+        $profile = $this->resolveClientProfile();
+
+        return $profile !== null
+            && $profile->expiry_date !== null
+            && $profile->expiry_date->isPast();
+    }
+
     /**
      * Page-level client-portal permission check. The client master always has
      * full access; a client_employee needs an explicit, non-expired grant.

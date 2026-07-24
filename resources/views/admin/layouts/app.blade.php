@@ -80,6 +80,7 @@
 
         /* Parent nav item (chevron) */
         .nav-parent-btn { width: 100%; background: none; border: none; font-family: inherit; cursor: pointer; text-align: left; }
+        html[dir="rtl"] .nav-parent-btn { text-align: right; }
         .nav-chevron { transition: transform .25s; flex-shrink: 0; opacity: .45; }
         .nav-item.parent-open .nav-chevron { transform: rotate(180deg); }
 
@@ -162,6 +163,7 @@
             background: var(--red); box-shadow: 0 0 5px var(--red);
             animation: dot-p 2s infinite;
         }
+        html[dir="rtl"] .notif-dot { right: auto; left: 6px; }
         @keyframes dot-p { 0%,100%{opacity:1;} 50%{opacity:.4;} }
         .sidebar-badge {
             background: var(--red);
@@ -346,8 +348,10 @@
         .toggle-switch input { display:none; }
         .toggle-track { width:34px; height:18px; background:rgba(255,255,255,.12); border-radius:9px; position:relative; transition:background .2s; }
         .toggle-thumb { position:absolute; top:2px; left:2px; width:14px; height:14px; background:#fff; border-radius:50%; transition:transform .2s; }
+        html[dir="rtl"] .toggle-thumb { left:auto; right:2px; }
         .toggle-switch input:checked ~ .toggle-track { background:var(--red); }
         .toggle-switch input:checked ~ .toggle-track .toggle-thumb { transform:translateX(16px); }
+        html[dir="rtl"] .toggle-switch input:checked ~ .toggle-track .toggle-thumb { transform:translateX(-16px); }
 
         /* ─── Empty state ────────────────────────────────── */
         .empty-state {
@@ -372,39 +376,19 @@
         .pag-links span.active { background: rgba(220,38,38,.12); border-color: rgba(220,38,38,.18); color: #fca5a5; }
         .pag-links span.disabled { opacity: .3; pointer-events: none; }
 
-        /* ─── Tailwind Pagination Overrides ─── */
-        .pag-links nav { display: flex !important; align-items: center !important; gap: 8px !important; }
-        .pag-links nav > div { display: flex !important; align-items: center !important; gap: 6px !important; }
-        .pag-links nav p { display: none !important; }
-        .pag-links nav span.relative { display: inline-flex !important; gap: 4px !important; }
-        .pag-links nav a, .pag-links nav span {
-            display: flex !important; align-items: center !important; justify-content: center !important;
-            width: 30px !important; height: 30px !important; border-radius: 7px !important;
-            font-size: .78rem !important; font-weight: 500 !important; text-decoration: none !important; color: var(--text-sub) !important;
-            border: 1px solid var(--bdr) !important; background: rgba(255,255,255,.02) !important;
-            transition: background .12s, color .12s !important;
+        html.light-theme .pag-links a, html.light-theme .pag-links span {
+            border-color: #cbd5e1;
+            color: #475569;
+            background: #ffffff;
         }
-        .pag-links nav a:hover { background: rgba(255,255,255,.06) !important; color: var(--text) !important; }
-        .pag-links nav span[aria-current="page"] span {
-            background: rgba(220,38,38,.12) !important; border-color: rgba(220,38,38,.18) !important; color: #fca5a5 !important;
+        html.light-theme .pag-links a:hover {
+            background: #f1f5f9;
+            color: #0f172a;
         }
-        .pag-links nav span[aria-disabled="true"] span { opacity: .3 !important; pointer-events: none !important; }
-        .pag-links nav svg { width: 16px !important; height: 16px !important; }
-
-        /* Light theme adjustments */
-        html.light-theme .pag-links nav a, html.light-theme .pag-links nav span {
-            border-color: #cbd5e1 !important;
-            color: #475569 !important;
-            background: #ffffff !important;
-        }
-        html.light-theme .pag-links nav a:hover {
-            background: #f1f5f9 !important;
-            color: #0f172a !important;
-        }
-        html.light-theme .pag-links nav span[aria-current="page"] span {
-            background: rgba(220,38,38,.08) !important;
-            border-color: rgba(220,38,38,.15) !important;
-            color: var(--red) !important;
+        html.light-theme .pag-links span.active {
+            background: rgba(220,38,38,.08);
+            border-color: rgba(220,38,38,.15);
+            color: var(--red);
         }
 
         /* ─── Forms ──────────────────────────────────────── */
@@ -432,6 +416,7 @@
             letter-spacing: .08em; text-transform: uppercase;
         }
         .form-label .req { color: var(--red-lt); margin-left: 2px; }
+        html[dir="rtl"] .form-label .req { margin-left: 0; margin-right: 2px; }
         .form-input, .form-select, .form-textarea {
             background: var(--in-bg); border: 1px solid var(--in-bdr);
             border-radius: 9px; padding: 10px 13px; color: var(--text);
@@ -454,6 +439,12 @@
         .form-textarea { resize: vertical; min-height: 80px; }
         .form-error { font-size: .73rem; color: #f87171; }
         .form-hint  { font-size: .73rem; color: var(--text-dim); }
+        .pw-reqs { margin-top: 8px; padding: 10px 13px; background: var(--in-bg); border: 1px solid var(--in-bdr); border-radius: 9px; }
+        .pw-req-item { display: flex; align-items: center; gap: 8px; font-size: .74rem; color: var(--text-dim); margin-bottom: 4px; transition: color .2s; }
+        .pw-req-item:last-child { margin-bottom: 0; }
+        .pw-req-item.met { color: var(--success); }
+        .pw-req-icon { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 8px; transition: background .2s; }
+        .pw-req-item.met .pw-req-icon { background: var(--success); border-color: var(--success); color: #052e16; }
         .form-actions {
             display: flex; align-items: center; gap: 10px; justify-content: flex-end;
             padding-top: 4px;
@@ -522,10 +513,13 @@
         @keyframes modal-in { from{transform:scale(.9);opacity:0;} to{transform:scale(1);opacity:1;} }
         @keyframes toast-in  { from{transform:translateX(110%);opacity:0;} to{transform:translateX(0);opacity:1;} }
         @keyframes toast-out { from{transform:translateX(0);opacity:1;}   to{transform:translateX(110%);opacity:0;} }
+        @keyframes toast-in-rtl  { from{transform:translateX(-110%);opacity:0;} to{transform:translateX(0);opacity:1;} }
+        @keyframes toast-out-rtl { from{transform:translateX(0);opacity:1;}      to{transform:translateX(-110%);opacity:0;} }
         @keyframes toast-progress { from{width:100%;} to{width:0%;} }
 
         /* ─── Toast notifications ────────────────────────── */
         #toastStack { position:fixed; bottom:24px; right:24px; z-index:999999; display:flex; flex-direction:column-reverse; gap:10px; pointer-events:none; }
+        html[dir="rtl"] #toastStack { right:auto; left:24px; }
         .toast {
             pointer-events:all; width:320px; border-radius:12px; overflow:hidden;
             background:#0c1230; border:1px solid rgba(255,255,255,.07);
@@ -533,6 +527,8 @@
             animation:toast-in .32s cubic-bezier(.16,1,.3,1) both;
         }
         .toast.toast-hide { animation:toast-out .28s ease-in forwards; }
+        html[dir="rtl"] .toast { animation:toast-in-rtl .32s cubic-bezier(.16,1,.3,1) both; }
+        html[dir="rtl"] .toast.toast-hide { animation:toast-out-rtl .28s ease-in forwards; }
         .toast-body { display:flex; align-items:flex-start; gap:11px; padding:13px 14px 11px; }
         .toast-icon { width:32px; height:32px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
         .toast-text { flex:1; min-width:0; }
@@ -653,6 +649,7 @@
         html.light-theme .smartedge-logo { background: rgba(15, 23, 42, 0.035); border-color: rgba(15, 23, 42, 0.08); }
         html.light-theme .smartedge-logo .smart { color: #0f172a; }
         html.light-theme .smartedge-logo .badge-tech { color: rgba(15, 23, 42, 0.6); background: rgba(15, 23, 42, 0.05); }
+        html.light-theme .form-label { color: #0f172a; }
 
 
         /* ─── RTL Directional Overrides ──────────────────── */
@@ -719,6 +716,10 @@
             font-size: 0.8em;
             display: inline-block;
             transition: opacity 0.15s, transform 0.15s;
+        }
+        html[dir="rtl"] thead th.sortable-th::after {
+            margin-left: 0;
+            margin-right: 6px;
         }
         thead th.sortable-th.sort-asc::after {
             content: ' ▲';
@@ -963,7 +964,7 @@
 
 {{-- Reset Password Modal --}}
 <div class="modal-overlay" id="resetPasswordModal">
-    <div class="modal-card" style="max-width:420px;text-align:left;">
+    <div class="modal-card" style="max-width:420px;text-align:{{ app()->getLocale() === 'ar' ? 'right' : 'left' }};">
         <div class="modal-icon" style="background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2);">
             <svg width="26" height="26" fill="none" stroke="#a78bfa" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
@@ -973,7 +974,8 @@
             @csrf
             <div class="form-group" style="margin-bottom:14px;">
                 <label class="form-label" for="rp_password">{{ __('New Password') }}</label>
-                <input class="form-input" type="password" id="rp_password" name="password" autocomplete="new-password" placeholder="{{ __('Minimum 8 characters') }}">
+                <input class="form-input" type="password" id="rp_password" name="password" autocomplete="new-password" placeholder="{{ __('Min 8 chars, upper, lower & symbol') }}" oninput="updatePasswordRequirements(this.value, 'rpPwReqs')">
+                @include('admin.partials.password-requirements', ['id' => 'rpPwReqs'])
             </div>
             <div class="form-group" style="margin-bottom:8px;">
                 <label class="form-label" for="rp_password_confirmation">{{ __('Confirm Password') }}</label>
@@ -989,9 +991,18 @@
 </div>
 
 <script>
+const i18n = {
+    thisRecord: @json(__('this record')),
+    thisUser: @json(__('this user')),
+    passwordRequirementsError: @json(__('Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a special character.')),
+    passwordsMismatch: @json(__('Passwords do not match.')),
+    noUnreadNotifications: @json(__('No unread notifications.')),
+    justNow: @json(__('Just now')),
+    exportTableCsv: @json(__('Export Table (CSV)')),
+};
 function confirmDelete(url, name) {
     document.getElementById('deleteForm').action = url;
-    document.getElementById('modalEntityName').textContent = name || 'this record';
+    document.getElementById('modalEntityName').textContent = name || i18n.thisRecord;
     document.getElementById('deleteModal').classList.add('open');
 }
 function closeDeleteModal() {
@@ -1003,10 +1014,11 @@ document.getElementById('deleteModal').addEventListener('click', function(e) {
 
 function openResetPasswordModal(url, name) {
     document.getElementById('resetPasswordForm').action = url;
-    document.getElementById('resetPasswordEntityName').textContent = name || 'this user';
+    document.getElementById('resetPasswordEntityName').textContent = name || i18n.thisUser;
     document.getElementById('rp_password').value = '';
     document.getElementById('rp_password_confirmation').value = '';
     document.getElementById('rp_password_error').style.display = 'none';
+    updatePasswordRequirements('', 'rpPwReqs');
     document.getElementById('resetPasswordModal').classList.add('open');
 }
 function closeResetPasswordModal() {
@@ -1020,18 +1032,38 @@ document.getElementById('resetPasswordForm').addEventListener('submit', function
     var pwc = document.getElementById('rp_password_confirmation').value;
     var err = document.getElementById('rp_password_error');
     err.style.display = 'none';
-    if (pw.length < 8) {
+    if (!isStrongPassword(pw)) {
         e.preventDefault();
-        err.textContent = '{{ __('Password must be at least 8 characters.') }}';
+        err.textContent = i18n.passwordRequirementsError;
         err.style.display = 'block';
         return;
     }
     if (pw !== pwc) {
         e.preventDefault();
-        err.textContent = '{{ __('Passwords do not match.') }}';
+        err.textContent = i18n.passwordsMismatch;
         err.style.display = 'block';
     }
 });
+function isStrongPassword(pw) {
+    return pw.length >= 8
+        && /[A-Z]/.test(pw)
+        && /[a-z]/.test(pw)
+        && /[^A-Za-z0-9]/.test(pw);
+}
+function updatePasswordRequirements(pw, boxId) {
+    var box = document.getElementById(boxId);
+    if (!box) return;
+    var checks = {
+        len:     pw.length >= 8,
+        upper:   /[A-Z]/.test(pw),
+        lower:   /[a-z]/.test(pw),
+        special: /[^A-Za-z0-9]/.test(pw),
+    };
+    Object.keys(checks).forEach(function(key) {
+        var item = box.querySelector('[data-req="' + key + '"]');
+        if (item) item.classList.toggle('met', checks[key]);
+    });
+}
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') { closeDeleteModal(); closeResetPasswordModal(); }
@@ -1200,7 +1232,7 @@ function fetchUnreadNotifications() {
 
             list.innerHTML = '';
             if (data.notifications.length === 0) {
-                list.innerHTML = `<div style="padding: 20px; text-align: center; font-size: .78rem; color: var(--text-dim);">No unread notifications.</div>`;
+                list.innerHTML = `<div style="padding: 20px; text-align: center; font-size: .78rem; color: var(--text-dim);">${i18n.noUnreadNotifications}</div>`;
             } else {
                 data.notifications.forEach(n => {
                     const item = document.createElement('div');
@@ -1216,7 +1248,7 @@ function fetchUnreadNotifications() {
                     item.innerHTML = `
                         <div style="font-weight: 600; font-size: .8rem; color: #fff;">${n.title}</div>
                         <div style="font-size: .74rem; color: var(--text-sub); margin-top: 3px; line-height:1.4;">${n.message}</div>
-                        <div style="font-size: .65rem; color: var(--text-dim); margin-top: 5px;">Just now</div>
+                        <div style="font-size: .65rem; color: var(--text-dim); margin-top: 5px;">${i18n.justNow}</div>
                     `;
                     list.appendChild(item);
                 });
@@ -1363,6 +1395,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (headers.length < 2) return;
 
         if (table.dataset.hasExportButton) return;
+        if (table.dataset.noExport) return;
         table.dataset.hasExportButton = 'true';
 
         const bar = document.createElement('div');
@@ -1384,12 +1417,29 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.style.fontWeight = '500';
         btn.innerHTML = `
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Export Table (CSV)
+            ${i18n.exportTableCsv}
         `;
 
         btn.addEventListener('click', function() {
             const csv = [];
             const rows = table.querySelectorAll('tr');
+
+            const excludedCols = {};
+            const actionHeaderLabels = ['actions', 'action', 'kpi', 'إجراءات', 'إجراء'];
+            table.querySelectorAll('thead th').forEach(function(th, idx) {
+                const label = (th.textContent || '').trim().toLowerCase();
+                if (actionHeaderLabels.includes(label)) {
+                    excludedCols[idx] = true;
+                }
+            });
+            table.querySelectorAll('tbody tr').forEach(function(bodyRow) {
+                const bodyCols = bodyRow.querySelectorAll('th, td');
+                for (let k = 0; k < bodyCols.length; k++) {
+                    if (!excludedCols[k] && (isMediaCell(bodyCols[k]) || isActionsCell(bodyCols[k]))) {
+                        excludedCols[k] = true;
+                    }
+                }
+            });
 
             for (let i = 0; i < rows.length; i++) {
                 if (rows[i].offsetParent === null) continue;
@@ -1398,29 +1448,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 const cols = rows[i].querySelectorAll('th, td');
 
                 for (let j = 0; j < cols.length; j++) {
+                    if (excludedCols[j]) continue;
                     const col = cols[j];
-                    
-                    if (col.classList.contains('actions') || col.classList.contains('col-actions') || col.querySelector('button') || col.querySelector('input[type="checkbox"]')) {
-                        const select = col.querySelector('select');
-                        const input = col.querySelector('input:not([type="checkbox"]):not([type="hidden"])');
-                        if (select) {
-                            row.push(cleanCSVValue(select.options[select.selectedIndex]?.text || ''));
-                        } else if (input) {
-                            row.push(cleanCSVValue(input.value));
-                        } else {
-                            continue;
-                        }
+
+                    const select = col.querySelector('select');
+                    const input = col.querySelector('input:not([type="checkbox"]):not([type="hidden"])');
+                    if (select) {
+                        row.push(cleanCSVValue(select.options[select.selectedIndex]?.text || ''));
+                    } else if (input) {
+                        row.push(cleanCSVValue(input.value));
                     } else {
-                        const select = col.querySelector('select');
-                        const input = col.querySelector('input:not([type="checkbox"]):not([type="hidden"])');
-                        if (select) {
-                            row.push(cleanCSVValue(select.options[select.selectedIndex]?.text || ''));
-                        } else if (input) {
-                            row.push(cleanCSVValue(input.value));
-                        } else {
-                            let text = col.innerText || col.textContent || '';
-                            row.push(cleanCSVValue(text));
-                        }
+                        let text = col.innerText || col.textContent || '';
+                        row.push(cleanCSVValue(text));
                     }
                 }
                 if (row.length > 0) {
@@ -1461,6 +1500,26 @@ document.addEventListener('DOMContentLoaded', function () {
             clean = `"${clean}"`;
         }
         return clean;
+    }
+
+    function isMediaCell(col) {
+        if (col.querySelector('img, video, audio, source, picture')) return true;
+        const links = col.querySelectorAll('a[href]');
+        for (let m = 0; m < links.length; m++) {
+            const a = links[m];
+            if (a.hasAttribute('download')) return true;
+            const href = a.getAttribute('href') || '';
+            if (/\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|jpe?g|png|gif|webp|svg|bmp|mp4|mov|avi|webm|mkv|mp3|wav)(\?|#|$)/i.test(href)) return true;
+        }
+        return false;
+    }
+
+    function isActionsCell(col) {
+        if (col.classList.contains('actions') || col.classList.contains('col-actions')) return true;
+        if (col.querySelector('.act-btns, .act-btn, .actions, .col-actions')) return true;
+        if (col.querySelector('button')) return true;
+        if (col.querySelector('input[type="checkbox"]')) return true;
+        return false;
     }
 });
 </script>
@@ -1529,13 +1588,13 @@ document.addEventListener('DOMContentLoaded', function () {
 {{-- Notification Dropdown — rendered at body level to escape topbar stacking context --}}
 <div id="notifDropdown" style="display: none; position: fixed; width: 320px; background: #0c1230; border: 1px solid var(--bdr); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 99999; overflow: hidden; animation: modal-in .18s ease-out;">
     <div style="padding: 12px 16px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: .78rem; font-weight: 700; color: var(--text-sub);">Notifications</span>
-        <button onclick="clearAllNotifications(event)" style="background: none; border: none; font-size: .7rem; color: var(--red-lt); font-family: inherit; font-weight:600; cursor: pointer;">Mark all read</button>
+        <span style="font-size: .78rem; font-weight: 700; color: var(--text-sub);">{{ __('Notifications') }}</span>
+        <button onclick="clearAllNotifications(event)" style="background: none; border: none; font-size: .7rem; color: var(--red-lt); font-family: inherit; font-weight:600; cursor: pointer;">{{ __('Mark all read') }}</button>
     </div>
     <div id="notifList" style="max-height: 250px; overflow-y: auto;">
         {{-- Dynamic List --}}
     </div>
-    <a href="{{ route('admin.notifications.index') }}" style="display: block; text-align: center; padding: 10px; border-top: 1px solid var(--bdr); font-size: .72rem; color: var(--text-dim); text-decoration: none; font-weight: 600;">View All Notifications</a>
+    <a href="{{ route('admin.notifications.index') }}" style="display: block; text-align: center; padding: 10px; border-top: 1px solid var(--bdr); font-size: .72rem; color: var(--text-dim); text-decoration: none; font-weight: 600;">{{ __('View all notifications') }}</a>
 </div>
 </body>
 </html>

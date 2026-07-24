@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class AdminUserController extends Controller
 {
@@ -45,18 +46,21 @@ class AdminUserController extends Controller
         abort_unless($request->user()->hasAdminAction('admins.add'), 403);
 
         $data = $request->validate([
-            'name'                => 'required|string|max:255',
-            'username'            => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email'               => ['required_if:otp_channel,email', 'nullable', 'email', 'unique:users,email'],
-            'phone'               => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
+            'name'                => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
+            'username'            => ['required', 'string', 'max:50', 'regex:/^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/', 'unique:users,username'],
+            'email'               => ['required_if:otp_channel,email', 'nullable', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'unique:users,email'],
+            'phone'               => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', 'unique:users,phone'],
             'phone_country_code'  => 'nullable|string|max:10',
             'otp_channel'         => ['required', Rule::in(['whatsapp', 'email'])],
-            'password'            => 'nullable|string|min:8|confirmed',
+            'password'            => ['nullable', 'string', 'confirmed', PasswordRule::min(8)->mixedCase()->symbols()],
             'permissions'         => 'nullable|array',
             'permissions.*'       => 'integer|exists:permissions,id',
         ], [
-            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'name.regex'      => 'The full name field must only contain letters and spaces.',
+            'username.regex'  => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
+            'email.regex'     => 'The email must be a valid address in the format name@domain.com.',
             'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.regex'     => 'The phone field must contain 6 to 15 digits only.',
             'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
@@ -94,11 +98,11 @@ class AdminUserController extends Controller
 
             $via = $channel === 'email' ? 'email' : 'WhatsApp';
             return redirect()->route('admin.admins.index')
-                ->with('success', "Admin account created. An invitation has been sent via {$via}.");
+                ->with('success', __('Admin account created. An invitation has been sent via :via.', ['via' => $via]));
         }
 
         return redirect()->route('admin.admins.index')
-            ->with('success', 'Admin account created successfully.');
+            ->with('success', __('Admin account created successfully.'));
     }
 
 
@@ -118,18 +122,21 @@ class AdminUserController extends Controller
         abort_unless($request->user()->hasAdminAction('admins.edit'), 403);
 
         $data = $request->validate([
-            'name'                => 'required|string|max:255',
-            'username'            => ['required','string','max:50','regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users','username')->ignore($admin->id)],
-            'email'               => ['required_if:otp_channel,email', 'nullable', 'email', Rule::unique('users','email')->ignore($admin->id)],
-            'phone'               => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', Rule::unique('users','phone')->ignore($admin->id)],
+            'name'                => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
+            'username'            => ['required','string','max:50','regex:/^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/', Rule::unique('users','username')->ignore($admin->id)],
+            'email'               => ['required_if:otp_channel,email', 'nullable', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', Rule::unique('users','email')->ignore($admin->id)],
+            'phone'               => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', Rule::unique('users','phone')->ignore($admin->id)],
             'phone_country_code'  => 'nullable|string|max:10',
             'otp_channel'         => ['required', Rule::in(['whatsapp', 'email'])],
             'status'              => ['nullable', Rule::in(['active','suspended','pending'])],
             'permissions'         => 'nullable|array',
             'permissions.*'       => 'integer|exists:permissions,id',
         ], [
-            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'name.regex'      => 'The full name field must only contain letters and spaces.',
+            'username.regex'  => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
+            'email.regex'     => 'The email must be a valid address in the format name@domain.com.',
             'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.regex'     => 'The phone field must contain 6 to 15 digits only.',
             'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
@@ -161,7 +168,7 @@ class AdminUserController extends Controller
         });
 
         return redirect()->route('admin.admins.index')
-            ->with('success', 'Admin updated successfully.');
+            ->with('success', __('Admin updated successfully.'));
     }
 
     public function destroy(User $admin)
@@ -174,13 +181,13 @@ class AdminUserController extends Controller
         });
 
         return redirect()->route('admin.admins.index')
-            ->with('success', 'Admin deleted successfully.');
+            ->with('success', __('Admin deleted successfully.'));
     }
 
     public function resendInvitation(User $admin)
     {
         $this->sendInvitation($admin, $admin->otp_channel ?? 'whatsapp');
-        return back()->with('success', "Invitation sent to {$admin->name}.");
+        return back()->with('success', __('Invitation sent to :name.', ['name' => $admin->name]));
     }
 
     public function resetPassword(Request $request, User $admin)
@@ -188,12 +195,12 @@ class AdminUserController extends Controller
         abort_unless($request->user()->hasAdminAction('admins.reset_password'), 403);
 
         $data = $request->validate([
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', 'confirmed', PasswordRule::min(8)->mixedCase()->symbols()],
         ]);
 
         $admin->update(['password' => Hash::make($data['password'])]);
 
-        return back()->with('success', "Password reset for {$admin->name}.");
+        return back()->with('success', __('Password reset for :name.', ['name' => $admin->name]));
     }
 
     private function sendInvitation(User $user, string $channel = 'whatsapp'): void

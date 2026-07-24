@@ -116,7 +116,7 @@ class SupportController extends Controller
         rescue(fn () => app(SupportNotificationService::class)->notifyAdminReply($ticket, Auth::id()));
 
         return redirect()->route('admin.support.index', ['ticket' => $ticket->ticket_number])
-            ->with('success', "Support ticket {$ticket->ticket_number} opened successfully.");
+            ->with('success', __('Support ticket :number opened successfully.', ['number' => $ticket->ticket_number]));
     }
 
     /**
@@ -170,7 +170,7 @@ class SupportController extends Controller
         rescue(fn () => app(SupportNotificationService::class)->notifyClientTicketResolved($ticket, Auth::id()));
 
         return redirect()->route('admin.support.index', ['ticket' => $ticket->ticket_number])
-            ->with('success', "Ticket {$ticket->ticket_number} marked as resolved.");
+            ->with('success', __('Ticket :number marked as resolved.', ['number' => $ticket->ticket_number]));
     }
 
     /**

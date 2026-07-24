@@ -49,7 +49,7 @@ class WhySaeeReasonController extends Controller
         ]);
 
         return redirect()->route('admin.cms.why-saee-reasons.index')
-            ->with('success', 'Reason created successfully.');
+            ->with('success', __('Reason created successfully.'));
     }
 
     public function edit(WhySaeeReason $whySaeeReason)
@@ -84,7 +84,7 @@ class WhySaeeReasonController extends Controller
         ]);
 
         return redirect()->route('admin.cms.why-saee-reasons.index')
-            ->with('success', 'Reason updated successfully.');
+            ->with('success', __('Reason updated successfully.'));
     }
 
     public function destroy(WhySaeeReason $whySaeeReason)
@@ -93,6 +93,6 @@ class WhySaeeReasonController extends Controller
         $whySaeeReason->delete();
 
         return redirect()->route('admin.cms.why-saee-reasons.index')
-            ->with('success', 'Reason deleted successfully.');
+            ->with('success', __('Reason deleted successfully.'));
     }
 }

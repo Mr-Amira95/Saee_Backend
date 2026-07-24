@@ -37,7 +37,7 @@ class HeroStatController extends Controller
         ]);
 
         return redirect()->route('admin.cms.hero-stats.index')
-            ->with('success', 'Stat created successfully.');
+            ->with('success', __('Stat created successfully.'));
     }
 
     public function edit(HeroStat $heroStat)
@@ -62,7 +62,7 @@ class HeroStatController extends Controller
         ]);
 
         return redirect()->route('admin.cms.hero-stats.index')
-            ->with('success', 'Stat updated successfully.');
+            ->with('success', __('Stat updated successfully.'));
     }
 
     public function destroy(HeroStat $heroStat)
@@ -70,6 +70,6 @@ class HeroStatController extends Controller
         $heroStat->delete();
 
         return redirect()->route('admin.cms.hero-stats.index')
-            ->with('success', 'Stat deleted successfully.');
+            ->with('success', __('Stat deleted successfully.'));
     }
 }

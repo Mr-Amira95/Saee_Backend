@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\View\View;
 
 class UserManagementController extends Controller
@@ -49,19 +50,22 @@ class UserManagementController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
-            'email' => ['required_if:otp_channel,email', 'nullable', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
+            'username' => ['required', 'string', 'max:50', 'regex:/^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/', 'unique:users,username'],
+            'email' => ['required_if:otp_channel,email', 'nullable', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', 'unique:users,email'],
+            'phone' => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', 'unique:users,phone'],
             'phone_country_code' => ['nullable', 'string', 'max:10'],
             'otp_channel' => ['required', Rule::in(['whatsapp', 'email'])],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'confirmed', PasswordRule::min(8)->mixedCase()->symbols()],
             'job_title' => ['nullable', 'string', 'max:100'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ], [
-            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'name.regex' => 'The full name field must only contain letters and spaces.',
+            'username.regex' => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
+            'email.regex' => 'The email must be a valid address in the format name@domain.com.',
             'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.regex' => 'The phone field must contain 6 to 15 digits only.',
             'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 
@@ -123,19 +127,22 @@ class UserManagementController extends Controller
         $user = $employee->user;
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', Rule::unique('users', 'username')->ignore($user->id)],
-            'email' => ['required_if:otp_channel,email', 'nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone' => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
+            'username' => ['required', 'string', 'max:50', 'regex:/^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/', Rule::unique('users', 'username')->ignore($user->id)],
+            'email' => ['required_if:otp_channel,email', 'nullable', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', Rule::unique('users', 'phone')->ignore($user->id)],
             'phone_country_code' => ['nullable', 'string', 'max:10'],
             'otp_channel' => ['required', Rule::in(['whatsapp', 'email'])],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'confirmed', PasswordRule::min(8)->mixedCase()->symbols()],
             'job_title' => ['nullable', 'string', 'max:100'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ], [
-            'username.regex' => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'name.regex' => 'The full name field must only contain letters and spaces.',
+            'username.regex' => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
+            'email.regex' => 'The email must be a valid address in the format name@domain.com.',
             'email.required_if' => 'The email field is required when the notification channel is set to email.',
+            'phone.regex' => 'The phone field must contain 6 to 15 digits only.',
             'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
 

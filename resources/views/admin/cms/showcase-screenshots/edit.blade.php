@@ -1,20 +1,20 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Edit Screenshot')
-@section('page-title', 'Edit Screenshot')
+@section('title', __('Edit Screenshot'))
+@section('page-title', __('Edit Screenshot'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.cms.showcase-screenshots.index') }}">Screenshots</a>
+    <a href="{{ route('admin.cms.showcase-screenshots.index') }}">{{ __('Screenshots') }}</a>
     <span class="sep">/</span>
-    <span class="current">Edit</span>
+    <span class="current">{{ __('Edit') }}</span>
 @endsection
 
 @section('content')
 <div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-        <a href="{{ route('admin.cms.showcase-screenshots.index') }}" class="btn-secondary">&#8592; Back</a>
-        <h1 style="font-size:1.2rem;font-weight:700;margin:0;">Edit Screenshot</h1>
+        <a href="{{ route('admin.cms.showcase-screenshots.index') }}" class="btn-secondary">{{ __('← Back') }}</a>
+        <h1 style="font-size:1.2rem;font-weight:700;margin:0;">{{ __('Edit Screenshot') }}</h1>
     </div>
 
     @if($errors->any())
@@ -30,38 +30,38 @@
         @method('PUT')
 
         <div class="form-section">
-            <div class="form-section-title">Screenshot Details</div>
+            <div class="form-section-title">{{ __('Screenshot Details') }}</div>
 
             <div class="form-group">
-                <label class="form-label">Category <span class="req">*</span></label>
+                <label class="form-label">{{ __('Category') }} <span class="req">*</span></label>
                 <select name="category" class="form-input" style="background: var(--in-bg); color: var(--text);">
-                    <option value="application" {{ old('category', $screenshot->category) === 'application' ? 'selected' : '' }}>Application</option>
-                    <option value="portal" {{ old('category', $screenshot->category) === 'portal' ? 'selected' : '' }}>Portal</option>
+                    <option value="application" {{ old('category', $screenshot->category) === 'application' ? 'selected' : '' }}>{{ __('Application') }}</option>
+                    <option value="portal" {{ old('category', $screenshot->category) === 'portal' ? 'selected' : '' }}>{{ __('Portal') }}</option>
                 </select>
             </div>
 
             <div class="form-group" style="margin-top:15px;">
-                <label class="form-label">Screenshot Image</label>
+                <label class="form-label">{{ __('Screenshot Image') }}</label>
                 @if($screenshot->image_path)
                     <div style="margin-bottom: 10px;">
-                        <img src="{{ $screenshot->image_path }}" alt="Current screenshot" style="width: 160px; height: 110px; object-fit: cover; border-radius: 8px; border: 1px solid var(--bdr); background: rgba(255,255,255,.05);">
+                        <img src="{{ $screenshot->image_path }}" alt="{{ __('Current screenshot') }}" style="width: 160px; height: 110px; object-fit: cover; border-radius: 8px; border: 1px solid var(--bdr); background: rgba(255,255,255,.05);">
                     </div>
                 @endif
                 <input type="file" name="image_file" class="form-input @error('image_file') err @enderror"
                        accept="image/*" style="height: auto; padding: 8px;">
-                <span style="font-size: .75rem; color: var(--text-dim); margin-top: 4px;">Leave blank to keep current screenshot. Max size: 4MB.</span>
+                <span style="font-size: .75rem; color: var(--text-dim); margin-top: 4px;">{{ __('Leave blank to keep current screenshot. Max size: 4MB.') }}</span>
                 @error('image_file')<span class="form-error">{{ $message }}</span>@enderror
             </div>
 
             <div class="form-grid-2" style="margin-top:15px;">
                 <div class="form-group">
-                    <label class="form-label">Caption (English)</label>
+                    <label class="form-label">{{ __('Caption (English)') }}</label>
                     <input type="text" name="title[en]" class="form-input @error('title.en') err @enderror"
                            value="{{ old('title.en', $screenshot->title['en'] ?? '') }}">
                     @error('title.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Caption (Arabic)</label>
+                    <label class="form-label">{{ __('Caption (Arabic)') }}</label>
                     <input type="text" name="title[ar]" dir="rtl" class="form-input @error('title.ar') err @enderror"
                            value="{{ old('title.ar', $screenshot->title['ar'] ?? '') }}">
                     @error('title.ar')<span class="form-error">{{ $message }}</span>@enderror
@@ -70,12 +70,12 @@
 
             <div class="form-grid-2" style="margin-top:15px;">
                 <div class="form-group">
-                    <label class="form-label">Description (English)</label>
+                    <label class="form-label">{{ __('Description (English)') }}</label>
                     <textarea name="subtitle[en]" class="form-input @error('subtitle.en') err @enderror" rows="3" style="height:auto;">{{ old('subtitle.en', $screenshot->subtitle['en'] ?? '') }}</textarea>
                     @error('subtitle.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Description (Arabic)</label>
+                    <label class="form-label">{{ __('Description (Arabic)') }}</label>
                     <textarea name="subtitle[ar]" dir="rtl" class="form-input @error('subtitle.ar') err @enderror" rows="3" style="height:auto;">{{ old('subtitle.ar', $screenshot->subtitle['ar'] ?? '') }}</textarea>
                     @error('subtitle.ar')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
@@ -83,27 +83,27 @@
         </div>
 
         <div class="form-section" style="margin-top:20px;">
-            <div class="form-section-title">Ordering & Visibility</div>
+            <div class="form-section-title">{{ __('Ordering & Visibility') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Sort Order <span class="req">*</span></label>
+                    <label class="form-label">{{ __('Sort Order') }} <span class="req">*</span></label>
                     <input type="number" name="sort_order" class="form-input"
                            value="{{ old('sort_order', $screenshot->sort_order) }}" min="0" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">{{ __('Status') }}</label>
                     <select name="status" class="form-input" style="background: var(--in-bg); color: var(--text);">
-                        <option value="active" {{ old('status', $screenshot->status) === 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="inactive" {{ old('status', $screenshot->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="active" {{ old('status', $screenshot->status) === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                        <option value="inactive" {{ old('status', $screenshot->status) === 'inactive' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
                     </select>
                 </div>
             </div>
         </div>
 
         <div class="form-actions" style="margin-top:20px;">
-            <a href="{{ route('admin.cms.showcase-screenshots.index') }}" class="btn-secondary">Cancel</a>
-            <button type="submit" class="btn-primary">Update Screenshot</button>
+            <a href="{{ route('admin.cms.showcase-screenshots.index') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+            <button type="submit" class="btn-primary">{{ __('Update Screenshot') }}</button>
         </div>
     </form>
 </div>

@@ -10,6 +10,7 @@ use App\Models\SupportTicket;
 use App\Models\UserDevice;
 use App\Models\HandoverRequest;
 use App\Models\Invoice;
+use App\Models\User;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
@@ -183,6 +184,10 @@ class SupportNotificationService
         int $userId, string $title, string $message, string $type, int $createdBy,
         ?string $entityType = null, ?int $entityId = null,
     ): void {
+        if (! User::where('id', $userId)->where('notifications_enabled', true)->exists()) {
+            return;
+        }
+
         $record = SystemNotification::create([
             'user_id'     => $userId,
             'title'       => $title,

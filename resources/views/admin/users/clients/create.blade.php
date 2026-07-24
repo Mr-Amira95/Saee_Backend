@@ -1,15 +1,15 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Add New Client')
+@section('title', __('Add New Client'))
 
-@section('page-title', 'Add New Client')
+@section('page-title', __('Add New Client'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.clients.index') }}">Clients</a>
+    <a href="{{ route('admin.clients.index') }}">{{ __('Clients') }}</a>
     <span>/</span>
-    <span>Add New Client</span>
+    <span>{{ __('Add New Client') }}</span>
 @endsection
 
 @section('head')
@@ -58,6 +58,23 @@
 .phone-dd-item .dd-name { flex: 1; color: var(--text); }
 .phone-dd-item .dd-code { color: var(--red); font-weight: 600; font-size: .8rem; }
 
+html[dir="rtl"] .phone-ext-btn {
+    border-right: 1px solid var(--bdr);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+}
+html[dir="rtl"] .phone-input-field {
+    border-radius: 8px 0 0 8px;
+}
+html[dir="rtl"] .phone-ext-btn .arrow {
+    margin-left: 0;
+    margin-right: auto;
+}
+html[dir="rtl"] .phone-dropdown {
+    left: auto;
+    right: 0;
+}
+
 /* ── Searchable select ── */
 .searchable-select { position: relative; }
 .searchable-select-btn {
@@ -97,6 +114,11 @@
 .ss-item.ss-placeholder { color: var(--text-sub); }
 .ss-item.ss-placeholder:hover { background: rgba(255,255,255,.04); }
 .ss-empty { padding: 12px; text-align: center; color: var(--text-sub); font-size: .85rem; }
+
+html[dir="rtl"] .searchable-select-btn .ss-arrow {
+    margin-left: 0;
+    margin-right: 8px;
+}
 
 /* ── Logo upload ── */
 .logo-upload-zone {
@@ -157,29 +179,29 @@
     {{-- Account Owner --}}
     {{-- z-index:3 ensures the phone dropdown floats above all subsequent sections --}}
     <div class="form-section" style="position:relative;z-index:3;">
-        <div class="form-section-title">Account Owner (Master User)</div>
+        <div class="form-section-title">{{ __('Account Owner (Master User)') }}</div>
         <div style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:10px;padding:12px 16px;margin-bottom:18px;">
             <svg width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="1.8" viewBox="0 0 24 24" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <span style="font-size:.82rem;color:#93c5fd;">An invitation email will be sent to the client automatically after account creation.</span>
+            <span style="font-size:.82rem;color:#93c5fd;">{{ __('An invitation email will be sent to the client automatically after account creation.') }}</span>
         </div>
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="name">Full Name <span class="req">*</span></label>
-                <input class="form-input @error('name') is-error @enderror" id="name" type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Ahmad Al-Hassan" required>
+                <label class="form-label" for="name">{{ __('Full Name') }} <span class="req">*</span></label>
+                <input class="form-input @error('name') is-error @enderror" id="name" type="text" name="name" value="{{ old('name') }}" placeholder="{{ __('e.g. Ahmad Al-Hassan') }}" required>
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <label class="form-label" for="username">{{ __('Username') }} <span class="req">*</span></label>
                 <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username" value="{{ old('username') }}" required>
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email Address <span class="opt">(required for email channel)</span></label>
-                <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email') }}" placeholder="owner@company.com">
+                <label class="form-label" for="email">{{ __('Email Address') }} <span class="opt">({{ __('required for email channel') }})</span></label>
+                <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email') }}" placeholder="{{ __('owner@company.com') }}">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="phone">Personal Phone <span class="opt">(required for WhatsApp)</span></label>
+                <label class="form-label" for="phone">{{ __('Personal Phone') }} <span class="opt">({{ __('required for WhatsApp') }})</span></label>
                 <div style="position:relative;">
                     <div class="phone-wrap">
                         <button type="button" class="phone-ext-btn" id="personalExtBtn">
@@ -192,26 +214,27 @@
                                value="{{ old('phone') }}" placeholder="7X XXX XXXX">
                     </div>
                     <div class="phone-dropdown" id="personalExtDropdown">
-                        <input type="text" class="phone-dd-search" placeholder="Search country or code…">
+                        <input type="text" class="phone-dd-search" placeholder="{{ __('Search country or code…') }}">
                         <div class="phone-dd-list" id="personalExtList"></div>
                     </div>
                 </div>
                 @error('phone')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="password">Password <span class="opt">(optional — leave blank to auto-generate &amp; send invitation)</span></label>
+                <label class="form-label" for="password">{{ __('Password') }} <span class="opt">({{ __('optional — leave blank to auto-generate & send invitation') }})</span></label>
                 <div style="position:relative;">
-                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="Minimum 8 characters" style="width:100%;padding-right:40px;box-sizing:border-box;">
+                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="{{ __('Min 8 chars, upper, lower & symbol') }}" style="width:100%;padding-right:40px;box-sizing:border-box;" oninput="updatePasswordRequirements(this.value, 'createPwReqs')">
                     <button type="button" onclick="togglePwd('password','eyePwd')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
                         <svg id="eyePwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
                 </div>
+                @include('admin.partials.password-requirements', ['id' => 'createPwReqs'])
                 @error('password')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="password_confirmation">Confirm Password <span class="opt">(optional)</span></label>
+                <label class="form-label" for="password_confirmation">{{ __('Confirm Password') }} <span class="opt">({{ __('optional') }})</span></label>
                 <div style="position:relative;">
-                    <input class="form-input" id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="Repeat password" style="width:100%;padding-right:40px;box-sizing:border-box;">
+                    <input class="form-input" id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="{{ __('Repeat password') }}" style="width:100%;padding-right:40px;box-sizing:border-box;">
                     <button type="button" onclick="togglePwd('password_confirmation','eyePwdConf')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
                         <svg id="eyePwdConf" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
@@ -236,11 +259,13 @@
             </div>
             <div class="form-group">
                 <label class="form-label" for="commercial_register_number">Commercial Register No. <span class="opt">(optional)</span></label>
-                <input class="form-input" id="commercial_register_number" type="text" name="commercial_register_number" value="{{ old('commercial_register_number') }}" placeholder="CR-XXXXXXX">
+                <input class="form-input @error('commercial_register_number') is-error @enderror" id="commercial_register_number" type="text" inputmode="numeric" pattern="[0-9]*" name="commercial_register_number" value="{{ old('commercial_register_number') }}" placeholder="e.g. 1234567" title="Numbers only">
+                @error('commercial_register_number')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label class="form-label" for="vat_number">VAT Number <span class="opt">(optional)</span></label>
-                <input class="form-input" id="vat_number" type="text" name="vat_number" value="{{ old('vat_number') }}" placeholder="VAT-XXXXXXX">
+                <input class="form-input @error('vat_number') is-error @enderror" id="vat_number" type="text" inputmode="numeric" pattern="[0-9]*" name="vat_number" value="{{ old('vat_number') }}" placeholder="e.g. 1234567" title="Numbers only">
+                @error('vat_number')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label class="form-label" for="company_email">Company Email <span class="opt">(optional)</span></label>
@@ -351,8 +376,8 @@
             </div>
             <div class="form-group">
                 <label class="form-label" for="expiry_date">Account Expiry Date <span class="opt">(optional)</span></label>
-                <input class="form-input @error('expiry_date') is-error @enderror" id="expiry_date" type="date" name="expiry_date"
-                       value="{{ old('expiry_date') }}" min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                <input class="form-input @error('expiry_date') is-error @enderror" id="expiry_date" type="text" name="expiry_date"
+                       value="{{ old('expiry_date') }}" placeholder="DD-MM-YYYY" maxlength="10" autocomplete="off">
                 @error('expiry_date')<span class="form-error">{{ $message }}</span>@enderror
             </div>
         </div>
@@ -401,14 +426,14 @@
             <div class="form-group">
                 <label class="form-label">CliQ ID</label>
                 <div style="display:flex;gap:8px;">
-                    <select name="cliq_alias_type" class="form-select" style="width:150px;flex-shrink:0;">
+                    <select name="cliq_alias_type" id="cliq_alias_type" class="form-select" style="width:150px;flex-shrink:0;">
                         <option value="">— Type —</option>
                         <option value="alias" {{ old('cliq_alias_type') === 'alias' ? 'selected' : '' }}>Alias</option>
                         <option value="phone" {{ old('cliq_alias_type') === 'phone' ? 'selected' : '' }}>Phone</option>
                     </select>
-                    <input class="form-input @error('cliq_id') is-error @enderror" type="text"
+                    <input class="form-input @error('cliq_id') is-error @enderror" id="cliq_id" type="text"
                            name="cliq_id" value="{{ old('cliq_id') }}"
-                           placeholder="Phone number or National ID" style="flex:1;">
+                           placeholder="Phone number or Alias" style="flex:1;">
                 </div>
                 @error('cliq_id')<span class="form-error">{{ $message }}</span>@enderror
             </div>
@@ -459,6 +484,9 @@
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <input type="number"
                                        name="delivery_prices[{{ $city->id }}]"
+                                       id="delivery_price_{{ $city->id }}"
+                                       class="delivery-price-input"
+                                       data-city="{{ $city->name }}"
                                        value="{{ old('delivery_prices.'.$city->id) }}"
                                        min="0" step="0.01"
                                        placeholder="{{ number_format($city->delivery_price, 2) }}"
@@ -842,6 +870,11 @@ function loadAreas(cityId) {
 /* ── Logo preview ── */
 document.getElementById('logoInput').addEventListener('change', function() {
     if (!this.files[0]) return;
+    if (this.files[0].size > 2 * 1024 * 1024) {
+        showWarningToast('The logo file must not exceed 2 MB.');
+        this.value = '';
+        return;
+    }
     var reader = new FileReader();
     reader.onload = function(e) {
         document.getElementById('logoPreviewImg').src = e.target.result;
@@ -893,6 +926,12 @@ function addAttachRow() {
             '<button type="button" class="btn-remove-att" onclick="removeAttachRow(' + i + ')" style="flex-shrink:0;">&#10005;</button>' +
         '</div>';
     document.getElementById('attachContainer').appendChild(row);
+    row.querySelector('input[type="file"]').addEventListener('change', function() {
+        if (this.files[0] && this.files[0].size > 10 * 1024 * 1024) {
+            showWarningToast('Attachment files must not exceed 10 MB.');
+            this.value = '';
+        }
+    });
 }
 function removeAttachRow(i) {
     var el = document.getElementById('att-row-' + i);
@@ -949,7 +988,7 @@ function togglePwd(inputId, iconId) {
 
 /* ── Client Form Validation ── */
 (function() {
-    var form = document.querySelector('form');
+    var form = document.querySelector('form[novalidate]');
     if (!form) return;
 
     function getField(n) {
@@ -969,9 +1008,114 @@ function togglePwd(inputId, iconId) {
     function clearErrors() {
         form.querySelectorAll('.js-err').forEach(function(e) { e.remove(); });
         form.querySelectorAll('.js-marked').forEach(function(e) { e.classList.remove('is-error', 'js-marked'); });
+        form.querySelectorAll('.delivery-price-input').forEach(function(e) { e.style.borderColor = ''; });
     }
 
-    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+    function isEmail(v) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim()); }
+    function isValidName(v) { return /^[\p{L}\s]+$/u.test(v.trim()); }
+    function isValidUsername(v) { return /^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/.test(v.trim()); }
+    function isValidPhone(v) { return /^[0-9]{6,15}$/.test(v.trim()); }
+    function isValidEnglishName(v) { return /^[A-Za-z\s'.-]+$/.test(v.trim()); }
+    function isValidIban(v) { return /^[A-Za-z]{2}[0-9]{2}[A-Za-z0-9]{1,30}$/.test(v.trim()); }
+    function isValidSwift(v) { return /^[A-Za-z0-9]{8,11}$/.test(v.trim()); }
+    function isValidAccountNumber(v) { return /^[0-9]+$/.test(v.trim()); }
+    function isValidCliqPhone(v) { return /^7[789][0-9]{7}$/.test(v.trim()); }
+    function isValidCliqAlias(v) { return /^[A-Za-z0-9]+$/.test(v.trim()); }
+
+    function isValidExpiryDate(v) {
+        var m = v.trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (!m) return false;
+        var day = parseInt(m[1], 10), month = parseInt(m[2], 10), year = parseInt(m[3], 10);
+        var d = new Date(year, month - 1, day);
+        return d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day;
+    }
+    function isExpiryDateInFuture(v) {
+        var m = v.trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (!m) return false;
+        var d = new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return d.getTime() > today.getTime();
+    }
+
+    /* ── Expiry date input mask (DD-MM-YYYY) ── */
+    var expiryEl = getField('expiry_date');
+    if (expiryEl) {
+        expiryEl.addEventListener('input', function() {
+            var digits = expiryEl.value.replace(/[^0-9]/g, '').slice(0, 8);
+            var out = digits.slice(0, 2);
+            if (digits.length > 2) out += '-' + digits.slice(2, 4);
+            if (digits.length > 4) out += '-' + digits.slice(4, 8);
+            expiryEl.value = out;
+            clearFieldError(expiryEl);
+            if (out.length === 10 && !isValidExpiryDate(out)) {
+                showFieldError(expiryEl, 'Please enter a valid date in the format DD-MM-YYYY.');
+            }
+        });
+    }
+
+    /* ── CliQ ID validation depends on selected type ── */
+    var cliqTypeEl = getField('cliq_alias_type');
+    var cliqIdEl   = getField('cliq_id');
+    function validateCliq() {
+        if (!cliqIdEl) return;
+        clearFieldError(cliqIdEl);
+        var type = cliqTypeEl ? cliqTypeEl.value : '';
+        var val  = cliqIdEl.value.trim();
+        if (!val) return;
+        if (type === 'phone' && !isValidCliqPhone(val)) {
+            showFieldError(cliqIdEl, 'Phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+        } else if (type === 'alias' && !isValidCliqAlias(val)) {
+            showFieldError(cliqIdEl, 'Alias must only contain letters and numbers.');
+        }
+    }
+    if (cliqIdEl) cliqIdEl.addEventListener('input', validateCliq);
+    if (cliqTypeEl) cliqTypeEl.addEventListener('change', validateCliq);
+
+    /* ── Delivery price validation (must be at least 0) ── */
+    form.querySelectorAll('.delivery-price-input').forEach(function(el) {
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            el.style.borderColor = '';
+            if (el.value !== '' && parseFloat(el.value) < 0) {
+                el.style.borderColor = '#dc2626';
+                showFieldError(el, 'The Delivery price of ' + el.dataset.city + ' must be at least 0');
+            }
+        });
+    });
+
+    function clearFieldError(el) {
+        var container = el.closest ? (el.closest('.form-group') || el.parentElement) : el.parentElement;
+        el.classList.remove('is-error', 'js-marked');
+        var err = container.querySelector('.js-err');
+        if (err) err.remove();
+    }
+
+    function wireLiveValidation(name, validator, msg) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            if (el.value.trim() && !validator(el.value)) showFieldError(el, msg);
+        });
+    }
+
+    wireLiveValidation('name', isValidName, 'Full name must only contain letters and spaces (no numbers or special characters).');
+    wireLiveValidation('username', isValidUsername, 'Username must contain at least one letter, start with a letter or number, and cannot end with a special character.');
+    wireLiveValidation('email', isEmail, 'Please enter a valid email address in the format name@domain.com.');
+    wireLiveValidation('phone', isValidPhone, 'Phone must contain 6 to 15 digits only.');
+    wireLiveValidation('bank_name', isValidEnglishName, 'Bank name must only contain English letters.');
+    wireLiveValidation('account_name', isValidEnglishName, 'Account holder name must only contain English letters.');
+    wireLiveValidation('iban', isValidIban, 'IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.');
+    wireLiveValidation('swift_code', isValidSwift, 'SWIFT / BIC code must be 8-11 letters/numbers only.');
+    wireLiveValidation('account_number', isValidAccountNumber, 'Account number must contain digits only.');
+
+    function isStrongPassword(pw) {
+        return pw.length >= 8
+            && /[A-Z]/.test(pw)
+            && /[a-z]/.test(pw)
+            && /[^A-Za-z0-9]/.test(pw);
+    }
 
     form.addEventListener('submit', function(e) {
         clearErrors();
@@ -988,17 +1132,95 @@ function togglePwd(inputId, iconId) {
         req('username',     'Username is required.');
         req('company_name', 'Company name (EN) is required.');
 
+        var nEl = getField('name');
+        if (nEl && nEl.value.trim() && !isValidName(nEl.value)) {
+            showFieldError(nEl, 'Full name must only contain letters and spaces (no numbers or special characters).');
+            if (!first) first = nEl;
+        }
+
+        var uEl = getField('username');
+        if (uEl && uEl.value.trim() && !isValidUsername(uEl.value)) {
+            showFieldError(uEl, 'Username must contain at least one letter, start with a letter or number, and cannot end with a special character.');
+            if (!first) first = uEl;
+        }
+
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
-            showFieldError(eEl, 'Please enter a valid email address.');
+            showFieldError(eEl, 'Please enter a valid email address in the format name@domain.com.');
             if (!first) first = eEl;
         }
+
+        var phEl = getField('phone');
+        if (phEl && phEl.value.trim() && !isValidPhone(phEl.value)) {
+            showFieldError(phEl, 'Phone must contain 6 to 15 digits only.');
+            if (!first) first = phEl;
+        }
+
+        var bnEl = getField('bank_name');
+        if (bnEl && bnEl.value.trim() && !isValidEnglishName(bnEl.value)) {
+            showFieldError(bnEl, 'Bank name must only contain English letters.');
+            if (!first) first = bnEl;
+        }
+
+        var anEl = getField('account_name');
+        if (anEl && anEl.value.trim() && !isValidEnglishName(anEl.value)) {
+            showFieldError(anEl, 'Account holder name must only contain English letters.');
+            if (!first) first = anEl;
+        }
+
+        var ibEl = getField('iban');
+        if (ibEl && ibEl.value.trim() && !isValidIban(ibEl.value)) {
+            showFieldError(ibEl, 'IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.');
+            if (!first) first = ibEl;
+        }
+
+        var swEl = getField('swift_code');
+        if (swEl && swEl.value.trim() && !isValidSwift(swEl.value)) {
+            showFieldError(swEl, 'SWIFT / BIC code must be 8-11 letters/numbers only.');
+            if (!first) first = swEl;
+        }
+
+        var acEl = getField('account_number');
+        if (acEl && acEl.value.trim() && !isValidAccountNumber(acEl.value)) {
+            showFieldError(acEl, 'Account number must contain digits only.');
+            if (!first) first = acEl;
+        }
+
+        if (cliqIdEl && cliqIdEl.value.trim()) {
+            var cType = cliqTypeEl ? cliqTypeEl.value : '';
+            var cVal  = cliqIdEl.value.trim();
+            if (cType === 'phone' && !isValidCliqPhone(cVal)) {
+                showFieldError(cliqIdEl, 'Phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+                if (!first) first = cliqIdEl;
+            } else if (cType === 'alias' && !isValidCliqAlias(cVal)) {
+                showFieldError(cliqIdEl, 'Alias must only contain letters and numbers.');
+                if (!first) first = cliqIdEl;
+            }
+        }
+
+        if (expiryEl && expiryEl.value.trim()) {
+            if (!isValidExpiryDate(expiryEl.value)) {
+                showFieldError(expiryEl, 'Please enter a valid date in the format DD-MM-YYYY.');
+                if (!first) first = expiryEl;
+            } else if (!isExpiryDateInFuture(expiryEl.value)) {
+                showFieldError(expiryEl, 'Account expiry date must be a date after today.');
+                if (!first) first = expiryEl;
+            }
+        }
+
+        form.querySelectorAll('.delivery-price-input').forEach(function(el) {
+            if (el.value !== '' && parseFloat(el.value) < 0) {
+                el.style.borderColor = '#dc2626';
+                showFieldError(el, 'The Delivery price of ' + el.dataset.city + ' must be at least 0');
+                if (!first) first = el;
+            }
+        });
 
         var pEl  = getField('password');
         var pcEl = getField('password_confirmation');
         if (pEl && pEl.value) {
-            if (pEl.value.length < 8) {
-                showFieldError(pEl, 'Password must be at least 8 characters.');
+            if (!isStrongPassword(pEl.value)) {
+                showFieldError(pEl, 'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a special character.');
                 if (!first) first = pEl;
             } else if (pEl.value !== pcEl.value) {
                 showFieldError(pcEl, 'Passwords do not match.');

@@ -18,7 +18,7 @@ class CityController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cities retrieved successfully.',
+            'message' => __('Cities retrieved successfully.'),
             'data'    => CityResource::collection($cities),
         ]);
     }

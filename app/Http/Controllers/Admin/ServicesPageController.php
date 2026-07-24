@@ -44,6 +44,6 @@ class ServicesPageController extends Controller
         ]);
 
         return redirect()->route('admin.cms.services-page.index')
-            ->with('success', 'Services page updated successfully.');
+            ->with('success', __('Services page updated successfully.'));
     }
 }

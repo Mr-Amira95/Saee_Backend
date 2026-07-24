@@ -54,7 +54,7 @@ class ShowcaseScreenshotController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-screenshots.index')
-            ->with('success', 'Screenshot uploaded successfully.');
+            ->with('success', __('Screenshot uploaded successfully.'));
     }
 
     public function edit(ShowcaseScreenshot $showcaseScreenshot)
@@ -91,7 +91,7 @@ class ShowcaseScreenshotController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-screenshots.index')
-            ->with('success', 'Screenshot updated successfully.');
+            ->with('success', __('Screenshot updated successfully.'));
     }
 
     public function destroy(ShowcaseScreenshot $showcaseScreenshot)
@@ -100,6 +100,6 @@ class ShowcaseScreenshotController extends Controller
         $showcaseScreenshot->delete();
 
         return redirect()->route('admin.cms.showcase-screenshots.index')
-            ->with('success', 'Screenshot deleted successfully.');
+            ->with('success', __('Screenshot deleted successfully.'));
     }
 }

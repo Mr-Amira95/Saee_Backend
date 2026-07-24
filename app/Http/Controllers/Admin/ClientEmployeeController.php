@@ -91,7 +91,7 @@ class ClientEmployeeController extends Controller
         }
 
         $via = $data['otp_channel'] === 'email' ? 'email' : 'WhatsApp';
-        return back()->with('success', "Employee account created. An invitation has been sent via {$via}.");
+        return back()->with('success', __('Employee account created. An invitation has been sent via :via.', ['via' => $via]));
     }
 
     public function updateStatus(ClientProfile $client, ClientEmployee $employee)
@@ -99,8 +99,9 @@ class ClientEmployeeController extends Controller
         $newStatus = $employee->status === 'active' ? 'suspended' : 'active';
         $employee->update(['status' => $newStatus]);
 
-        $label = $newStatus === 'active' ? 'activated' : 'suspended';
-        return back()->with('success', "Employee has been {$label}.");
+        return back()->with('success', $newStatus === 'active'
+            ? __('Employee has been activated.')
+            : __('Employee has been suspended.'));
     }
 
     public function destroy(ClientProfile $client, ClientEmployee $employee)
@@ -115,6 +116,6 @@ class ClientEmployeeController extends Controller
             $employee->delete();
         });
 
-        return back()->with('success', 'Employee removed successfully.');
+        return back()->with('success', __('Employee removed successfully.'));
     }
 }

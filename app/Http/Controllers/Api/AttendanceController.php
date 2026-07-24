@@ -49,7 +49,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Attendance records retrieved successfully',
+            'message' => __('Attendance records retrieved successfully'),
             'data'    => AttendanceResource::collection($attendances->items()),
             'meta'    => [
                 'current_page' => $attendances->currentPage(),
@@ -75,7 +75,7 @@ class AttendanceController extends Controller
         if ($openSession) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are already checked in. Please check out first.',
+                'message' => __('You are already checked in. Please check out first.'),
                 'code'    => 'ALREADY_CHECKED_IN',
             ], 422);
         }
@@ -89,7 +89,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Checked in successfully.',
+            'message' => __('Checked in successfully.'),
             'data'    => new AttendanceResource($attendance),
         ]);
     }
@@ -110,14 +110,14 @@ class AttendanceController extends Controller
         if (! $attendance) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not currently checked in.',
+                'message' => __('You are not currently checked in.'),
                 'code'    => 'NOT_CHECKED_IN',
             ], 422);
         }
 
         return response()->json([
             'success'       => true,
-            'message'       => 'Shift summary generated. Confirm to check out.',
+            'message'       => __('Shift summary generated. Confirm to check out.'),
             'data'          => new AttendanceResource($attendance),
             'shift_summary' => $this->buildShiftSummary($user->driverProfile->id, $attendance->check_in_at),
         ]);
@@ -139,7 +139,7 @@ class AttendanceController extends Controller
         if (! $attendance) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not currently checked in.',
+                'message' => __('You are not currently checked in.'),
                 'code'    => 'NOT_CHECKED_IN',
             ], 422);
         }
@@ -153,7 +153,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'success'       => true,
-            'message'       => 'Checked out successfully.',
+            'message'       => __('Checked out successfully.'),
             'data'          => new AttendanceResource($attendance),
             'shift_summary' => $shiftSummary,
         ]);

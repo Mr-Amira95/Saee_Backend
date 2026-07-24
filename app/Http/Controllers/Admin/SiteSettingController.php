@@ -48,6 +48,6 @@ class SiteSettingController extends Controller
         }
 
         return redirect()->route('admin.settings.site.index')
-            ->with('success', 'Site settings updated successfully.');
+            ->with('success', __('Site settings updated successfully.'));
     }
 }

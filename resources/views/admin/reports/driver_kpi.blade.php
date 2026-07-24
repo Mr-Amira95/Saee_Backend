@@ -1,16 +1,16 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Driver KPI: ' . $driver->name)
-@section('page-title', 'Driver Performance')
+@section('title', __('Driver KPI: ') . $driver->name)
+@section('page-title', __('Driver Performance'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
     @if(auth()->user()->hasAdminAction('reports.center'))
-    <a href="{{ route('admin.reports.index') }}">Reports Center</a>
+    <a href="{{ route('admin.reports.index') }}">{{ __('Reports Center') }}</a>
     <span class="sep">/</span>
     @endif
     @if(auth()->user()->hasAdminAction('reports.kpi_insights'))
-    <a href="{{ route('admin.reports.kpis') }}">KPI Insights</a>
+    <a href="{{ route('admin.reports.kpis') }}">{{ __('KPI Insights') }}</a>
     <span class="sep">/</span>
     @endif
     <span class="current">{{ $driver->name }}</span>
@@ -74,6 +74,9 @@
         padding-top: 14px;
         margin-top: 10px;
         text-align: left;
+    }
+    html[dir="rtl"] .profile-meta-list {
+        text-align: right;
     }
     .meta-list-item {
         display: flex;
@@ -221,20 +224,20 @@
     {{-- Page Header --}}
     <div class="page-hd">
         <div class="page-hd-left">
-            <h1>Driver Performance Profile</h1>
-            <p>KPI metrics, 30-day order trends, status breakdown, and recent customer reviews for {{ $driver->name }}.</p>
+            <h1>{{ __('Driver Performance Profile') }}</h1>
+            <p>{{ __('KPI metrics, 30-day order trends, status breakdown, and recent customer reviews for') }} {{ $driver->name }}.</p>
         </div>
         <div style="display:flex;gap:10px;">
             @if(auth()->user()->hasAdminAction('reports.rating'))
             <a href="{{ route('admin.reports.ratings', ['driver' => $driver->id]) }}" class="btn-secondary">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                View Ratings Log
+                {{ __('View Ratings Log') }}
             </a>
             @endif
             @if(auth()->user()->hasAdminAction('reports.kpi_insights'))
             <a href="{{ route('admin.reports.kpis') }}" class="btn-secondary">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                KPI Leaderboard
+                {{ __('KPI Leaderboard') }}
             </a>
             @endif
         </div>
@@ -255,29 +258,29 @@
 
             <div class="profile-meta-list">
                 <div class="meta-list-item">
-                    <span>Email</span>
+                    <span>{{ __('Email') }}</span>
                     <span>{{ $driver->email }}</span>
                 </div>
                 <div class="meta-list-item">
-                    <span>National ID</span>
-                    <span>{{ $profile->national_id ?? 'N/A' }}</span>
+                    <span>{{ __('National ID') }}</span>
+                    <span>{{ $profile->national_id ?? __('N/A') }}</span>
                 </div>
                 <div class="meta-list-item">
-                    <span>Vehicle Plate</span>
-                    <span>{{ $profile->vehicle_plate ?? 'N/A' }}</span>
+                    <span>{{ __('Vehicle Plate') }}</span>
+                    <span>{{ $profile->vehicle_plate ?? __('N/A') }}</span>
                 </div>
                 <div class="meta-list-item">
-                    <span>Vehicle Type</span>
-                    <span>{{ $profile->vehicle_type ?? 'N/A' }}</span>
+                    <span>{{ __('Vehicle Type') }}</span>
+                    <span>{{ $profile->vehicle_type ?? __('N/A') }}</span>
                 </div>
                 <div class="meta-list-item">
-                    <span>Salary Bracket</span>
-                    <span>{{ $profile->basic_salary ? $profile->basic_salary . ' JD' : 'N/A' }}</span>
+                    <span>{{ __('Salary Bracket') }}</span>
+                    <span>{{ $profile->basic_salary ? $profile->basic_salary . ' JD' : __('N/A') }}</span>
                 </div>
                 <div class="meta-list-item">
-                    <span>Availability</span>
+                    <span>{{ __('Availability') }}</span>
                     <span style="color: {{ ($profile->is_available ?? false) ? '#4ade80' : '#f87171' }};">
-                        {{ ($profile->is_available ?? false) ? 'Available' : 'Offline' }}
+                        {{ ($profile->is_available ?? false) ? __('Available') : __('Offline') }}
                     </span>
                 </div>
             </div>
@@ -290,9 +293,9 @@
                 {{-- Total Orders --}}
                 <div class="kpi-card" style="animation-delay:.05s">
                     <div>
-                        <div class="kpi-label">Total Assigned</div>
+                        <div class="kpi-label">{{ __('Total Assigned') }}</div>
                         <div class="kpi-val">{{ number_format($totalOrders) }}</div>
-                        <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">Lifetime Orders</div>
+                        <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ __('Lifetime Orders') }}</div>
                     </div>
                     <div style="color:var(--info);opacity:.75;">
                         <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
@@ -302,9 +305,9 @@
                 {{-- Success Rate --}}
                 <div class="kpi-card" style="animation-delay:.1s">
                     <div style="flex:1;">
-                        <div class="kpi-label">Success Rate</div>
+                        <div class="kpi-label">{{ __('Success Rate') }}</div>
                         <div class="kpi-val" style="color:#4ade80;">{{ $successRate }}%</div>
-                        <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($delivered) }} delivered</div>
+                        <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($delivered) }} {{ __('delivered') }}</div>
                     </div>
                     <div class="kpi-ring">
                         <svg viewBox="0 0 36 36" width="100%" height="100%">
@@ -318,11 +321,11 @@
                 @php $ratingPct = ($avgRating / 5) * 100; @endphp
                 <div class="kpi-card" style="animation-delay:.15s">
                     <div style="flex:1;">
-                        <div class="kpi-label">Avg Rating</div>
+                        <div class="kpi-label">{{ __('Avg Rating') }}</div>
                         <div class="kpi-val" style="color:#fbbf24;display:flex;align-items:center;gap:6px;">
                             {{ $avgRating }} <span style="font-size:1.3rem;">★</span>
                         </div>
-                        <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($totalRatings) }} review{{ $totalRatings !== 1 ? 's' : '' }}</div>
+                        <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($totalRatings) }} {{ $totalRatings === 1 ? __('review') : __('reviews') }}</div>
                     </div>
                     <div class="kpi-ring">
                         <svg viewBox="0 0 36 36" width="100%" height="100%">
@@ -338,8 +341,8 @@
                 {{-- SVG Trend Chart --}}
                 <div class="chart-panel" style="animation: fu .45s .15s both;">
                     <div class="panel-heading">
-                        <span>30-Day Orders Volume Trend</span>
-                        <span style="font-size:.7rem;color:var(--text-dim);font-weight:500;">Last 30 Days</span>
+                        <span>{{ __('30-Day Orders Volume Trend') }}</span>
+                        <span style="font-size:.7rem;color:var(--text-dim);font-weight:500;">{{ __('Last 30 Days') }}</span>
                     </div>
 
                     <div style="flex: 1; min-height: 200px; display: flex; align-items: flex-end; position: relative; padding-left: 28px; padding-top: 10px;">
@@ -405,16 +408,16 @@
 
                 {{-- Status Breakdown --}}
                 <div class="chart-panel" style="animation: fu .45s .2s both;">
-                    <div class="panel-heading">Order Statuses</div>
+                    <div class="panel-heading">{{ __('Order Statuses') }}</div>
                     <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
                         @php
                             $statuses = [
-                                'delivered' => ['label' => 'Delivered', 'color' => '#4ade80'],
-                                'pending' => ['label' => 'Pending', 'color' => '#fbbf24'],
-                                'picked_up' => ['label' => 'In Transit', 'color' => '#60a5fa'],
-                                'rejected' => ['label' => 'Rejected', 'color' => '#f87171'],
-                                'returned' => ['label' => 'Returned', 'color' => '#fb923c'],
-                                'cancelled' => ['label' => 'Cancelled', 'color' => '#94a3b8'],
+                                'delivered' => ['label' => __('Delivered'), 'color' => '#4ade80'],
+                                'pending' => ['label' => __('Pending'), 'color' => '#fbbf24'],
+                                'picked_up' => ['label' => __('In Transit'), 'color' => '#60a5fa'],
+                                'rejected' => ['label' => __('Rejected'), 'color' => '#f87171'],
+                                'returned' => ['label' => __('Returned'), 'color' => '#fb923c'],
+                                'cancelled' => ['label' => __('Cancelled'), 'color' => '#94a3b8'],
                             ];
                             $divisor = max($totalOrders, 1);
                         @endphp
@@ -443,15 +446,15 @@
     {{-- Recent Ratings --}}
     <div class="ratings-list-card" style="animation: fu .45s .25s both;">
         <div style="padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;">
-            <span class="panel-title" style="font-size:.82rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Recent Customer Reviews</span>
-            <span style="font-size:.72rem;color:var(--text-dim);">Showing last 15 reviews</span>
+            <span class="panel-title" style="font-size:.82rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Recent Customer Reviews') }}</span>
+            <span style="font-size:.72rem;color:var(--text-dim);">{{ __('Showing last 15 reviews') }}</span>
         </div>
 
         @if($recentRatings->isEmpty())
             <div class="empty-state">
                 <svg width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                <h3>No Customer Reviews</h3>
-                <p>This driver has not received any ratings yet.</p>
+                <h3>{{ __('No Customer Reviews') }}</h3>
+                <p>{{ __('This driver has not received any ratings yet.') }}</p>
             </div>
         @else
             <div>
@@ -466,7 +469,7 @@
                                 </span>
                                 @if($r->order)
                                     <span style="margin-left:10px;font-size:.78rem;color:var(--text-dim);">
-                                        Order #<a href="{{ route('admin.orders.show', $r->order) }}" style="color:var(--red-lt);text-decoration:none;font-weight:600;">{{ $r->order->order_number }}</a>
+                                        {{ __('Order #') }}<a href="{{ route('admin.orders.show', $r->order) }}" style="color:var(--red-lt);text-decoration:none;font-weight:600;">{{ $r->order->order_number }}</a>
                                     </span>
                                 @endif
                             </div>
@@ -475,7 +478,7 @@
                         @if($r->comment)
                             <div class="review-comment">"{{ $r->comment }}"</div>
                         @else
-                            <div class="review-comment" style="color:var(--text-dim);opacity:.7;">No review text comment provided.</div>
+                            <div class="review-comment" style="color:var(--text-dim);opacity:.7;">{{ __('No review text comment provided.') }}</div>
                         @endif
                     </div>
                 @endforeach

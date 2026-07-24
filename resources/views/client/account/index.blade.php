@@ -78,7 +78,7 @@
         </div>
 
         {{-- Toggle switch --}}
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;" title="Toggle notifications">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;" title="{{ __('Toggle notifications') }}">
             <input type="checkbox" id="notif-toggle" style="display:none;" {{ $user->notifications_enabled ? 'checked' : '' }}>
             <div id="notif-track" style="
                 width:44px;height:24px;border-radius:12px;

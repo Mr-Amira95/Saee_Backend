@@ -318,8 +318,7 @@ class OrderController extends Controller
     public function showImport(): View
     {
         $cities = City::where('is_active', true)
-            ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
-            ->orderBy('name')
+            ->with(['areas' => fn ($q) => $q->where('is_active', true)])
             ->get();
 
         return view('client.orders.import', compact('cities'));
@@ -394,7 +393,11 @@ class OrderController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:4096',
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240',
+        ], [
+            'csv_file.required' => 'Please select a CSV file to upload.',
+            'csv_file.mimes'    => 'Unsupported file format. Only CSV files are accepted.',
+            'csv_file.max'      => 'The file is too large. Maximum allowed size is 10MB.',
         ]);
 
         $path = $request->file('csv_file')->getRealPath();
@@ -412,6 +415,9 @@ class OrderController extends Controller
 
             while (($row = fgetcsv($handle, 1000, ',')) !== false) {
                 if (count($headers) !== count($row)) {
+                    continue;
+                }
+                if (count(array_filter($row, fn ($value) => trim((string) $value) !== '')) === 0) {
                     continue;
                 }
                 $data[] = array_combine($headers, $row);

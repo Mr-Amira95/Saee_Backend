@@ -35,6 +35,6 @@ class IndustrySectionController extends Controller
         ]);
 
         return redirect()->route('admin.cms.industries-page.index')
-            ->with('success', 'Industries section updated successfully.');
+            ->with('success', __('Industries section updated successfully.'));
     }
 }

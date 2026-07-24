@@ -23,7 +23,7 @@ class ReportController extends Controller
         if (! $profile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Client profile not found.',
+                'message' => __('Client profile not found.'),
                 'code'    => 'CLIENT_PROFILE_NOT_FOUND',
             ], 403);
         }
@@ -120,7 +120,7 @@ class ReportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Report retrieved successfully.',
+            'message' => __('Report retrieved successfully.'),
             'filters' => [
                 'from'   => $from,
                 'to'     => $to,

@@ -39,6 +39,6 @@ class LoginPageController extends Controller
         SiteSetting::setVal('login_brand_points', $points);
 
         return redirect()->route('admin.cms.login-page.index')
-            ->with('success', 'Login page content updated successfully.');
+            ->with('success', __('Login page content updated successfully.'));
     }
 }

@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Reset Password — Sa'ee LogisticsServices</title>
+    <title>{{ __('Reset Password') }} — {{ __("Sa'ee LogisticsServices") }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -138,6 +138,7 @@
             position: absolute; left: 14px; top: 50%; translate: 0 -50%;
             color: rgba(255,255,255,.22); pointer-events: none; transition: color .2s;
         }
+        html[dir="rtl"] .field-icon { left: auto; right: 14px; }
         .field-wrap:focus-within .field-icon { color: rgba(220,38,38,.55); }
         input[type="email"] {
             width: 100%; padding: 13px 44px;
@@ -203,6 +204,7 @@
         .back:hover { color: #fff; }
         .back svg { transition: transform .2s; }
         .back:hover svg { transform: translateX(-4px); }
+        html[dir="rtl"] .back:hover svg { transform: translateX(4px); }
 
         /* ── Divider ────────────── */
         .divider {
@@ -259,8 +261,8 @@
             </svg>
         </div>
 
-        <h1 class="f2">Reset your password</h1>
-        <p class="desc f2">Enter your phone number and we'll send a verification code to your WhatsApp.</p>
+        <h1 class="f2">{{ __('Reset your password') }}</h1>
+        <p class="desc f2">{{ __("Enter your phone number and we'll send a verification code to your WhatsApp.") }}</p>
 
         {{-- Alerts --}}
         @if ($errors->any())
@@ -271,26 +273,26 @@
             @csrf
 
             <div class="field f3">
-                <label class="field-label" for="fpPhoneLocal">Phone Number</label>
+                <label class="field-label" for="fpPhoneLocal">{{ __('Phone Number') }}</label>
                 <div class="field-wrap phone-wrap" style="display:flex;align-items:stretch;border:1px solid var(--in-bdr);border-radius:11px;background:var(--in-bg);transition:border-color .2s,box-shadow .2s;">
-                    <button type="button" class="country-btn" id="fpCountryBtn" aria-label="Select country code" style="display:flex;align-items:center;gap:5px;padding:0 9px 0 12px;background:none;border:none;border-right:1px solid var(--in-bdr);color:#fff;cursor:pointer;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:500;white-space:nowrap;border-radius:11px 0 0 11px;">
+                    <button type="button" class="country-btn" id="fpCountryBtn" aria-label="{{ __('Select country code') }}" style="display:flex;align-items:center;gap:5px;padding:0 9px 0 12px;background:none;border:none;border-right:1px solid var(--in-bdr);color:#fff;cursor:pointer;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:500;white-space:nowrap;border-radius:11px 0 0 11px;">
                         <span id="fpCountryFlag">🇯🇴</span>
                         <span id="fpCountryDial">+962</span>
                         <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div id="fpCountryDropdown" style="position:absolute;top:calc(100% + 5px);left:0;width:215px;background:#0d0f22;border:1px solid rgba(255,255,255,.15);border-radius:11px;z-index:999;box-shadow:0 10px 28px rgba(0,0,0,.75);display:none;max-height:252px;overflow-y:auto;">
-                        <div class="country-option active" data-dial="+962" data-flag="🇯🇴" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇯🇴 Jordan <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+962</span></div>
-                        <div class="country-option" data-dial="+966" data-flag="🇸🇦" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇸🇦 Saudi Arabia <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+966</span></div>
-                        <div class="country-option" data-dial="+971" data-flag="🇦🇪" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇦🇪 UAE <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+971</span></div>
+                        <div class="country-option active" data-dial="+962" data-flag="🇯🇴" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇯🇴 {{ __('Jordan') }} <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+962</span></div>
+                        <div class="country-option" data-dial="+966" data-flag="🇸🇦" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇸🇦 {{ __('Saudi Arabia') }} <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+966</span></div>
+                        <div class="country-option" data-dial="+971" data-flag="🇦🇪" style="display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.81rem;color:rgba(255,255,255,.92);">🇦🇪 {{ __('UAE') }} <span style="margin-left:auto;color:rgba(255,255,255,.65);font-size:.78rem;">+971</span></div>
                     </div>
-                    <input id="fpPhoneLocal" type="tel" placeholder="7xxxxxxxx" autocomplete="tel" autofocus style="background:transparent;border:none;box-shadow:none;border-radius:0 11px 11px 0;padding:13px 12px;flex:1;color:#fff;font-size:.9rem;font-family:'Inter',sans-serif;outline:none;">
+                    <input id="fpPhoneLocal" type="tel" placeholder="{{ __('7xxxxxxxx') }}" autocomplete="tel" autofocus style="background:transparent;border:none;box-shadow:none;border-radius:0 11px 11px 0;padding:13px 12px;flex:1;color:#fff;font-size:.9rem;font-family:'Inter',sans-serif;outline:none;">
                     <input type="hidden" name="phone" id="fpPhoneHidden">
                 </div>
             </div>
 
             <button type="submit" class="btn f4" id="submitBtn">
                 <div class="spinner"></div>
-                <span class="btn-text">Send WhatsApp Code</span>
+                <span class="btn-text">{{ __('Send WhatsApp Code') }}</span>
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="transition:transform .2s">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                 </svg>
@@ -303,10 +305,10 @@
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
-            Back to Admin Login
+            {{ __('Back to Admin Login') }}
         </a>
 
-        <p class="footer">© {{ date('Y') }} Sa'ee LogisticsServices</p>
+        <p class="footer">© {{ date('Y') }} {{ __("Sa'ee LogisticsServices") }}</p>
     </div>
 </div>
 

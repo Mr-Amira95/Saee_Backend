@@ -387,7 +387,7 @@ function togglePermGroup(btn, groupKey) {
 
 /* ── Form validation ── */
 (function() {
-    var form = document.querySelector('form');
+    var form = document.querySelector('form[novalidate]');
     if (!form) return;
 
     function getField(n) { return document.getElementById(n) || form.querySelector('[name="' + n + '"]'); }

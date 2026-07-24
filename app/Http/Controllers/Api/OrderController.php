@@ -45,7 +45,7 @@ class OrderController extends Controller
             if (! $clientProfile) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Client profile not found.',
+                    'message' => __('Client profile not found.'),
                     'code'    => 'CLIENT_PROFILE_NOT_FOUND',
                 ], 403);
             }
@@ -55,7 +55,7 @@ class OrderController extends Controller
             if (! $employee) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Employee profile not found.',
+                    'message' => __('Employee profile not found.'),
                     'code'    => 'EMPLOYEE_PROFILE_NOT_FOUND',
                 ], 403);
             }
@@ -118,7 +118,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Orders retrieved successfully.',
+            'message' => __('Orders retrieved successfully.'),
             'alert'   => $checkInAlert,
             'data'    => OrderResource::collection($orders->items()),
             'meta'    => [
@@ -138,7 +138,7 @@ class OrderController extends Controller
         if (! $this->canAccessOrder($user, $order)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found.',
+                'message' => __('Order not found.'),
             ], 404);
         }
 
@@ -146,7 +146,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order retrieved successfully.',
+            'message' => __('Order retrieved successfully.'),
             'data'    => new OrderResource($order),
         ]);
     }
@@ -159,14 +159,14 @@ class OrderController extends Controller
         if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
+                'message' => __('Unauthorized.'),
             ], 403);
         }
 
         if (! $this->isDriverCheckedIn($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not checked in. Please check in to perform this action.',
+                'message' => __('You are not checked in. Please check in to perform this action.'),
                 'code'    => 'NOT_CHECKED_IN',
             ], 403);
         }
@@ -174,7 +174,7 @@ class OrderController extends Controller
         if ($order->status !== 'picked_up') {
             return response()->json([
                 'success' => false,
-                'message' => 'Order cannot be marked as delivered in its current status.',
+                'message' => __('Order cannot be marked as delivered in its current status.'),
                 'code'    => 'INVALID_STATUS_TRANSITION',
             ], 422);
         }
@@ -210,7 +210,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order marked as delivered successfully.',
+            'message' => __('Order marked as delivered successfully.'),
             'data'    => new OrderResource($order),
         ]);
     }
@@ -223,14 +223,14 @@ class OrderController extends Controller
         if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
+                'message' => __('Unauthorized.'),
             ], 403);
         }
 
         if (! $this->isDriverCheckedIn($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not checked in. Please check in to perform this action.',
+                'message' => __('You are not checked in. Please check in to perform this action.'),
                 'code'    => 'NOT_CHECKED_IN',
             ], 403);
         }
@@ -238,7 +238,7 @@ class OrderController extends Controller
         if ($order->status !== 'picked_up') {
             return response()->json([
                 'success' => false,
-                'message' => 'Order cannot be rejected in its current status.',
+                'message' => __('Order cannot be rejected in its current status.'),
                 'code'    => 'INVALID_STATUS_TRANSITION',
             ], 422);
         }
@@ -265,7 +265,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order rejected successfully.',
+            'message' => __('Order rejected successfully.'),
             'data'    => new OrderResource($order),
         ]);
     }
@@ -278,14 +278,14 @@ class OrderController extends Controller
         if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
+                'message' => __('Unauthorized.'),
             ], 403);
         }
 
         if (! $this->isDriverCheckedIn($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not checked in. Please check in to perform this action.',
+                'message' => __('You are not checked in. Please check in to perform this action.'),
                 'code'    => 'NOT_CHECKED_IN',
             ], 403);
         }
@@ -293,7 +293,7 @@ class OrderController extends Controller
         if ($order->status !== 'rejected') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only rejected orders can be marked as returned.',
+                'message' => __('Only rejected orders can be marked as returned.'),
                 'code'    => 'INVALID_STATUS_TRANSITION',
             ], 422);
         }
@@ -306,6 +306,7 @@ class OrderController extends Controller
         $order->update([
             'status'         => 'returned',
             'payment_status' => 'no_payment',
+            'returned_at'    => now(),
         ]);
 
         OrderTrackingLog::create([
@@ -322,7 +323,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order marked as returned successfully.',
+            'message' => __('Order marked as returned successfully.'),
             'data'    => new OrderResource($order),
         ]);
     }
@@ -335,7 +336,7 @@ class OrderController extends Controller
         if (! $user->isDriver()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
+                'message' => __('Unauthorized.'),
             ], 403);
         }
 
@@ -372,7 +373,10 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Handover confirmed. {$result['returned']} order(s) returned, {$result['settled']} order(s) cash transferred to Saee.",
+            'message' => __('Handover confirmed. :returned order(s) returned, :settled order(s) cash transferred to Saee.', [
+                'returned' => $result['returned'],
+                'settled'  => $result['settled'],
+            ]),
             'data'    => [
                 'returned_count' => $result['returned'],
                 'settled_count'  => $result['settled'],
@@ -389,7 +393,7 @@ class OrderController extends Controller
         if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only client accounts can create orders.',
+                'message' => __('Only client accounts can create orders.'),
             ], 403);
         }
 
@@ -398,7 +402,7 @@ class OrderController extends Controller
         if (! $clientProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Client profile not found.',
+                'message' => __('Client profile not found.'),
                 'code'    => 'CLIENT_PROFILE_NOT_FOUND',
             ], 403);
         }
@@ -421,16 +425,16 @@ class OrderController extends Controller
         if ($request->input('payment_type') === 'cod' && ! $request->filled('order_price')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
-                'errors'  => ['order_price' => ['Order price is required for COD orders.']],
+                'message' => __('Validation failed.'),
+                'errors'  => ['order_price' => [__('Order price is required for COD orders.')]],
             ], 422);
         }
 
         if ($request->boolean('delivery_on_customer') && ! $request->filled('delivery_customer_amount')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
-                'errors'  => ['delivery_customer_amount' => ['Delivery customer amount is required when delivery is on customer.']],
+                'message' => __('Validation failed.'),
+                'errors'  => ['delivery_customer_amount' => [__('Delivery customer amount is required when delivery is on customer.')]],
             ], 422);
         }
 
@@ -449,7 +453,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order created successfully.',
+            'message' => __('Order created successfully.'),
             'data'    => new OrderResource($order),
         ], 201);
     }
@@ -462,7 +466,7 @@ class OrderController extends Controller
         if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only client accounts can edit orders.',
+                'message' => __('Only client accounts can edit orders.'),
             ], 403);
         }
 
@@ -471,14 +475,14 @@ class OrderController extends Controller
         if (! $clientProfile || (int) $order->client_profile_id !== (int) $clientProfile->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found.',
+                'message' => __('Order not found.'),
             ], 404);
         }
 
         if ($order->status !== 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only pending orders can be edited.',
+                'message' => __('Only pending orders can be edited.'),
                 'code'    => 'INVALID_STATUS_TRANSITION',
             ], 422);
         }
@@ -501,8 +505,8 @@ class OrderController extends Controller
         if ($validated['payment_type'] === 'cod' && ! $request->filled('order_price')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
-                'errors'  => ['order_price' => ['Order price is required for COD orders.']],
+                'message' => __('Validation failed.'),
+                'errors'  => ['order_price' => [__('Order price is required for COD orders.')]],
             ], 422);
         }
 
@@ -511,8 +515,8 @@ class OrderController extends Controller
         if ($deliveryOnCustomer && ! $request->filled('delivery_customer_amount')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
-                'errors'  => ['delivery_customer_amount' => ['Delivery customer amount is required when delivery is on customer.']],
+                'message' => __('Validation failed.'),
+                'errors'  => ['delivery_customer_amount' => [__('Delivery customer amount is required when delivery is on customer.')]],
             ], 422);
         }
 
@@ -549,7 +553,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order updated successfully.',
+            'message' => __('Order updated successfully.'),
             'data'    => new OrderResource($order),
         ]);
     }
@@ -562,7 +566,7 @@ class OrderController extends Controller
         if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
+                'message' => __('Unauthorized.'),
             ], 403);
         }
 
@@ -571,14 +575,14 @@ class OrderController extends Controller
         if (! $clientProfile || (int) $order->client_profile_id !== (int) $clientProfile->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found.',
+                'message' => __('Order not found.'),
             ], 404);
         }
 
         if ($order->status !== 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only pending orders can be cancelled.',
+                'message' => __('Only pending orders can be cancelled.'),
                 'code'    => 'INVALID_STATUS_TRANSITION',
             ], 422);
         }
@@ -589,7 +593,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order cancelled successfully.',
+            'message' => __('Order cancelled successfully.'),
             'data'    => new OrderResource($order),
         ]);
     }
@@ -602,7 +606,7 @@ class OrderController extends Controller
         if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
+                'message' => __('Unauthorized.'),
             ], 403);
         }
 
@@ -611,14 +615,14 @@ class OrderController extends Controller
         if (! $clientProfile || (int) $order->client_profile_id !== (int) $clientProfile->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found.',
+                'message' => __('Order not found.'),
             ], 404);
         }
 
         if ($order->status !== 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only pending orders can be cancelled.',
+                'message' => __('Only pending orders can be cancelled.'),
                 'code'    => 'INVALID_STATUS_TRANSITION',
             ], 422);
         }
@@ -629,7 +633,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order cancelled successfully.',
+            'message' => __('Order cancelled successfully.'),
         ]);
     }
 
@@ -641,7 +645,7 @@ class OrderController extends Controller
         if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only client accounts can import orders.',
+                'message' => __('Only client accounts can import orders.'),
             ], 403);
         }
 
@@ -650,7 +654,7 @@ class OrderController extends Controller
         if (! $clientProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Client profile not found.',
+                'message' => __('Client profile not found.'),
                 'code'    => 'CLIENT_PROFILE_NOT_FOUND',
             ], 403);
         }
@@ -671,7 +675,7 @@ class OrderController extends Controller
                 fclose($handle);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid CSV format. Please download and use the provided template.',
+                    'message' => __('Invalid CSV format. Please download and use the provided template.'),
                 ], 422);
             }
 
@@ -686,7 +690,7 @@ class OrderController extends Controller
         if (empty($rows)) {
             return response()->json([
                 'success' => false,
-                'message' => 'The CSV file is empty.',
+                'message' => __('The CSV file is empty.'),
             ], 422);
         }
 
@@ -701,44 +705,47 @@ class OrderController extends Controller
 
             $paymentType = strtolower($row['payment_type']);
             if (! in_array($paymentType, ['cod', 'prepaid'])) {
-                $rowErrors[] = "Payment type must be 'cod'/'عند التسليم' or 'prepaid'/'مدفوع'.";
+                $rowErrors[] = __("Payment type must be 'cod'/'عند التسليم' or 'prepaid'/'مدفوع'.");
             }
 
             $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
             if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
-                $rowErrors[] = 'Order price must be a positive number for COD orders.';
+                $rowErrors[] = __('Order price must be a positive number for COD orders.');
             }
 
             $deliveryOnCustomer = filter_var($row['delivery_on_customer'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($deliveryOnCustomer === null) {
-                $rowErrors[] = "delivery_on_customer must be 'yes'/'نعم' or 'no'/'لا'.";
+                $rowErrors[] = __("delivery_on_customer must be 'yes'/'نعم' or 'no'/'لا'.");
             }
 
             $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
             if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
-                $rowErrors[] = 'delivery_customer_amount must be a valid number.';
+                $rowErrors[] = __('delivery_customer_amount must be a valid number.');
             }
 
             $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
             if (! $cityId || ! City::where('id', $cityId)->exists()) {
-                $rowErrors[] = "City ID [{$row['city_id']}] does not exist.";
+                $rowErrors[] = __('City ID [:city_id] does not exist.', ['city_id' => $row['city_id']]);
             }
 
             $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
             if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
-                $rowErrors[] = "Area ID [{$row['area_id']}] does not exist or does not belong to City [{$row['city_id']}].";
+                $rowErrors[] = __('Area ID [:area_id] does not exist or does not belong to City [:city_id].', [
+                    'area_id' => $row['area_id'],
+                    'city_id' => $row['city_id'],
+                ]);
             }
 
-            if (empty($row['receiver_name']))  { $rowErrors[] = 'Receiver name is required.'; }
-            if (empty($row['receiver_phone'])) { $rowErrors[] = 'Receiver phone is required.'; }
-            if (empty($row['address_text']))   { $rowErrors[] = 'Address is required.'; }
+            if (empty($row['receiver_name']))  { $rowErrors[] = __('Receiver name is required.'); }
+            if (empty($row['receiver_phone'])) { $rowErrors[] = __('Receiver phone is required.'); }
+            if (empty($row['address_text']))   { $rowErrors[] = __('Address is required.'); }
 
             $deliveryShift = isset($row['delivery_shift']) ? strtolower(trim($row['delivery_shift'])) : 'doesnt_matter';
             if ($deliveryShift === '') {
                 $deliveryShift = 'doesnt_matter';
             }
             if (! in_array($deliveryShift, ['doesnt_matter', 'before_12pm', 'after_12pm'])) {
-                $rowErrors[] = "Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.";
+                $rowErrors[] = __("Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.");
             }
             $row['delivery_shift'] = $deliveryShift;
             $rows[$index] = $row;
@@ -751,7 +758,7 @@ class OrderController extends Controller
         if (! empty($errors)) {
             return response()->json([
                 'success' => false,
-                'message' => 'CSV validation failed. Fix the errors and re-upload.',
+                'message' => __('CSV validation failed. Fix the errors and re-upload.'),
                 'errors'  => $errors,
             ], 422);
         }
@@ -789,7 +796,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success'      => true,
-            'message'      => "{$importedCount} order(s) imported successfully.",
+            'message'      => __(':count order(s) imported successfully.', ['count' => $importedCount]),
             'batch_number' => $batchNumber,
             'imported'     => $importedCount,
         ], 201);
@@ -833,14 +840,14 @@ class OrderController extends Controller
         if (! $user->isDriver()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized.',
+                'message' => __('Unauthorized.'),
             ], 403);
         }
 
         if (! $this->isDriverCheckedIn($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not checked in. Please check in to perform this action.',
+                'message' => __('You are not checked in. Please check in to perform this action.'),
                 'code'    => 'NOT_CHECKED_IN',
             ], 403);
         }
@@ -861,7 +868,7 @@ class OrderController extends Controller
         if ($orders->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No valid assigned orders found for pickup.',
+                'message' => __('No valid assigned orders found for pickup.'),
                 'code'    => 'NO_ORDERS_FOUND',
             ], 404);
         }
@@ -879,7 +886,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Successfully picked up {$pickedUpCount} orders.",
+            'message' => __('Successfully picked up :count orders.', ['count' => $pickedUpCount]),
             'picked_up_count' => $pickedUpCount,
         ]);
     }
@@ -891,7 +898,7 @@ class OrderController extends Controller
         if (empty($reference)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Reference code is required.',
+                'message' => __('Reference code is required.'),
             ], 422);
         }
 
@@ -900,7 +907,7 @@ class OrderController extends Controller
         if (! $order) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found.',
+                'message' => __('Order not found.'),
             ], 404);
         }
 
@@ -910,7 +917,7 @@ class OrderController extends Controller
         if (! $this->canAccessOrder($user, $order)) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have access to this order.',
+                'message' => __('You do not have access to this order.'),
             ], 403);
         }
 
@@ -918,7 +925,7 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Order retrieved successfully.',
+            'message' => __('Order retrieved successfully.'),
             'order_id' => $order->id,
             'data'    => new OrderResource($order),
         ]);

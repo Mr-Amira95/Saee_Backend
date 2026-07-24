@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 
-@section('title', 'AI Conversations')
-@section('page-title', 'AI Conversations')
+@section('title', __('AI Conversations'))
+@section('page-title', __('AI Conversations'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">AI Conversations</span>
+    <span class="current">{{ __('AI Conversations') }}</span>
 @endsection
 
 @section('content')
@@ -18,7 +18,7 @@
         </div>
         <div>
             <div class="mini-stat-val">{{ number_format($stats['total']) }}</div>
-            <div class="mini-stat-lbl">Total Sessions</div>
+            <div class="mini-stat-lbl">{{ __('Total Sessions') }}</div>
         </div>
     </div>
     <div class="mini-stat">
@@ -27,7 +27,7 @@
         </div>
         <div>
             <div class="mini-stat-val">{{ number_format($stats['today']) }}</div>
-            <div class="mini-stat-lbl">Today</div>
+            <div class="mini-stat-lbl">{{ __('Today') }}</div>
         </div>
     </div>
     <div class="mini-stat">
@@ -36,7 +36,7 @@
         </div>
         <div>
             <div class="mini-stat-val">{{ number_format($stats['messages']) }}</div>
-            <div class="mini-stat-lbl">Total Messages</div>
+            <div class="mini-stat-lbl">{{ __('Total Messages') }}</div>
         </div>
     </div>
     <div class="mini-stat">
@@ -45,7 +45,7 @@
         </div>
         <div>
             <div class="mini-stat-val">{{ number_format($stats['anon']) }}</div>
-            <div class="mini-stat-lbl">Anonymous</div>
+            <div class="mini-stat-lbl">{{ __('Anonymous') }}</div>
         </div>
     </div>
 </div>
@@ -55,19 +55,19 @@
     <div class="filter-bar">
         <div class="filter-search-wrap">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search session ID or user…" class="filter-input">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Search session ID or user…') }}" class="filter-input">
         </div>
         <select name="type" class="filter-select">
-            <option value="">All Sessions</option>
-            <option value="authenticated" {{ request('type') === 'authenticated' ? 'selected' : '' }}>Authenticated Users</option>
-            <option value="anonymous"    {{ request('type') === 'anonymous'    ? 'selected' : '' }}>Anonymous Guests</option>
+            <option value="">{{ __('All Sessions') }}</option>
+            <option value="authenticated" {{ request('type') === 'authenticated' ? 'selected' : '' }}>{{ __('Authenticated Users') }}</option>
+            <option value="anonymous"    {{ request('type') === 'anonymous'    ? 'selected' : '' }}>{{ __('Anonymous Guests') }}</option>
         </select>
         <button type="submit" class="btn-primary" style="padding:8px 16px">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-            Filter
+            {{ __('Filter') }}
         </button>
         @if(request('search') || request('type'))
-            <a href="{{ route('admin.ai-conversations.index') }}" class="btn-secondary" style="padding:8px 14px">Clear</a>
+            <a href="{{ route('admin.ai-conversations.index') }}" class="btn-secondary" style="padding:8px 14px">{{ __('Clear') }}</a>
         @endif
     </div>
 </form>
@@ -78,11 +78,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Session</th>
-                    <th>User</th>
-                    <th>Messages</th>
-                    <th>Last Activity</th>
-                    <th>Started</th>
+                    <th>{{ __('Session') }}</th>
+                    <th>{{ __('User') }}</th>
+                    <th>{{ __('Messages') }}</th>
+                    <th>{{ __('Last Activity') }}</th>
+                    <th>{{ __('Started') }}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -105,12 +105,12 @@
                             <div class="cell-main">{{ $session->user->name }}</div>
                             <div class="cell-sub">{{ $session->user->email }}</div>
                         @else
-                            <span class="badge badge-no">Anonymous</span>
+                            <span class="badge badge-no">{{ __('Anonymous') }}</span>
                         @endif
                     </td>
                     <td>
                         <span style="font-size:.88rem;font-weight:700;color:var(--text)">{{ $session->messages_count }}</span>
-                        <span style="font-size:.74rem;color:var(--text-dim)"> msgs</span>
+                        <span style="font-size:.74rem;color:var(--text-dim)"> {{ __('msgs') }}</span>
                     </td>
                     <td style="color:var(--text-sub);font-size:.82rem">
                         {{ $session->messages_max_created_at ? \Carbon\Carbon::parse($session->messages_max_created_at)->diffForHumans() : '—' }}
@@ -120,12 +120,12 @@
                     </td>
                     <td>
                         <div class="actions">
-                            <a href="{{ route('admin.ai-conversations.show', $session) }}" class="act-btn act-view" title="View Conversation">
+                            <a href="{{ route('admin.ai-conversations.show', $session) }}" class="act-btn act-view" title="{{ __('View Conversation') }}">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </a>
                             @if(auth()->user()->hasAdminAction('ai_conversations.delete'))
-                            <button type="button" class="act-btn act-delete" title="Delete Session"
-                                onclick="confirmDelete('{{ route('admin.ai-conversations.destroy', $session) }}', 'session {{ Str::limit($session->session_id, 16) }}')">
+                            <button type="button" class="act-btn act-delete" title="{{ __('Delete Session') }}"
+                                onclick="confirmDelete('{{ route('admin.ai-conversations.destroy', $session) }}', '{{ __('session') }} {{ Str::limit($session->session_id, 16) }}')">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             </button>
                             @endif
@@ -137,8 +137,8 @@
                     <td colspan="6">
                         <div class="empty-state">
                             <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                            <h3>No conversations yet</h3>
-                            <p>AI chatbot sessions will appear here once users start chatting.</p>
+                            <h3>{{ __('No conversations yet') }}</h3>
+                            <p>{{ __('AI chatbot sessions will appear here once users start chatting.') }}</p>
                         </div>
                     </td>
                 </tr>
@@ -150,7 +150,7 @@
     @if($sessions->hasPages())
     <div class="pagination-wrap">
         <span class="pag-info">
-            Showing {{ $sessions->firstItem() }}–{{ $sessions->lastItem() }} of {{ $sessions->total() }}
+            {{ __('Showing') }} {{ $sessions->firstItem() }}–{{ $sessions->lastItem() }} {{ __('of') }} {{ $sessions->total() }}
         </span>
         <div class="pag-links">
             @if($sessions->onFirstPage())

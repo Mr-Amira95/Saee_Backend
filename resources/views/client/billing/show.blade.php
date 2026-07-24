@@ -18,7 +18,7 @@
                     {{ __('Record Payment') }}
                 </button>
             @endif
-            <a href="{{ route('client.billing.index') }}" class="btn-secondary">← {{ __('Back') }}</a>
+            <a href="{{ route('client.billing.index') }}" class="btn-secondary">{{ __('← Back') }}</a>
         </div>
     </div>
 

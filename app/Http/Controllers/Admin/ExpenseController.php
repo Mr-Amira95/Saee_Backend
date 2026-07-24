@@ -6,6 +6,7 @@ use App\Enums\ExpenseCategory;
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Services\ExpenseService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -15,10 +16,13 @@ class ExpenseController extends Controller
 
     public function index(Request $request)
     {
+        $from = $this->parseFilterDate($request->from);
+        $to   = $this->parseFilterDate($request->to);
+
         $expenses = Expense::with('recordedBy')
             ->when($request->category, fn($q, $c) => $q->where('category', $c))
-            ->when($request->from, fn($q, $d) => $q->whereDate('payment_date', '>=', $d))
-            ->when($request->to, fn($q, $d) => $q->whereDate('payment_date', '<=', $d))
+            ->when($from, fn($q, $d) => $q->whereDate('payment_date', '>=', $d))
+            ->when($to, fn($q, $d) => $q->whereDate('payment_date', '<=', $d))
             ->latest('payment_date')
             ->paginate(20)
             ->withQueryString();
@@ -27,13 +31,26 @@ class ExpenseController extends Controller
 
         $totals = Expense::query()
             ->when($request->category, fn($q, $c) => $q->where('category', $c))
-            ->when($request->from, fn($q, $d) => $q->whereDate('payment_date', '>=', $d))
-            ->when($request->to, fn($q, $d) => $q->whereDate('payment_date', '<=', $d))
+            ->when($from, fn($q, $d) => $q->whereDate('payment_date', '>=', $d))
+            ->when($to, fn($q, $d) => $q->whereDate('payment_date', '<=', $d))
             ->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->get();
 
         return view('admin.expenses.index', compact('expenses', 'categories', 'totals'));
+    }
+
+    private function parseFilterDate(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        try {
+            return Carbon::createFromFormat('d-m-Y', $value)->format('Y-m-d');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public function create()
@@ -64,7 +81,7 @@ class ExpenseController extends Controller
         $this->service->createExpense($data, auth()->user());
 
         return redirect()->route('admin.expenses.index')
-            ->with('success', 'Expense recorded.');
+            ->with('success', __('Expense recorded.'));
     }
 
     public function show(Expense $expense)
@@ -80,6 +97,6 @@ class ExpenseController extends Controller
         $expense->delete();
 
         return redirect()->route('admin.expenses.index')
-            ->with('success', 'Expense deleted.');
+            ->with('success', __('Expense deleted.'));
     }
 }

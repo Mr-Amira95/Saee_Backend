@@ -35,6 +35,6 @@ class ForBusinessPageController extends Controller
         ]);
 
         return redirect()->route('admin.cms.for-business-page.index')
-            ->with('success', 'For Businesses page updated successfully.');
+            ->with('success', __('For Businesses page updated successfully.'));
     }
 }

@@ -17,7 +17,7 @@ class FinanceController extends Controller
         if (! $user->isDriver()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access denied. Only drivers can access this resource.',
+                'message' => __('Access denied. Only drivers can access this resource.'),
             ], 403);
         }
 
@@ -59,7 +59,7 @@ class FinanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Finances retrieved successfully.',
+            'message' => __('Finances retrieved successfully.'),
             'summary' => $summary,
             'data'    => $items,
             'meta'    => [

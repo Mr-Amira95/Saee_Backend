@@ -33,7 +33,7 @@ class ForgotPasswordController extends Controller
         if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'This username, email, or phone number is not registered',
+                'message' => __('This username, email, or phone number is not registered'),
                 'code'    => 'ACCOUNT_NOT_REGISTERED',
             ], 404);
         }
@@ -45,7 +45,7 @@ class ForgotPasswordController extends Controller
         if ($user->status === 'suspended') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account has been suspended',
+                'message' => __('This account has been suspended'),
                 'code'    => 'ACCOUNT_SUSPENDED',
             ], 403);
         }
@@ -53,7 +53,7 @@ class ForgotPasswordController extends Controller
         if ($user->status === 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account is pending activation',
+                'message' => __('This account is pending activation'),
                 'code'    => 'ACCOUNT_PENDING',
             ], 403);
         }
@@ -91,7 +91,7 @@ class ForgotPasswordController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'If the phone number is registered, a verification code has been sent.',
+            'message' => __('If the phone number is registered, a verification code has been sent.'),
             'data'    => $data,
         ]);
     }
@@ -121,7 +121,7 @@ class ForgotPasswordController extends Controller
         if ($resetCode->attempts >= 5) {
             return response()->json([
                 'success' => false,
-                'message' => 'Too many invalid attempts. Please request a new code.',
+                'message' => __('Too many invalid attempts. Please request a new code.'),
                 'code'    => 'TOO_MANY_ATTEMPTS',
             ], 429);
         }
@@ -142,7 +142,7 @@ class ForgotPasswordController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Code verified successfully',
+            'message' => __('Code verified successfully'),
             'data'    => [
                 'reset_token'        => $resetToken,
                 'expires_in_seconds' => 600,
@@ -173,7 +173,7 @@ class ForgotPasswordController extends Controller
         if ($user->status === 'suspended') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account has been suspended',
+                'message' => __('This account has been suspended'),
                 'code'    => 'ACCOUNT_SUSPENDED',
             ], 403);
         }
@@ -181,7 +181,7 @@ class ForgotPasswordController extends Controller
         if ($user->status !== 'active') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account is not active',
+                'message' => __('This account is not active'),
                 'code'    => 'ACCOUNT_INACTIVE',
             ], 403);
         }
@@ -196,7 +196,7 @@ class ForgotPasswordController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Password reset successfully',
+            'message' => __('Password reset successfully'),
         ]);
     }
 
@@ -204,7 +204,7 @@ class ForgotPasswordController extends Controller
     {
         return response()->json([
             'success' => true,
-            'message' => 'If the phone number is registered, a verification code has been sent.',
+            'message' => __('If the phone number is registered, a verification code has been sent.'),
             'data'    => ['expires_in_seconds' => 300],
         ]);
     }
@@ -213,7 +213,7 @@ class ForgotPasswordController extends Controller
     {
         return response()->json([
             'success' => false,
-            'message' => 'Invalid or expired verification code',
+            'message' => __('Invalid or expired verification code'),
             'code'    => 'INVALID_OR_EXPIRED_CODE',
         ], 400);
     }
@@ -222,7 +222,7 @@ class ForgotPasswordController extends Controller
     {
         return response()->json([
             'success' => false,
-            'message' => 'Invalid or expired reset token',
+            'message' => __('Invalid or expired reset token'),
             'code'    => 'INVALID_OR_EXPIRED_RESET_TOKEN',
         ], 400);
     }

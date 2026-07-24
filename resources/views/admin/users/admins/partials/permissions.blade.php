@@ -30,7 +30,7 @@
                 <div>
                     <div class="perm-name">{{ $pagePerm->display_name }}</div>
                     @if($actionPerms->isNotEmpty())
-                        <div class="perm-desc">Grants read-only access until specific actions below are checked.</div>
+                        <div class="perm-desc">{{ __('Grants read-only access until specific actions below are checked.') }}</div>
                     @endif
                 </div>
             </label>
@@ -53,6 +53,10 @@
 .perm-page-card { border: 1px solid var(--in-bdr); border-radius: 10px; padding: 12px 14px; }
 .perm-actions-panel { margin: 10px 0 0 28px; padding-top: 10px; border-top: 1px solid var(--in-bdr); }
 .perm-actions-panel.is-hidden { display: none; }
+
+html[dir="rtl"] .perm-actions-panel {
+    margin: 10px 28px 0 0;
+}
 </style>
 
 <script>

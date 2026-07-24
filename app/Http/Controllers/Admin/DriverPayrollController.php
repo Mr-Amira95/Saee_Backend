@@ -79,14 +79,14 @@ class DriverPayrollController extends Controller
 
         if ($overlap) {
             return back()->withInput()->withErrors([
-                'period_start' => 'A payroll record already exists for this driver that overlaps with the selected period.',
+                'period_start' => __('A payroll record already exists for this driver that overlaps with the selected period.'),
             ]);
         }
 
         $payment = $this->service->createPaymentDraft($driver, $data, auth()->user());
 
         return redirect()->route('admin.payroll.show', $payment)
-            ->with('success', 'Payroll entry created.');
+            ->with('success', __('Payroll entry created.'));
     }
 
     public function show(DriverPayment $payment)
@@ -99,7 +99,7 @@ class DriverPayrollController extends Controller
     {
         abort_unless($request->user()->hasAdminAction('finances.driver_payroll'), 403);
 
-        abort_if($payment->status === DriverPaymentStatus::Paid, 403, 'Already paid.');
+        abort_if($payment->status === DriverPaymentStatus::Paid, 403, __('Already paid.'));
 
         $data = $request->validate([
             'payment_method'   => ['required', Rule::in(['bank_transfer', 'cash', 'cliq'])],
@@ -113,18 +113,18 @@ class DriverPayrollController extends Controller
             auth()->user()
         );
 
-        return back()->with('success', 'Payment marked as paid.');
+        return back()->with('success', __('Payment marked as paid.'));
     }
 
     public function destroy(DriverPayment $payment)
     {
         abort_unless(auth()->user()->hasAdminAction('finances.driver_payroll'), 403);
 
-        abort_if($payment->status === DriverPaymentStatus::Paid, 403, 'Paid records cannot be deleted.');
+        abort_if($payment->status === DriverPaymentStatus::Paid, 403, __('Paid records cannot be deleted.'));
 
         $payment->delete();
 
         return redirect()->route('admin.payroll.index')
-            ->with('success', 'Payroll entry deleted.');
+            ->with('success', __('Payroll entry deleted.'));
     }
 }

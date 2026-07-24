@@ -35,6 +35,6 @@ class CustomerStorySectionController extends Controller
         ]);
 
         return redirect()->route('admin.cms.customer-stories-page.index')
-            ->with('success', 'Customer stories section updated successfully.');
+            ->with('success', __('Customer stories section updated successfully.'));
     }
 }

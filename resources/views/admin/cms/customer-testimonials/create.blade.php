@@ -1,20 +1,20 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Add Testimonial')
-@section('page-title', 'Add Testimonial')
+@section('title', __('Add Testimonial'))
+@section('page-title', __('Add Testimonial'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.cms.customer-testimonials.index') }}">Testimonials</a>
+    <a href="{{ route('admin.cms.customer-testimonials.index') }}">{{ __('Testimonials') }}</a>
     <span class="sep">/</span>
-    <span class="current">Add</span>
+    <span class="current">{{ __('Add') }}</span>
 @endsection
 
 @section('content')
 <div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-        <a href="{{ route('admin.cms.customer-testimonials.index') }}" class="btn-secondary">&#8592; Back</a>
-        <h1 style="font-size:1.2rem;font-weight:700;margin:0;">Add Testimonial</h1>
+        <a href="{{ route('admin.cms.customer-testimonials.index') }}" class="btn-secondary">{{ __('← Back') }}</a>
+        <h1 style="font-size:1.2rem;font-weight:700;margin:0;">{{ __('Add Testimonial') }}</h1>
     </div>
 
     @if($errors->any())
@@ -29,9 +29,9 @@
         @csrf
 
         <div class="form-section">
-            <div class="form-section-title">Client</div>
+            <div class="form-section-title">{{ __('Client') }}</div>
             <div class="form-group">
-                <label class="form-label">Client Name <span class="req">*</span></label>
+                <label class="form-label">{{ __('Client Name') }} <span class="req">*</span></label>
                 <input type="text" name="client" class="form-input @error('client') err @enderror"
                        value="{{ old('client') }}" placeholder="e.g. John Smith" required>
                 @error('client')<span class="form-error">{{ $message }}</span>@enderror
@@ -39,15 +39,15 @@
         </div>
 
         <div class="form-section" style="margin-top:20px;">
-            <div class="form-section-title">Feedback</div>
+            <div class="form-section-title">{{ __('Feedback') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Feedback (English) <span class="req">*</span></label>
+                    <label class="form-label">{{ __('Feedback (English)') }} <span class="req">*</span></label>
                     <textarea name="feedback[en]" class="form-input @error('feedback.en') err @enderror" rows="4" style="height:auto;" required>{{ old('feedback.en') }}</textarea>
                     @error('feedback.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Feedback (Arabic) <span class="req">*</span></label>
+                    <label class="form-label">{{ __('Feedback (Arabic)') }} <span class="req">*</span></label>
                     <textarea name="feedback[ar]" dir="rtl" class="form-input @error('feedback.ar') err @enderror" rows="4" style="height:auto;" required>{{ old('feedback.ar') }}</textarea>
                     @error('feedback.ar')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
@@ -55,27 +55,27 @@
         </div>
 
         <div class="form-section" style="margin-top:20px;">
-            <div class="form-section-title">Ordering & Visibility</div>
+            <div class="form-section-title">{{ __('Ordering & Visibility') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Sort Order <span class="req">*</span></label>
+                    <label class="form-label">{{ __('Sort Order') }} <span class="req">*</span></label>
                     <input type="number" name="sort_order" class="form-input"
                            value="{{ old('sort_order', 0) }}" min="0" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">{{ __('Status') }}</label>
                     <select name="status" class="form-input" style="background: var(--in-bg); color: var(--text);">
-                        <option value="active" {{ old('status', 'active') === 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="inactive" {{ old('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="active" {{ old('status', 'active') === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                        <option value="inactive" {{ old('status') === 'inactive' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
                     </select>
                 </div>
             </div>
         </div>
 
         <div class="form-actions" style="margin-top:20px;">
-            <a href="{{ route('admin.cms.customer-testimonials.index') }}" class="btn-secondary">Cancel</a>
-            <button type="submit" class="btn-primary">Save Testimonial</button>
+            <a href="{{ route('admin.cms.customer-testimonials.index') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+            <button type="submit" class="btn-primary">{{ __('Save Testimonial') }}</button>
         </div>
     </form>
 </div>

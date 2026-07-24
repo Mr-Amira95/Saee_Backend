@@ -101,7 +101,7 @@ class OrderController extends Controller
                     $order->payment?->payment_type,
                     $order->payment?->order_amount,
                     $order->payment?->customer_delivery_amount,
-                    $order->delivery_shift,
+                    $order->delivery_shift?->label(),
                     $order->created_at?->format('Y-m-d H:i:s'),
                 ]);
             }
@@ -158,7 +158,7 @@ class OrderController extends Controller
         $order = $this->orderService->createOrder($validated, Auth::user());
 
         return redirect()->route('admin.orders.show', $order)
-            ->with('success', "Order {$order->order_number} created successfully.");
+            ->with('success', __('Order :number created successfully.', ['number' => $order->order_number]));
     }
 
     public function show(Order $order)
@@ -237,7 +237,7 @@ class OrderController extends Controller
             ]);
 
             return redirect()->route('admin.orders.show', $order)
-                ->with('success', 'Order details updated successfully.');
+                ->with('success', __('Order details updated successfully.'));
         }
 
         // Status or driver update
@@ -288,7 +288,7 @@ class OrderController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Order updated successfully.');
+        return redirect()->back()->with('success', __('Order updated successfully.'));
     }
 
     public function assignDriver(Request $request)
@@ -327,9 +327,9 @@ class OrderController extends Controller
         }
 
         $skipped = count($validated['order_ids']) - $assigned;
-        $msg = "{$assigned} order(s) assigned to driver and marked as Picked Up.";
+        $msg = __(':count order(s) assigned to driver and marked as Picked Up.', ['count' => $assigned]);
         if ($skipped > 0) {
-            $msg .= " {$skipped} order(s) skipped (not pending).";
+            $msg .= ' ' . __(':count order(s) skipped (not pending).', ['count' => $skipped]);
         }
 
         return redirect()->back()->with('success', $msg);
@@ -340,7 +340,7 @@ class OrderController extends Controller
         abort_unless(auth()->user()->hasAdminAction('orders.delete'), 403);
 
         $order->delete();
-        return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
+        return redirect()->route('admin.orders.index')->with('success', __('Order deleted successfully.'));
     }
 
     public function calculatePrice(Request $request)

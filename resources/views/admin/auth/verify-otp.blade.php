@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Verify Code — Sa'ee Admin</title>
+    <title>{{ __('Verify Code') }} — {{ __("Sa'ee Admin") }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,6 +60,7 @@
         .back:hover { color: #fff; }
         .back svg { transition: transform .2s; }
         .back:hover svg { transform: translateX(-4px); }
+        html[dir="rtl"] .back:hover svg { transform: translateX(4px); }
         .divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 22px 0; }
         .footer { text-align: center; color: var(--text-dim); font-size: .73rem; margin-top: 24px; }
         .f1 { animation: fu .5s .3s both; } .f2 { animation: fu .5s .38s both; } .f3 { animation: fu .5s .46s both; } .f4 { animation: fu .5s .54s both; }
@@ -92,8 +93,8 @@
             </svg>
         </div>
 
-        <h1 class="f1">Enter verification code</h1>
-        <p class="desc f1">We sent a 6-digit code to your WhatsApp. Enter it below to continue.</p>
+        <h1 class="f1">{{ __('Enter verification code') }}</h1>
+        <p class="desc f1">{{ __('We sent a 6-digit code to your WhatsApp. Enter it below to continue.') }}</p>
 
         @if ($errors->any())
             <div class="alert alert-err">{{ $errors->first() }}</div>
@@ -103,7 +104,7 @@
             @csrf
 
             <div class="field f2">
-                <label class="field-label">Verification Code</label>
+                <label class="field-label">{{ __('Verification Code') }}</label>
                 <div class="otp-wrap" id="otpWrap">
                     <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" autofocus>
                     <input type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]">
@@ -117,7 +118,7 @@
 
             <button type="submit" class="btn f3" id="submitBtn" disabled>
                 <div class="spinner"></div>
-                <span class="btn-text">Verify Code</span>
+                <span class="btn-text">{{ __('Verify Code') }}</span>
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
@@ -130,10 +131,10 @@
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
-            Back — request a new code
+            {{ __('Back — request a new code') }}
         </a>
 
-        <p class="footer">© {{ date('Y') }} Sa'ee LogisticsServices</p>
+        <p class="footer">© {{ date('Y') }} {{ __("Sa'ee LogisticsServices") }}</p>
     </div>
 </div>
 

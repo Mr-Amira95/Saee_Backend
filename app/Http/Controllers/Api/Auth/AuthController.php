@@ -38,7 +38,7 @@ class AuthController extends Controller
         if ($user->status === 'suspended') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account has been suspended',
+                'message' => __('This account has been suspended'),
                 'code'    => 'ACCOUNT_SUSPENDED',
             ], 403);
         }
@@ -46,7 +46,7 @@ class AuthController extends Controller
         if ($user->status === 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account is pending activation',
+                'message' => __('This account is pending activation'),
                 'code'    => 'ACCOUNT_PENDING',
             ], 403);
         }
@@ -54,7 +54,7 @@ class AuthController extends Controller
         if ($user->status !== 'active') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account is not active',
+                'message' => __('This account is not active'),
                 'code'    => 'ACCOUNT_INACTIVE',
             ], 403);
         }
@@ -62,8 +62,16 @@ class AuthController extends Controller
         if (in_array($user->role, ['admin', 'superadmin'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'This account type is not supported in the mobile app',
+                'message' => __('This account type is not supported in the mobile app'),
                 'code'    => 'UNSUPPORTED_ACCOUNT_TYPE',
+            ], 403);
+        }
+
+        if ($user->hasExpiredClientContract()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Your contract has been expired, please get in touch with the admin'),
+                'code'    => 'CONTRACT_EXPIRED',
             ], 403);
         }
 
@@ -72,7 +80,7 @@ class AuthController extends Controller
         if ($profileResource === null) {
             return response()->json([
                 'success' => false,
-                'message' => 'User profile was not found',
+                'message' => __('User profile was not found'),
                 'code'    => 'PROFILE_NOT_FOUND',
             ], 404);
         }
@@ -91,7 +99,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged in successfully',
+            'message' => __('Logged in successfully'),
             'data'    => [
                 'token'                 => $token,
                 'role_type'             => $roleType,
@@ -116,7 +124,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged out successfully',
+            'message' => __('Logged out successfully'),
         ]);
     }
 
@@ -128,7 +136,7 @@ class AuthController extends Controller
         if ($user->trashed()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthenticated',
+                'message' => __('Unauthenticated'),
                 'code'    => 'UNAUTHENTICATED',
             ], 401);
         }
@@ -136,7 +144,7 @@ class AuthController extends Controller
         if ($user->status === 'suspended') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account has been suspended',
+                'message' => __('This account has been suspended'),
                 'code'    => 'ACCOUNT_SUSPENDED',
             ], 403);
         }
@@ -144,7 +152,7 @@ class AuthController extends Controller
         if ($user->status === 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'This account is pending activation',
+                'message' => __('This account is pending activation'),
                 'code'    => 'ACCOUNT_PENDING',
             ], 403);
         }
@@ -152,8 +160,8 @@ class AuthController extends Controller
         if (! Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
-                'errors'  => ['current_password' => ['Current password is incorrect.']],
+                'message' => __('Validation failed'),
+                'errors'  => ['current_password' => [__('Current password is incorrect.')]],
                 'code'    => 'CURRENT_PASSWORD_INCORRECT',
             ], 422);
         }
@@ -167,7 +175,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Password changed successfully',
+            'message' => __('Password changed successfully'),
         ]);
     }
 
@@ -196,7 +204,7 @@ class AuthController extends Controller
     {
         return response()->json([
             'success' => false,
-            'message' => 'Invalid username/phone number or password',
+            'message' => __('Invalid username/phone number or password'),
         ], 401);
     }
 }

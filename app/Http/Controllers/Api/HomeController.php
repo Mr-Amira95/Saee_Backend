@@ -28,7 +28,7 @@ class HomeController extends Controller
 
         return response()->json([
             'success' => false,
-            'message' => 'Home data not available for this account type.',
+            'message' => __('Home data not available for this account type.'),
         ], 403);
     }
 
@@ -92,7 +92,7 @@ class HomeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Home data retrieved successfully.',
+            'message' => __('Home data retrieved successfully.'),
             'alert' => $checkInAlert,
             'data' => [
                 'attendance' => $attendance
@@ -128,7 +128,7 @@ class HomeController extends Controller
         if (!$clientProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Client profile not found.',
+                'message' => __('Client profile not found.'),
                 'code' => 'CLIENT_PROFILE_NOT_FOUND',
             ], 403);
         }
@@ -153,7 +153,7 @@ class HomeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Home data retrieved successfully.',
+            'message' => __('Home data retrieved successfully.'),
             'data' => [
                 'summary' => [
                     'total' => (int) $summary->total,

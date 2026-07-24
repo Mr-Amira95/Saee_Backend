@@ -1,18 +1,18 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Contact Information')
-@section('page-title', 'Contact Information')
+@section('title', __('Contact Information'))
+@section('page-title', __('Contact Information'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Website CMS</span>
+    <span class="current">{{ __('Website CMS') }}</span>
     <span class="sep">/</span>
-    <span class="current">Contact Information</span>
+    <span class="current">{{ __('Contact Information') }}</span>
 @endsection
 
 @section('content')
 <div>
-    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;">Manage Contact Information</h1>
+    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;">{{ __('Manage Contact Information') }}</h1>
 
     @if(session('success'))
     <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:12px 18px;margin-bottom:20px;color:#86efac;font-size:.88rem;">
@@ -33,62 +33,64 @@
         @method('PUT')
 
         <div class="form-section">
-            <div class="form-section-title">Page Header</div>
+            <div class="form-section-title">{{ __('Page Header') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Badge (English)</label>
+                    <label class="form-label">{{ __('Badge (English)') }}</label>
                     <input type="text" name="page_badge[en]" class="form-input @error('page_badge.en') err @enderror"
                            value="{{ old('page_badge.en', $contact->page_badge['en'] ?? '') }}">
                     @error('page_badge.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Badge (Arabic)</label>
+                    <label class="form-label">{{ __('Badge (Arabic)') }}</label>
                     <input type="text" name="page_badge[ar]" dir="rtl" class="form-input @error('page_badge.ar') err @enderror"
                            value="{{ old('page_badge.ar', $contact->page_badge['ar'] ?? '') }}">
                     @error('page_badge.ar')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Title (English)</label>
+                    <label class="form-label">{{ __('Title (English)') }}</label>
                     <input type="text" name="page_title[en]" class="form-input @error('page_title.en') err @enderror"
                            value="{{ old('page_title.en', $contact->page_title['en'] ?? '') }}">
                     @error('page_title.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Title (Arabic)</label>
+                    <label class="form-label">{{ __('Title (Arabic)') }}</label>
                     <input type="text" name="page_title[ar]" dir="rtl" class="form-input @error('page_title.ar') err @enderror"
                            value="{{ old('page_title.ar', $contact->page_title['ar'] ?? '') }}">
                     @error('page_title.ar')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
             </div>
             <div class="form-group" style="margin-top:15px;">
-                <label class="form-label">Subtitle (English)</label>
+                <label class="form-label">{{ __('Subtitle (English)') }}</label>
                 <textarea name="page_subtitle[en]" class="form-input @error('page_subtitle.en') err @enderror" rows="2" style="height:auto;">{{ old('page_subtitle.en', $contact->page_subtitle['en'] ?? '') }}</textarea>
                 @error('page_subtitle.en')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group" style="margin-top:10px;">
-                <label class="form-label">Subtitle (Arabic)</label>
+                <label class="form-label">{{ __('Subtitle (Arabic)') }}</label>
                 <textarea name="page_subtitle[ar]" dir="rtl" class="form-input @error('page_subtitle.ar') err @enderror" rows="2" style="height:auto;">{{ old('page_subtitle.ar', $contact->page_subtitle['ar'] ?? '') }}</textarea>
                 @error('page_subtitle.ar')<span class="form-error">{{ $message }}</span>@enderror
             </div>
         </div>
 
         <div class="form-section" style="margin-top:20px;">
-            <div class="form-section-title">Contact Details</div>
+            <div class="form-section-title">{{ __('Contact Details') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label">{{ __('Email') }}</label>
                     <input type="text" name="email" class="form-input @error('email') err @enderror"
                            value="{{ old('email', $contact->email) }}" placeholder="e.g. info@saee.com">
                     @error('email')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Phone</label>
+                    <label class="form-label">{{ __('Phone') }}</label>
                     <input type="text" name="phone" class="form-input @error('phone') err @enderror"
-                           value="{{ old('phone', $contact->phone) }}" placeholder="e.g. +966 12 345 6789">
+                           value="{{ old('phone', $contact->phone) }}" placeholder="e.g. 966123456789"
+                           inputmode="numeric" pattern="[0-9]*" maxlength="50"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     @error('phone')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Address Link</label>
+                    <label class="form-label">{{ __('Address Link') }}</label>
                     <input type="text" name="address_link" class="form-input @error('address_link') err @enderror"
                            value="{{ old('address_link', $contact->address_link) }}" placeholder="e.g. https://maps.google.com/?q=...">
                     @error('address_link')<span class="form-error">{{ $message }}</span>@enderror
@@ -97,15 +99,15 @@
         </div>
 
         <div class="form-section" style="margin-top:20px;">
-            <div class="form-section-title">Address Text</div>
+            <div class="form-section-title">{{ __('Address Text') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Address (English)</label>
+                    <label class="form-label">{{ __('Address (English)') }}</label>
                     <textarea name="address_text[en]" class="form-input @error('address_text.en') err @enderror" rows="3" style="height:auto;">{{ old('address_text.en', $contact->address_text['en'] ?? '') }}</textarea>
                     @error('address_text.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Address (Arabic)</label>
+                    <label class="form-label">{{ __('Address (Arabic)') }}</label>
                     <textarea name="address_text[ar]" dir="rtl" class="form-input @error('address_text.ar') err @enderror" rows="3" style="height:auto;">{{ old('address_text.ar', $contact->address_text['ar'] ?? '') }}</textarea>
                     @error('address_text.ar')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
@@ -113,16 +115,16 @@
         </div>
 
         <div class="form-section" style="margin-top:20px;">
-            <div class="form-section-title">Working Hours</div>
+            <div class="form-section-title">{{ __('Working Hours') }}</div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label">Working Hours (English)</label>
+                    <label class="form-label">{{ __('Working Hours (English)') }}</label>
                     <input type="text" name="working_hours_text[en]" class="form-input @error('working_hours_text.en') err @enderror"
                            value="{{ old('working_hours_text.en', $contact->working_hours_text['en'] ?? '') }}" placeholder="e.g. Sun - Thu: 9AM - 6PM">
                     @error('working_hours_text.en')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Working Hours (Arabic)</label>
+                    <label class="form-label">{{ __('Working Hours (Arabic)') }}</label>
                     <input type="text" name="working_hours_text[ar]" dir="rtl" class="form-input @error('working_hours_text.ar') err @enderror"
                            value="{{ old('working_hours_text.ar', $contact->working_hours_text['ar'] ?? '') }}" placeholder="مثال: الأحد - الخميس: 9 صباحًا - 6 مساءً">
                     @error('working_hours_text.ar')<span class="form-error">{{ $message }}</span>@enderror
@@ -131,7 +133,7 @@
         </div>
 
         <div class="form-actions" style="margin-top:20px;">
-            <button type="submit" class="btn-primary">Save Contact Information</button>
+            <button type="submit" class="btn-primary">{{ __('Save Contact Information') }}</button>
         </div>
     </form>
 </div>

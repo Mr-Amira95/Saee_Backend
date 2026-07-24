@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Expense — ' . $expense->category->label())
-@section('page-title', 'Expense Detail')
+@section('title', __('Expense') . ' — ' . $expense->category->label())
+@section('page-title', __('Expense Detail'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.expenses.index') }}">Expenses</a>
+    <a href="{{ route('admin.expenses.index') }}">{{ __('Expenses') }}</a>
     <span class="sep">/</span>
     <span class="current">{{ $expense->category->label() }}</span>
 @endsection
@@ -23,10 +23,10 @@
             @if(auth()->user()->hasAdminAction('finances.expenses'))
             <button type="button" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);"
                 onclick="confirmDelete('{{ route('admin.expenses.destroy', $expense) }}', '{{ addslashes($expense->category->label()) }} — {{ number_format($expense->amount, 2) }} JD')">
-                Delete
+                {{ __('Delete') }}
             </button>
             @endif
-            <a href="{{ route('admin.expenses.index') }}" class="btn-secondary">← Back</a>
+            <a href="{{ route('admin.expenses.index') }}" class="btn-secondary">← {{ __('Back') }}</a>
         </div>
     </div>
 
@@ -38,7 +38,7 @@
             </div>
             <div>
                 <div class="ms-val" style="color:#f87171;">{{ number_format($expense->amount, 2) }} JD</div>
-                <div class="ms-lbl">Amount</div>
+                <div class="ms-lbl">{{ __('Amount') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -52,42 +52,42 @@
         {{-- Expense details --}}
         <div class="table-card" style="height:fit-content;">
             <div style="padding:16px;border-bottom:1px solid var(--bdr);">
-                <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Expense Details</h3>
+                <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Expense Details') }}</h3>
             </div>
             <div style="padding:16px;">
                 <div class="info-rows">
                     <div class="info-row">
-                        <span class="info-row-key">Category</span>
+                        <span class="info-row-key">{{ __('Category') }}</span>
                         <span class="info-row-val">{{ $expense->category->label() }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-row-key">Amount</span>
+                        <span class="info-row-key">{{ __('Amount') }}</span>
                         <span class="info-row-val" style="font-weight:700;font-size:1.05rem;color:#f87171;">
                             {{ number_format($expense->amount, 2) }} JD
                         </span>
                     </div>
                     <div class="info-row">
-                        <span class="info-row-key">Payment Date</span>
+                        <span class="info-row-key">{{ __('Payment Date') }}</span>
                         <span class="info-row-val">{{ $expense->payment_date->format('d M Y') }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-row-key">Payment Method</span>
+                        <span class="info-row-key">{{ __('Payment Method') }}</span>
                         <span class="info-row-val">{{ ucfirst(str_replace('_', ' ', $expense->payment_method)) }}</span>
                     </div>
                     @if($expense->vendor)
                     <div class="info-row">
-                        <span class="info-row-key">Vendor / Payee</span>
+                        <span class="info-row-key">{{ __('Vendor / Payee') }}</span>
                         <span class="info-row-val">{{ $expense->vendor }}</span>
                     </div>
                     @endif
                     @if($expense->reference_number)
                     <div class="info-row">
-                        <span class="info-row-key">Reference</span>
+                        <span class="info-row-key">{{ __('Reference') }}</span>
                         <span class="info-row-val" style="font-family:monospace;">{{ $expense->reference_number }}</span>
                     </div>
                     @endif
                     <div class="info-row" style="display:block;">
-                        <span class="info-row-key">Description</span>
+                        <span class="info-row-key">{{ __('Description') }}</span>
                         <div style="margin-top:6px;font-size:.87rem;color:var(--text-sub);line-height:1.5;">{{ $expense->description }}</div>
                     </div>
                 </div>
@@ -98,16 +98,16 @@
             {{-- Approval info --}}
             <div class="table-card">
                 <div style="padding:16px;border-bottom:1px solid var(--bdr);">
-                    <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Audit</h3>
+                    <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Audit') }}</h3>
                 </div>
                 <div style="padding:16px;">
                     <div class="info-rows">
                         <div class="info-row">
-                            <span class="info-row-key">Recorded By</span>
+                            <span class="info-row-key">{{ __('Recorded By') }}</span>
                             <span class="info-row-val">{{ $expense->recordedBy->name ?? '—' }}</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-row-key">Recorded At</span>
+                            <span class="info-row-key">{{ __('Recorded At') }}</span>
                             <span class="info-row-val">{{ $expense->created_at->format('d M Y H:i') }}</span>
                         </div>
                     </div>
@@ -118,17 +118,17 @@
             @if($expense->receipt_path)
             <div class="table-card">
                 <div style="padding:16px;border-bottom:1px solid var(--bdr);">
-                    <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Receipt</h3>
+                    <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Receipt') }}</h3>
                 </div>
                 <div style="padding:16px;">
                     @php $ext = pathinfo($expense->receipt_path, PATHINFO_EXTENSION); @endphp
                     @if(in_array(strtolower($ext), ['jpg','jpeg','png']))
                         <img src="{{ asset('storage/' . $expense->receipt_path) }}"
-                             style="max-width:100%;border-radius:8px;border:1px solid var(--bdr);" alt="Receipt">
+                             style="max-width:100%;border-radius:8px;border:1px solid var(--bdr);" alt="{{ __('Receipt') }}">
                     @else
                         <a href="{{ asset('storage/' . $expense->receipt_path) }}"
                            target="_blank" class="btn-secondary" style="display:inline-block;">
-                            Download Receipt ({{ strtoupper($ext) }})
+                            {{ __('Download Receipt') }} ({{ strtoupper($ext) }})
                         </a>
                     @endif
                 </div>

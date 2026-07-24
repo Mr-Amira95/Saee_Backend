@@ -23,7 +23,7 @@ class LocationController extends Controller
         $user = $request->user();
 
         if (! $user->driverProfile) {
-            return response()->json(['message' => 'Not a driver account.'], 403);
+            return response()->json(['message' => __('Not a driver account.')], 403);
         }
 
         $profile = $user->driverProfile;

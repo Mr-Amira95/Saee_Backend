@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Observers\OrderObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Kreait\Firebase\Contract\Messaging as FirebaseMessaging;
@@ -30,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Order::observe(OrderObserver::class);
         $this->configureRateLimiters();
+
+        Paginator::defaultView('vendor.pagination.custom');
 
         // Share unread support tickets count with admin sidebar
         view()->composer('admin.partials.sidebar', function ($view) {

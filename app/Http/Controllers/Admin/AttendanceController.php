@@ -69,7 +69,7 @@ class AttendanceController extends Controller
         if ($openSession) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are already checked in. Please check out first.'
+                'message' => __('You are already checked in. Please check out first.')
             ], 422);
         }
 
@@ -84,7 +84,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'success'   => true,
-            'message'   => 'Checked in successfully at ' . now()->format('H:i') . '.',
+            'message'   => __('Checked in successfully at :time.', ['time' => now()->format('H:i')]),
             'check_in'  => now()->format('H:i'),
         ]);
     }
@@ -106,7 +106,7 @@ class AttendanceController extends Controller
         if (!$attendance) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not currently checked in.'
+                'message' => __('You are not currently checked in.')
             ], 422);
         }
 
@@ -119,7 +119,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'success'    => true,
-            'message'    => 'Checked out successfully at ' . now()->format('H:i') . '.',
+            'message'    => __('Checked out successfully at :time.', ['time' => now()->format('H:i')]),
             'check_out'  => now()->format('H:i'),
         ]);
     }
@@ -139,6 +139,6 @@ class AttendanceController extends Controller
             'check_out_at' => $validated['check_out_at'] ?? null,
         ]);
 
-        return redirect()->back()->with('success', 'Attendance record updated.');
+        return redirect()->back()->with('success', __('Attendance record updated.'));
     }
 }

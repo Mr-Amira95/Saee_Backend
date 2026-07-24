@@ -49,7 +49,7 @@ class ShowcaseHowItWorkController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-how-it-works.index')
-            ->with('success', 'Step created successfully.');
+            ->with('success', __('Step created successfully.'));
     }
 
     public function edit(ShowcaseHowItWork $showcaseHowItWork)
@@ -84,7 +84,7 @@ class ShowcaseHowItWorkController extends Controller
         ]);
 
         return redirect()->route('admin.cms.showcase-how-it-works.index')
-            ->with('success', 'Step updated successfully.');
+            ->with('success', __('Step updated successfully.'));
     }
 
     public function destroy(ShowcaseHowItWork $showcaseHowItWork)
@@ -93,6 +93,6 @@ class ShowcaseHowItWorkController extends Controller
         $showcaseHowItWork->delete();
 
         return redirect()->route('admin.cms.showcase-how-it-works.index')
-            ->with('success', 'Step deleted successfully.');
+            ->with('success', __('Step deleted successfully.'));
     }
 }

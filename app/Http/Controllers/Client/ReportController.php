@@ -87,7 +87,7 @@ class ReportController extends Controller
             ->pluck('count', 'date')
             ->toArray();
 
-        $days = (int) min(ceil((strtotime($to) - strtotime($from)) / 86400) + 1, 90);
+        $days = (int) max(1, min(ceil((strtotime($to) - strtotime($from)) / 86400) + 1, 90));
         $dailyTrend = collect();
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = now()->parse($to)->subDays($i)->toDateString();

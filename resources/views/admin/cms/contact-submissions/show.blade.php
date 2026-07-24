@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Submission — ' . $submission->name)
-@section('page-title', 'Submission Detail')
+@section('title', __('Submission') . ' — ' . $submission->name)
+@section('page-title', __('Submission Detail'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.cms.contact-submissions.index') }}">Contact Form Submissions</a>
+    <a href="{{ route('admin.cms.contact-submissions.index') }}">{{ __('Contact Form Submissions') }}</a>
     <span class="sep">/</span>
     <span class="current">{{ $submission->name }}</span>
 @endsection
@@ -21,56 +21,56 @@
 <div class="page-hd">
     <div class="page-hd-left">
         <h1>{{ $submission->name }}</h1>
-        <p>Submitted {{ $submission->created_at->format('d M Y H:i') }}
-            &nbsp;·&nbsp; <span style="text-transform:capitalize;">{{ $submission->type }}</span> inquiry
+        <p>{{ __('Submitted') }} {{ $submission->created_at->format('d M Y H:i') }}
+            &nbsp;·&nbsp; <span style="text-transform:capitalize;">{{ $submission->type }}</span> {{ __('inquiry') }}
         </p>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
         <button type="button" class="btn-secondary" style="color:#f87171;border-color:rgba(220,38,38,.3);"
             onclick="confirmDelete('{{ route('admin.cms.contact-submissions.destroy', $submission) }}', '{{ addslashes($submission->name) }}')">
-            Delete
+            {{ __('Delete') }}
         </button>
-        <a href="{{ route('admin.cms.contact-submissions.index') }}" class="btn-secondary">&larr; Back</a>
+        <a href="{{ route('admin.cms.contact-submissions.index') }}" class="btn-secondary">{{ __('← Back') }}</a>
     </div>
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
     <div class="table-card" style="height:fit-content;">
         <div style="padding:16px;border-bottom:1px solid var(--bdr);">
-            <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Submission Details</h3>
+            <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Submission Details') }}</h3>
         </div>
         <div style="padding:16px;">
             <div class="info-rows">
                 <div class="info-row">
-                    <span class="info-row-key">Type</span>
+                    <span class="info-row-key">{{ __('Type') }}</span>
                     <span class="info-row-val" style="text-transform:capitalize;">{{ $submission->type }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row-key">Name</span>
+                    <span class="info-row-key">{{ __('Name') }}</span>
                     <span class="info-row-val">{{ $submission->name }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row-key">Company</span>
+                    <span class="info-row-key">{{ __('Company') }}</span>
                     <span class="info-row-val">{{ $submission->company ?: '—' }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row-key">Monthly Volume</span>
+                    <span class="info-row-key">{{ __('Monthly Volume') }}</span>
                     <span class="info-row-val">{{ $submission->monthly_volume ?: '—' }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row-key">Email</span>
+                    <span class="info-row-key">{{ __('Email') }}</span>
                     <span class="info-row-val">{{ $submission->email }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row-key">Phone</span>
+                    <span class="info-row-key">{{ __('Phone') }}</span>
                     <span class="info-row-val">{{ $submission->phone ?: '—' }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-row-key">Submitted At</span>
+                    <span class="info-row-key">{{ __('Submitted At') }}</span>
                     <span class="info-row-val">{{ $submission->created_at->format('d M Y H:i') }}</span>
                 </div>
                 <div class="info-row" style="display:block;">
-                    <span class="info-row-key">Message</span>
+                    <span class="info-row-key">{{ __('Message') }}</span>
                     <div style="margin-top:6px;font-size:.87rem;color:var(--text-sub);line-height:1.5;white-space:pre-line;">{{ $submission->message }}</div>
                 </div>
             </div>
@@ -80,30 +80,30 @@
     <div style="display:flex;flex-direction:column;gap:20px;">
         <div class="table-card">
             <div style="padding:16px;border-bottom:1px solid var(--bdr);">
-                <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Status</h3>
+                <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Status') }}</h3>
             </div>
             <div style="padding:16px;">
                 <div style="margin-bottom:14px;">
                     @if($submission->status === 'new')
-                        <span class="badge-suspended">New</span>
+                        <span class="badge-suspended">{{ __('New') }}</span>
                     @elseif($submission->status === 'contacted')
-                        <span class="badge-active">Contacted</span>
+                        <span class="badge-active">{{ __('Contacted') }}</span>
                     @else
-                        <span class="badge-active">Closed</span>
+                        <span class="badge-active">{{ __('Closed') }}</span>
                     @endif
                 </div>
                 <form method="POST" action="{{ route('admin.cms.contact-submissions.update-status', $submission) }}">
                     @csrf
                     @method('PATCH')
                     <div class="form-group">
-                        <label class="form-label">Change Status</label>
+                        <label class="form-label">{{ __('Change Status') }}</label>
                         <select name="status" class="form-input">
-                            <option value="new" @selected($submission->status === 'new')>New</option>
-                            <option value="contacted" @selected($submission->status === 'contacted')>Contacted</option>
-                            <option value="closed" @selected($submission->status === 'closed')>Closed</option>
+                            <option value="new" @selected($submission->status === 'new')>{{ __('New') }}</option>
+                            <option value="contacted" @selected($submission->status === 'contacted')>{{ __('Contacted') }}</option>
+                            <option value="closed" @selected($submission->status === 'closed')>{{ __('Closed') }}</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn-primary" style="margin-top:10px;">Update Status</button>
+                    <button type="submit" class="btn-primary" style="margin-top:10px;">{{ __('Update Status') }}</button>
                 </form>
             </div>
         </div>

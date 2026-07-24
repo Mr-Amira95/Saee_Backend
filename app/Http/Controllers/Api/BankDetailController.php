@@ -31,7 +31,7 @@ class BankDetailController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Bank details retrieved successfully.',
+            'message' => __('Bank details retrieved successfully.'),
             'data'    => $bankDetail ? $this->formatBankDetail($bankDetail) : null,
         ]);
     }
@@ -48,7 +48,7 @@ class BankDetailController extends Controller
         if (! $user->isClientMaster()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only the account owner can update bank details.',
+                'message' => __('Only the account owner can update bank details.'),
             ], 403);
         }
 
@@ -76,7 +76,7 @@ class BankDetailController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Bank details saved successfully.',
+            'message' => __('Bank details saved successfully.'),
             'data'    => $this->formatBankDetail($bankDetail),
         ]);
     }
@@ -98,7 +98,7 @@ class BankDetailController extends Controller
     {
         return response()->json([
             'success' => false,
-            'message' => 'Client profile not found.',
+            'message' => __('Client profile not found.'),
             'code'    => 'CLIENT_PROFILE_NOT_FOUND',
         ], 403);
     }

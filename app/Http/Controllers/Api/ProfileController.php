@@ -21,7 +21,7 @@ class ProfileController extends Controller
         if ($user->trashed()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthenticated',
+                'message' => __('Unauthenticated'),
                 'code'    => 'UNAUTHENTICATED',
             ], 401);
         }
@@ -36,7 +36,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => false,
-            'message' => 'Profile not available for this account type.',
+            'message' => __('Profile not available for this account type.'),
             'code'    => 'UNSUPPORTED_ACCOUNT_TYPE',
         ], 403);
     }
@@ -48,7 +48,7 @@ class ProfileController extends Controller
         if (! $driver) {
             return response()->json([
                 'success' => false,
-                'message' => 'Driver profile not found',
+                'message' => __('Driver profile not found'),
                 'code'    => 'PROFILE_NOT_FOUND',
             ], 404);
         }
@@ -78,7 +78,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Profile retrieved successfully',
+            'message' => __('Profile retrieved successfully'),
             'data'    => [
                 'user'        => new UserResource($user),
                 'driver'      => [
@@ -121,7 +121,7 @@ class ProfileController extends Controller
         if (! $clientProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Client profile not found.',
+                'message' => __('Client profile not found.'),
                 'code'    => 'PROFILE_NOT_FOUND',
             ], 404);
         }
@@ -162,7 +162,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Profile retrieved successfully.',
+            'message' => __('Profile retrieved successfully.'),
             'data'    => $data,
         ]);
     }
@@ -175,7 +175,7 @@ class ProfileController extends Controller
         if (! $user->isClientMaster()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only the account owner can update company details.',
+                'message' => __('Only the account owner can update company details.'),
             ], 403);
         }
 
@@ -184,7 +184,7 @@ class ProfileController extends Controller
         if (! $clientProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Client profile not found.',
+                'message' => __('Client profile not found.'),
                 'code'    => 'CLIENT_PROFILE_NOT_FOUND',
             ], 404);
         }
@@ -231,7 +231,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Company details updated successfully.',
+            'message' => __('Company details updated successfully.'),
             'data'    => [
                 'id'                         => $clientProfile->id,
                 'company_name'               => $clientProfile->company_name,
@@ -257,7 +257,7 @@ class ProfileController extends Controller
         if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
             return response()->json([
                 'success' => false,
-                'message' => 'This endpoint is only available for client accounts.',
+                'message' => __('This endpoint is only available for client accounts.'),
             ], 403);
         }
 
@@ -269,8 +269,8 @@ class ProfileController extends Controller
             'phone'               => ['sometimes', Rule::requiredIf($channel === 'whatsapp'), 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
             'phone_country_code'  => ['sometimes', 'nullable', 'string', 'max:10'],
         ], [
-            'email.required' => 'The email field is required when your notification channel is set to email.',
-            'phone.required' => 'The phone field is required when your notification channel is set to WhatsApp.',
+            'email.required' => __('The email field is required when your notification channel is set to email.'),
+            'phone.required' => __('The phone field is required when your notification channel is set to WhatsApp.'),
         ]);
 
         $user->update($data);
@@ -278,7 +278,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Personal information updated successfully.',
+            'message' => __('Personal information updated successfully.'),
             'data'    => [
                 'user' => new UserResource($user),
             ],

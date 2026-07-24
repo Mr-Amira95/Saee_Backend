@@ -384,7 +384,7 @@
                     <div>
                         @if(($order->payment?->payment_type ?? 'prepaid') === 'cod')
                             <span style="font-size:.8rem;color:var(--text-dim);">{{ __('COD') }}</span>
-                            <span style="font-size:.95rem;font-weight:700;color:#fbbf24;margin-left:5px;">{{ number_format($order->payment?->order_price ?? 0, 2) }} JD</span>
+                            <span style="font-size:.95rem;font-weight:700;color:#fbbf24;margin-inline-start:5px;">{{ number_format($order->payment?->order_price ?? 0, 2) }} JD</span>
                         @else
                             <span class="badge badge-prepaid">{{ __('Prepaid') }}</span>
                         @endif

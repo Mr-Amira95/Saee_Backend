@@ -271,11 +271,13 @@
             </div>
             <div class="form-group">
                 <label class="form-label" for="commercial_register_number">Commercial Register No. <span class="opt">(optional)</span></label>
-                <input class="form-input" id="commercial_register_number" type="text" name="commercial_register_number" value="{{ old('commercial_register_number', $client->commercial_register_number) }}" placeholder="CR-XXXXXXX">
+                <input class="form-input @error('commercial_register_number') is-error @enderror" id="commercial_register_number" type="text" inputmode="numeric" pattern="[0-9]*" name="commercial_register_number" value="{{ old('commercial_register_number', $client->commercial_register_number) }}" placeholder="e.g. 1234567" title="Numbers only">
+                @error('commercial_register_number')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label class="form-label" for="vat_number">VAT Number <span class="opt">(optional)</span></label>
-                <input class="form-input" id="vat_number" type="text" name="vat_number" value="{{ old('vat_number', $client->vat_number) }}" placeholder="VAT-XXXXXXX">
+                <input class="form-input @error('vat_number') is-error @enderror" id="vat_number" type="text" inputmode="numeric" pattern="[0-9]*" name="vat_number" value="{{ old('vat_number', $client->vat_number) }}" placeholder="e.g. 1234567" title="Numbers only">
+                @error('vat_number')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
                 <label class="form-label" for="company_email">Company Email <span class="opt">(optional)</span></label>
@@ -385,8 +387,9 @@
             </div>
             <div class="form-group">
                 <label class="form-label" for="expiry_date">Account Expiry Date <span class="opt">(optional)</span></label>
-                <input class="form-input @error('expiry_date') is-error @enderror" id="expiry_date" type="date" name="expiry_date"
-                       value="{{ old('expiry_date', $client->expiry_date ? $client->expiry_date->format('Y-m-d') : '') }}">
+                <input class="form-input @error('expiry_date') is-error @enderror" id="expiry_date" type="text" name="expiry_date"
+                       value="{{ old('expiry_date', $client->expiry_date ? $client->expiry_date->format('d-m-Y') : '') }}"
+                       placeholder="DD-MM-YYYY" maxlength="10" autocomplete="off">
                 @error('expiry_date')<span class="form-error">{{ $message }}</span>@enderror
             </div>
         </div>
@@ -436,14 +439,14 @@
             <div class="form-group">
                 <label class="form-label">CliQ ID</label>
                 <div style="display:flex;gap:8px;">
-                    <select name="cliq_alias_type" class="form-select" style="width:150px;flex-shrink:0;">
+                    <select name="cliq_alias_type" id="cliq_alias_type" class="form-select" style="width:150px;flex-shrink:0;">
                         <option value="">— Type —</option>
                         <option value="alias" {{ old('cliq_alias_type', $bd->cliq_alias_type ?? '') === 'alias' ? 'selected' : '' }}>Alias</option>
                         <option value="phone" {{ old('cliq_alias_type', $bd->cliq_alias_type ?? '') === 'phone' ? 'selected' : '' }}>Phone</option>
                     </select>
-                    <input class="form-input @error('cliq_id') is-error @enderror" type="text"
+                    <input class="form-input @error('cliq_id') is-error @enderror" id="cliq_id" type="text"
                            name="cliq_id" value="{{ old('cliq_id', $bd->cliq_id ?? '') }}"
-                           placeholder="Phone number or National ID" style="flex:1;">
+                           placeholder="Phone number or Alias" style="flex:1;">
                 </div>
                 @error('cliq_id')<span class="form-error">{{ $message }}</span>@enderror
             </div>
@@ -497,6 +500,9 @@
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <input type="number"
                                        name="delivery_prices[{{ $city->id }}]"
+                                       id="delivery_price_{{ $city->id }}"
+                                       class="delivery-price-input"
+                                       data-city="{{ $city->name }}"
                                        value="{{ old('delivery_prices.'.$city->id, $customPrice) }}"
                                        min="0" step="0.01"
                                        placeholder="{{ number_format($city->delivery_price, 2) }}"
@@ -874,6 +880,11 @@ function loadAreas(cityId) {
 /* ── Logo preview ── */
 document.getElementById('logoInput').addEventListener('change', function() {
     if (!this.files[0]) return;
+    if (this.files[0].size > 2 * 1024 * 1024) {
+        showWarningToast('The logo file must not exceed 2 MB.');
+        this.value = '';
+        return;
+    }
     var reader = new FileReader();
     reader.onload = function(e) {
         document.getElementById('logoPreviewImg').src = e.target.result;
@@ -925,6 +936,12 @@ function addAttachRow() {
             '<button type="button" class="btn-remove-att" onclick="removeAttachRow(' + i + ')" style="flex-shrink:0;">&#10005;</button>' +
         '</div>';
     document.getElementById('attachContainer').appendChild(row);
+    row.querySelector('input[type="file"]').addEventListener('change', function() {
+        if (this.files[0] && this.files[0].size > 10 * 1024 * 1024) {
+            showWarningToast('Attachment files must not exceed 10 MB.');
+            this.value = '';
+        }
+    });
 }
 function removeAttachRow(i) {
     var el = document.getElementById('att-row-' + i);
@@ -1001,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* ── Client Form Validation ── */
 (function() {
-    var form = document.querySelector('form');
+    var form = document.querySelector('form[novalidate]');
     if (!form) return;
 
     function getField(n) {
@@ -1021,9 +1038,99 @@ document.addEventListener('DOMContentLoaded', function() {
     function clearErrors() {
         form.querySelectorAll('.js-err').forEach(function(e) { e.remove(); });
         form.querySelectorAll('.js-marked').forEach(function(e) { e.classList.remove('is-error', 'js-marked'); });
+        form.querySelectorAll('.delivery-price-input').forEach(function(e) { e.style.borderColor = ''; });
     }
 
-    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+    function isEmail(v) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v.trim()); }
+    function isValidName(v) { return /^[\p{L}\s]+$/u.test(v.trim()); }
+    function isValidUsername(v) { return /^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/.test(v.trim()); }
+    function isValidPhone(v) { return /^[0-9]{6,15}$/.test(v.trim()); }
+    function isValidEnglishName(v) { return /^[A-Za-z\s'.-]+$/.test(v.trim()); }
+    function isValidIban(v) { return /^[A-Za-z]{2}[0-9]{2}[A-Za-z0-9]{1,30}$/.test(v.trim()); }
+    function isValidSwift(v) { return /^[A-Za-z0-9]{8,11}$/.test(v.trim()); }
+    function isValidAccountNumber(v) { return /^[0-9]+$/.test(v.trim()); }
+    function isValidCliqPhone(v) { return /^7[789][0-9]{7}$/.test(v.trim()); }
+    function isValidCliqAlias(v) { return /^[A-Za-z0-9]+$/.test(v.trim()); }
+
+    function isValidExpiryDate(v) {
+        var m = v.trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (!m) return false;
+        var day = parseInt(m[1], 10), month = parseInt(m[2], 10), year = parseInt(m[3], 10);
+        var d = new Date(year, month - 1, day);
+        return d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day;
+    }
+
+    function clearFieldError(el) {
+        var container = el.closest ? (el.closest('.form-group') || el.parentElement) : el.parentElement;
+        el.classList.remove('is-error', 'js-marked');
+        var err = container.querySelector('.js-err');
+        if (err) err.remove();
+    }
+
+    /* ── Expiry date input mask (DD-MM-YYYY) ── */
+    var expiryEl = getField('expiry_date');
+    if (expiryEl) {
+        expiryEl.addEventListener('input', function() {
+            var digits = expiryEl.value.replace(/[^0-9]/g, '').slice(0, 8);
+            var out = digits.slice(0, 2);
+            if (digits.length > 2) out += '-' + digits.slice(2, 4);
+            if (digits.length > 4) out += '-' + digits.slice(4, 8);
+            expiryEl.value = out;
+            clearFieldError(expiryEl);
+            if (out.length === 10 && !isValidExpiryDate(out)) {
+                showFieldError(expiryEl, 'Please enter a valid date in the format DD-MM-YYYY.');
+            }
+        });
+    }
+
+    /* ── CliQ ID validation depends on selected type ── */
+    var cliqTypeEl = getField('cliq_alias_type');
+    var cliqIdEl   = getField('cliq_id');
+    function validateCliq() {
+        if (!cliqIdEl) return;
+        clearFieldError(cliqIdEl);
+        var type = cliqTypeEl ? cliqTypeEl.value : '';
+        var val  = cliqIdEl.value.trim();
+        if (!val) return;
+        if (type === 'phone' && !isValidCliqPhone(val)) {
+            showFieldError(cliqIdEl, 'Phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+        } else if (type === 'alias' && !isValidCliqAlias(val)) {
+            showFieldError(cliqIdEl, 'Alias must only contain letters and numbers.');
+        }
+    }
+    if (cliqIdEl) cliqIdEl.addEventListener('input', validateCliq);
+    if (cliqTypeEl) cliqTypeEl.addEventListener('change', validateCliq);
+
+    /* ── Delivery price validation (must be at least 0) ── */
+    form.querySelectorAll('.delivery-price-input').forEach(function(el) {
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            el.style.borderColor = '';
+            if (el.value !== '' && parseFloat(el.value) < 0) {
+                el.style.borderColor = '#dc2626';
+                showFieldError(el, 'The Delivery price of ' + el.dataset.city + ' must be at least 0');
+            }
+        });
+    });
+
+    function wireLiveValidation(name, validator, msg) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            if (el.value.trim() && !validator(el.value)) showFieldError(el, msg);
+        });
+    }
+
+    wireLiveValidation('name', isValidName, 'Full name must only contain letters and spaces (no numbers or special characters).');
+    wireLiveValidation('username', isValidUsername, 'Username must contain at least one letter, start with a letter or number, and cannot end with a special character.');
+    wireLiveValidation('email', isEmail, 'Please enter a valid email address in the format name@domain.com.');
+    wireLiveValidation('phone', isValidPhone, 'Phone must contain 6 to 15 digits only.');
+    wireLiveValidation('bank_name', isValidEnglishName, 'Bank name must only contain English letters.');
+    wireLiveValidation('account_name', isValidEnglishName, 'Account holder name must only contain English letters.');
+    wireLiveValidation('iban', isValidIban, 'IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.');
+    wireLiveValidation('swift_code', isValidSwift, 'SWIFT / BIC code must be 8-11 letters/numbers only.');
+    wireLiveValidation('account_number', isValidAccountNumber, 'Account number must contain digits only.');
 
     form.addEventListener('submit', function(e) {
         clearErrors();
@@ -1040,11 +1147,84 @@ document.addEventListener('DOMContentLoaded', function() {
         req('username',     'Username is required.');
         req('company_name', 'Company name (EN) is required.');
 
+        var nEl = getField('name');
+        if (nEl && nEl.value.trim() && !isValidName(nEl.value)) {
+            showFieldError(nEl, 'Full name must only contain letters and spaces (no numbers or special characters).');
+            if (!first) first = nEl;
+        }
+
+        var uEl = getField('username');
+        if (uEl && uEl.value.trim() && !isValidUsername(uEl.value)) {
+            showFieldError(uEl, 'Username must contain at least one letter, start with a letter or number, and cannot end with a special character.');
+            if (!first) first = uEl;
+        }
+
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
-            showFieldError(eEl, 'Please enter a valid email address.');
+            showFieldError(eEl, 'Please enter a valid email address in the format name@domain.com.');
             if (!first) first = eEl;
         }
+
+        var phEl = getField('phone');
+        if (phEl && phEl.value.trim() && !isValidPhone(phEl.value)) {
+            showFieldError(phEl, 'Phone must contain 6 to 15 digits only.');
+            if (!first) first = phEl;
+        }
+
+        var bnEl = getField('bank_name');
+        if (bnEl && bnEl.value.trim() && !isValidEnglishName(bnEl.value)) {
+            showFieldError(bnEl, 'Bank name must only contain English letters.');
+            if (!first) first = bnEl;
+        }
+
+        var anEl = getField('account_name');
+        if (anEl && anEl.value.trim() && !isValidEnglishName(anEl.value)) {
+            showFieldError(anEl, 'Account holder name must only contain English letters.');
+            if (!first) first = anEl;
+        }
+
+        var ibEl = getField('iban');
+        if (ibEl && ibEl.value.trim() && !isValidIban(ibEl.value)) {
+            showFieldError(ibEl, 'IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.');
+            if (!first) first = ibEl;
+        }
+
+        var swEl = getField('swift_code');
+        if (swEl && swEl.value.trim() && !isValidSwift(swEl.value)) {
+            showFieldError(swEl, 'SWIFT / BIC code must be 8-11 letters/numbers only.');
+            if (!first) first = swEl;
+        }
+
+        var acEl = getField('account_number');
+        if (acEl && acEl.value.trim() && !isValidAccountNumber(acEl.value)) {
+            showFieldError(acEl, 'Account number must contain digits only.');
+            if (!first) first = acEl;
+        }
+
+        if (cliqIdEl && cliqIdEl.value.trim()) {
+            var cType = cliqTypeEl ? cliqTypeEl.value : '';
+            var cVal  = cliqIdEl.value.trim();
+            if (cType === 'phone' && !isValidCliqPhone(cVal)) {
+                showFieldError(cliqIdEl, 'Phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+                if (!first) first = cliqIdEl;
+            } else if (cType === 'alias' && !isValidCliqAlias(cVal)) {
+                showFieldError(cliqIdEl, 'Alias must only contain letters and numbers.');
+                if (!first) first = cliqIdEl;
+            }
+        }
+
+        if (expiryEl && expiryEl.value.trim() && !isValidExpiryDate(expiryEl.value)) {
+            showFieldError(expiryEl, 'Please enter a valid date in the format DD-MM-YYYY.');
+            if (!first) first = expiryEl;
+        }
+
+        form.querySelectorAll('.delivery-price-input').forEach(function(el) {
+            if (el.value !== '' && parseFloat(el.value) < 0) {
+                el.style.borderColor = '#dc2626';
+                showFieldError(el, 'The Delivery price of ' + el.dataset.city + ' must be at least 0');
+                if (!first) first = el;
+            }
+        });
 
         if (first) {
             e.preventDefault();

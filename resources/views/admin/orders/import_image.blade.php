@@ -115,14 +115,14 @@
                 @csrf
                 
                 <div class="form-group" style="padding: 40px 30px; border: 2px dashed var(--bdr); border-radius: 12px; text-align: center; background: rgba(255,255,255,0.01); transition: border-color 0.2s; cursor: pointer;" id="dropzone">
-                    <input type="file" name="image" id="image" style="display: none;" accept="image/jpeg,image/jpg,image/png,image/webp" required>
+                    <input type="file" name="image" id="image" style="display: none;" accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" required>
                     <div style="font-size: 3rem; color: var(--text-dim); margin-bottom: 12px;" id="dropzone-icon">
                         <svg width="50" height="50" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="display: inline-block;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     </div>
                     <div style="font-size: 1rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px;" id="dropzone-text">
                         Drag and drop your image sheet here, or <span style="color: var(--red-lt);">browse</span>
                     </div>
-                    <div style="font-size: 0.78rem; color: var(--text-dim);" id="file-name-display">Supported: JPG, JPEG, PNG, WEBP. Max size: 10MB.</div>
+                    <div style="font-size: 0.78rem; color: var(--text-dim);" id="file-name-display">Supported: JPG, JPEG, PNG, WEBP, GIF. Max size: 10MB.</div>
                     
                     {{-- Preview Container --}}
                     <div id="image-preview-container" style="display: none; margin-top: 20px; justify-content: center;">
@@ -131,7 +131,7 @@
                 </div>
 
                 <div class="form-actions" style="margin-top: 20px;">
-                    <a href="{{ route('admin.orders.index') }}" class="btn-secondary">Cancel</a>
+                    <button type="button" class="btn-secondary" onclick="window.location.reload()">Cancel</button>
                     <button type="submit" class="btn-primary" id="submitBtn" disabled>
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="margin-right: 5px; vertical-align: middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l-1.813-5.096L2.091 14 7.18 12.187 8 7l1.813 5.187L15 14l-5.187 1.904z"/></svg>
                         Parse with OpenAI
@@ -206,7 +206,7 @@
                 };
                 reader.readAsDataURL(file);
             } else {
-                fileNameDisplay.textContent = 'Supported: JPG, JPEG, PNG, WEBP. Max size: 10MB.';
+                fileNameDisplay.textContent = 'Supported: JPG, JPEG, PNG, WEBP, GIF. Max size: 10MB.';
                 fileNameDisplay.style.color = 'var(--text-dim)';
                 submitBtn.disabled = true;
                 dropzone.style.borderColor = 'var(--bdr)';

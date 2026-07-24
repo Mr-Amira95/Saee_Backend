@@ -16,7 +16,7 @@
 <div class="flash flash-ok" style="margin-bottom:16px;">{{ session('success') }}</div>
 @endif
 
-<form method="POST" action="{{ route('client.account.password.update') }}">
+<form method="POST" action="{{ route('client.account.password.update') }}" id="passwordForm" novalidate>
 @csrf
 
 <div class="card" style="margin-bottom:20px;">
@@ -35,7 +35,9 @@
             <label class="form-label" for="password">{{ __('New Password *') }}</label>
             <input id="password" name="password" type="password"
                    class="form-input {{ $errors->has('password') ? 'has-error' : '' }}"
-                   placeholder="{{ __('Min. 8 characters') }}" autocomplete="new-password" required>
+                   placeholder="{{ __('Min 8 chars, upper, lower & symbol') }}" autocomplete="new-password" required
+                   oninput="updatePasswordRequirements(this.value, 'changePwReqs')">
+            @include('client.partials.password-requirements', ['id' => 'changePwReqs'])
             @error('password') <div class="form-error">{{ $message }}</div> @enderror
         </div>
 
@@ -55,3 +57,38 @@
 </form>
 
 @endsection
+
+@push('scripts')
+<script>
+(function() {
+    var form = document.getElementById('passwordForm');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        var pw  = document.getElementById('password');
+        var pwc = document.getElementById('password_confirmation');
+
+        form.querySelectorAll('.js-err').forEach(function(el) { el.remove(); });
+
+        if (pw.value && !isStrongPassword(pw.value)) {
+            var err = document.createElement('div');
+            err.className = 'form-error js-err';
+            err.textContent = '{{ __('Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a special character.') }}';
+            pw.closest('.form-group').appendChild(err);
+            e.preventDefault();
+            pw.focus();
+            return;
+        }
+
+        if (pw.value !== pwc.value) {
+            var err2 = document.createElement('div');
+            err2.className = 'form-error js-err';
+            err2.textContent = '{{ __('Passwords do not match.') }}';
+            pwc.closest('.form-group').appendChild(err2);
+            e.preventDefault();
+            pwc.focus();
+        }
+    });
+})();
+</script>
+@endpush

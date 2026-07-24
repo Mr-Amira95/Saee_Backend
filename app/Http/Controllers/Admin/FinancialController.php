@@ -146,7 +146,7 @@ class FinancialController extends Controller
         );
 
         return redirect()->route('admin.financials.index')
-            ->with('success', "Successfully settled {$settledCount} orders from driver {$driver->name}.");
+            ->with('success', __('Successfully settled :count orders from driver :name.', ['count' => $settledCount, 'name' => $driver->name]));
     }
 
     public function clientPayoutForm(ClientProfile $client)
@@ -206,7 +206,7 @@ class FinancialController extends Controller
         );
 
         return redirect()->route('admin.financials.index')
-            ->with('success', "Successfully processed COD payout for {$payoutCount} orders to client {$client->company_name}.");
+            ->with('success', __('Successfully processed COD payout for :count orders to client :name.', ['count' => $payoutCount, 'name' => $client->company_name]));
     }
 
     public function invoices(Request $request)
