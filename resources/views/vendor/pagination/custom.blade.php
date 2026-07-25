@@ -5,7 +5,7 @@
         <a href="{{ $paginator->previousPageUrl() }}" rel="prev">&laquo;</a>
     @endif
 
-    @foreach ($paginator->elements() as $element)
+    @foreach ($elements as $element)
         @if (is_string($element))
             <span class="disabled">{{ $element }}</span>
         @endif
