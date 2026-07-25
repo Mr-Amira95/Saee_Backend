@@ -1,16 +1,16 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Location History – '.($driver->user->name ?? 'Driver'))
-@section('page-title', 'Location History')
+@section('title', __('Location History –') . ' ' . ($driver->user->name ?? __('Driver')))
+@section('page-title', __('Location History'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.drivers.index') }}">Drivers</a>
+    <a href="{{ route('admin.drivers.index') }}">{{ __('Drivers') }}</a>
     <span>/</span>
     <a href="{{ route('admin.drivers.show', $driver) }}">{{ $driver->user->name ?? '—' }}</a>
     <span>/</span>
-    <span>Location History</span>
+    <span>{{ __('Location History') }}</span>
 @endsection
 
 @section('head')
@@ -109,21 +109,21 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     <form method="GET" action="{{ route('admin.drivers.location-history', $driver) }}">
         <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
             <div class="form-group" style="margin:0;flex:1;min-width:180px;">
-                <label class="form-label" style="font-size:.72rem;">From</label>
+                <label class="form-label" style="font-size:.72rem;">{{ __('From') }}</label>
                 <input class="form-input" type="datetime-local" name="from"
                        value="{{ $from->format('Y-m-d\TH:i') }}" style="height:38px;">
             </div>
             <div class="form-group" style="margin:0;flex:1;min-width:180px;">
-                <label class="form-label" style="font-size:.72rem;">To</label>
+                <label class="form-label" style="font-size:.72rem;">{{ __('To') }}</label>
                 <input class="form-input" type="datetime-local" name="to"
                        value="{{ $to->format('Y-m-d\TH:i') }}" style="height:38px;">
             </div>
             <button type="submit" class="btn-primary" style="height:38px;padding:0 20px;flex-shrink:0;">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:5px;vertical-align:middle;"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
-                Show
+                {{ __('Show') }}
             </button>
             <a href="{{ route('admin.drivers.location-history', $driver) }}" class="btn-secondary"
-               style="height:38px;line-height:38px;padding:0 16px;flex-shrink:0;display:inline-block;">Today</a>
+               style="height:38px;line-height:38px;padding:0 16px;flex-shrink:0;display:inline-block;">{{ __('Today') }}</a>
         </div>
     </form>
 </div>
@@ -131,19 +131,19 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 {{-- ── Stats bar ── --}}
 <div class="stat-bar">
     <div class="stat-chip">
-        <span class="stat-chip-label">Points</span>
+        <span class="stat-chip-label">{{ __('Points') }}</span>
         <span class="stat-chip-val">{{ number_format($count) }}</span>
     </div>
     <div class="stat-chip">
-        <span class="stat-chip-label">Distance</span>
+        <span class="stat-chip-label">{{ __('Distance') }}</span>
         <span class="stat-chip-val">{{ $count >= 2 ? $distanceStr : '—' }}</span>
     </div>
     <div class="stat-chip">
-        <span class="stat-chip-label">Duration</span>
+        <span class="stat-chip-label">{{ __('Duration') }}</span>
         <span class="stat-chip-val">{{ $duration }}</span>
     </div>
     <div class="stat-chip">
-        <span class="stat-chip-label">Period</span>
+        <span class="stat-chip-label">{{ __('Period') }}</span>
         <span class="stat-chip-val" style="font-size:.82rem;font-weight:500;">
             {{ $from->format('d M H:i') }} → {{ $to->format('d M H:i') }}
         </span>
@@ -157,16 +157,16 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:5;">
         <div style="background:rgba(8,12,30,.88);border:1px solid var(--bdr);border-radius:12px;padding:22px 32px;text-align:center;">
             <svg width="32" height="32" fill="none" stroke="var(--text-dim)" stroke-width="1.4" viewBox="0 0 24 24" style="margin-bottom:10px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <div style="font-size:.85rem;color:var(--text-sub);">No location data for this period.</div>
+            <div style="font-size:.85rem;color:var(--text-sub);">{{ __('No location data for this period.') }}</div>
         </div>
     </div>
     @endif
 </div>
 
 <div class="map-legend">
-    <span><span class="legend-dot" style="background:#22c55e;"></span>Start</span>
-    <span><span class="legend-dot" style="background:#dc2626;"></span>End</span>
-    <span><span class="legend-dot" style="background:#dc2626;width:28px;border-radius:2px;height:3px;"></span>Path</span>
+    <span><span class="legend-dot" style="background:#22c55e;"></span>{{ __('Start') }}</span>
+    <span><span class="legend-dot" style="background:#dc2626;"></span>{{ __('End') }}</span>
+    <span><span class="legend-dot" style="background:#dc2626;width:28px;border-radius:2px;height:3px;"></span>{{ __('Path') }}</span>
     @if($count > 0)
     <span style="margin-left:auto;color:var(--text-dim);font-size:.73rem;">
         {{ $from->format('d M Y, H:i') }} — {{ $to->format('d M Y, H:i') }}
@@ -179,9 +179,9 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 <div style="margin-top:24px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:.82rem;font-weight:600;color:var(--text-sub);">
-            Waypoints
+            {{ __('Waypoints') }}
             @if($count > 200)
-                <span style="color:var(--text-dim);font-weight:400;"> — showing latest 200 of {{ number_format($count) }}</span>
+                <span style="color:var(--text-dim);font-weight:400;"> — {{ __('showing latest 200 of :total', ['total' => number_format($count)]) }}</span>
             @endif
         </div>
     </div>
@@ -190,11 +190,11 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Time</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                    <th>Speed</th>
-                    <th>Accuracy</th>
+                    <th>{{ __('Time') }}</th>
+                    <th>{{ __('Latitude') }}</th>
+                    <th>{{ __('Longitude') }}</th>
+                    <th>{{ __('Speed') }}</th>
+                    <th>{{ __('Accuracy') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -233,6 +233,12 @@ $mapPoints = $points->map(function ($p) {
 @endphp
 <script>
 (function () {
+    var i18nLocationHistory = {
+        start: @json(__('Start')),
+        end: @json(__('End')),
+        speed: @json(__('Speed:')),
+        accuracy: @json(__('Accuracy:')),
+    };
     // All recorded points passed from PHP
     var RAW_POINTS = @json($mapPoints);
 
@@ -278,7 +284,7 @@ $mapPoints = $points->map(function ($p) {
         radius: 9, fillColor: '#22c55e', color: '#fff',
         weight: 2, opacity: 1, fillOpacity: 1
     }).addTo(map)
-      .bindPopup('<b>Start</b><br>' + RAW_POINTS[0].ts);
+      .bindPopup('<b>' + i18nLocationHistory.start + '</b><br>' + RAW_POINTS[0].ts);
 
     // End marker — red (only if >1 point)
     if (latlngs.length > 1) {
@@ -288,8 +294,8 @@ $mapPoints = $points->map(function ($p) {
             radius: 9, fillColor: '#dc2626', color: '#fff',
             weight: 2, opacity: 1, fillOpacity: 1
         }).addTo(map)
-          .bindPopup('<b>End</b><br>' + lastP.ts
-              + (lastP.spd ? '<br>Speed: ' + lastP.spd : ''));
+          .bindPopup('<b>' + i18nLocationHistory.end + '</b><br>' + lastP.ts
+              + (lastP.spd ? '<br>' + i18nLocationHistory.speed + ' ' + lastP.spd : ''));
     }
 
     // Clickable intermediate waypoints (thin circles, every Nth to avoid clutter)
@@ -297,8 +303,8 @@ $mapPoints = $points->map(function ($p) {
     for (var i = 1; i < RAW_POINTS.length - 1; i += STEP) {
         (function (p) {
             var popup = p.ts
-                + (p.spd ? '<br>Speed: <b>' + p.spd + '</b>' : '')
-                + (p.acc ? '<br>Accuracy: ' + p.acc : '');
+                + (p.spd ? '<br>' + i18nLocationHistory.speed + ' <b>' + p.spd + '</b>' : '')
+                + (p.acc ? '<br>' + i18nLocationHistory.accuracy + ' ' + p.acc : '');
             L.circleMarker([p.lat, p.lng], {
                 radius: 4, fillColor: '#f87171', color: 'transparent',
                 weight: 0, opacity: 1, fillOpacity: 0.7

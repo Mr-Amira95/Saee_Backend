@@ -1,6 +1,6 @@
 @extends('client.layouts.app')
-@section('title', 'New Order')
-@section('page-title', 'New Order')
+@section('title', __('New Order'))
+@section('page-title', __('New Order'))
 
 @push('styles')
 <style>
@@ -53,10 +53,10 @@
 @section('content')
 
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-    <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← Back</a>
+    <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← {{ __('Back') }}</a>
     <div>
-        <h1 style="font-size:1.3rem;font-weight:800;">Create New Order</h1>
-        <p style="font-size:.82rem;color:var(--text-sub);">Fill in details to register a new shipment.</p>
+        <h1 style="font-size:1.3rem;font-weight:800;">{{ __('Create New Order') }}</h1>
+        <p style="font-size:.82rem;color:var(--text-sub);">{{ __('Fill in details to register a new shipment.') }}</p>
     </div>
 </div>
 
@@ -68,20 +68,20 @@
         <div class="form-section">
             <div class="form-section-title">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Shipment Description
+                {{ __('Shipment Description') }}
             </div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label" for="order_description">Shipment Contents / Description</label>
-                    <input type="text" name="order_description" id="order_description" class="form-input @error('order_description') err @enderror" value="{{ old('order_description') }}" placeholder="e.g. Shoes, electronics, documents">
+                    <label class="form-label" for="order_description">{{ __('Shipment Contents / Description') }}</label>
+                    <input type="text" name="order_description" id="order_description" class="form-input @error('order_description') err @enderror" value="{{ old('order_description') }}" placeholder="{{ __('e.g. Shoes, electronics, documents') }}">
                     @error('order_description') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="delivery_shift">Preferred Delivery Shift</label>
+                    <label class="form-label" for="delivery_shift">{{ __('Preferred Delivery Shift') }}</label>
                     <select name="delivery_shift" id="delivery_shift" class="form-select @error('delivery_shift') err @enderror">
-                        <option value="doesnt_matter" {{ old('delivery_shift', 'doesnt_matter') === 'doesnt_matter' ? 'selected' : '' }}>Doesn't Matter</option>
-                        <option value="before_12pm" {{ old('delivery_shift') === 'before_12pm' ? 'selected' : '' }}>Before 12 PM</option>
-                        <option value="after_12pm" {{ old('delivery_shift') === 'after_12pm' ? 'selected' : '' }}>After 12 PM</option>
+                        <option value="doesnt_matter" {{ old('delivery_shift', 'doesnt_matter') === 'doesnt_matter' ? 'selected' : '' }}>{{ __("Doesn't Matter") }}</option>
+                        <option value="before_12pm" {{ old('delivery_shift') === 'before_12pm' ? 'selected' : '' }}>{{ __('Before 12 PM') }}</option>
+                        <option value="after_12pm" {{ old('delivery_shift') === 'after_12pm' ? 'selected' : '' }}>{{ __('After 12 PM') }}</option>
                     </select>
                     @error('delivery_shift') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
@@ -92,20 +92,20 @@
         <div class="form-section">
             <div class="form-section-title">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m-4-6h8"/></svg>
-                Pricing &amp; Payment Options
+                {{ __('Pricing & Payment Options') }}
             </div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label" for="payment_type">Payment Type <span class="req">*</span></label>
+                    <label class="form-label" for="payment_type">{{ __('Payment Type') }} <span class="req">*</span></label>
                     <select name="payment_type" id="payment_type" class="form-select @error('payment_type') err @enderror" required>
-                        <option value="cod" {{ old('payment_type', 'cod') === 'cod' ? 'selected' : '' }}>COD (Cash on Delivery)</option>
-                        <option value="prepaid" {{ old('payment_type') === 'prepaid' ? 'selected' : '' }}>Prepaid</option>
+                        <option value="cod" {{ old('payment_type', 'cod') === 'cod' ? 'selected' : '' }}>{{ __('COD (Cash on Delivery)') }}</option>
+                        <option value="prepaid" {{ old('payment_type') === 'prepaid' ? 'selected' : '' }}>{{ __('Prepaid') }}</option>
                     </select>
                     @error('payment_type') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group" id="orderPriceGroup">
-                    <label class="form-label" for="order_price">COD Order Price (JD) <span class="req">*</span></label>
+                    <label class="form-label" for="order_price">{{ __('COD Order Price (JD)') }} <span class="req">*</span></label>
                     <input type="number" name="order_price" id="order_price" step="0.01" class="form-input @error('order_price') err @enderror" value="{{ old('order_price') }}" placeholder="0.00">
                     @error('order_price') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
@@ -117,11 +117,11 @@
                         <input type="checkbox" name="delivery_on_customer" id="delivery_on_customer" value="1" {{ old('delivery_on_customer') ? 'checked' : '' }}>
                         <span class="toggle-track"><span class="toggle-thumb"></span></span>
                     </label>
-                    <label class="form-label" for="delivery_on_customer" style="cursor: pointer; margin-bottom: 0;">Delivery Charges On Customer</label>
+                    <label class="form-label" for="delivery_on_customer" style="cursor: pointer; margin-bottom: 0;">{{ __('Delivery Charges On Customer') }}</label>
                 </div>
 
                 <div class="form-group" id="customerAmountGroup" style="display: none;">
-                    <label class="form-label" for="delivery_customer_amount">Customer Delivery Fee (JD) <span class="req">*</span></label>
+                    <label class="form-label" for="delivery_customer_amount">{{ __('Customer Delivery Fee (JD)') }} <span class="req">*</span></label>
                     <input type="number" name="delivery_customer_amount" id="delivery_customer_amount" step="0.01" class="form-input @error('delivery_customer_amount') err @enderror" value="{{ old('delivery_customer_amount', '0.00') }}">
                     @error('delivery_customer_amount') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
@@ -132,16 +132,16 @@
         <div class="form-section">
             <div class="form-section-title">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                Receiver &amp; Destination Details
+                {{ __('Receiver Information') }}
             </div>
             <div class="form-grid-2">
                 <div class="form-group">
-                    <label class="form-label" for="receiver_name">Receiver Name <span class="req">*</span></label>
-                    <input type="text" name="receiver_name" id="receiver_name" class="form-input @error('receiver_name') err @enderror" value="{{ old('receiver_name') }}" required placeholder="e.g. John Doe">
+                    <label class="form-label" for="receiver_name">{{ __('Receiver Name') }} <span class="req">*</span></label>
+                    <input type="text" name="receiver_name" id="receiver_name" class="form-input @error('receiver_name') err @enderror" value="{{ old('receiver_name') }}" required placeholder="{{ __('Full name') }}">
                     @error('receiver_name') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="receiver_phone">Receiver Phone <span class="req">*</span></label>
+                    <label class="form-label" for="receiver_phone">{{ __('Receiver Phone') }} <span class="req">*</span></label>
                     <input type="text" name="receiver_phone" id="receiver_phone" class="form-input @error('receiver_phone') err @enderror" value="{{ old('receiver_phone') }}" required placeholder="e.g. 07XXXXXXXX">
                     @error('receiver_phone') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
@@ -149,9 +149,9 @@
 
             <div class="form-grid-2" style="margin-top: 16px;">
                 <div class="form-group">
-                    <label class="form-label" for="city_id">City <span class="req">*</span></label>
+                    <label class="form-label" for="city_id">{{ __('City') }} <span class="req">*</span></label>
                     <select name="city_id" id="city_id" class="form-select @error('city_id') err @enderror" required>
-                        <option value="">Select City</option>
+                        <option value="">{{ __('Select city…') }}</option>
                         @foreach($cities as $city)
                             <option value="{{ $city->id }}" {{ old('city_id') == $city->id ? 'selected' : '' }}>
                                 {{ $city->name }}
@@ -161,36 +161,36 @@
                     @error('city_id') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="area_id">Area <span class="req">*</span></label>
+                    <label class="form-label" for="area_id">{{ __('Area') }} <span class="req">*</span></label>
                     <select name="area_id" id="area_id" class="form-select @error('area_id') err @enderror" required>
-                        <option value="">Select Area</option>
+                        <option value="">{{ __('Select area…') }}</option>
                     </select>
                     @error('area_id') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
             </div>
 
             <div class="form-group" style="margin-top: 16px;">
-                <label class="form-label" for="address_text">Address Details <span class="req">*</span></label>
-                <textarea name="address_text" id="address_text" class="form-textarea @error('address_text') err @enderror" required placeholder="Street name, building number, apartment number...">{{ old('address_text') }}</textarea>
+                <label class="form-label" for="address_text">{{ __('Address Details') }} <span class="req">*</span></label>
+                <textarea name="address_text" id="address_text" class="form-textarea @error('address_text') err @enderror" required placeholder="{{ __('Street, building, floor, landmarks…') }}">{{ old('address_text') }}</textarea>
                 @error('address_text') <span class="form-error">{{ $message }}</span> @enderror
             </div>
 
             <div class="form-group" style="margin-top: 16px;">
-                <label class="form-label" for="address_location">GPS Location Coordinates (Optional)</label>
+                <label class="form-label" for="address_location">{{ __('GPS Location Coordinates (Optional)') }}</label>
                 <input type="text" name="address_location" id="address_location" class="form-input @error('address_location') err @enderror" value="{{ old('address_location') }}" placeholder="e.g. 24.7136, 46.6753">
                 @error('address_location') <span class="form-error">{{ $message }}</span> @enderror
             </div>
 
             <div class="form-group" style="margin-top: 16px;">
-                <label class="form-label" for="notes">Special Delivery Instructions / Notes</label>
-                <textarea name="notes" id="notes" class="form-textarea @error('notes') err @enderror" placeholder="Any remarks for the driver...">{{ old('notes') }}</textarea>
+                <label class="form-label" for="notes">{{ __('Special Delivery Instructions / Notes') }}</label>
+                <textarea name="notes" id="notes" class="form-textarea @error('notes') err @enderror" placeholder="{{ __('Any special instructions for the delivery driver…') }}">{{ old('notes') }}</textarea>
                 @error('notes') <span class="form-error">{{ $message }}</span> @enderror
             </div>
         </div>
 
         <div class="form-actions">
-            <a href="{{ route('client.orders.index') }}" class="btn-secondary">Cancel</a>
-            <button type="submit" class="btn-primary" id="submitBtn">Create Order</button>
+            <a href="{{ route('client.orders.index') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+            <button type="submit" class="btn-primary" id="submitBtn">{{ __('Create Order') }}</button>
         </div>
     </form>
 </div>
@@ -199,11 +199,19 @@
 
 @push('scripts')
 <script>
+    const i18nClientOrderCreate = {
+        search: @json(__('Search...')),
+        noResults: @json(__('No results found')),
+        selectArea: @json(__('Select area…')),
+        searchCities: @json(__('Search cities...')),
+        searchAreas: @json(__('Search areas...')),
+    };
+
     // ── Searchable Select ──────────────────────────────────────────────
     class SearchableSelect {
         constructor(selectEl, placeholder) {
             this.selectEl = selectEl;
-            this.placeholder = placeholder || 'Search...';
+            this.placeholder = placeholder || i18nClientOrderCreate.search;
             this.options = [];
             this._build();
         }
@@ -254,7 +262,7 @@
             if (matches.length === 0) {
                 const el = document.createElement('div');
                 el.className = 'search-dropdown-item no-results';
-                el.textContent = 'No results found';
+                el.textContent = i18nClientOrderCreate.noResults;
                 this.dropdown.appendChild(el);
                 return;
             }
@@ -312,13 +320,13 @@
     const citySelect = document.getElementById('city_id');
     const areaSelect = document.getElementById('area_id');
 
-    const citySS = new SearchableSelect(citySelect, 'Search cities...');
+    const citySS = new SearchableSelect(citySelect, i18nClientOrderCreate.searchCities);
     let areaSS = null;
 
     // ── Dynamic Areas Population ──────────────────────────────────────
     citySelect.addEventListener('change', function () {
         const selectedCityId = parseInt(this.value);
-        areaSelect.innerHTML = '<option value="">Select Area</option>';
+        areaSelect.innerHTML = '<option value="">' + i18nClientOrderCreate.selectArea + '</option>';
 
         if (selectedCityId) {
             const city = citiesData.find(c => c.id === selectedCityId);
@@ -341,7 +349,7 @@
                 areaSS.setValue(oldArea, opt.textContent.trim());
             }
         } else {
-            areaSS = new SearchableSelect(areaSelect, 'Search areas...');
+            areaSS = new SearchableSelect(areaSelect, i18nClientOrderCreate.searchAreas);
         }
     });
 

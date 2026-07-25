@@ -1,15 +1,15 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Confirm Import')
-@section('page-title', 'Confirm Import')
+@section('title', __('Confirm Import'))
+@section('page-title', __('Confirm Import'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.orders.index') }}">Orders</a>
+    <a href="{{ route('admin.orders.index') }}">{{ __('Orders') }}</a>
     <span class="sep">/</span>
-    <a href="{{ route('admin.orders.import') }}">Bulk Import</a>
+    <a href="{{ route('admin.orders.import') }}">{{ __('Bulk Import') }}</a>
     <span class="sep">/</span>
-    <span class="current">Confirm</span>
+    <span class="current">{{ __('Confirm') }}</span>
 @endsection
 
 @section('head')
@@ -188,13 +188,13 @@
 @section('content')
     <div class="page-hd">
         <div class="page-hd-left">
-            <h1>Confirm Import</h1>
-            <p>Review and adjust the <span id="rowCountLabel">{{ count($rows) }}</span> order(s) below, then click <strong>Confirm &amp; Import</strong> to save them. You can remove any row using the delete icon.</p>
+            <h1>{{ __('Confirm Import') }}</h1>
+            <p>{{ __('Review and adjust the') }} <span id="rowCountLabel">{{ count($rows) }}</span> {{ __('order(s) below, then click') }} <strong>{{ __('Confirm & Import') }}</strong> {{ __('to save them. You can remove any row using the delete icon.') }}</p>
         </div>
         <div class="page-hd-right">
             <a href="{{ route('admin.orders.import') }}" class="btn-secondary">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Cancel
+                {{ __('Cancel') }}
             </a>
         </div>
     </div>
@@ -203,15 +203,15 @@
     <div class="flash flash-err" style="margin-bottom: 22px; border-radius: 14px;">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
         <div>
-            <strong style="display: block; font-size: 0.95rem; margin-bottom: 3px;">Validation Errors Found</strong>
-            Some spreadsheet records contain formatting errors. Please correct the highlighted cells below before confirming.
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 3px;">{{ __('Validation Errors Found') }}</strong>
+            {{ __('Some spreadsheet records contain formatting errors. Please correct the highlighted cells below before confirming.') }}
         </div>
     </div>
     @else
     <div class="flash flash-info" style="margin-bottom: 22px; border-radius: 14px; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.05);">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <div>
-            All rows passed validation. You can edit any field using the dropdowns and inputs below before confirming.
+            {{ __('All rows passed validation. You can edit any field using the dropdowns and inputs below before confirming.') }}
         </div>
     </div>
     @endif
@@ -224,23 +224,23 @@
                 <thead>
                     <tr>
                         <th class="col-num">#</th>
-                        <th class="col-client">Client</th>
-                        <th class="col-desc">Description</th>
-                        <th class="col-ptype">Payment Type</th>
-                        <th class="col-doc">Delivery on Customer</th>
-                        <th class="col-damount">Delivery Amount</th>
-                        <th class="col-price">Order Price</th>
-                        <th class="col-rname">Receiver Name</th>
-                        <th class="col-rphone">Receiver Phone</th>
-                        <th class="col-city">City</th>
-                        <th class="col-area">Area</th>
-                        <th class="col-address">Address</th>
-                        <th class="col-notes">Notes</th>
-                        <th class="col-shift">Delivery Shift</th>
+                        <th class="col-client">{{ __('Client') }}</th>
+                        <th class="col-desc">{{ __('Description') }}</th>
+                        <th class="col-ptype">{{ __('Payment Type') }}</th>
+                        <th class="col-doc">{{ __('Delivery on Customer') }}</th>
+                        <th class="col-damount">{{ __('Delivery Amount') }}</th>
+                        <th class="col-price">{{ __('Order Price') }}</th>
+                        <th class="col-rname">{{ __('Receiver Name') }}</th>
+                        <th class="col-rphone">{{ __('Receiver Phone') }}</th>
+                        <th class="col-city">{{ __('City') }}</th>
+                        <th class="col-area">{{ __('Area') }}</th>
+                        <th class="col-address">{{ __('Address') }}</th>
+                        <th class="col-notes">{{ __('Notes') }}</th>
+                        <th class="col-shift">{{ __('Delivery Shift') }}</th>
                         @if(!empty($rowErrors))
-                        <th class="col-errors" style="color: var(--red-lt);">Validation Errors</th>
+                        <th class="col-errors" style="color: var(--red-lt);">{{ __('Validation Errors') }}</th>
                         @endif
-                        <th class="col-action">Delete</th>
+                        <th class="col-action">{{ __('Delete') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -308,7 +308,7 @@
                         {{-- Client --}}
                         <td class="col-client">
                             <select name="rows[{{ $i }}][client_profile_id]" class="tbl-select {{ $hasClientError ? 'tbl-input-err' : '' }}">
-                                <option value="">— Select —</option>
+                                <option value="">{{ __('— Select —') }}</option>
                                 @foreach($clients as $client)
                                     <option value="{{ $client->id }}"
                                         {{ (isset($row['client_id']) && $row['client_id'] == $client->id) ? 'selected' : '' }}>
@@ -328,8 +328,8 @@
                         {{-- Payment Type --}}
                         <td class="col-ptype">
                             <select name="rows[{{ $i }}][payment_type]" class="tbl-select {{ $hasPaymentTypeError ? 'tbl-input-err' : '' }}">
-                                <option value="cod"     {{ strtolower($row['payment_type'] ?? '') === 'cod'     ? 'selected' : '' }}>COD</option>
-                                <option value="prepaid" {{ strtolower($row['payment_type'] ?? '') === 'prepaid' ? 'selected' : '' }}>Prepaid</option>
+                                <option value="cod"     {{ strtolower($row['payment_type'] ?? '') === 'cod'     ? 'selected' : '' }}>{{ __('COD') }}</option>
+                                <option value="prepaid" {{ strtolower($row['payment_type'] ?? '') === 'prepaid' ? 'selected' : '' }}>{{ __('Prepaid') }}</option>
                             </select>
                         </td>
 
@@ -337,8 +337,8 @@
                         <td class="col-doc">
                             <select name="rows[{{ $i }}][delivery_on_customer]" class="tbl-select {{ $hasDeliveryOnCustomerError ? 'tbl-input-err' : '' }}">
                                 @php $doc = strtolower($row['delivery_on_customer'] ?? 'false'); @endphp
-                                <option value="false" {{ $doc === 'false' ? 'selected' : '' }}>No (Client pays)</option>
-                                <option value="true"  {{ $doc === 'true'  ? 'selected' : '' }}>Yes (Customer pays)</option>
+                                <option value="false" {{ $doc === 'false' ? 'selected' : '' }}>{{ __('No (Client pays)') }}</option>
+                                <option value="true"  {{ $doc === 'true'  ? 'selected' : '' }}>{{ __('Yes (Customer pays)') }}</option>
                             </select>
                         </td>
 
@@ -378,7 +378,7 @@
                                 class="tbl-select city-select {{ $hasCityError ? 'tbl-input-err' : '' }}"
                                 data-row="{{ $i }}"
                                 data-selected-city="{{ $row['city_id'] ?? '' }}">
-                                <option value="">— City —</option>
+                                <option value="">{{ __('— City —') }}</option>
                                 @foreach($cities as $city)
                                     <option value="{{ $city->id }}"
                                         {{ ($row['city_id'] ?? '') == $city->id ? 'selected' : '' }}>
@@ -395,7 +395,7 @@
                                 class="tbl-select area-select {{ $hasAreaError ? 'tbl-input-err' : '' }}"
                                 data-row="{{ $i }}"
                                 data-selected-area="{{ $row['area_id'] ?? '' }}">
-                                <option value="">— Area —</option>
+                                <option value="">{{ __('— Area —') }}</option>
                                 @if($rowCity)
                                     @foreach($rowCity->areas as $area)
                                         <option value="{{ $area->id }}"
@@ -424,9 +424,9 @@
                         {{-- Delivery Shift --}}
                         <td class="col-shift">
                             <select name="rows[{{ $i }}][delivery_shift]" class="tbl-select {{ $hasDeliveryShiftError ? 'tbl-input-err' : '' }}">
-                                <option value="doesnt_matter" {{ ($row['delivery_shift'] ?? 'doesnt_matter') === 'doesnt_matter' ? 'selected' : '' }}>Doesn't Matter</option>
-                                <option value="before_12pm"   {{ ($row['delivery_shift'] ?? '') === 'before_12pm' ? 'selected' : '' }}>Before 12 PM</option>
-                                <option value="after_12pm"    {{ ($row['delivery_shift'] ?? '') === 'after_12pm' ? 'selected' : '' }}>After 12 PM</option>
+                                <option value="doesnt_matter" {{ ($row['delivery_shift'] ?? 'doesnt_matter') === 'doesnt_matter' ? 'selected' : '' }}>{{ __("Doesn't Matter") }}</option>
+                                <option value="before_12pm"   {{ ($row['delivery_shift'] ?? '') === 'before_12pm' ? 'selected' : '' }}>{{ __('Before 12 PM') }}</option>
+                                <option value="after_12pm"    {{ ($row['delivery_shift'] ?? '') === 'after_12pm' ? 'selected' : '' }}>{{ __('After 12 PM') }}</option>
                             </select>
                         </td>
 
@@ -439,14 +439,14 @@
                                     @endforeach
                                 </ul>
                             @else
-                                <span style="color: var(--success); font-size: 0.75rem; font-weight: 600;">✓ Valid Row</span>
+                                <span style="color: var(--success); font-size: 0.75rem; font-weight: 600;">✓ {{ __('Valid Row') }}</span>
                             @endif
                         </td>
                         @endif
 
                         {{-- Delete --}}
                         <td class="col-action">
-                            <button type="button" class="btn-row-delete" data-row="{{ $i }}" title="Remove this row" aria-label="Remove this row">
+                            <button type="button" class="btn-row-delete" data-row="{{ $i }}" title="{{ __('Remove this row') }}" aria-label="{{ __('Remove this row') }}">
                                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v13a2 2 0 01-2 2H8a2 2 0 01-2-2V7h12zM10 11v6m4-6v6"/></svg>
                             </button>
                         </td>
@@ -457,10 +457,10 @@
         </div>
 
         <div class="form-actions" style="margin-top: 22px;">
-            <a href="{{ route('admin.orders.import') }}" class="btn-secondary">Cancel</a>
+            <a href="{{ route('admin.orders.import') }}" class="btn-secondary">{{ __('Cancel') }}</a>
             <button type="submit" class="btn-primary" id="confirmSubmitBtn">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                Confirm &amp; Import <span id="submitRowCount">{{ count($rows) }}</span> Order<span id="submitRowPlural">{{ count($rows) !== 1 ? 's' : '' }}</span>
+                {{ __('Confirm & Import') }} <span id="submitRowCount">{{ count($rows) }}</span> {{ __('Order') }}<span id="submitRowPlural">{{ count($rows) !== 1 ? 's' : '' }}</span>
             </button>
         </div>
     </form>

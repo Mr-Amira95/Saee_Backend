@@ -1,15 +1,15 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Add Driver')
+@section('title', __('Add Driver'))
 
-@section('page-title', 'Add Driver')
+@section('page-title', __('Add Driver'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.drivers.index') }}">Drivers</a>
+    <a href="{{ route('admin.drivers.index') }}">{{ __('Drivers') }}</a>
     <span>/</span>
-    <span>Add Driver</span>
+    <span>{{ __('Add Driver') }}</span>
 @endsection
 
 @section('head')
@@ -108,29 +108,29 @@
     {{-- Account Credentials --}}
     {{-- z-index:2 ensures the phone dropdown floats above subsequent sections --}}
     <div class="form-section" style="position:relative;z-index:2;">
-        <div class="form-section-title">Account Credentials</div>
+        <div class="form-section-title">{{ __('Account Credentials') }}</div>
         <div style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:10px;padding:12px 16px;margin-bottom:18px;">
             <svg width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="1.8" viewBox="0 0 24 24" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <span style="font-size:.82rem;color:#93c5fd;">A password setup link will be sent to the driver automatically via the channel selected below.</span>
+            <span style="font-size:.82rem;color:#93c5fd;">{{ __('A password setup link will be sent to the driver automatically via the channel selected below.') }}</span>
         </div>
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="name">Full Name <span class="req">*</span></label>
+                <label class="form-label" for="name">{{ __('Full Name') }} <span class="req">*</span></label>
                 <input class="form-input @error('name') is-error @enderror" id="name" type="text" name="name" value="{{ old('name') }}" required>
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <label class="form-label" for="username">{{ __('Username') }} <span class="req">*</span></label>
                 <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username" value="{{ old('username') }}" required>
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email <span class="opt">(required for email channel)</span></label>
+                <label class="form-label" for="email">{{ __('Email') }} <span class="opt">({{ __('required for email channel') }})</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email" value="{{ old('email') }}">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="phone">Phone <span class="opt">(required for WhatsApp)</span></label>
+                <label class="form-label" for="phone">{{ __('Phone') }} <span class="opt">({{ __('required for WhatsApp') }})</span></label>
                 <div style="position:relative;">
                     <div class="phone-wrap">
                         <button type="button" class="phone-ext-btn" id="phoneExtBtn">
@@ -150,9 +150,9 @@
                 @error('phone')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="password">Password <span class="opt">(optional — leave blank to auto-generate &amp; send invitation)</span></label>
+                <label class="form-label" for="password">{{ __('Password') }} <span class="opt">({{ __('optional — leave blank to auto-generate & send invitation') }})</span></label>
                 <div style="position:relative;">
-                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="Min 8 chars, upper, lower &amp; symbol" style="width:100%;padding-right:40px;box-sizing:border-box;" oninput="updatePasswordRequirements(this.value, 'createPwReqs')">
+                    <input class="form-input @error('password') is-error @enderror" id="password" type="password" name="password" autocomplete="new-password" placeholder="{{ __('Min 8 chars, upper, lower & symbol') }}" style="width:100%;padding-right:40px;box-sizing:border-box;" oninput="updatePasswordRequirements(this.value, 'createPwReqs')">
                     <button type="button" onclick="togglePwd('password','eyePwd')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
                         <svg id="eyePwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
@@ -161,9 +161,9 @@
                 @error('password')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="password_confirmation">Confirm Password <span class="opt">(optional)</span></label>
+                <label class="form-label" for="password_confirmation">{{ __('Confirm Password') }} <span class="opt">({{ __('optional') }})</span></label>
                 <div style="position:relative;">
-                    <input class="form-input" id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="Repeat password" style="width:100%;padding-right:40px;box-sizing:border-box;">
+                    <input class="form-input" id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" placeholder="{{ __('Repeat password') }}" style="width:100%;padding-right:40px;box-sizing:border-box;">
                     <button type="button" onclick="togglePwd('password_confirmation','eyePwdConf')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-sub);padding:4px;display:flex;">
                         <svg id="eyePwdConf" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
@@ -174,33 +174,33 @@
 
     {{-- Identity & License --}}
     <div class="form-section">
-        <div class="form-section-title">Identity &amp; License</div>
+        <div class="form-section-title">{{ __('Identity & License') }}</div>
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="national_id">National ID <span class="req">*</span></label>
-                <input class="form-input @error('national_id') is-error @enderror" id="national_id" type="text" name="national_id" value="{{ old('national_id') }}" placeholder="10 digit number" maxlength="10" inputmode="numeric" required>
+                <label class="form-label" for="national_id">{{ __('National ID') }} <span class="req">*</span></label>
+                <input class="form-input @error('national_id') is-error @enderror" id="national_id" type="text" name="national_id" value="{{ old('national_id') }}" placeholder="{{ __('10 digit number') }}" maxlength="10" inputmode="numeric" required>
                 @error('national_id')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="national_id_attachment">National ID Attachment <span class="opt">(optional)</span>
-                    <span class="field-tip">ⓘ<span class="field-tip-bubble">Max file size: 10 MB. Supported formats: JPG, PNG, PDF.</span></span>
+                <label class="form-label" for="national_id_attachment">{{ __('National ID Attachment') }} <span class="opt">({{ __('optional') }})</span>
+                    <span class="field-tip">ⓘ<span class="field-tip-bubble">{{ __('Max file size: 10 MB. Supported formats: JPG, PNG, PDF.') }}</span></span>
                 </label>
                 <input class="form-input @error('national_id_attachment') is-error @enderror" id="national_id_attachment" type="file" name="national_id_attachment" accept="image/*,.pdf" style="padding:8px 12px;">
                 @error('national_id_attachment')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="license_number">License Number <span class="req">*</span></label>
-                <input class="form-input @error('license_number') is-error @enderror" id="license_number" type="text" name="license_number" value="{{ old('license_number') }}" placeholder="Letters and numbers only" required>
+                <label class="form-label" for="license_number">{{ __('License Number') }} <span class="req">*</span></label>
+                <input class="form-input @error('license_number') is-error @enderror" id="license_number" type="text" name="license_number" value="{{ old('license_number') }}" placeholder="{{ __('Letters and numbers only') }}" required>
                 @error('license_number')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="license_expiry_date">License Expiry <span class="req">*</span></label>
+                <label class="form-label" for="license_expiry_date">{{ __('License Expiry') }} <span class="req">*</span></label>
                 <input class="form-input @error('license_expiry_date') is-error @enderror" id="license_expiry_date" type="text" name="license_expiry_date" value="{{ old('license_expiry_date') }}" placeholder="DD-MM-YYYY" maxlength="10" autocomplete="off" required>
                 @error('license_expiry_date')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="license_attachment">License Attachment <span class="opt">(optional)</span>
-                    <span class="field-tip">ⓘ<span class="field-tip-bubble">Max file size: 10 MB. Supported formats: JPG, PNG, PDF.</span></span>
+                <label class="form-label" for="license_attachment">{{ __('License Attachment') }} <span class="opt">({{ __('optional') }})</span>
+                    <span class="field-tip">ⓘ<span class="field-tip-bubble">{{ __('Max file size: 10 MB. Supported formats: JPG, PNG, PDF.') }}</span></span>
                 </label>
                 <input class="form-input @error('license_attachment') is-error @enderror" id="license_attachment" type="file" name="license_attachment" accept="image/*,.pdf" style="padding:8px 12px;">
                 @error('license_attachment')<span class="form-error">{{ $message }}</span>@enderror
@@ -210,25 +210,25 @@
 
     {{-- Vehicle Information --}}
     <div class="form-section">
-        <div class="form-section-title">Vehicle Information</div>
+        <div class="form-section-title">{{ __('Vehicle Information') }}</div>
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="vehicle_type">Vehicle Type <span class="opt">(optional)</span></label>
+                <label class="form-label" for="vehicle_type">{{ __('Vehicle Type') }} <span class="opt">({{ __('optional') }})</span></label>
                 <input class="form-input" id="vehicle_type" type="text" name="vehicle_type" value="{{ old('vehicle_type') }}" placeholder="e.g. Truck, Van, Pickup">
             </div>
             <div class="form-group">
-                <label class="form-label" for="vehicle_plate">Plate Number <span class="opt">(optional)</span></label>
+                <label class="form-label" for="vehicle_plate">{{ __('Plate Number') }} <span class="opt">({{ __('optional') }})</span></label>
                 <input class="form-input @error('vehicle_plate') is-error @enderror" id="vehicle_plate" type="text" name="vehicle_plate" value="{{ old('vehicle_plate') }}" placeholder="e.g. 12-345">
                 @error('vehicle_plate')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="car_license_expiry">Car License Expiry <span class="opt">(optional)</span></label>
+                <label class="form-label" for="car_license_expiry">{{ __('Car License Expiry') }} <span class="opt">({{ __('optional') }})</span></label>
                 <input class="form-input @error('car_license_expiry') is-error @enderror" id="car_license_expiry" type="text" name="car_license_expiry" value="{{ old('car_license_expiry') }}" placeholder="DD-MM-YYYY" maxlength="10" autocomplete="off">
                 @error('car_license_expiry')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="car_license_attachment">Car License Attachment <span class="opt">(optional)</span>
-                    <span class="field-tip">ⓘ<span class="field-tip-bubble">Max file size: 10 MB. Supported formats: JPG, PNG, PDF.</span></span>
+                <label class="form-label" for="car_license_attachment">{{ __('Car License Attachment') }} <span class="opt">({{ __('optional') }})</span>
+                    <span class="field-tip">ⓘ<span class="field-tip-bubble">{{ __('Max file size: 10 MB. Supported formats: JPG, PNG, PDF.') }}</span></span>
                 </label>
                 <input class="form-input @error('car_license_attachment') is-error @enderror" id="car_license_attachment" type="file" name="car_license_attachment" accept="image/*,.pdf" style="padding:8px 12px;">
                 @error('car_license_attachment')<span class="form-error">{{ $message }}</span>@enderror
@@ -238,50 +238,50 @@
 
     {{-- Bank Details --}}
     <div class="form-section">
-        <div class="form-section-title">Bank Details
-            <span class="opt" style="text-transform:none;font-size:.72rem;font-weight:400;">optional</span>
+        <div class="form-section-title">{{ __('Bank Details') }}
+            <span class="opt" style="text-transform:none;font-size:.72rem;font-weight:400;">{{ __('optional') }}</span>
         </div>
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="bank_name">Bank Name</label>
+                <label class="form-label" for="bank_name">{{ __('Bank Name') }}</label>
                 <input class="form-input @error('bank_name') is-error @enderror" id="bank_name" type="text" name="bank_name" value="{{ old('bank_name') }}" placeholder="e.g. Arab Bank">
                 @error('bank_name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="account_name">Account Name</label>
+                <label class="form-label" for="account_name">{{ __('Account Name') }}</label>
                 <input class="form-input @error('account_name') is-error @enderror" id="account_name" type="text" name="account_name" value="{{ old('account_name') }}">
                 @error('account_name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="account_number">Account Number</label>
+                <label class="form-label" for="account_number">{{ __('Account Number') }}</label>
                 <input class="form-input @error('account_number') is-error @enderror" id="account_number" type="text" name="account_number" value="{{ old('account_number') }}" style="font-family:monospace;">
                 @error('account_number')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="iban">IBAN</label>
+                <label class="form-label" for="iban">{{ __('IBAN') }}</label>
                 <input class="form-input @error('iban') is-error @enderror" id="iban" type="text" name="iban" value="{{ old('iban') }}" style="font-family:monospace;" placeholder="JO…">
                 @error('iban')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="swift_code">SWIFT / BIC Code</label>
+                <label class="form-label" for="swift_code">{{ __('SWIFT / BIC Code') }}</label>
                 <input class="form-input @error('swift_code') is-error @enderror" id="swift_code" type="text" name="swift_code" value="{{ old('swift_code') }}" style="font-family:monospace;">
                 @error('swift_code')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="cliq_id">CliQ ID</label>
+                <label class="form-label" for="cliq_id">{{ __('CliQ ID') }}</label>
                 <div style="display:flex;gap:8px;">
                     <select class="form-input @error('cliq_alias_type') is-error @enderror" id="cliq_alias_type" name="cliq_alias_type" style="width:130px;flex-shrink:0;">
-                        <option value="">— Type —</option>
-                        <option value="alias" {{ old('cliq_alias_type') === 'alias' ? 'selected' : '' }}>Alias</option>
-                        <option value="phone" {{ old('cliq_alias_type') === 'phone' ? 'selected' : '' }}>Phone</option>
+                        <option value="">{{ __('— Type —') }}</option>
+                        <option value="alias" {{ old('cliq_alias_type') === 'alias' ? 'selected' : '' }}>{{ __('Alias') }}</option>
+                        <option value="phone" {{ old('cliq_alias_type') === 'phone' ? 'selected' : '' }}>{{ __('Phone') }}</option>
                     </select>
-                    <input class="form-input @error('cliq_id') is-error @enderror" id="cliq_id" type="text" name="cliq_id" value="{{ old('cliq_id') }}" placeholder="Phone number or Alias" style="flex:1;">
+                    <input class="form-input @error('cliq_id') is-error @enderror" id="cliq_id" type="text" name="cliq_id" value="{{ old('cliq_id') }}" placeholder="{{ __('Phone number or Alias') }}" style="flex:1;">
                 </div>
                 @error('cliq_id')<span class="form-error">{{ $message }}</span>@enderror
                 @error('cliq_alias_type')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group" style="grid-column:span 2;">
-                <label class="form-label" for="bank_notes">Notes</label>
+                <label class="form-label" for="bank_notes">{{ __('Notes') }}</label>
                 <textarea class="form-input @error('bank_notes') is-error @enderror" id="bank_notes" name="bank_notes" rows="2" style="resize:vertical;">{{ old('bank_notes') }}</textarea>
                 @error('bank_notes')<span class="form-error">{{ $message }}</span>@enderror
             </div>
@@ -290,12 +290,12 @@
 
     {{-- Attachments --}}
     <div class="form-section">
-        <div class="form-section-title">Attachments
-            <span class="opt" style="text-transform:none;font-size:.72rem;font-weight:400;">optional · up to 10 MB each</span>
+        <div class="form-section-title">{{ __('Attachments') }}
+            <span class="opt" style="text-transform:none;font-size:.72rem;font-weight:400;">{{ __('optional · up to 10 MB each') }}</span>
         </div>
         <div id="attachContainer"></div>
         <button type="button" class="btn-add-att" onclick="addAttachRow()">
-            <span style="font-size:1.1rem;line-height:1;">+</span> Add Attachment
+            <span style="font-size:1.1rem;line-height:1;">+</span> {{ __('Add Attachment') }}
         </button>
         @error('attachment_files.*')<span class="form-error">{{ $message }}</span>@enderror
         @error('attachment_labels.*')<span class="form-error">{{ $message }}</span>@enderror
@@ -303,32 +303,32 @@
 
     {{-- Salary Settings --}}
     <div class="form-section">
-        <div class="form-section-title">Salary Settings</div>
+        <div class="form-section-title">{{ __('Salary Settings') }}</div>
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="basic_salary">Basic Salary</label>
+                <label class="form-label" for="basic_salary">{{ __('Basic Salary') }}</label>
                 <input class="form-input @error('basic_salary') is-error @enderror" id="basic_salary" type="number"
                        name="basic_salary" value="{{ old('basic_salary', 0) }}"
                        step="0.01" min="0" placeholder="0.00">
                 @error('basic_salary')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="car_allowance">Car & Gasoline Allowance</label>
+                <label class="form-label" for="car_allowance">{{ __('Car & Gasoline Allowance') }}</label>
                 <input class="form-input @error('car_allowance') is-error @enderror" id="car_allowance" type="number"
                        name="car_allowance" value="{{ old('car_allowance', 0) }}"
                        step="0.01" min="0" placeholder="0.00">
                 @error('car_allowance')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="daily_order_threshold">Daily Order Threshold</label>
+                <label class="form-label" for="daily_order_threshold">{{ __('Daily Order Threshold') }}</label>
                 <input class="form-input @error('daily_order_threshold') is-error @enderror" id="daily_order_threshold" type="number"
                        name="daily_order_threshold" value="{{ old('daily_order_threshold', 0) }}"
                        min="0" placeholder="0">
-                <span style="font-size:.75rem;color:var(--text-dim);margin-top:4px;display:block;">Orders per day above this count earn a bonus</span>
+                <span style="font-size:.75rem;color:var(--text-dim);margin-top:4px;display:block;">{{ __('Orders per day above this count earn a bonus') }}</span>
                 @error('daily_order_threshold')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="bonus_per_extra_order">Bonus Per Extra Order</label>
+                <label class="form-label" for="bonus_per_extra_order">{{ __('Bonus Per Extra Order') }}</label>
                 <input class="form-input @error('bonus_per_extra_order') is-error @enderror" id="bonus_per_extra_order" type="number"
                        name="bonus_per_extra_order" value="{{ old('bonus_per_extra_order', 0) }}"
                        step="0.01" min="0" placeholder="0.00">
@@ -340,26 +340,26 @@
     <div class="form-actions" style="flex-wrap:wrap;gap:16px;">
         {{-- Invitation / OTP channel toggle --}}
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-right:auto;user-select:none;">
-            <span style="font-size:.85rem;color:var(--text-sub);white-space:nowrap;">Send invitation &amp; OTP via</span>
+            <span style="font-size:.85rem;color:var(--text-sub);white-space:nowrap;">{{ __('Send invitation & OTP via') }}</span>
             <div style="position:relative;display:inline-flex;align-items:center;background:var(--in-bg);border:1px solid var(--bdr);border-radius:8px;padding:3px;gap:2px;" id="invChannelWrap">
                 <input type="hidden" name="otp_channel" id="invChannelInput" value="whatsapp">
                 <button type="button" id="btnWhatsapp"
                     onclick="setChannel('whatsapp')"
                     style="display:flex;align-items:center;gap:6px;padding:5px 12px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s;background:#25D366;color:#fff;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    WhatsApp
+                    {{ __('WhatsApp') }}
                 </button>
                 <button type="button" id="btnEmail"
                     onclick="setChannel('email')"
                     style="display:flex;align-items:center;gap:6px;padding:5px 12px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s;background:transparent;color:var(--text-sub);">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    Email
+                    {{ __('Email') }}
                 </button>
             </div>
         </label>
 
-        <a href="{{ route('admin.drivers.index') }}" class="btn-secondary">Cancel</a>
-        <button type="submit" class="btn-primary">Create Driver</button>
+        <a href="{{ route('admin.drivers.index') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+        <button type="submit" class="btn-primary">{{ __('Create Driver') }}</button>
     </div>
 
     <script>
@@ -480,6 +480,33 @@ function initPhoneDropdown(btnId, flagId, codeId, valId, ddId, listId) {
 }
 
 /* ── Dynamic attachment rows ── */
+const i18nDriverCreate = {
+    attachmentLabelPlaceholder: @json(__('Label (e.g. Work Permit, Contract)')),
+    fileSizeExceeded: @json(__(i18nDriverCreate.fileSizeExceeded)),
+    cliqPhoneInvalid: @json(__(i18nDriverCreate.cliqPhoneInvalid)),
+    cliqAliasInvalid: @json(__(i18nDriverCreate.cliqAliasInvalid)),
+    nationalIdInvalid: @json(__(i18nDriverCreate.nationalIdInvalid)),
+    plateNumberInvalid: @json(__(i18nDriverCreate.plateNumberInvalid)),
+    validDateFormat: @json(__(i18nDriverCreate.validDateFormat)),
+    fullNameInvalid: @json(__(i18nDriverCreate.fullNameInvalid)),
+    usernameInvalid: @json(__(i18nDriverCreate.usernameInvalid)),
+    emailInvalid: @json(__(i18nDriverCreate.emailInvalid)),
+    phoneInvalid: @json(__(i18nDriverCreate.phoneInvalid)),
+    bankNameInvalid: @json(__(i18nDriverCreate.bankNameInvalid)),
+    accountNameInvalid: @json(__(i18nDriverCreate.accountNameInvalid)),
+    ibanInvalid: @json(__(i18nDriverCreate.ibanInvalid)),
+    swiftInvalid: @json(__(i18nDriverCreate.swiftInvalid)),
+    accountNumberInvalid: @json(__(i18nDriverCreate.accountNumberInvalid)),
+    fullNameRequired: @json(__(i18nDriverCreate.fullNameRequired)),
+    usernameRequired: @json(__(i18nDriverCreate.usernameRequired)),
+    nationalIdRequired: @json(__(i18nDriverCreate.nationalIdRequired)),
+    licenseNumberRequired: @json(__(i18nDriverCreate.licenseNumberRequired)),
+    licenseExpiryRequired: @json(__(i18nDriverCreate.licenseExpiryRequired)),
+    licenseNumberInvalid: @json(__(i18nDriverCreate.licenseNumberInvalid)),
+    passwordStrength: @json(__(i18nDriverCreate.passwordStrength)),
+    passwordMismatch: @json(__(i18nDriverCreate.passwordMismatch)),
+};
+
 var attIndex = 0;
 function addAttachRow() {
     var i = attIndex++;
@@ -488,7 +515,7 @@ function addAttachRow() {
     row.id = 'att-row-' + i;
     row.innerHTML =
         '<div><input type="text" name="attachment_labels[' + i + ']" class="form-input" ' +
-             'placeholder="Label (e.g. Work Permit, Contract)" style="height:38px;"></div>' +
+             'placeholder="' + i18nDriverCreate.attachmentLabelPlaceholder + '" style="height:38px;"></div>' +
         '<div style="display:flex;gap:8px;align-items:center;">' +
             '<input type="file" name="attachment_files[' + i + ']" class="form-input" ' +
                  'style="height:38px;padding:6px 8px;flex:1;min-width:0;">' +
@@ -571,7 +598,7 @@ function togglePwd(inputId, iconId) {
         el.addEventListener('change', function() {
             clearFieldError(el);
             if (el.files[0] && el.files[0].size > 10 * 1024 * 1024) {
-                showFieldError(el, 'File size must not exceed 10 MB.');
+                showFieldError(el, i18nDriverCreate.fileSizeExceeded);
                 el.value = '';
             }
         });
@@ -587,9 +614,9 @@ function togglePwd(inputId, iconId) {
         var val  = cliqIdEl.value.trim();
         if (!val) return;
         if (type === 'phone' && !isValidCliqPhone(val)) {
-            showFieldError(cliqIdEl, 'Phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+            showFieldError(cliqIdEl, i18nDriverCreate.cliqPhoneInvalid);
         } else if (type === 'alias' && !isValidCliqAlias(val)) {
-            showFieldError(cliqIdEl, 'Alias must only contain letters and numbers.');
+            showFieldError(cliqIdEl, i18nDriverCreate.cliqAliasInvalid);
         }
     }
     if (cliqIdEl) cliqIdEl.addEventListener('input', validateCliq);
@@ -604,7 +631,7 @@ function togglePwd(inputId, iconId) {
         });
         nationalIdEl.addEventListener('blur', function() {
             if (nationalIdEl.value.trim() && !isValidNationalId(nationalIdEl.value)) {
-                showFieldError(nationalIdEl, 'National ID must be exactly 10 digits.');
+                showFieldError(nationalIdEl, i18nDriverCreate.nationalIdInvalid);
             }
         });
     }
@@ -629,7 +656,7 @@ function togglePwd(inputId, iconId) {
         });
         platePlateEl.addEventListener('blur', function() {
             if (platePlateEl.value.trim() && !isValidPlateNumber(platePlateEl.value)) {
-                showFieldError(platePlateEl, 'Plate number must be in the format 1-2 digits, a dash, then 1-5 digits (e.g. 12-345).');
+                showFieldError(platePlateEl, i18nDriverCreate.plateNumberInvalid);
             }
         });
     }
@@ -650,8 +677,8 @@ function togglePwd(inputId, iconId) {
             }
         });
     }
-    attachDateMask('license_expiry_date', 'Please enter a valid date in the format DD-MM-YYYY.');
-    attachDateMask('car_license_expiry', 'Please enter a valid date in the format DD-MM-YYYY.');
+    attachDateMask('license_expiry_date', i18nDriverCreate.validDateFormat);
+    attachDateMask('car_license_expiry', i18nDriverCreate.validDateFormat);
 
     function wireLiveValidation(name, validator, msg) {
         var el = getField(name);
@@ -662,15 +689,15 @@ function togglePwd(inputId, iconId) {
         });
     }
 
-    wireLiveValidation('name', isValidName, 'Full name must only contain letters and spaces (no numbers or special characters).');
-    wireLiveValidation('username', isValidUsername, 'Username must contain at least one letter, start with a letter or number, and cannot end with a special character.');
-    wireLiveValidation('email', isEmail, 'Please enter a valid email address in the format name@domain.com.');
-    wireLiveValidation('phone', isValidPhone, 'Phone must contain 6 to 15 digits only.');
-    wireLiveValidation('bank_name', isValidEnglishName, 'Bank name must only contain English letters.');
-    wireLiveValidation('account_name', isValidEnglishName, 'Account holder name must only contain English letters.');
-    wireLiveValidation('iban', isValidIban, 'IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.');
-    wireLiveValidation('swift_code', isValidSwift, 'SWIFT / BIC code must be 8-11 letters/numbers only.');
-    wireLiveValidation('account_number', isValidAccountNumber, 'Account number must contain digits only.');
+    wireLiveValidation('name', isValidName, i18nDriverCreate.fullNameInvalid);
+    wireLiveValidation('username', isValidUsername, i18nDriverCreate.usernameInvalid);
+    wireLiveValidation('email', isEmail, i18nDriverCreate.emailInvalid);
+    wireLiveValidation('phone', isValidPhone, i18nDriverCreate.phoneInvalid);
+    wireLiveValidation('bank_name', isValidEnglishName, i18nDriverCreate.bankNameInvalid);
+    wireLiveValidation('account_name', isValidEnglishName, i18nDriverCreate.accountNameInvalid);
+    wireLiveValidation('iban', isValidIban, i18nDriverCreate.ibanInvalid);
+    wireLiveValidation('swift_code', isValidSwift, i18nDriverCreate.swiftInvalid);
+    wireLiveValidation('account_number', isValidAccountNumber, i18nDriverCreate.accountNumberInvalid);
 
     function isStrongPassword(pw) {
         return pw.length >= 8
@@ -690,93 +717,93 @@ function togglePwd(inputId, iconId) {
             if (!first) first = el;
         }
 
-        req('name',                'Full name is required.');
-        req('username',            'Username is required.');
-        req('national_id',         'National ID is required.');
-        req('license_number',      'License number is required.');
-        req('license_expiry_date', 'License expiry date is required.');
+        req('name',                i18nDriverCreate.fullNameRequired);
+        req('username',            i18nDriverCreate.usernameRequired);
+        req('national_id',         i18nDriverCreate.nationalIdRequired);
+        req('license_number',      i18nDriverCreate.licenseNumberRequired);
+        req('license_expiry_date', i18nDriverCreate.licenseExpiryRequired);
 
         var niEl = getField('national_id');
         if (niEl && niEl.value.trim() && !isValidNationalId(niEl.value)) {
-            showFieldError(niEl, 'National ID must be exactly 10 digits.');
+            showFieldError(niEl, i18nDriverCreate.nationalIdInvalid);
             if (!first) first = niEl;
         }
 
         var lnEl = getField('license_number');
         if (lnEl && lnEl.value.trim() && !isValidLicenseNumber(lnEl.value)) {
-            showFieldError(lnEl, 'License number must contain letters and numbers only.');
+            showFieldError(lnEl, i18nDriverCreate.licenseNumberInvalid);
             if (!first) first = lnEl;
         }
 
         var vpEl = getField('vehicle_plate');
         if (vpEl && vpEl.value.trim() && !isValidPlateNumber(vpEl.value)) {
-            showFieldError(vpEl, 'Plate number must be in the format 1-2 digits, a dash, then 1-5 digits (e.g. 12-345).');
+            showFieldError(vpEl, i18nDriverCreate.plateNumberInvalid);
             if (!first) first = vpEl;
         }
 
         var leEl = getField('license_expiry_date');
         if (leEl && leEl.value.trim() && !isValidExpiryDate(leEl.value)) {
-            showFieldError(leEl, 'Please enter a valid date in the format DD-MM-YYYY.');
+            showFieldError(leEl, i18nDriverCreate.validDateFormat);
             if (!first) first = leEl;
         }
 
         var cleEl = getField('car_license_expiry');
         if (cleEl && cleEl.value.trim() && !isValidExpiryDate(cleEl.value)) {
-            showFieldError(cleEl, 'Please enter a valid date in the format DD-MM-YYYY.');
+            showFieldError(cleEl, i18nDriverCreate.validDateFormat);
             if (!first) first = cleEl;
         }
 
         var nEl = getField('name');
         if (nEl && nEl.value.trim() && !isValidName(nEl.value)) {
-            showFieldError(nEl, 'Full name must only contain letters and spaces (no numbers or special characters).');
+            showFieldError(nEl, i18nDriverCreate.fullNameInvalid);
             if (!first) first = nEl;
         }
 
         var uEl = getField('username');
         if (uEl && uEl.value.trim() && !isValidUsername(uEl.value)) {
-            showFieldError(uEl, 'Username must contain at least one letter, start with a letter or number, and cannot end with a special character.');
+            showFieldError(uEl, i18nDriverCreate.usernameInvalid);
             if (!first) first = uEl;
         }
 
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
-            showFieldError(eEl, 'Please enter a valid email address in the format name@domain.com.');
+            showFieldError(eEl, i18nDriverCreate.emailInvalid);
             if (!first) first = eEl;
         }
 
         var phEl = getField('phone');
         if (phEl && phEl.value.trim() && !isValidPhone(phEl.value)) {
-            showFieldError(phEl, 'Phone must contain 6 to 15 digits only.');
+            showFieldError(phEl, i18nDriverCreate.phoneInvalid);
             if (!first) first = phEl;
         }
 
         var bnEl = getField('bank_name');
         if (bnEl && bnEl.value.trim() && !isValidEnglishName(bnEl.value)) {
-            showFieldError(bnEl, 'Bank name must only contain English letters.');
+            showFieldError(bnEl, i18nDriverCreate.bankNameInvalid);
             if (!first) first = bnEl;
         }
 
         var anEl = getField('account_name');
         if (anEl && anEl.value.trim() && !isValidEnglishName(anEl.value)) {
-            showFieldError(anEl, 'Account holder name must only contain English letters.');
+            showFieldError(anEl, i18nDriverCreate.accountNameInvalid);
             if (!first) first = anEl;
         }
 
         var ibEl = getField('iban');
         if (ibEl && ibEl.value.trim() && !isValidIban(ibEl.value)) {
-            showFieldError(ibEl, 'IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.');
+            showFieldError(ibEl, i18nDriverCreate.ibanInvalid);
             if (!first) first = ibEl;
         }
 
         var swEl = getField('swift_code');
         if (swEl && swEl.value.trim() && !isValidSwift(swEl.value)) {
-            showFieldError(swEl, 'SWIFT / BIC code must be 8-11 letters/numbers only.');
+            showFieldError(swEl, i18nDriverCreate.swiftInvalid);
             if (!first) first = swEl;
         }
 
         var acEl = getField('account_number');
         if (acEl && acEl.value.trim() && !isValidAccountNumber(acEl.value)) {
-            showFieldError(acEl, 'Account number must contain digits only.');
+            showFieldError(acEl, i18nDriverCreate.accountNumberInvalid);
             if (!first) first = acEl;
         }
 
@@ -784,10 +811,10 @@ function togglePwd(inputId, iconId) {
             var cType = cliqTypeEl ? cliqTypeEl.value : '';
             var cVal  = cliqIdEl.value.trim();
             if (cType === 'phone' && !isValidCliqPhone(cVal)) {
-                showFieldError(cliqIdEl, 'Phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+                showFieldError(cliqIdEl, i18nDriverCreate.cliqPhoneInvalid);
                 if (!first) first = cliqIdEl;
             } else if (cType === 'alias' && !isValidCliqAlias(cVal)) {
-                showFieldError(cliqIdEl, 'Alias must only contain letters and numbers.');
+                showFieldError(cliqIdEl, i18nDriverCreate.cliqAliasInvalid);
                 if (!first) first = cliqIdEl;
             }
         }
@@ -796,10 +823,10 @@ function togglePwd(inputId, iconId) {
         var pcEl = getField('password_confirmation');
         if (pEl && pEl.value) {
             if (!isStrongPassword(pEl.value)) {
-                showFieldError(pEl, 'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a special character.');
+                showFieldError(pEl, i18nDriverCreate.passwordStrength);
                 if (!first) first = pEl;
             } else if (pEl.value !== pcEl.value) {
-                showFieldError(pcEl, 'Passwords do not match.');
+                showFieldError(pcEl, i18nDriverCreate.passwordMismatch);
                 if (!first) first = pcEl;
             }
         }

@@ -1,13 +1,13 @@
 @extends('admin.layouts.app')
 
-@section('title', 'General Site Settings')
-@section('page-title', 'General Site Settings')
+@section('title', __('General Site Settings'))
+@section('page-title', __('General Site Settings'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Website CMS</span>
+    <span class="current">{{ __('Website CMS') }}</span>
     <span class="sep">/</span>
-    <span class="current">General Settings</span>
+    <span class="current">{{ __('General Settings') }}</span>
 @endsection
 
 @section('head')
@@ -30,7 +30,7 @@
 
 @section('content')
 <div>
-    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;">Manage Website General Settings</h1>
+    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;">{{ __('Manage Website General Settings') }}</h1>
 
     @if(session('success'))
     <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:12px 18px;margin-bottom:20px;color:#86efac;font-size:.88rem;">
@@ -51,37 +51,37 @@
 
         {{-- Tabs Navigation --}}
         <div class="tabs-nav">
-            <button type="button" class="tab-btn active" onclick="switchTab('seo')">SEO &amp; Marketing</button>
-            <button type="button" class="tab-btn" onclick="switchTab('contact')">Contact Info</button>
-            <button type="button" class="tab-btn" onclick="switchTab('social')">Social Channels</button>
+            <button type="button" class="tab-btn active" onclick="switchTab('seo')">{{ __('SEO & Marketing') }}</button>
+            <button type="button" class="tab-btn" onclick="switchTab('contact')">{{ __('Contact Info') }}</button>
+            <button type="button" class="tab-btn" onclick="switchTab('social')">{{ __('Social Channels') }}</button>
         </div>
 
         {{-- Tab 1: SEO & Marketing --}}
         <div class="tab-pane active" id="tab-seo">
             <div class="form-section">
-                <div class="form-section-title">SEO &amp; Marketing Meta tags</div>
+                <div class="form-section-title">{{ __('SEO & Marketing Meta tags') }}</div>
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label class="form-label">Website Name</label>
+                        <label class="form-label">{{ __('Website Name') }}</label>
                         <input type="text" name="site_name" class="form-input"
                                value="{{ old('site_name', $settings['site_name']) }}" placeholder="e.g. SAEE Logistics">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Default Meta Title</label>
+                        <label class="form-label">{{ __('Default Meta Title') }}</label>
                         <input type="text" name="meta_title" class="form-input"
-                               value="{{ old('meta_title', $settings['meta_title']) }}" placeholder="Site page header title">
+                               value="{{ old('meta_title', $settings['meta_title']) }}" placeholder="{{ __('Site page header title') }}">
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-top:15px;">
-                    <label class="form-label">Meta Description</label>
-                    <textarea name="meta_description" class="form-input" rows="4" 
-                              placeholder="Describe your logistics platform for search engines..." style="height: auto;">{{ old('meta_description', $settings['meta_description']) }}</textarea>
+                    <label class="form-label">{{ __('Meta Description') }}</label>
+                    <textarea name="meta_description" class="form-input" rows="4"
+                              placeholder="{{ __('Describe your logistics platform for search engines...') }}" style="height: auto;">{{ old('meta_description', $settings['meta_description']) }}</textarea>
                 </div>
 
                 <div class="form-group" style="margin-top:15px;">
-                    <label class="form-label">Meta Keywords</label>
+                    <label class="form-label">{{ __('Meta Keywords') }}</label>
                     <input type="text" name="meta_keywords" class="form-input"
                            value="{{ old('meta_keywords', $settings['meta_keywords']) }}" placeholder="e.g. delivery, shipping, jordan (comma-separated)">
                 </div>
@@ -91,25 +91,25 @@
         {{-- Tab 2: Contact Info --}}
         <div class="tab-pane" id="tab-contact">
             <div class="form-section">
-                <div class="form-section-title">Corporate Contact Info</div>
+                <div class="form-section-title">{{ __('Corporate Contact Info') }}</div>
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label class="form-label">Support Email Address</label>
+                        <label class="form-label">{{ __('Support Email Address') }}</label>
                         <input type="email" name="site_email" class="form-input"
                                value="{{ old('site_email', $settings['site_email']) }}" placeholder="e.g. info@saee.com.jo">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Support Phone Number</label>
+                        <label class="form-label">{{ __('Support Phone Number') }}</label>
                         <input type="text" name="site_phone" class="form-input"
                                value="{{ old('site_phone', $settings['site_phone']) }}" placeholder="e.g. +962 6 123 4567">
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-top:15px;">
-                    <label class="form-label">Office Physical Address</label>
-                    <textarea name="site_address" class="form-input" rows="3" 
-                              placeholder="Physical headquarters address detail..." style="height: auto;">{{ old('site_address', $settings['site_address']) }}</textarea>
+                    <label class="form-label">{{ __('Office Physical Address') }}</label>
+                    <textarea name="site_address" class="form-input" rows="3"
+                              placeholder="{{ __('Physical headquarters address detail...') }}" style="height: auto;">{{ old('site_address', $settings['site_address']) }}</textarea>
                 </div>
             </div>
         </div>
@@ -117,28 +117,28 @@
         {{-- Tab 3: Social Channels --}}
         <div class="tab-pane" id="tab-social">
             <div class="form-section">
-                <div class="form-section-title">Social Media Connections</div>
+                <div class="form-section-title">{{ __('Social Media Connections') }}</div>
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label class="form-label">Facebook Profile URL</label>
+                        <label class="form-label">{{ __('Facebook Profile URL') }}</label>
                         <input type="url" name="social_facebook" class="form-input"
                                value="{{ old('social_facebook', $settings['social_facebook']) }}" placeholder="https://facebook.com/page">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Twitter / X Profile URL</label>
+                        <label class="form-label">{{ __('Twitter / X Profile URL') }}</label>
                         <input type="url" name="social_twitter" class="form-input"
                                value="{{ old('social_twitter', $settings['social_twitter']) }}" placeholder="https://twitter.com/profile">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Instagram Profile URL</label>
+                        <label class="form-label">{{ __('Instagram Profile URL') }}</label>
                         <input type="url" name="social_instagram" class="form-input"
                                value="{{ old('social_instagram', $settings['social_instagram']) }}" placeholder="https://instagram.com/profile">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">LinkedIn Page URL</label>
+                        <label class="form-label">{{ __('LinkedIn Page URL') }}</label>
                         <input type="url" name="social_linkedin" class="form-input"
                                value="{{ old('social_linkedin', $settings['social_linkedin']) }}" placeholder="https://linkedin.com/company">
                     </div>
@@ -147,7 +147,7 @@
         </div>
 
         <div class="form-actions" style="margin-top:24px;">
-            <button type="submit" class="btn-primary">Save All Settings</button>
+            <button type="submit" class="btn-primary">{{ __('Save All Settings') }}</button>
         </div>
     </form>
 </div>

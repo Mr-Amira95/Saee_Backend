@@ -4,9 +4,9 @@
 @section('page-title', app()->getLocale() === 'ar' ? ($client->company_name_ar ?: $client->company_name) : $client->company_name)
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.clients.index') }}">Clients</a>
+    <a href="{{ route('admin.clients.index') }}">{{ __('Clients') }}</a>
     <span>/</span>
     <span>{{ app()->getLocale() === 'ar' ? ($client->company_name_ar ?: $client->company_name) : $client->company_name }}</span>
 @endsection
@@ -77,18 +77,18 @@
             @endif
         </h2>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center;">
-            @if($client->status === 'active')        <span class="badge-active">Active</span>
-            @elseif($client->status === 'suspended') <span class="badge-suspended">Suspended</span>
-            @else                                    <span class="badge-pv">Pending Verification</span>
+            @if($client->status === 'active')        <span class="badge-active">{{ __('Active') }}</span>
+            @elseif($client->status === 'suspended') <span class="badge-suspended">{{ __('Suspended') }}</span>
+            @else                                    <span class="badge-pv">{{ __('Pending Verification') }}</span>
             @endif
 
             @if($client->expiry_date)
                 @php
                     $diff  = now()->startOfDay()->diffInDays($client->expiry_date, false);
                     $ecls  = $diff < 0 ? 'expiry-expired' : ($diff <= 30 ? 'expiry-soon' : 'expiry-ok');
-                    $elbl  = $diff < 0 ? 'Expired '.$client->expiry_date->format('d M Y')
-                                       : ($diff === 0 ? 'Expires today'
-                                                      : 'Expires '.$client->expiry_date->format('d M Y'));
+                    $elbl  = $diff < 0 ? __('Expired :date', ['date' => $client->expiry_date->format('d M Y')])
+                                       : ($diff === 0 ? __('Expires today')
+                                                      : __('Expires :date', ['date' => $client->expiry_date->format('d M Y')]));
                 @endphp
                 <span class="expiry-badge {{ $ecls }}">⏱ {{ $elbl }}</span>
             @endif
@@ -99,48 +99,48 @@
             {{-- Shortcut Buttons --}}
             <div class="shortcut-buttons" style="display:flex;gap:8px;flex-wrap:wrap;">
                 <a href="{{ route('admin.orders.index', ['client_profile_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    📦 Orders
+                    📦 {{ __('Orders') }}
                 </a>
                 <a href="{{ route('admin.financials.invoices', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    📄 Invoices
+                    📄 {{ __('Invoices') }}
                 </a>
                 <a href="{{ route('admin.support.index', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    🎫 Support Tickets
+                    🎫 {{ __('Support Tickets') }}
                 </a>
                 <a href="{{ route('admin.financials.payout-client', $client) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    💰 Payout
+                    💰 {{ __('Payout') }}
                 </a>
             </div>
 
             {{-- Profile Actions (Edit, Status Toggle, Resend, Delete) --}}
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 @if(auth()->user()->hasAdminAction('clients.edit'))
-                <a href="{{ route('admin.clients.edit', $client) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">Edit Client</a>
+                <a href="{{ route('admin.clients.edit', $client) }}" class="btn-primary" style="font-size:.78rem;padding:6px 12px;">{{ __('Edit Client') }}</a>
                 @endif
                 <form method="POST" action="{{ route('admin.clients.toggle-status', $client) }}" style="display:inline;">
                     @csrf
                     @method('PATCH')
                     @if($client->status === 'active')
-                        <button type="submit" class="btn-secondary" title="Suspend Client" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#fbbf24;border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.1);">
-                            ⏸ Suspend Client
+                        <button type="submit" class="btn-secondary" title="{{ __('Suspend Client') }}" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#fbbf24;border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.1);">
+                            ⏸ {{ __('Suspend Client') }}
                         </button>
                     @else
-                        <button type="submit" class="btn-secondary" title="Activate Client" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#4ade80;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);">
-                            ▶ Activate Client
+                        <button type="submit" class="btn-secondary" title="{{ __('Activate Client') }}" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;color:#4ade80;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.1);">
+                            ▶ {{ __('Activate Client') }}
                         </button>
                     @endif
                 </form>
                 <form method="POST" action="{{ route('admin.clients.resend-invitation', $client) }}" style="display:inline;">
                     @csrf
-                    <button type="submit" class="btn-secondary" title="Resend invitation email" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
+                    <button type="submit" class="btn-secondary" title="{{ __('Resend invitation email') }}" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;">
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        Resend Invitation
+                        {{ __('Resend Invitation') }}
                     </button>
                 </form>
                 @if(auth()->user()->hasAdminAction('clients.delete'))
                 <button class="btn-danger" style="font-size:.78rem;padding:6px 12px;"
                     onclick="confirmDelete('{{ route('admin.clients.destroy', $client) }}','{{ addslashes($client->company_name) }}')">
-                    Delete
+                    {{ __('Delete') }}
                 </button>
                 @endif
             </div>
@@ -153,22 +153,22 @@
 
     {{-- Master Account --}}
     <div class="info-card">
-        <div class="info-card-title">Master Account</div>
+        <div class="info-card-title">{{ __('Master Account') }}</div>
         <div class="info-rows">
             <div class="info-row">
-                <span class="info-row-key">Full Name</span>
+                <span class="info-row-key">{{ __('Full Name') }}</span>
                 <span class="info-row-val">{{ $client->masterUser->name ?? '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Username</span>
+                <span class="info-row-key">{{ __('Username') }}</span>
                 <span class="info-row-val">{{ $client->masterUser->username ?? '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Email</span>
+                <span class="info-row-key">{{ __('Email') }}</span>
                 <span class="info-row-val" style="word-break:break-all;">{{ $client->masterUser->email ?? '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Phone</span>
+                <span class="info-row-key">{{ __('Phone') }}</span>
                 <span class="info-row-val">
                     @if($client->masterUser?->phone)
                         <span style="color:var(--text-dim);font-size:.8rem;margin-right:4px;">{{ $client->masterUser->phone_country_code ?? '' }}</span>{{ $client->masterUser->phone }}
@@ -177,30 +177,30 @@
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">OTP / Notification Channel</span>
-                <span class="info-row-val">{{ $client->masterUser?->otp_channel === 'email' ? 'Email' : 'WhatsApp' }}</span>
+                <span class="info-row-key">{{ __('OTP / Notification Channel') }}</span>
+                <span class="info-row-val">{{ $client->masterUser?->otp_channel === 'email' ? __('Email') : __('WhatsApp') }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Account Status</span>
+                <span class="info-row-key">{{ __('Account Status') }}</span>
                 <span class="info-row-val" style="display:flex; align-items:center; gap:8px;">
-                    @if($client->masterUser?->status === 'active')        <span class="badge-active">Active</span>
-                    @elseif($client->masterUser?->status === 'suspended') <span class="badge-suspended">Suspended</span>
-                    @else <span class="badge-pending">Pending</span>
+                    @if($client->masterUser?->status === 'active')        <span class="badge-active">{{ __('Active') }}</span>
+                    @elseif($client->masterUser?->status === 'suspended') <span class="badge-suspended">{{ __('Suspended') }}</span>
+                    @else <span class="badge-pending">{{ __('Pending') }}</span>
                     @endif
 
                     <form method="POST" action="{{ route('admin.clients.toggle-status', $client) }}" style="display:inline;">
                         @csrf
                         @method('PATCH')
                         @if($client->masterUser?->status === 'active')
-                            <button type="submit" class="btn-warn-sm" style="padding: 2px 6px; font-size: 0.7rem;">Suspend</button>
+                            <button type="submit" class="btn-warn-sm" style="padding: 2px 6px; font-size: 0.7rem;">{{ __('Suspend') }}</button>
                         @else
-                            <button type="submit" class="btn-ok-sm" style="padding: 2px 6px; font-size: 0.7rem;">Activate</button>
+                            <button type="submit" class="btn-ok-sm" style="padding: 2px 6px; font-size: 0.7rem;">{{ __('Activate') }}</button>
                         @endif
                     </form>
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Member Since</span>
+                <span class="info-row-key">{{ __('Member Since') }}</span>
                 <span class="info-row-val">{{ $client->masterUser?->created_at?->format('d M Y') ?? '—' }}</span>
             </div>
         </div>
@@ -208,22 +208,22 @@
 
     {{-- Company Details --}}
     <div class="info-card">
-        <div class="info-card-title">Company Details</div>
+        <div class="info-card-title">{{ __('Company Details') }}</div>
         <div class="info-rows">
             <div class="info-row">
-                <span class="info-row-key">CR Number</span>
+                <span class="info-row-key">{{ __('CR Number') }}</span>
                 <span class="info-row-val">{{ $client->commercial_register_number ?: '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">VAT Number</span>
+                <span class="info-row-key">{{ __('VAT Number') }}</span>
                 <span class="info-row-val">{{ $client->vat_number ?: '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Company Email</span>
+                <span class="info-row-key">{{ __('Company Email') }}</span>
                 <span class="info-row-val" style="word-break:break-all;">{{ $client->email ?: '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Company Phone</span>
+                <span class="info-row-key">{{ __('Company Phone') }}</span>
                 <span class="info-row-val">
                     @if($client->company_phone)
                         @if($client->company_phone_country_code)
@@ -236,26 +236,26 @@
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Client Status</span>
+                <span class="info-row-key">{{ __('Client Status') }}</span>
                 <span class="info-row-val" style="display:flex; align-items:center; gap:8px;">
-                    @if($client->status === 'active')        <span class="badge-active">Active</span>
-                    @elseif($client->status === 'suspended') <span class="badge-suspended">Suspended</span>
-                    @else                                    <span class="badge-pv">Pending Verification</span>
+                    @if($client->status === 'active')        <span class="badge-active">{{ __('Active') }}</span>
+                    @elseif($client->status === 'suspended') <span class="badge-suspended">{{ __('Suspended') }}</span>
+                    @else                                    <span class="badge-pv">{{ __('Pending Verification') }}</span>
                     @endif
 
                     <form method="POST" action="{{ route('admin.clients.toggle-status', $client) }}" style="display:inline;">
                         @csrf
                         @method('PATCH')
                         @if($client->status === 'active')
-                            <button type="submit" class="btn-warn-sm" style="padding: 2px 6px; font-size: 0.7rem;">Suspend</button>
+                            <button type="submit" class="btn-warn-sm" style="padding: 2px 6px; font-size: 0.7rem;">{{ __('Suspend') }}</button>
                         @else
-                            <button type="submit" class="btn-ok-sm" style="padding: 2px 6px; font-size: 0.7rem;">Activate</button>
+                            <button type="submit" class="btn-ok-sm" style="padding: 2px 6px; font-size: 0.7rem;">{{ __('Activate') }}</button>
                         @endif
                     </form>
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Profile Created</span>
+                <span class="info-row-key">{{ __('Profile Created') }}</span>
                 <span class="info-row-val">{{ $client->created_at?->format('d M Y') ?? '—' }}</span>
             </div>
         </div>
@@ -263,24 +263,24 @@
 
     {{-- Financial --}}
     <div class="info-card">
-        <div class="info-card-title">Financial</div>
+        <div class="info-card-title">{{ __('Financial') }}</div>
         <div class="info-rows">
             <div class="info-row">
-                <span class="info-row-key">Credit Limit</span>
+                <span class="info-row-key">{{ __('Credit Limit') }}</span>
                 <span class="info-row-val" style="font-weight:700;">
                     {{ number_format($client->credit_limit, 2) }}
                     <span style="color:var(--red-lt);font-size:.78rem;margin-left:3px;">JD</span>
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Balance</span>
+                <span class="info-row-key">{{ __('Balance') }}</span>
                 <span class="info-row-val" style="font-weight:700;">
                     {{ number_format($client->balance, 2) }}
                     <span style="color:var(--red-lt);font-size:.78rem;margin-left:3px;">JD</span>
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Expiry Date</span>
+                <span class="info-row-key">{{ __('Expiry Date') }}</span>
                 <span class="info-row-val">
                     @if($client->expiry_date)
                         {{ $client->expiry_date->format('d M Y') }}
@@ -294,14 +294,14 @@
 
     {{-- Address --}}
     <div class="info-card">
-        <div class="info-card-title">Address</div>
+        <div class="info-card-title">{{ __('Address') }}</div>
         <div class="info-rows">
             <div class="info-row">
-                <span class="info-row-key">Address Line</span>
+                <span class="info-row-key">{{ __('Address Line') }}</span>
                 <span class="info-row-val">{{ $client->address_line1 ?: '—' }}</span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Governorate</span>
+                <span class="info-row-key">{{ __('Governorate') }}</span>
                 <span class="info-row-val">
                     @if(app()->getLocale() === 'ar')
                         {{ $client->city?->name_ar ?: ($client->city?->name ?? '—') }}
@@ -311,7 +311,7 @@
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-row-key">Area / District</span>
+                <span class="info-row-key">{{ __('Area / District') }}</span>
                 <span class="info-row-val">
                     @if(app()->getLocale() === 'ar')
                         {{ $client->area?->name_ar ?: ($client->area?->name ?? '—') }}
@@ -330,9 +330,9 @@
 @if($client->bankDetail)
 <div class="section-card">
     <div class="section-card-hd">
-        <span class="section-card-title">Banking Details</span>
+        <span class="section-card-title">{{ __('Banking Details') }}</span>
         @if(auth()->user()->hasAdminAction('clients.edit'))
-        <a href="{{ route('admin.clients.edit', $client) }}" style="font-size:.78rem;color:var(--red);text-decoration:none;">Edit</a>
+        <a href="{{ route('admin.clients.edit', $client) }}" style="font-size:.78rem;color:var(--red);text-decoration:none;">{{ __('Edit') }}</a>
         @endif
     </div>
     <div class="section-card-body">
@@ -341,46 +341,46 @@
 
             @if($bd->bank_name)
             <div class="info-row" style="grid-column:1/-1;">
-                <span class="info-row-key">Bank Name</span>
+                <span class="info-row-key">{{ __('Bank Name') }}</span>
                 <span class="info-row-val">{{ $bd->bank_name }}</span>
             </div>
             @endif
 
             @if($bd->account_name)
             <div class="info-row" style="grid-column:1/-1;">
-                <span class="info-row-key">Account Holder</span>
+                <span class="info-row-key">{{ __('Account Holder') }}</span>
                 <span class="info-row-val">{{ $bd->account_name }}</span>
             </div>
             @endif
 
             @if($bd->iban)
             <div class="info-row" style="grid-column:1/-1;">
-                <span class="info-row-key">IBAN</span>
+                <span class="info-row-key">{{ __('IBAN') }}</span>
                 <span class="info-row-val" style="font-family:monospace;letter-spacing:.04em;word-break:break-all;">{{ $bd->iban }}</span>
             </div>
             @endif
 
             @if($bd->swift_code)
             <div class="info-row" style="grid-column: 1 / -1;">
-                <span class="info-row-key">SWIFT / BIC</span>
+                <span class="info-row-key">{{ __('SWIFT / BIC') }}</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $bd->swift_code }}</span>
             </div>
             @endif
 
             @if($bd->account_number)
             <div class="info-row" style="grid-column: 1 / -1;">
-                <span class="info-row-key">Account Number</span>
+                <span class="info-row-key">{{ __('Account Number') }}</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $bd->account_number }}</span>
             </div>
             @endif
 
             @if($bd->cliq_id)
             <div class="info-row" style="grid-column:1/-1;">
-                <span class="info-row-key">CliQ ID</span>
+                <span class="info-row-key">{{ __('CliQ ID') }}</span>
                 <span class="info-row-val">
                     {{ $bd->cliq_id }}
                     @if($bd->cliq_alias_type)
-                        <span style="font-size:.74rem;color:var(--text-dim);margin-left:6px;">({{ $bd->cliq_alias_type === 'alias' ? 'Alias' : 'Phone' }})</span>
+                        <span style="font-size:.74rem;color:var(--text-dim);margin-left:6px;">({{ $bd->cliq_alias_type === 'alias' ? __('Alias') : __('Phone') }})</span>
                     @endif
                 </span>
             </div>
@@ -388,7 +388,7 @@
 
             @if($bd->notes)
             <div class="info-row" style="grid-column:1/-1;">
-                <span class="info-row-key">Notes</span>
+                <span class="info-row-key">{{ __('Notes') }}</span>
                 <span class="info-row-val" style="white-space:pre-line;">{{ $bd->notes }}</span>
             </div>
             @endif
@@ -401,9 +401,9 @@
 {{-- ── Delivery Rates ── --}}
 <div class="section-card">
     <div class="section-card-hd">
-        <span class="section-card-title">Delivery Rates per Governorate</span>
+        <span class="section-card-title">{{ __('Delivery Rates per Governorate') }}</span>
         @if(auth()->user()->hasAdminAction('clients.edit'))
-        <a href="{{ route('admin.clients.edit', $client) }}" style="font-size:.78rem;color:var(--red);text-decoration:none;">Edit Rates</a>
+        <a href="{{ route('admin.clients.edit', $client) }}" style="font-size:.78rem;color:var(--red);text-decoration:none;">{{ __('Edit Rates') }}</a>
         @endif
     </div>
     <div class="section-card-body">
@@ -422,9 +422,9 @@
                     </span>
                     <span style="font-size:.85rem; font-weight:700; color:{{ $customPrice ? 'var(--red)' : 'var(--text-dim)' }}">
                         @if($customPrice)
-                            {{ number_format($customPrice->delivery_price, 2) }} JD <span style="font-size:.7rem;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(220,38,38,0.1);color:var(--red);margin-left:4px;">Custom</span>
+                            {{ number_format($customPrice->delivery_price, 2) }} JD <span style="font-size:.7rem;font-weight:600;padding:2px 6px;border-radius:4px;background:rgba(220,38,38,0.1);color:var(--red);margin-left:4px;">{{ __('Custom') }}</span>
                         @else
-                            {{ number_format($city->delivery_price, 2) }} JD <span style="font-size:.7rem;font-weight:500;color:var(--text-dim);margin-left:4px;">Default</span>
+                            {{ number_format($city->delivery_price, 2) }} JD <span style="font-size:.7rem;font-weight:500;color:var(--text-dim);margin-left:4px;">{{ __('Default') }}</span>
                         @endif
                     </span>
                 </div>
@@ -437,8 +437,8 @@
 @if($client->attachments->count())
 <div class="section-card">
     <div class="section-card-hd">
-        <span class="section-card-title">Attachments</span>
-        <span style="font-size:.75rem;color:var(--text-dim);">{{ $client->attachments->count() }} file{{ $client->attachments->count() !== 1 ? 's' : '' }}</span>
+        <span class="section-card-title">{{ __('Attachments') }}</span>
+        <span style="font-size:.75rem;color:var(--text-dim);">{{ $client->attachments->count() }} {{ __('file(s)') }}</span>
     </div>
     <div class="section-card-body">
         <div class="att-list">
@@ -453,7 +453,7 @@
                     <div class="att-label">{{ $att->label }}</div>
                     <div class="att-meta">{{ $att->original_filename }} · {{ $att->formatted_size }}</div>
                 </div>
-                <a href="{{ $att->url }}" target="_blank" class="att-link">↗ View</a>
+                <a href="{{ $att->url }}" target="_blank" class="att-link">↗ {{ __('View') }}</a>
             </div>
             @endforeach
         </div>
@@ -465,13 +465,13 @@
 <div class="section-card">
     <div class="section-card-hd">
         <div style="display:flex;align-items:center;gap:10px;">
-            <span class="section-card-title">Employees</span>
+            <span class="section-card-title">{{ __('Employees') }}</span>
             @if($client->employees->count())
-                <span style="font-size:.75rem;color:var(--text-dim);">{{ $client->employees->count() }} member{{ $client->employees->count() !== 1 ? 's' : '' }}</span>
+                <span style="font-size:.75rem;color:var(--text-dim);">{{ $client->employees->count() }} {{ __('member(s)') }}</span>
             @endif
         </div>
         <a href="{{ route('admin.clients.employees.create', $client) }}" class="btn-primary" style="padding:6px 14px;font-size:.82rem;">
-            + Add Employee
+            + {{ __('Add Employee') }}
         </a>
     </div>
 
@@ -480,12 +480,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Job Title</th>
-                    <th>Status</th>
-                    <th>Joined</th>
-                    <th style="width:150px;text-align:center;">Actions</th>
+                    <th>{{ __('Name') }}</th>
+                    <th>{{ __('Email') }}</th>
+                    <th>{{ __('Job Title') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('Joined') }}</th>
+                    <th style="width:150px;text-align:center;">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -495,8 +495,8 @@
                     <td><span style="font-size:.82rem;color:var(--text-dim);word-break:break-all;">{{ $emp->user->email ?? '—' }}</span></td>
                     <td>{{ $emp->job_title ?: '—' }}</td>
                     <td>
-                        @if($emp->status === 'active') <span class="badge-active">Active</span>
-                        @else <span class="badge-suspended">Suspended</span>
+                        @if($emp->status === 'active') <span class="badge-active">{{ __('Active') }}</span>
+                        @else <span class="badge-suspended">{{ __('Suspended') }}</span>
                         @endif
                     </td>
                     <td><span style="font-size:.82rem;color:var(--text-dim);">{{ $emp->created_at?->format('d M Y') ?? '—' }}</span></td>
@@ -505,13 +505,13 @@
                             <form method="POST" action="{{ route('admin.clients.employees.status', [$client, $emp]) }}" style="display:inline;">
                                 @csrf @method('PATCH')
                                 <button type="submit" class="{{ $emp->status === 'active' ? 'btn-warn-sm' : 'btn-ok-sm' }}">
-                                    {{ $emp->status === 'active' ? 'Suspend' : 'Activate' }}
+                                    {{ $emp->status === 'active' ? __('Suspend') : __('Activate') }}
                                 </button>
                             </form>
                             <form method="POST" action="{{ route('admin.clients.employees.destroy', [$client, $emp]) }}" style="display:inline;"
-                                  onsubmit="return confirm('Remove {{ addslashes($emp->user->name ?? 'this employee') }} from this company?')">
+                                  onsubmit="return confirm('{{ __('Remove :name from this company?', ['name' => addslashes($emp->user->name ?? __('this employee'))]) }}')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn-danger-sm">Remove</button>
+                                <button type="submit" class="btn-danger-sm">{{ __('Remove') }}</button>
                             </form>
                         </div>
                     </td>
@@ -522,7 +522,7 @@
     </div>
     @else
     <div style="padding:32px;text-align:center;color:var(--text-dim);font-size:.88rem;">
-        No employees yet. Click <strong style="color:var(--text-sub);">+ Add Employee</strong> to add the first team member.
+        {{ __('No employees yet. Click') }} <strong style="color:var(--text-sub);">+ {{ __('Add Employee') }}</strong> {{ __('to add the first team member.') }}
     </div>
     @endif
 </div>

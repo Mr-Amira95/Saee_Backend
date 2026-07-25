@@ -14,6 +14,18 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
+        App::setLocale(static::detect($request));
+
+        return $next($request);
+    }
+
+    /**
+     * Resolve the locale for a request without relying on middleware ordering,
+     * so exception handlers (which may render before this middleware runs on
+     * the auth-failure path) can compute the same locale independently.
+     */
+    public static function detect(Request $request): string
+    {
         $supported = ['en', 'ar'];
         $locale = null;
 
@@ -32,8 +44,6 @@ class SetLocale
             $locale = config('app.locale', 'en');
         }
 
-        App::setLocale($locale);
-
-        return $next($request);
+        return $locale;
     }
 }

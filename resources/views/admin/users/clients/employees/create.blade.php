@@ -1,16 +1,16 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Add Employee – '.$client->company_name)
-@section('page-title', 'Add Employee')
+@section('title', __('Add Employee –') . ' ' . $client->company_name)
+@section('page-title', __('Add Employee'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.clients.index') }}">Clients</a>
+    <a href="{{ route('admin.clients.index') }}">{{ __('Clients') }}</a>
     <span>/</span>
     <a href="{{ route('admin.clients.show', $client) }}">{{ $client->company_name }}</a>
     <span>/</span>
-    <span>Add Employee</span>
+    <span>{{ __('Add Employee') }}</span>
 @endsection
 
 @section('head')
@@ -117,7 +117,7 @@
 
     {{-- ── Account Credentials ── --}}
     <div class="form-section" style="position:relative;z-index:2;">
-        <div class="form-section-title">Account Credentials</div>
+        <div class="form-section-title">{{ __('Account Credentials') }}</div>
 
         {{-- Company context banner --}}
         <div style="display:flex;align-items:center;gap:12px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.15);border-radius:10px;padding:12px 16px;margin-bottom:20px;">
@@ -125,7 +125,7 @@
                 {{ strtoupper(substr($client->company_name, 0, 2)) }}
             </div>
             <div>
-                <div style="font-size:.75rem;color:var(--text-dim);">Adding employee to</div>
+                <div style="font-size:.75rem;color:var(--text-dim);">{{ __('Adding employee to') }}</div>
                 <div style="font-size:.92rem;font-weight:700;color:var(--text);">{{ $client->company_name }}</div>
             </div>
         </div>
@@ -133,30 +133,30 @@
         {{-- Invitation note --}}
         <div style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:10px;padding:12px 16px;margin-bottom:20px;">
             <svg width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="1.8" viewBox="0 0 24 24" style="flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <span style="font-size:.82rem;color:#93c5fd;">A password setup email will be sent to the employee automatically after account creation.</span>
+            <span style="font-size:.82rem;color:#93c5fd;">{{ __('A password setup email will be sent to the employee automatically after account creation.') }}</span>
         </div>
 
         <div class="form-grid-2">
             <div class="form-group">
-                <label class="form-label" for="name">Full Name <span class="req">*</span></label>
+                <label class="form-label" for="name">{{ __('Full Name') }} <span class="req">*</span></label>
                 <input class="form-input @error('name') is-error @enderror" id="name" type="text" name="name"
                        value="{{ old('name') }}" placeholder="e.g. Sara Al-Mansouri" required>
                 @error('name')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="username">Username <span class="req">*</span></label>
+                <label class="form-label" for="username">{{ __('Username') }} <span class="req">*</span></label>
                 <input class="form-input @error('username') is-error @enderror" id="username" type="text" name="username"
                        value="{{ old('username') }}" required>
                 @error('username')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="email">Email Address <span class="opt">(required for email channel)</span></label>
+                <label class="form-label" for="email">{{ __('Email Address') }} <span class="opt">({{ __('required for email channel') }})</span></label>
                 <input class="form-input @error('email') is-error @enderror" id="email" type="email" name="email"
                        value="{{ old('email') }}" placeholder="employee@company.com">
                 @error('email')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label">Phone <span class="opt">(required for WhatsApp)</span></label>
+                <label class="form-label">{{ __('Phone') }} <span class="opt">({{ __('required for WhatsApp') }})</span></label>
                 <div style="position:relative;">
                     <div class="phone-wrap">
                         <button type="button" class="phone-ext-btn" id="phoneExtBtn">
@@ -176,7 +176,7 @@
                 @error('phone')<span class="form-error">{{ $message }}</span>@enderror
             </div>
             <div class="form-group">
-                <label class="form-label" for="job_title">Job Title <span class="opt">(optional)</span></label>
+                <label class="form-label" for="job_title">{{ __('Job Title') }} <span class="opt">({{ __('optional') }})</span></label>
                 <input class="form-input @error('job_title') is-error @enderror" id="job_title" type="text" name="job_title"
                        value="{{ old('job_title') }}" placeholder="e.g. Logistics Manager, Dispatcher">
                 @error('job_title')<span class="form-error">{{ $message }}</span>@enderror
@@ -188,8 +188,8 @@
     @if($permissions->isNotEmpty())
     <div class="form-section">
         <div class="form-section-title">
-            Permissions
-            <span class="opt" style="text-transform:none;font-size:.72rem;font-weight:400;margin-left:6px;">Choose what this employee can do</span>
+            {{ __('Permissions') }}
+            <span class="opt" style="text-transform:none;font-size:.72rem;font-weight:400;margin-left:6px;">{{ __('Choose what this employee can do') }}</span>
         </div>
 
         @php
@@ -218,11 +218,11 @@
                 <div class="perm-card-title">
                     <span class="perm-icon">{{ $icon }}</span>
                     {{ ucwords(str_replace('_', ' ', $group)) }}
-                    <span class="perm-card-meta">{{ $count }} permission{{ $count !== 1 ? 's' : '' }}</span>
+                    <span class="perm-card-meta">{{ $count }} {{ __('permission(s)') }}</span>
                 </div>
                 <button type="button" class="perm-card-toggle" onclick="togglePermGroup(this, '{{ $groupKey }}')"
                         data-all="{{ $checkedInGroup === $count && $count > 0 ? '1' : '0' }}">
-                    {{ $checkedInGroup === $count && $count > 0 ? 'Deselect All' : 'Select All' }}
+                    {{ $checkedInGroup === $count && $count > 0 ? __('Deselect All') : __('Select All') }}
                 </button>
             </div>
             <div class="perm-card-body">
@@ -247,26 +247,26 @@
     <div class="form-actions" style="flex-wrap:wrap;gap:16px;">
         {{-- Invitation / OTP channel toggle --}}
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-right:auto;user-select:none;">
-            <span style="font-size:.85rem;color:var(--text-sub);white-space:nowrap;">Send invitation &amp; OTP via</span>
+            <span style="font-size:.85rem;color:var(--text-sub);white-space:nowrap;">{{ __('Send invitation & OTP via') }}</span>
             <div style="position:relative;display:inline-flex;align-items:center;background:var(--in-bg);border:1px solid var(--bdr);border-radius:8px;padding:3px;gap:2px;" id="invChannelWrap">
                 <input type="hidden" name="otp_channel" id="invChannelInput" value="whatsapp">
                 <button type="button" id="btnWhatsapp"
                     onclick="setChannel('whatsapp')"
                     style="display:flex;align-items:center;gap:6px;padding:5px 12px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s;background:#25D366;color:#fff;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    WhatsApp
+                    {{ __('WhatsApp') }}
                 </button>
                 <button type="button" id="btnEmail"
                     onclick="setChannel('email')"
                     style="display:flex;align-items:center;gap:6px;padding:5px 12px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s;background:transparent;color:var(--text-sub);">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    Email
+                    {{ __('Email') }}
                 </button>
             </div>
         </label>
 
-        <a href="{{ route('admin.clients.show', $client) }}" class="btn-secondary">Cancel</a>
-        <button type="submit" class="btn-primary">Create Employee &amp; Send Invitation</button>
+        <a href="{{ route('admin.clients.show', $client) }}" class="btn-secondary">{{ __('Cancel') }}</a>
+        <button type="submit" class="btn-primary">{{ __('Create Employee & Send Invitation') }}</button>
     </div>
 
     <script>
@@ -365,6 +365,14 @@ function initPhoneDropdown(btnId, flagId, codeId, valId, ddId, listId) {
 }
 
 /* ── Permission helpers ── */
+const i18nEmployeeCreate = {
+    selectAll: @json(__('Select All')),
+    deselectAll: @json(__('Deselect All')),
+    fullNameRequired: @json(__('Full name is required.')),
+    usernameRequired: @json(__('Username is required.')),
+    validEmail: @json(__('Please enter a valid email address.')),
+};
+
 function onPermChange(checkbox) {
     checkbox.closest('.perm-item').classList.toggle('is-checked', checkbox.checked);
     var card   = checkbox.closest('[data-group]');
@@ -372,7 +380,7 @@ function onPermChange(checkbox) {
     var boxes  = card.querySelectorAll('input[type=checkbox]');
     var allOn  = Array.from(boxes).every(function(b) { return b.checked; });
     var btn    = card.querySelector('.perm-card-toggle');
-    if (btn) { btn.textContent = allOn ? 'Deselect All' : 'Select All'; btn.dataset.all = allOn ? '1' : '0'; }
+    if (btn) { btn.textContent = allOn ? i18nEmployeeCreate.deselectAll : i18nEmployeeCreate.selectAll; btn.dataset.all = allOn ? '1' : '0'; }
 }
 
 function togglePermGroup(btn, groupKey) {
@@ -382,7 +390,7 @@ function togglePermGroup(btn, groupKey) {
     var allOn  = btn.dataset.all === '1';
     boxes.forEach(function(b) { b.checked = !allOn; b.closest('.perm-item').classList.toggle('is-checked', !allOn); });
     btn.dataset.all = allOn ? '0' : '1';
-    btn.textContent = allOn ? 'Select All' : 'Deselect All';
+    btn.textContent = allOn ? i18nEmployeeCreate.selectAll : i18nEmployeeCreate.deselectAll;
 }
 
 /* ── Form validation ── */
@@ -416,11 +424,11 @@ function togglePermGroup(btn, groupKey) {
             if (!el || el.value.trim()) return;
             showFieldError(el, msg); if (!first) first = el;
         }
-        req('name',     'Full name is required.');
-        req('username', 'Username is required.');
+        req('name',     i18nEmployeeCreate.fullNameRequired);
+        req('username', i18nEmployeeCreate.usernameRequired);
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
-            showFieldError(eEl, 'Please enter a valid email address.'); if (!first) first = eEl;
+            showFieldError(eEl, i18nEmployeeCreate.validEmail); if (!first) first = eEl;
         }
         if (first) {
             e.preventDefault();

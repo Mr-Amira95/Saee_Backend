@@ -165,7 +165,7 @@
                 <label class="field-label" for="loginInput">{{ __('Username or Phone Number') }}</label>
                 <div class="field-wrap">
                     <input id="loginInput" name="login" type="text"
-                           value="{{ old('login') }}" placeholder="{{ __('Username or phone number') }}" autocomplete="username" autofocus>
+                           value="{{ old('login') }}" placeholder="{{ __('Username or Phone Number') }}" autocomplete="username" autofocus>
                 </div>
             </div>
 

@@ -1,14 +1,14 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Live Driver Map')
-@section('page-title', 'Live Driver Map')
+@section('title', __('Live Driver Map'))
+@section('page-title', __('Live Driver Map'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <a href="{{ route('admin.drivers.index') }}">Drivers</a>
+    <a href="{{ route('admin.drivers.index') }}">{{ __('Drivers') }}</a>
     <span>/</span>
-    <span>Live Map</span>
+    <span>{{ __('Live Map') }}</span>
 @endsection
 
 @section('head')
@@ -106,9 +106,9 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
 @section('content')
 
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-    <span class="live-badge"><span class="live-dot"></span>Live</span>
+    <span class="live-badge"><span class="live-dot"></span>{{ __('Live') }}</span>
     <span style="font-size:.78rem;color:var(--text-dim);" id="driverCount">
-        {{ $drivers->count() }} driver{{ $drivers->count() !== 1 ? 's' : '' }} with known location
+        {{ $drivers->count() }} {{ __('driver(s) with known location') }}
     </span>
 </div>
 
@@ -120,8 +120,8 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:5;">
             <div style="background:var(--card);backdrop-filter:blur(6px);border:1px solid var(--bdr);border-radius:12px;padding:22px 32px;text-align:center;">
                 <svg width="32" height="32" fill="none" stroke="var(--text-dim)" stroke-width="1.4" viewBox="0 0 24 24" style="margin-bottom:10px;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <div style="font-size:.85rem;color:var(--text-sub);">No drivers with a known location yet.</div>
-                <div style="font-size:.75rem;color:var(--text-dim);margin-top:6px;">Markers will appear once drivers start sending updates.</div>
+                <div style="font-size:.85rem;color:var(--text-sub);">{{ __('No drivers with a known location yet.') }}</div>
+                <div style="font-size:.75rem;color:var(--text-dim);margin-top:6px;">{{ __('Markers will appear once drivers start sending updates.') }}</div>
             </div>
         </div>
         @endif
@@ -130,7 +130,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     {{-- Driver sidebar list --}}
     <div>
         <div style="font-size:.68rem;font-weight:700;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">
-            Active Drivers
+            {{ __('Active Drivers') }}
         </div>
         <div class="driver-list" id="driverList">
             @forelse($drivers as $driver)
@@ -151,7 +151,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
             </div>
             @empty
             <div class="no-driver-msg">
-                No drivers with location data yet.
+                {{ __('No drivers with location data yet.') }}
             </div>
             @endforelse
         </div>
@@ -176,6 +176,12 @@ $seedDrivers = $drivers->map(function ($d) {
 @endphp
 <script>
 (function () {
+    var i18nLiveMap = {
+        lat: @json(__('Lat:')),
+        lng: @json(__('Lng:')),
+        justNow: @json(__('Just now')),
+        driverCountTpl: @json(__(':count driver(s) with known location')),
+    };
     var DEFAULT_LAT = 31.9454, DEFAULT_LNG = 35.9284, DEFAULT_ZOOM = 9;
 
     var map = L.map('map', { zoomControl: true });
@@ -213,8 +219,8 @@ $seedDrivers = $drivers->map(function ($d) {
 
     function popupHtml(name, lat, lng, ts) {
         return '<b>' + name + '</b><br>'
-             + 'Lat: ' + lat.toFixed(5) + '<br>'
-             + 'Lng: ' + lng.toFixed(5) + '<br>'
+             + i18nLiveMap.lat + ' ' + lat.toFixed(5) + '<br>'
+             + i18nLiveMap.lng + ' ' + lng.toFixed(5) + '<br>'
              + '<span style="color:#64748b;font-size:.75em;">' + ts + '</span>';
     }
 
@@ -268,7 +274,7 @@ $seedDrivers = $drivers->map(function ($d) {
         var name = data.name;
         var lat  = parseFloat(data.latitude);
         var lng  = parseFloat(data.longitude);
-        var ts   = 'Just now';
+        var ts   = i18nLiveMap.justNow;
 
         // Update or create marker
         addOrUpdateMarker(id, name, lat, lng, ts);
@@ -306,7 +312,7 @@ $seedDrivers = $drivers->map(function ($d) {
             var countEl = document.getElementById('driverCount');
             if (countEl) {
                 var n = document.querySelectorAll('.driver-card').length;
-                countEl.textContent = n + ' driver' + (n !== 1 ? 's' : '') + ' with known location';
+                countEl.textContent = i18nLiveMap.driverCountTpl.replace(':count', n);
             }
         }
     });

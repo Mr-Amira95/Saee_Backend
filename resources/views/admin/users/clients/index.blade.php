@@ -1,13 +1,13 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Clients')
+@section('title', __('Clients'))
 
-@section('page-title', 'Clients')
+@section('page-title', __('Clients'))
 
 @section('breadcrumb')
-    <a href="{{ route('admin.dashboard') }}">Dashboard</a>
+    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
     <span>/</span>
-    <span>Clients</span>
+    <span>{{ __('Clients') }}</span>
 @endsection
 
 @section('head')
@@ -163,19 +163,19 @@ html.light-theme #modal-notes {
 <div class="mini-stats">
     <div class="mini-stat">
         <div class="ms-val">{{ \App\Models\ClientProfile::count() }}</div>
-        <div class="ms-lbl">Total Clients</div>
+        <div class="ms-lbl">{{ __('Total Clients') }}</div>
     </div>
     <div class="mini-stat">
         <div class="ms-val">{{ \App\Models\ClientProfile::where('status','active')->count() }}</div>
-        <div class="ms-lbl">Active</div>
+        <div class="ms-lbl">{{ __('Active') }}</div>
     </div>
     <div class="mini-stat">
         <div class="ms-val">{{ \App\Models\ClientProfile::where('status','pending_verification')->count() }}</div>
-        <div class="ms-lbl">Pending</div>
+        <div class="ms-lbl">{{ __('Pending') }}</div>
     </div>
     <div class="mini-stat">
         <div class="ms-val">{{ \App\Models\ClientProfile::where('status','suspended')->count() }}</div>
-        <div class="ms-lbl">Suspended</div>
+        <div class="ms-lbl">{{ __('Suspended') }}</div>
     </div>
 </div>
 
@@ -188,12 +188,12 @@ html.light-theme #modal-notes {
             name="search"
             id="search-input"
             value="{{ request('search') }}"
-            placeholder="Search clients..."
+            placeholder="{{ __('Search clients...') }}"
             style="width:100%;"
         >
     </form>
     @if(auth()->user()->hasAdminAction('clients.add'))
-        <a href="{{ route('admin.clients.create') }}" class="btn-primary">+ Add Client</a>
+        <a href="{{ route('admin.clients.create') }}" class="btn-primary">+ {{ __('Add Client') }}</a>
     @endif
 </div>
 
@@ -203,11 +203,11 @@ html.light-theme #modal-notes {
     <table>
         <thead>
             <tr>
-                <th>Company</th>
-                <th>Contact Information</th>
-                <th>Address</th>
-                <th>Financials</th>
-                <th>Actions</th>
+                <th>{{ __('Company') }}</th>
+                <th>{{ __('Contact Information') }}</th>
+                <th>{{ __('Address') }}</th>
+                <th>{{ __('Financials') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -262,7 +262,7 @@ html.light-theme #modal-notes {
                         {{ number_format($client->credit_limit, 2) }} <span style="color:var(--red-lt,#ef4444);font-size:.75rem;">JD</span>
                     </div>
                     <div class="cell-sub" style="margin-top:2px;font-size:.76rem;">
-                        Balance: {{ number_format($client->balance, 2) }} JD
+                        {{ __('Balance:') }} {{ number_format($client->balance, 2) }} JD
                     </div>
                 </td>
                 <td>
@@ -283,7 +283,7 @@ html.light-theme #modal-notes {
                             @if($bankData)
                                 <button
                                     class="act-btn act-bank"
-                                    title="Bank Details"
+                                    title="{{ __('Bank Details') }}"
                                     style="cursor:pointer;"
                                     onclick="openBankModal({{ json_encode($bankData) }}, '{{ addslashes(app()->getLocale() === 'ar' ? ($client->company_name_ar ?: $client->company_name) : $client->company_name) }}')"
                                 >
@@ -294,7 +294,7 @@ html.light-theme #modal-notes {
                             @else
                                 <button
                                     class="act-btn act-bank"
-                                    title="No Bank Details"
+                                    title="{{ __('No Bank Details') }}"
                                     style="opacity: 0.3; cursor: not-allowed;"
                                     disabled
                                 >
@@ -304,27 +304,27 @@ html.light-theme #modal-notes {
                                 </button>
                             @endif
                         @endif
-                        <a href="{{ route('admin.clients.show', $client) }}" class="act-btn act-view" title="View">
+                        <a href="{{ route('admin.clients.show', $client) }}" class="act-btn act-view" title="{{ __('View') }}">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         </a>
                         @if(auth()->user()->hasAdminAction('clients.reset_password'))
                         <button
                             class="act-btn act-reset-pw"
-                            title="Reset Password"
+                            title="{{ __('Reset Password') }}"
                             onclick="openResetPasswordModal('{{ route('admin.clients.reset-password', $client) }}', '{{ addslashes($client->masterUser->name ?? $client->company_name) }}')"
                         >
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                         </button>
                         @endif
                         @if(auth()->user()->hasAdminAction('clients.edit'))
-                        <a href="{{ route('admin.clients.edit', $client) }}" class="act-btn act-edit" title="Edit">
+                        <a href="{{ route('admin.clients.edit', $client) }}" class="act-btn act-edit" title="{{ __('Edit') }}">
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         </a>
                         @endif
                         @if(auth()->user()->hasAdminAction('clients.delete'))
                         <button
                             class="act-btn act-delete"
-                            title="Delete"
+                            title="{{ __('Delete') }}"
                             onclick="confirmDelete('{{ route('admin.clients.destroy', $client) }}','{{ addslashes($client->company_name) }}')"
                         >
                             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -341,7 +341,7 @@ html.light-theme #modal-notes {
 @else
 <div class="empty-state">
     <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-    <p>No clients found. <a href="{{ route('admin.clients.create') }}">Add the first client.</a></p>
+    <p>{{ __('No clients found.') }} <a href="{{ route('admin.clients.create') }}">{{ __('Add the first client.') }}</a></p>
 </div>
 @endif
 
@@ -349,54 +349,54 @@ html.light-theme #modal-notes {
 <div id="bank-modal" class="bank-modal-overlay" style="display:none;" onclick="closeBankModal(event)">
     <div class="bank-modal-card" onclick="event.stopPropagation()">
         <div class="bank-modal-hd">
-            <h3 class="bank-modal-title">Bank Details - <span id="modal-company-name"></span></h3>
+            <h3 class="bank-modal-title">{{ __('Bank Details -') }} <span id="modal-company-name"></span></h3>
             <button class="bank-modal-close" onclick="closeBankModal(null)">&times;</button>
         </div>
         <div class="bank-modal-body">
             <div class="bank-detail-item">
-                <span class="bank-detail-label">Bank Name</span>
+                <span class="bank-detail-label">{{ __('Bank Name') }}</span>
                 <div class="bank-detail-val-wrap">
                     <span id="modal-bank-name" class="bank-detail-val">—</span>
-                    <button class="btn-copy" onclick="copyText('modal-bank-name')">Copy</button>
+                    <button class="btn-copy" onclick="copyText('modal-bank-name')">{{ __('Copy') }}</button>
                 </div>
             </div>
             <div class="bank-detail-item">
-                <span class="bank-detail-label">Account Holder</span>
+                <span class="bank-detail-label">{{ __('Account Holder') }}</span>
                 <div class="bank-detail-val-wrap">
                     <span id="modal-account-name" class="bank-detail-val">—</span>
-                    <button class="btn-copy" onclick="copyText('modal-account-name')">Copy</button>
+                    <button class="btn-copy" onclick="copyText('modal-account-name')">{{ __('Copy') }}</button>
                 </div>
             </div>
             <div class="bank-detail-item">
-                <span class="bank-detail-label">IBAN</span>
+                <span class="bank-detail-label">{{ __('IBAN') }}</span>
                 <div class="bank-detail-val-wrap">
                     <span id="modal-iban" class="bank-detail-val font-mono">—</span>
-                    <button class="btn-copy" onclick="copyText('modal-iban')">Copy</button>
+                    <button class="btn-copy" onclick="copyText('modal-iban')">{{ __('Copy') }}</button>
                 </div>
             </div>
             <div class="bank-detail-item">
-                <span class="bank-detail-label">SWIFT / BIC</span>
+                <span class="bank-detail-label">{{ __('SWIFT / BIC') }}</span>
                 <div class="bank-detail-val-wrap">
                     <span id="modal-swift-code" class="bank-detail-val font-mono">—</span>
-                    <button class="btn-copy" onclick="copyText('modal-swift-code')">Copy</button>
+                    <button class="btn-copy" onclick="copyText('modal-swift-code')">{{ __('Copy') }}</button>
                 </div>
             </div>
             <div class="bank-detail-item">
-                <span class="bank-detail-label">Account Number</span>
+                <span class="bank-detail-label">{{ __('Account Number') }}</span>
                 <div class="bank-detail-val-wrap">
                     <span id="modal-account-number" class="bank-detail-val font-mono">—</span>
-                    <button class="btn-copy" onclick="copyText('modal-account-number')">Copy</button>
+                    <button class="btn-copy" onclick="copyText('modal-account-number')">{{ __('Copy') }}</button>
                 </div>
             </div>
             <div class="bank-detail-item" id="modal-cliq-row">
-                <span class="bank-detail-label">CliQ ID <span id="modal-cliq-type" style="font-size:0.75rem;opacity:0.7;"></span></span>
+                <span class="bank-detail-label">{{ __('CliQ ID') }} <span id="modal-cliq-type" style="font-size:0.75rem;opacity:0.7;"></span></span>
                 <div class="bank-detail-val-wrap">
                     <span id="modal-cliq-id" class="bank-detail-val">—</span>
-                    <button class="btn-copy" onclick="copyText('modal-cliq-id')">Copy</button>
+                    <button class="btn-copy" onclick="copyText('modal-cliq-id')">{{ __('Copy') }}</button>
                 </div>
             </div>
             <div class="bank-detail-item" id="modal-notes-row" style="flex-direction: column; align-items: flex-start; gap: 6px;">
-                <span class="bank-detail-label">Notes</span>
+                <span class="bank-detail-label">{{ __('Notes') }}</span>
                 <div id="modal-notes" class="bank-detail-notes" style="width: 100%; max-height: 80px; overflow-y: auto; background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 6px; font-size: 0.82rem; white-space: pre-wrap;">—</div>
             </div>
         </div>
@@ -406,6 +406,12 @@ html.light-theme #modal-notes {
 
 @section('scripts')
 <script>
+const i18nClientsIndex = {
+    alias: @json(__('Alias')),
+    phone: @json(__('Phone')),
+    copiedToClipboard: @json(__('Copied to clipboard: :text')),
+};
+
 function openBankModal(data, companyName) {
     if (!data) return;
     
@@ -421,7 +427,7 @@ function openBankModal(data, companyName) {
         document.getElementById('modal-cliq-row').style.display = 'flex';
         document.getElementById('modal-cliq-id').textContent = cliqId;
         var type = data.cliq_alias_type;
-        document.getElementById('modal-cliq-type').textContent = type ? '(' + (type === 'alias' ? 'Alias' : 'Phone') + ')' : '';
+        document.getElementById('modal-cliq-type').textContent = type ? '(' + (type === 'alias' ? i18nClientsIndex.alias : i18nClientsIndex.phone) + ')' : '';
     } else {
         document.getElementById('modal-cliq-row').style.display = 'none';
     }
@@ -448,7 +454,7 @@ function copyText(elementId) {
     if (text === '—') return;
     
     navigator.clipboard.writeText(text).then(function() {
-        showSuccessToast('Copied to clipboard: ' + text);
+        showSuccessToast(i18nClientsIndex.copiedToClipboard.replace(':text', text));
     }).catch(function() {
         var el = document.createElement('textarea');
         el.value = text;
@@ -456,7 +462,7 @@ function copyText(elementId) {
         el.select();
         document.execCommand('copy');
         document.body.removeChild(el);
-        showSuccessToast('Copied to clipboard: ' + text);
+        showSuccessToast(i18nClientsIndex.copiedToClipboard.replace(':text', text));
     });
 }
 

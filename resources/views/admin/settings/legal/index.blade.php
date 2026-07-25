@@ -1,13 +1,13 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Legal Content')
-@section('page-title', 'Legal Content')
+@section('title', __('Legal Content'))
+@section('page-title', __('Legal Content'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Website CMS</span>
+    <span class="current">{{ __('Website CMS') }}</span>
     <span class="sep">/</span>
-    <span class="current">Legal Content</span>
+    <span class="current">{{ __('Legal Content') }}</span>
 @endsection
 
 @section('head')
@@ -41,7 +41,7 @@
 
 @section('content')
 <div>
-    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;">Manage Legal Content</h1>
+    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:20px;">{{ __('Manage Legal Content') }}</h1>
 
     @if(session('success'))
     <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:12px 18px;margin-bottom:20px;color:#86efac;font-size:.88rem;">
@@ -61,28 +61,27 @@
         @csrf
 
         <div class="legal-tabs-nav">
-            <button type="button" class="legal-tab-btn active" onclick="switchLegalTab('terms')">Terms &amp; Conditions</button>
-            <button type="button" class="legal-tab-btn" onclick="switchLegalTab('privacy')">Privacy Policy</button>
+            <button type="button" class="legal-tab-btn active" onclick="switchLegalTab('terms')">{{ __('Terms & Conditions') }}</button>
+            <button type="button" class="legal-tab-btn" onclick="switchLegalTab('privacy')">{{ __('Privacy Policy') }}</button>
         </div>
 
         {{-- Terms & Conditions --}}
         <div class="legal-tab-pane active" id="legal-tab-terms">
             <div class="form-section">
-                <div class="form-section-title">Terms &amp; Conditions</div>
+                <div class="form-section-title">{{ __('Terms & Conditions') }}</div>
                 <p class="editor-note">
-                    Write the full Terms &amp; Conditions content in both languages below. The content supports rich formatting (headings, bold, lists, links, etc.)
-                    and is served via the public API at <code>/api/legal/terms</code> and <code>/api/public/terms-and-conditions</code>.
+                    {{ __('Write the full Terms & Conditions content in both languages below. The content supports rich formatting (headings, bold, lists, links, etc.) and is served via the public API at') }} <code>/api/legal/terms</code> {{ __('and') }} <code>/api/public/terms-and-conditions</code>.
                 </p>
 
                 <div class="lang-block">
-                    <div class="lang-block-title">English</div>
+                    <div class="lang-block-title">{{ __('English') }}</div>
                     <div class="form-group">
                         <textarea name="terms_and_conditions[en]" id="editor-terms-en" rows="16" style="width:100%;">{{ old('terms_and_conditions.en', $settings['terms_and_conditions']['en']) }}</textarea>
                     </div>
                 </div>
 
                 <div class="lang-block">
-                    <div class="lang-block-title">Arabic</div>
+                    <div class="lang-block-title">{{ __('Arabic') }}</div>
                     <div class="form-group">
                         <textarea name="terms_and_conditions[ar]" id="editor-terms-ar" dir="rtl" rows="16" style="width:100%;">{{ old('terms_and_conditions.ar', $settings['terms_and_conditions']['ar']) }}</textarea>
                     </div>
@@ -93,21 +92,20 @@
         {{-- Privacy Policy --}}
         <div class="legal-tab-pane" id="legal-tab-privacy">
             <div class="form-section">
-                <div class="form-section-title">Privacy Policy</div>
+                <div class="form-section-title">{{ __('Privacy Policy') }}</div>
                 <p class="editor-note">
-                    Write the full Privacy Policy content in both languages below. The content supports rich formatting (headings, bold, lists, links, etc.)
-                    and is served via the public API at <code>/api/legal/privacy</code> and <code>/api/public/privacy-policy</code>.
+                    {{ __('Write the full Privacy Policy content in both languages below. The content supports rich formatting (headings, bold, lists, links, etc.) and is served via the public API at') }} <code>/api/legal/privacy</code> {{ __('and') }} <code>/api/public/privacy-policy</code>.
                 </p>
 
                 <div class="lang-block">
-                    <div class="lang-block-title">English</div>
+                    <div class="lang-block-title">{{ __('English') }}</div>
                     <div class="form-group">
                         <textarea name="privacy_policy[en]" id="editor-privacy-en" rows="16" style="width:100%;">{{ old('privacy_policy.en', $settings['privacy_policy']['en']) }}</textarea>
                     </div>
                 </div>
 
                 <div class="lang-block">
-                    <div class="lang-block-title">Arabic</div>
+                    <div class="lang-block-title">{{ __('Arabic') }}</div>
                     <div class="form-group">
                         <textarea name="privacy_policy[ar]" id="editor-privacy-ar" dir="rtl" rows="16" style="width:100%;">{{ old('privacy_policy.ar', $settings['privacy_policy']['ar']) }}</textarea>
                     </div>
@@ -116,7 +114,7 @@
         </div>
 
         <div class="form-actions" style="margin-top:24px;">
-            <button type="submit" class="btn-primary">Save Legal Content</button>
+            <button type="submit" class="btn-primary">{{ __('Save Legal Content') }}</button>
         </div>
     </form>
 </div>

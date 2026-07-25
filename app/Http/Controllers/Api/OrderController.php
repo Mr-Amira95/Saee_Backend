@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\OrderTrackingLog;
 use App\Models\RejectionReason;
 use App\Models\User;
+use App\Services\OpenAIService;
 use App\Services\OrderService;
 use App\Services\SupportNotificationService;
 use Illuminate\Http\JsonResponse;
@@ -697,69 +698,208 @@ class OrderController extends Controller
         $errors = [];
 
         foreach ($rows as $index => $row) {
-            $rowNum    = $index + 2;
-            $rowErrors = [];
-
             $row['payment_type']         = $this->normalizePaymentTypeValue($row['payment_type'] ?? '');
             $row['delivery_on_customer'] = $this->normalizeYesNoValue($row['delivery_on_customer'] ?? 'false');
-
-            $paymentType = strtolower($row['payment_type']);
-            if (! in_array($paymentType, ['cod', 'prepaid'])) {
-                $rowErrors[] = __("Payment type must be 'cod'/'عند التسليم' or 'prepaid'/'مدفوع'.");
-            }
-
-            $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
-            if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
-                $rowErrors[] = __('Order price must be a positive number for COD orders.');
-            }
-
-            $deliveryOnCustomer = filter_var($row['delivery_on_customer'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-            if ($deliveryOnCustomer === null) {
-                $rowErrors[] = __("delivery_on_customer must be 'yes'/'نعم' or 'no'/'لا'.");
-            }
-
-            $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
-            if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
-                $rowErrors[] = __('delivery_customer_amount must be a valid number.');
-            }
-
-            $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
-            if (! $cityId || ! City::where('id', $cityId)->exists()) {
-                $rowErrors[] = __('City ID [:city_id] does not exist.', ['city_id' => $row['city_id']]);
-            }
-
-            $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
-            if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
-                $rowErrors[] = __('Area ID [:area_id] does not exist or does not belong to City [:city_id].', [
-                    'area_id' => $row['area_id'],
-                    'city_id' => $row['city_id'],
-                ]);
-            }
-
-            if (empty($row['receiver_name']))  { $rowErrors[] = __('Receiver name is required.'); }
-            if (empty($row['receiver_phone'])) { $rowErrors[] = __('Receiver phone is required.'); }
-            if (empty($row['address_text']))   { $rowErrors[] = __('Address is required.'); }
 
             $deliveryShift = isset($row['delivery_shift']) ? strtolower(trim($row['delivery_shift'])) : 'doesnt_matter';
             if ($deliveryShift === '') {
                 $deliveryShift = 'doesnt_matter';
             }
-            if (! in_array($deliveryShift, ['doesnt_matter', 'before_12pm', 'after_12pm'])) {
-                $rowErrors[] = __("Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.");
-            }
             $row['delivery_shift'] = $deliveryShift;
-            $rows[$index] = $row;
 
+            $rowErrors = $this->validateImportRowApi($row);
             if (! empty($rowErrors)) {
-                $errors[] = ['row' => $rowNum, 'errors' => $rowErrors];
+                $errors[$index] = $rowErrors;
+            }
+
+            $rows[$index] = $row;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => empty($errors)
+                ? __('CSV parsed successfully. Review the orders below before confirming.')
+                : __('CSV parsed, but some rows need manual review or correction.'),
+            'data' => [
+                'rows'   => $rows,
+                'errors' => $errors,
+            ],
+        ]);
+    }
+
+    public function importImagePreview(Request $request, OpenAIService $openAIService): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Only client accounts can import orders.'),
+            ], 403);
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Client profile not found.'),
+                'code'    => 'CLIENT_PROFILE_NOT_FOUND',
+            ], 403);
+        }
+
+        $request->validate([
+            'image' => ['required', 'file', 'image', 'max:10240'],
+        ]);
+
+        $citiesList = City::where('is_active', true)->with('areas')->get();
+
+        $citiesData = $citiesList->map(fn ($c) => [
+            'id'      => $c->id,
+            'name'    => $c->name,
+            'name_ar' => $c->name_ar,
+            'areas'   => $c->areas->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'name_ar' => $a->name_ar])->toArray(),
+        ])->toArray();
+
+        try {
+            $parsedOrders = $openAIService->parseImageForOrders($request->file('image')->getRealPath(), [], $citiesData);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('AI Processing failed: :message', ['message' => $e->getMessage()]),
+            ], 422);
+        }
+
+        if (empty($parsedOrders)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('No order details could be extracted from the image.'),
+            ], 422);
+        }
+
+        $rows   = [];
+        $errors = [];
+
+        foreach ($parsedOrders as $index => $o) {
+            $cityId = $o['city_id'] ?? null;
+            if ($cityId && ! $citiesList->contains('id', $cityId)) {
+                $cityId = null;
+            }
+            if (! $cityId && ! empty($o['city_name'])) {
+                $cityName    = strtolower(trim($o['city_name']));
+                $matchedCity = $citiesList->first(fn ($c) => str_contains(strtolower($c->name), $cityName)
+                    || str_contains(strtolower($c->name_ar), $cityName)
+                    || str_contains($cityName, strtolower($c->name))
+                    || str_contains($cityName, strtolower($c->name_ar)));
+                if ($matchedCity) {
+                    $cityId = $matchedCity->id;
+                }
+            }
+
+            $areaId = $o['area_id'] ?? null;
+            if ($cityId) {
+                $cityObj = $citiesList->firstWhere('id', $cityId);
+                if ($cityObj) {
+                    if ($areaId && ! $cityObj->areas->contains('id', $areaId)) {
+                        $areaId = null;
+                    }
+                    if (! $areaId && ! empty($o['area_name'])) {
+                        $areaName    = strtolower(trim($o['area_name']));
+                        $matchedArea = $cityObj->areas->first(fn ($a) => str_contains(strtolower($a->name), $areaName)
+                            || str_contains(strtolower($a->name_ar), $areaName)
+                            || str_contains($areaName, strtolower($a->name))
+                            || str_contains($areaName, strtolower($a->name_ar)));
+                        if ($matchedArea) {
+                            $areaId = $matchedArea->id;
+                        }
+                    }
+                }
+            }
+
+            $row = [
+                'order_description'        => $o['order_description'] ?? '',
+                'payment_type'             => strtolower($this->normalizePaymentTypeValue($o['payment_type'] ?? 'cod')),
+                'delivery_on_customer'     => filter_var($this->normalizeYesNoValue($o['delivery_on_customer'] ?? 'false'), FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false',
+                'delivery_customer_amount' => number_format((float) ($o['delivery_customer_amount'] ?? 0.00), 2, '.', ''),
+                'order_price'              => number_format((float) ($o['order_price'] ?? 0.00), 2, '.', ''),
+                'receiver_name'            => $o['receiver_name'] ?? '',
+                'receiver_phone'           => $o['receiver_phone'] ?? '',
+                'city_id'                  => $cityId,
+                'area_id'                  => $areaId,
+                'address_text'             => $o['address_text'] ?? '',
+                'notes'                    => $o['notes'] ?? '',
+                'delivery_shift'           => strtolower($o['delivery_shift'] ?? 'doesnt_matter'),
+            ];
+
+            if (! in_array($row['delivery_shift'], ['doesnt_matter', 'before_12pm', 'after_12pm'])) {
+                $row['delivery_shift'] = 'doesnt_matter';
+            }
+
+            $rowErrors = $this->validateImportRowApi($row);
+            if (! empty($rowErrors)) {
+                $errors[$index] = $rowErrors;
+            }
+
+            $rows[$index] = $row;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => empty($errors)
+                ? __('Image parsed successfully. Review the orders below before confirming.')
+                : __('Image parsed, but some fields need manual review or correction.'),
+            'data' => [
+                'rows'   => $rows,
+                'errors' => $errors,
+            ],
+        ]);
+    }
+
+    public function confirmImportRows(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Only client accounts can import orders.'),
+            ], 403);
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Client profile not found.'),
+                'code'    => 'CLIENT_PROFILE_NOT_FOUND',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'rows' => ['required', 'array', 'min:1'],
+        ]);
+
+        $rows   = $validated['rows'];
+        $errors = [];
+
+        foreach ($rows as $index => $row) {
+            $rowErrors = $this->validateImportRowApi($row);
+            if (! empty($rowErrors)) {
+                $errors[$index] = $rowErrors;
             }
         }
 
         if (! empty($errors)) {
             return response()->json([
                 'success' => false,
-                'message' => __('CSV validation failed. Fix the errors and re-upload.'),
-                'errors'  => $errors,
+                'message' => __('Some rows still have validation errors. Please correct them.'),
+                'data'    => [
+                    'rows'   => $rows,
+                    'errors' => $errors,
+                ],
             ], 422);
         }
 
@@ -800,6 +940,58 @@ class OrderController extends Controller
             'batch_number' => $batchNumber,
             'imported'     => $importedCount,
         ], 201);
+    }
+
+    private function validateImportRowApi(array $row): array
+    {
+        $rowErrors = [];
+
+        $paymentType = strtolower($this->normalizePaymentTypeValue($row['payment_type'] ?? ''));
+        if (! in_array($paymentType, ['cod', 'prepaid'])) {
+            $rowErrors[] = __("Payment type must be 'cod'/'عند التسليم' or 'prepaid'/'مدفوع'.");
+        }
+
+        $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
+        if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
+            $rowErrors[] = __('Order price must be a positive number for COD orders.');
+        }
+
+        $deliveryOnCustomer = filter_var($this->normalizeYesNoValue($row['delivery_on_customer'] ?? 'false'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if ($deliveryOnCustomer === null) {
+            $rowErrors[] = __("delivery_on_customer must be 'yes'/'نعم' or 'no'/'لا'.");
+        }
+
+        $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
+        if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
+            $rowErrors[] = __('delivery_customer_amount must be a valid number.');
+        }
+
+        $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
+        if (! $cityId || ! City::where('id', $cityId)->exists()) {
+            $rowErrors[] = __('City ID [:city_id] does not exist.', ['city_id' => $row['city_id'] ?? '']);
+        }
+
+        $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
+        if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
+            $rowErrors[] = __('Area ID [:area_id] does not exist or does not belong to City [:city_id].', [
+                'area_id' => $row['area_id'] ?? '',
+                'city_id' => $row['city_id'] ?? '',
+            ]);
+        }
+
+        if (empty($row['receiver_name']))  { $rowErrors[] = __('Receiver name is required.'); }
+        if (empty($row['receiver_phone'])) { $rowErrors[] = __('Receiver phone is required.'); }
+        if (empty($row['address_text']))   { $rowErrors[] = __('Address is required.'); }
+
+        $deliveryShift = isset($row['delivery_shift']) ? strtolower(trim($row['delivery_shift'])) : 'doesnt_matter';
+        if ($deliveryShift === '') {
+            $deliveryShift = 'doesnt_matter';
+        }
+        if (! in_array($deliveryShift, ['doesnt_matter', 'before_12pm', 'after_12pm'])) {
+            $rowErrors[] = __("Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.");
+        }
+
+        return $rowErrors;
     }
 
     public function downloadImportTemplate(Request $request): StreamedResponse

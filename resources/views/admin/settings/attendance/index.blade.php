@@ -1,10 +1,10 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Attendance Logs')
-@section('page-title', 'Attendance Logs')
+@section('title', __('Attendance Logs'))
+@section('page-title', __('Attendance Logs'))
 
 @section('breadcrumb')
-    <span class="sep">/</span> <span class="current">Attendance Logs</span>
+    <span class="sep">/</span> <span class="current">{{ __('Attendance Logs') }}</span>
 @endsection
 
 @section('content')
@@ -13,35 +13,35 @@
     {{-- Filter Bar --}}
     <div class="filter-bar">
         <form method="GET" action="{{ route('admin.attendance.index') }}" class="filter-form">
-            <input 
-                type="text" 
-                name="search" 
-                class="filter-search" 
-                placeholder="Search employee or driver..." 
+            <input
+                type="text"
+                name="search"
+                class="filter-search"
+                placeholder="{{ __('Search employee or driver...') }}"
                 value="{{ request('search') }}"
             >
-            
-            <input 
-                type="date" 
-                name="date" 
-                class="filter-select" 
+
+            <input
+                type="date"
+                name="date"
+                class="filter-select"
                 style="padding-right: 12px; background-image: none;"
                 value="{{ request('date') }}"
             >
 
             <select name="role" class="filter-select">
-                <option value="">All Roles</option>
-                <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin Employees</option>
-                <option value="driver" {{ request('role') === 'driver' ? 'selected' : '' }}>Drivers</option>
+                <option value="">{{ __('All Roles') }}</option>
+                <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>{{ __('Admin Employees') }}</option>
+                <option value="driver" {{ request('role') === 'driver' ? 'selected' : '' }}>{{ __('Drivers') }}</option>
             </select>
 
             <button type="submit" class="btn-primary" style="padding: 8px 16px; font-size: .83rem; box-shadow: none;">
-                Apply Filters
+                {{ __('Apply Filters') }}
             </button>
-            
+
             @if(request()->anyFilled(['search', 'date', 'role']))
                 <a href="{{ route('admin.attendance.index') }}" class="btn-secondary" style="padding: 8px 16px; font-size: .83rem;">
-                    Clear
+                    {{ __('Clear') }}
                 </a>
             @endif
         </form>
@@ -53,15 +53,15 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Employee / Driver</th>
-                        <th>Role</th>
-                        <th>Date</th>
-                        <th>Check In</th>
-                        <th>Check In Location</th>
-                        <th>Check Out</th>
-                        <th>Check Out Location</th>
-                        <th>Duration</th>
-                        <th style="width: 80px; text-align: center;">Actions</th>
+                        <th>{{ __('Employee / Driver') }}</th>
+                        <th>{{ __('Role') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Check In') }}</th>
+                        <th>{{ __('Check In Location') }}</th>
+                        <th>{{ __('Check Out') }}</th>
+                        <th>{{ __('Check Out Location') }}</th>
+                        <th>{{ __('Duration') }}</th>
+                        <th style="width: 80px; text-align: center;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -130,14 +130,14 @@
                                     @endphp
                                     {{ "{$hours}h {$minutes}m" }}
                                 @else
-                                    <span style="color: var(--red-lt); font-weight: 600; animation: dot-p 2.5s infinite;">● Active</span>
+                                    <span style="color: var(--red-lt); font-weight: 600; animation: dot-p 2.5s infinite;">● {{ __('Active') }}</span>
                                 @endif
                             </td>
                             <td>
                                 <div style="display:flex; justify-content:center;">
-                                    <button 
-                                        class="act-btn act-edit" 
-                                        title="Manually Adjust Times"
+                                    <button
+                                        class="act-btn act-edit"
+                                        title="{{ __('Manually Adjust Times') }}"
                                         onclick="openEditModal('{{ route('admin.attendance.update', $log) }}', '{{ $log->user->name }}', '{{ $log->check_in_at->format('Y-m-d H:i:s') }}', '{{ $log->check_out_at ? $log->check_out_at->format('Y-m-d H:i:s') : '' }}')"
                                     >
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -152,8 +152,8 @@
                                     <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    <h3>No Attendance Logs Found</h3>
-                                    <p>Check back later or adjust filters.</p>
+                                    <h3>{{ __('No Attendance Logs Found') }}</h3>
+                                    <p>{{ __('Check back later or adjust filters.') }}</p>
                                 </div>
                             </td>
                         </tr>
@@ -165,7 +165,7 @@
         @if($attendances->hasPages())
             <div class="pagination-wrap">
                 <div class="pag-info">
-                    Showing {{ $attendances->firstItem() }} to {{ $attendances->lastItem() }} of {{ $attendances->total() }} logs
+                    {{ __('Showing') }} {{ $attendances->firstItem() }} {{ __('to') }} {{ $attendances->lastItem() }} {{ __('of') }} {{ $attendances->total() }} {{ __('logs') }}
                 </div>
                 <div class="pag-links">
                     {{ $attendances->links('pagination::bootstrap-4') }}
@@ -181,33 +181,33 @@
     <div class="modal-card" style="max-width: 420px; text-align: left; background: #0b1228; border: 1px solid var(--bdr);">
         <h3 style="font-size: 1.15rem; font-weight: 800; border-bottom: 1px solid var(--bdr); padding-bottom: 10px; margin-bottom: 15px; display:flex; align-items:center; gap:8px;">
             <svg width="18" height="18" fill="none" stroke="var(--red-lt)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Adjust Time Logs
+            {{ __('Adjust Time Logs') }}
         </h3>
         <p style="font-size: .82rem; color: var(--text-sub); margin-bottom: 15px;">
-            Correcting logs for: <strong style="color: #fff;" id="modalEmployeeName">Name</strong>
+            {{ __('Correcting logs for:') }} <strong style="color: #fff;" id="modalEmployeeName">Name</strong>
         </p>
-        
+
         <form id="editTimeForm" method="POST">
             @csrf
             @method('PATCH')
-            
+
             <div style="display:flex; flex-direction:column; gap:14px; margin-bottom: 22px;">
                 <div class="form-group">
-                    <label class="form-label" for="modalCheckInInput">Check In Time</label>
+                    <label class="form-label" for="modalCheckInInput">{{ __('Check In Time') }}</label>
                     <input type="text" name="check_in_at" id="modalCheckInInput" class="form-input" placeholder="YYYY-MM-DD HH:MM:SS" required>
-                    <span class="form-hint">Format: YYYY-MM-DD HH:MM:SS</span>
+                    <span class="form-hint">{{ __('Format: YYYY-MM-DD HH:MM:SS') }}</span>
                 </div>
-                
+
                 <div class="form-group">
-                    <label class="form-label" for="modalCheckOutInput">Check Out Time</label>
+                    <label class="form-label" for="modalCheckOutInput">{{ __('Check Out Time') }}</label>
                     <input type="text" name="check_out_at" id="modalCheckOutInput" class="form-input" placeholder="YYYY-MM-DD HH:MM:SS (optional)">
-                    <span class="form-hint">Leave blank if the shift is still active.</span>
+                    <span class="form-hint">{{ __('Leave blank if the shift is still active.') }}</span>
                 </div>
             </div>
 
             <div class="modal-actions" style="justify-content: flex-end; gap: 8px;">
-                <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
-                <button type="submit" class="btn-primary" style="box-shadow:none;">Save Changes</button>
+                <button type="button" class="btn-secondary" onclick="closeEditModal()">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-primary" style="box-shadow:none;">{{ __('Save Changes') }}</button>
             </div>
         </form>
     </div>

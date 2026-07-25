@@ -174,6 +174,12 @@ Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () 
     Route::post('orders/import', [OrderController::class, 'importOrders'])
         ->name('api.orders.import');
 
+    Route::post('orders/import-image', [OrderController::class, 'importImagePreview'])
+        ->name('api.orders.import-image');
+
+    Route::post('orders/import/confirm', [OrderController::class, 'confirmImportRows'])
+        ->name('api.orders.import.confirm');
+
     Route::get('orders', [OrderController::class, 'index'])
         ->name('api.orders.index');
 
