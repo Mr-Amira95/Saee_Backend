@@ -32,7 +32,7 @@ class ChangePasswordRequest extends FormRequest
     {
         throw new HttpResponseException(response()->json([
             'success' => false,
-            'message' => 'Validation failed',
+            'message' => __('Validation failed'),
             'errors'  => $validator->errors(),
         ], 422));
     }

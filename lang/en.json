@@ -2177,5 +2177,17 @@
   "Username or Phone Number": "Username or Phone Number",
   "We sent a 6-digit code to your email. Enter it below to continue.": "We sent a 6-digit code to your email. Enter it below to continue.",
   "Best Viewed on Desktop": "Best Viewed on Desktop",
-  "The Sa'ee Logistics Portal is optimized for larger screens. Please switch to a laptop or desktop for the best experience.": "The Sa'ee Logistics Portal is optimized for larger screens. Please switch to a laptop or desktop for the best experience."
+  "The Sa'ee Logistics Portal is optimized for larger screens. Please switch to a laptop or desktop for the best experience.": "The Sa'ee Logistics Portal is optimized for larger screens. Please switch to a laptop or desktop for the best experience.",
+  "CSV parsed successfully. Review the orders below before confirming.": "CSV parsed successfully. Review the orders below before confirming.",
+  "Client ID [:client_id] not found.": "Client ID [:client_id] not found.",
+  "Unauthorized action.": "Unauthorized action.",
+  "Why Sa'ee section updated successfully.": "Why Sa'ee section updated successfully.",
+  "No driver is assigned to this order to rate.": "No driver is assigned to this order to rate.",
+  "Thank you for your feedback!": "Thank you for your feedback!",
+  "Location updated successfully! Thank you for sharing.": "Location updated successfully! Thank you for sharing.",
+  "Too many attempts. Please request a new code.": "Too many attempts. Please request a new code.",
+  "Invalid code. Please try again.": "Invalid code. Please try again.",
+  "The code must be exactly 6 digits.": "The code must be exactly 6 digits.",
+  "The password must contain at least one letter.": "The password must contain at least one letter.",
+  "The password must contain at least one number.": "The password must contain at least one number."
 }

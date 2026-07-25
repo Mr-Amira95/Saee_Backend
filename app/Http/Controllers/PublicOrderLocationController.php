@@ -31,7 +31,7 @@ class PublicOrderLocationController extends Controller
             if (! $order->driver_profile_id) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No driver is assigned to this order to rate.',
+                    'message' => __('No driver is assigned to this order to rate.'),
                 ], 422);
             }
 
@@ -48,7 +48,7 @@ class PublicOrderLocationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Thank you for your feedback!',
+                'message' => __('Thank you for your feedback!'),
             ]);
         }
 
@@ -81,7 +81,7 @@ class PublicOrderLocationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Location updated successfully! Thank you for sharing.',
+            'message' => __('Location updated successfully! Thank you for sharing.'),
         ]);
     }
 }

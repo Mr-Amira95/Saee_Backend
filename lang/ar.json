@@ -1244,6 +1244,10 @@
   "AI Processing failed: :message": "فشلت معالجة الذكاء الاصطناعي: :message",
   "No order details could be extracted from the image.": "تعذر استخراج تفاصيل الطلب من الصورة.",
   "AI parsed the image, but some details need manual selection or correction.": "قام الذكاء الاصطناعي بتحليل الصورة، لكن بعض التفاصيل تحتاج إلى تحديد أو تصحيح يدوي.",
+  "Image parsed successfully. Review the orders below before confirming.": "تم تحليل الصورة بنجاح. يرجى مراجعة الطلبات أدناه قبل التأكيد.",
+  "Image parsed, but some fields need manual review or correction.": "تم تحليل الصورة، لكن بعض الحقول تحتاج إلى مراجعة أو تصحيح يدوي.",
+  "CSV parsed successfully. Review the orders below before confirming.": "تم تحليل ملف CSV بنجاح. يرجى مراجعة الطلبات أدناه قبل التأكيد.",
+  "CSV parsed, but some rows need manual review or correction.": "تم تحليل ملف CSV، لكن بعض الصفوف تحتاج إلى مراجعة أو تصحيح يدوي.",
   "Invalid CSV format. Please make sure to use the template provided.": "تنسيق CSV غير صالح. يرجى التأكد من استخدام القالب المُقدَّم.",
   "The CSV file is empty.": "ملف CSV فارغ.",
   "CSV parsed but some rows failed validation. Please correct them below.": "تم تحليل CSV لكن بعض الصفوف فشلت في التحقق. يرجى تصحيحها أدناه.",
@@ -2177,5 +2181,16 @@
   "Username or Phone Number": "اسم المستخدم أو رقم الهاتف",
   "We sent a 6-digit code to your email. Enter it below to continue.": "أرسلنا رمزًا من 6 أرقام إلى بريدك الإلكتروني. أدخله أدناه للمتابعة.",
   "Best Viewed on Desktop": "يُفضل استخدامه على جهاز الكمبيوتر",
-  "The Sa'ee Logistics Portal is optimized for larger screens. Please switch to a laptop or desktop for the best experience.": "بوابة سائي للخدمات اللوجستية مُحسّنة للشاشات الأكبر. يرجى التبديل إلى جهاز كمبيوتر محمول أو مكتبي للحصول على أفضل تجربة."
+  "The Sa'ee Logistics Portal is optimized for larger screens. Please switch to a laptop or desktop for the best experience.": "بوابة سائي للخدمات اللوجستية مُحسّنة للشاشات الأكبر. يرجى التبديل إلى جهاز كمبيوتر محمول أو مكتبي للحصول على أفضل تجربة.",
+  "Client ID [:client_id] not found.": "معرّف العميل [:client_id] غير موجود.",
+  "Unauthorized action.": "إجراء غير مصرح به.",
+  "Why Sa'ee section updated successfully.": "تم تحديث قسم لماذا سائي بنجاح.",
+  "No driver is assigned to this order to rate.": "لا يوجد سائق معيّن لهذا الطلب لتقييمه.",
+  "Thank you for your feedback!": "شكرًا لملاحظاتك!",
+  "Location updated successfully! Thank you for sharing.": "تم تحديث الموقع بنجاح! شكرًا لمشاركتك.",
+  "Too many attempts. Please request a new code.": "محاولات كثيرة جدًا. يرجى طلب رمز جديد.",
+  "Invalid code. Please try again.": "رمز غير صحيح. يرجى المحاولة مرة أخرى.",
+  "The code must be exactly 6 digits.": "يجب أن يتكون الرمز من 6 أرقام بالضبط.",
+  "The password must contain at least one letter.": "يجب أن تحتوي كلمة المرور على حرف واحد على الأقل.",
+  "The password must contain at least one number.": "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل."
 }

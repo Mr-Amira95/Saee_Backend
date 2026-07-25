@@ -420,49 +420,52 @@ class BulkOrderController extends Controller
         $clientId = $row['client_profile_id'] ?? ($row['client_id'] ?? null);
         $clientId = filter_var($clientId, FILTER_VALIDATE_INT);
         if (! $clientId || ! ClientProfile::where('id', $clientId)->exists()) {
-            $rowErrors[] = "Client ID [{$clientId}] not found.";
+            $rowErrors[] = __('Client ID [:client_id] not found.', ['client_id' => $clientId ?: '']);
         }
 
         $paymentType = strtolower($this->normalizePaymentTypeValue($row['payment_type'] ?? ''));
         if (! in_array($paymentType, ['cod', 'prepaid'])) {
-            $rowErrors[] = "Payment type must be 'cod'/'عند التسليم' or 'prepaid'/'مدفوع'.";
+            $rowErrors[] = __("Payment type must be 'cod'/'عند التسليم' or 'prepaid'/'مدفوع'.");
         }
 
         $orderPrice = filter_var($row['order_price'] ?? null, FILTER_VALIDATE_FLOAT);
         if ($paymentType === 'cod' && ($orderPrice === false || $orderPrice < 0)) {
-            $rowErrors[] = 'Order price must be a positive number for COD orders.';
+            $rowErrors[] = __('Order price must be a positive number for COD orders.');
         }
 
         $deliveryOnCustomer = filter_var($this->normalizeYesNoValue($row['delivery_on_customer'] ?? 'false'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         if ($deliveryOnCustomer === null) {
-            $rowErrors[] = "delivery_on_customer must be 'yes'/'نعم' or 'no'/'لا'.";
+            $rowErrors[] = __("delivery_on_customer must be 'yes'/'نعم' or 'no'/'لا'.");
         }
 
         $deliveryCustomerAmt = filter_var($row['delivery_customer_amount'] ?? 0, FILTER_VALIDATE_FLOAT);
         if ($deliveryOnCustomer && ($deliveryCustomerAmt === false || $deliveryCustomerAmt < 0)) {
-            $rowErrors[] = 'delivery_customer_amount must be a valid number.';
+            $rowErrors[] = __('delivery_customer_amount must be a valid number.');
         }
 
         $cityId = filter_var($row['city_id'] ?? null, FILTER_VALIDATE_INT);
         if (! $cityId || ! City::where('id', $cityId)->exists()) {
-            $rowErrors[] = "City ID [{$row['city_id']}] does not exist.";
+            $rowErrors[] = __('City ID [:city_id] does not exist.', ['city_id' => $row['city_id'] ?? '']);
         }
 
         $areaId = filter_var($row['area_id'] ?? null, FILTER_VALIDATE_INT);
         if (! $areaId || ! Area::where('id', $areaId)->where('city_id', $cityId)->exists()) {
-            $rowErrors[] = "Area ID [{$row['area_id']}] does not exist or does not belong to City [{$row['city_id']}].";
+            $rowErrors[] = __('Area ID [:area_id] does not exist or does not belong to City [:city_id].', [
+                'area_id' => $row['area_id'] ?? '',
+                'city_id' => $row['city_id'] ?? '',
+            ]);
         }
 
-        if (empty($row['receiver_name']))  { $rowErrors[] = 'Receiver name is required.'; }
-        if (empty($row['receiver_phone'])) { $rowErrors[] = 'Receiver phone is required.'; }
-        if (empty($row['address_text']))   { $rowErrors[] = 'Address text is required.'; }
+        if (empty($row['receiver_name']))  { $rowErrors[] = __('Receiver name is required.'); }
+        if (empty($row['receiver_phone'])) { $rowErrors[] = __('Receiver phone is required.'); }
+        if (empty($row['address_text']))   { $rowErrors[] = __('Address is required.'); }
 
         $deliveryShift = isset($row['delivery_shift']) ? strtolower(trim($row['delivery_shift'])) : 'doesnt_matter';
         if ($deliveryShift === '') {
             $deliveryShift = 'doesnt_matter';
         }
         if (! in_array($deliveryShift, ['doesnt_matter', 'before_12pm', 'after_12pm'])) {
-            $rowErrors[] = "Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.";
+            $rowErrors[] = __("Delivery shift must be 'doesnt_matter', 'before_12pm', or 'after_12pm'.");
         }
 
         return $rowErrors;

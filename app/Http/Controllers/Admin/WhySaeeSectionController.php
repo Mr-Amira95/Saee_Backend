@@ -35,6 +35,6 @@ class WhySaeeSectionController extends Controller
         ]);
 
         return redirect()->route('admin.cms.why-saee-page.index')
-            ->with('success', 'Why Sa\'ee section updated successfully.');
+            ->with('success', __('Why Sa\'ee section updated successfully.'));
     }
 }

@@ -170,12 +170,12 @@ class AuthController extends Controller
         }
 
         if ($resetCode->attempts >= 5) {
-            return back()->withErrors(['code' => 'Too many attempts. Please request a new code.']);
+            return back()->withErrors(['code' => __('Too many attempts. Please request a new code.')]);
         }
 
         if (! Hash::check($request->input('code'), $resetCode->code_hash)) {
             $resetCode->increment('attempts');
-            return back()->withErrors(['code' => 'Invalid code. Please try again.']);
+            return back()->withErrors(['code' => __('Invalid code. Please try again.')]);
         }
 
         $resetCode->update(['verified_at' => now(), 'used_at' => now()]);

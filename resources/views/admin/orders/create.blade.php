@@ -29,12 +29,12 @@
             top: 100%;
             left: 0;
             right: 0;
-            background: var(--card);
+            background: var(--bg-2);
             border: 1px solid var(--bdr);
             border-radius: 8px;
             max-height: 220px;
             overflow-y: auto;
-            z-index: 200;
+            z-index: 2000;
             margin-top: 4px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.35);
         }

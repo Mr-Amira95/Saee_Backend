@@ -24,7 +24,7 @@ class VerifyCodeRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'code.regex' => 'The code must be exactly 6 digits.',
+            'code.regex' => __('The code must be exactly 6 digits.'),
         ];
     }
 
@@ -32,7 +32,7 @@ class VerifyCodeRequest extends FormRequest
     {
         throw new HttpResponseException(response()->json([
             'success' => false,
-            'message' => 'Validation failed',
+            'message' => __('Validation failed'),
             'errors'  => $validator->errors(),
         ], 422));
     }

@@ -25,11 +25,11 @@ class ResetPasswordRequest extends FormRequest
                 function (string $attribute, mixed $value, \Closure $fail) {
                     // At least one Unicode letter (supports Arabic and other scripts)
                     if (! preg_match('/\p{L}/u', $value)) {
-                        $fail('The password must contain at least one letter.');
+                        $fail(__('The password must contain at least one letter.'));
                     }
                     // At least one digit
                     if (! preg_match('/[0-9]/', $value)) {
-                        $fail('The password must contain at least one number.');
+                        $fail(__('The password must contain at least one number.'));
                     }
                 },
             ],
@@ -40,7 +40,7 @@ class ResetPasswordRequest extends FormRequest
     {
         throw new HttpResponseException(response()->json([
             'success' => false,
-            'message' => 'Validation failed',
+            'message' => __('Validation failed'),
             'errors'  => $validator->errors(),
         ], 422));
     }

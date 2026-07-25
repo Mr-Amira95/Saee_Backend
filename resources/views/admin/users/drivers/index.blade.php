@@ -179,10 +179,8 @@
 
 @endsection
 
-@section('scripts')
-<script>
-    // Bank details modal
-    var bankDetailsLabels = @json([
+@php
+    $bankDetailsLabels = [
         'bankName' => __('Bank Name'),
         'accountName' => __('Account Name'),
         'accountNumber' => __('Account Number'),
@@ -195,7 +193,13 @@
         'noBankDetails' => __('No bank details have been added for this driver.'),
         'failedToLoad' => __('Failed to load bank details.'),
         'loading' => __('Loading…'),
-    ]);
+    ];
+@endphp
+
+@section('scripts')
+<script>
+    // Bank details modal
+    var bankDetailsLabels = @json($bankDetailsLabels);
 
     function showBankDetails(url, name) {
         document.getElementById('bankModalName').textContent = name;
