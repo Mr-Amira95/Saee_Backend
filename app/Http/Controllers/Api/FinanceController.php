@@ -44,10 +44,14 @@ class FinanceController extends Controller
             $query->whereHas('order', fn ($q) => $q->where('order_number', 'like', "%{$search}%"));
         }
 
-        // Group entries by order_id so an order's COD + delivery fees appear as one record.
+        // Group entries by order_id + from_account + to_account so an order's COD + delivery
+        // fees (same direction) appear as one record, without merging distinct money movements
+        // (e.g. collected from customer vs settled to company) into a single amount.
         // Entries with no order_id (e.g. driver_settlement) are kept as individual records.
         $merged = $query->get()
-            ->groupBy(fn ($e) => $e->order_id !== null ? (string) $e->order_id : 'solo_'.$e->id)
+            ->groupBy(fn ($e) => $e->order_id !== null
+                ? $e->order_id.'_'.$e->from_account.'_'.$e->to_account
+                : 'solo_'.$e->id)
             ->map(fn ($group) => $this->mergeEntries($group))
             ->sortByDesc('created_at')
             ->values();
@@ -80,8 +84,8 @@ class FinanceController extends Controller
         return [
             'id'               => $first->id,
             'type'             => count($types) === 1 ? $types[0] : $types,
-            'from_account'     => $first->from_account,
-            'to_account'       => $first->to_account,
+            'from_account'     => $first->from_account, // all rows in group share this direction
+            'to_account'       => $first->to_account,   // all rows in group share this direction
             'amount'           => (float) $group->sum('amount'),
             'reference_number' => $first->reference_number,
             'notes'            => $first->notes,
