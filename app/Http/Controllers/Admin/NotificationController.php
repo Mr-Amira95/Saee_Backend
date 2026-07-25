@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SystemNotification;
 use App\Models\User;
+use App\Services\SupportNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,7 +28,7 @@ class NotificationController extends Controller
     /**
      * Dispatch a notification.
      */
-    public function store(Request $request)
+    public function store(Request $request, SupportNotificationService $notificationService)
     {
         $request->validate([
             'title'   => 'required|string|max:150',
@@ -52,15 +53,15 @@ class NotificationController extends Controller
             $role = 'all';
         }
 
-        SystemNotification::create([
-            'user_id'    => $userId,
-            'role'       => $role,
-            'title'      => $request->input('title'),
-            'message'    => $request->input('message'),
-            'link'       => $request->input('link'),
-            'type'       => $request->input('type'),
-            'created_by' => Auth::id(),
-        ]);
+        $notificationService->sendCustomNotification(
+            userId:    $userId,
+            role:      $role,
+            title:     $request->input('title'),
+            message:   $request->input('message'),
+            type:      $request->input('type'),
+            link:      $request->input('link'),
+            createdBy: Auth::id(),
+        );
 
         return redirect()->route('admin.notifications.index')
             ->with('success', __('Notification dispatched successfully.'));

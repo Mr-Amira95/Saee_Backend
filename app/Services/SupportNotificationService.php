@@ -178,6 +178,50 @@ class SupportNotificationService
         }
     }
 
+    // ── Admin → Custom Broadcast (admin/notifications page) ────────────────
+
+    public function sendCustomNotification(
+        ?int $userId, ?string $role, string $title, string $message, string $type, ?string $link, int $createdBy,
+    ): void {
+        $record = SystemNotification::create([
+            'user_id'    => $userId,
+            'role'       => $userId !== null ? null : $role,
+            'title'      => $title,
+            'message'    => $message,
+            'type'       => $type,
+            'link'       => $link,
+            'created_by' => $createdBy,
+        ]);
+
+        $targetUserIds = $userId !== null
+            ? [$userId]
+            : match ($role) {
+                'driver'        => User::where('role', 'driver')->pluck('id')->all(),
+                'client_master' => User::whereIn('role', ['client_master', 'client_employee'])->pluck('id')->all(),
+                default         => User::pluck('id')->all(),
+            };
+
+        $targetUserIds = User::whereIn('id', $targetUserIds)
+            ->where('notifications_enabled', true)
+            ->pluck('id')
+            ->all();
+
+        foreach ($targetUserIds as $uid) {
+            broadcast(new UserNotificationSent($uid, $title, $message, $type, $link, null, null));
+        }
+
+        $tokens = UserDevice::whereIn('user_id', $targetUserIds)
+            ->where('notifications_enabled', true)
+            ->pluck('fcm_token')
+            ->all();
+
+        if (! empty($tokens) && $this->messaging !== null) {
+            $this->sendFcmPush($tokens, $title, $message, $type, $record->id);
+        } else {
+            $record->update(['fcm_status' => 'skipped']);
+        }
+    }
+
     // ── Internals ────────────────────────────────────────────────────────────
 
     private function sendToUser(

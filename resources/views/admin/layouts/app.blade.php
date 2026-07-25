@@ -910,6 +910,19 @@
                     {{ session('error') }}
                 </div>
             @endif
+            @if($errors->any())
+                <div class="flash flash-err" style="animation:shake .4s both; flex-direction:column; align-items:flex-start; gap:4px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <strong>{{ __('Please fix the following:') }}</strong>
+                    </div>
+                    <ul style="margin:0; padding-left: 20px;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             @yield('content')
 
             {{-- Footer --}}

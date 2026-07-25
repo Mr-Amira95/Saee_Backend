@@ -138,7 +138,7 @@
                                     <button
                                         class="act-btn act-edit"
                                         title="{{ __('Manually Adjust Times') }}"
-                                        onclick="openEditModal('{{ route('admin.attendance.update', $log) }}', '{{ $log->user->name }}', '{{ $log->check_in_at->format('Y-m-d H:i:s') }}', '{{ $log->check_out_at ? $log->check_out_at->format('Y-m-d H:i:s') : '' }}')"
+                                        onclick="openEditModal(@json(route('admin.attendance.update', $log)), @json($log->user->name), @json($log->check_in_at->format('Y-m-d H:i:s')), @json($log->check_out_at ? $log->check_out_at->format('Y-m-d H:i:s') : ''))"
                                     >
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     </button>
