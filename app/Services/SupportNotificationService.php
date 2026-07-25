@@ -12,6 +12,8 @@ use App\Models\HandoverRequest;
 use App\Models\Invoice;
 use App\Models\User;
 use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\AndroidConfig;
+use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 use Throwable;
@@ -394,7 +396,24 @@ class SupportNotificationService
             foreach (array_chunk($tokens, 500) as $chunk) {
                 $multicast = CloudMessage::new()
                     ->withNotification($notification)
-                    ->withData($data);
+                    ->withData($data)
+                    ->withAndroidConfig(AndroidConfig::fromArray([
+                        'priority' => 'high',
+                        'notification' => [
+                            'sound' => 'default',
+                        ],
+                    ]))
+                    ->withApnsConfig(ApnsConfig::fromArray([
+                        'headers' => [
+                            'apns-priority' => '10',
+                        ],
+                        'payload' => [
+                            'aps' => [
+                                'sound'             => 'default',
+                                'content-available' => 1,
+                            ],
+                        ],
+                    ]));
 
                 $report = $this->messaging->sendMulticast($multicast, $chunk);
 
