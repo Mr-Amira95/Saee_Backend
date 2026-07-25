@@ -26,6 +26,6 @@ class AiChatController extends Controller
         session(['client_chat_session_id' => $newSessionId]);
 
         return redirect()->route('client.ai-chat.index')
-            ->with('success', 'A new AI chat session has been started.');
+            ->with('success', __('A new AI chat session has been started.'));
     }
 }

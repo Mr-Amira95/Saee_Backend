@@ -37,6 +37,6 @@ class BankingDetailsController extends Controller
             $data
         );
 
-        return back()->with('success', 'Banking details saved successfully.');
+        return back()->with('success', __('Banking details saved successfully.'));
     }
 }

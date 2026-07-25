@@ -1,13 +1,13 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Login Page Content')
-@section('page-title', 'Login Page Content')
+@section('title', __('Login Page Content'))
+@section('page-title', __('Login Page Content'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Website CMS</span>
+    <span class="current">{{ __('Website CMS') }}</span>
     <span class="sep">/</span>
-    <span class="current">Login Page</span>
+    <span class="current">{{ __('Login Page') }}</span>
 @endsection
 
 @section('head')
@@ -83,63 +83,63 @@
         {{-- ── Fields column ── --}}
         <div>
             <div class="form-section">
-                <div class="form-section-title">Brand Panel Content</div>
+                <div class="form-section-title">{{ __('Brand Panel Content') }}</div>
                 <p style="color:var(--text-sub);font-size:.83rem;margin-bottom:20px;">
-                    Customise the content shown on the <strong style="color:var(--text);">left side</strong> of the client/portal login page.
+                    {{ __('Customise the content shown on the left side of the client/portal login page.') }}
                 </p>
 
                 {{-- Headline --}}
                 <div class="form-group" style="margin-bottom:20px;">
-                    <label class="form-label">Headline</label>
+                    <label class="form-label">{{ __('Headline') }}</label>
                     <input type="text" id="inp-headline" name="login_brand_headline" class="form-input"
                            value="{{ old('login_brand_headline', $settings['login_brand_headline']) }}"
                            placeholder="e.g. Your Business, Delivered.">
                     <span style="color:var(--text-dim);font-size:.75rem;display:block;margin-top:5px;">
-                        The large bold title shown on the login hero panel.
+                        {{ __('The large bold title shown on the login hero panel.') }}
                     </span>
                 </div>
 
                 {{-- Subtitle --}}
                 <div class="form-group" style="margin-bottom:28px;">
-                    <label class="form-label">Sub-headline / Tagline</label>
+                    <label class="form-label">{{ __('Sub-headline / Tagline') }}</label>
                     <input type="text" id="inp-subtitle" name="login_brand_subtitle" class="form-input"
                            value="{{ old('login_brand_subtitle', $settings['login_brand_subtitle']) }}"
                            placeholder="e.g. SA'EE LOGISTICS PORTAL">
                     <span style="color:var(--text-dim);font-size:.75rem;display:block;margin-top:5px;">
-                        Smaller uppercase label shown directly below the headline.
+                        {{ __('Smaller uppercase label shown directly below the headline.') }}
                     </span>
                 </div>
 
                 {{-- Points Repeater --}}
                 <div class="form-group">
-                    <label class="form-label" style="margin-bottom:12px;">Feature Points (Pills)</label>
+                    <label class="form-label" style="margin-bottom:12px;">{{ __('Feature Points (Pills)') }}</label>
                     <div id="pointsList" style="display:flex;flex-direction:column;gap:10px;">
                         @foreach($settings['login_brand_points'] as $i => $point)
                         <div class="point-row">
                             <input type="text" name="login_brand_points[]" class="form-input point-input" style="flex:1;"
                                    value="{{ old('login_brand_points.'.$i, $point) }}"
                                    placeholder="e.g. Track Orders">
-                            <button type="button" class="remove-btn" onclick="removePoint(this)">✕ Remove</button>
+                            <button type="button" class="remove-btn" onclick="removePoint(this)">✕ {{ __('Remove') }}</button>
                         </div>
                         @endforeach
                     </div>
 
-                    <button type="button" class="add-point-btn" onclick="addPoint()">+ Add Point</button>
+                    <button type="button" class="add-point-btn" onclick="addPoint()">+ {{ __('Add Point') }}</button>
                     <p style="color:var(--text-dim);font-size:.75rem;margin-top:8px;">
-                        These appear as animated pill badges. Maximum recommended: 5.
+                        {{ __('These appear as animated pill badges. Maximum recommended: 5.') }}
                     </p>
                 </div>
             </div>
 
             <div class="form-actions" style="margin-top:20px;">
-                <button type="submit" class="btn-primary">Save Changes</button>
-                <a href="{{ url()->previous() }}" class="btn-secondary" style="margin-left:10px;">Cancel</a>
+                <button type="submit" class="btn-primary">{{ __('Save Changes') }}</button>
+                <a href="{{ url()->previous() }}" class="btn-secondary" style="margin-left:10px;">{{ __('Cancel') }}</a>
             </div>
         </div>
 
         {{-- ── Live Preview column ── --}}
         <div class="preview-panel">
-            <span class="preview-label">Live Preview</span>
+            <span class="preview-label">{{ __('Live Preview') }}</span>
             <hr class="preview-divider">
             <img src="{{ asset('saee_logo_dark.png') }}" alt="logo">
             <div>
@@ -152,7 +152,7 @@
                 @endforeach
             </div>
             <hr class="preview-divider" style="margin-top:4px;">
-            <span style="font-size:.7rem;color:rgba(255,255,255,.18);">As seen on the login page</span>
+            <span style="font-size:.7rem;color:rgba(255,255,255,.18);">{{ __('As seen on the login page') }}</span>
         </div>
 
     </div>
@@ -162,6 +162,10 @@
 
 @section('scripts')
 <script>
+    const i18nLoginPage = {
+        remove: @json(__('Remove')),
+    };
+
     function updatePreview() {
         const headline = document.getElementById('inp-headline')?.value || '';
         const subtitle = document.getElementById('inp-subtitle')?.value || '';
@@ -182,7 +186,7 @@
         row.className = 'point-row';
         row.innerHTML = `
             <input type="text" name="login_brand_points[]" class="form-input point-input" style="flex:1;" placeholder="e.g. Fast Delivery">
-            <button type="button" class="remove-btn" onclick="removePoint(this)">✕ Remove</button>`;
+            <button type="button" class="remove-btn" onclick="removePoint(this)">✕ ${i18nLoginPage.remove}</button>`;
         list.appendChild(row);
         row.querySelector('input').addEventListener('input', updatePreview);
         row.querySelector('input').focus();

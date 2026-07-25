@@ -1,43 +1,43 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Orders Management')
-@section('page-title', 'Orders Management')
+@section('title', __('Orders Management'))
+@section('page-title', __('Orders Management'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Orders</span>
+    <span class="current">{{ __('Orders') }}</span>
 @endsection
 
 @section('content')
     {{-- Page Header --}}
     <div class="page-hd">
         <div class="page-hd-left">
-            <h1>Orders Management</h1>
-            <p>Create, track, and manage all courier shipments.</p>
+            <h1>{{ __('Orders Management') }}</h1>
+            <p>{{ __('Create, track, and manage all courier shipments.') }}</p>
         </div>
         <div class="page-hd-right">
             <a href="{{ route('admin.orders.print-all', request()->query()) }}" target="_blank" class="btn-secondary">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                Print Waybills
+                {{ __('Print Waybills') }}
             </a>
             <a href="{{ route('admin.orders.export', request()->query()) }}" class="btn-secondary">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Export CSV
+                {{ __('Export CSV') }}
             </a>
             @if(auth()->user()->hasAdminAction('orders.import'))
             <a href="{{ route('admin.orders.import') }}" class="btn-secondary">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                Bulk Import CSV
+                {{ __('Bulk Import CSV') }}
             </a>
             <a href="{{ route('admin.orders.import-image') }}" class="btn-secondary">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                Import Image (AI)
+                {{ __('Import Image (AI)') }}
             </a>
             @endif
             @if(auth()->user()->hasAdminAction('orders.add'))
             <a href="{{ route('admin.orders.create') }}" class="btn-primary">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                New Order
+                {{ __('New Order') }}
             </a>
             @endif
         </div>
@@ -51,7 +51,7 @@
             </div>
             <div>
                 <div class="ms-val">{{ $stats['pending'] }}</div>
-                <div class="ms-lbl">All Pending Orders</div>
+                <div class="ms-lbl">{{ __('All Pending Orders') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -60,7 +60,7 @@
             </div>
             <div>
                 <div class="ms-val">{{ $stats['picked_up'] }}</div>
-                <div class="ms-lbl">All Picked Up Orders</div>
+                <div class="ms-lbl">{{ __('All Picked Up Orders') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -69,7 +69,7 @@
             </div>
             <div>
                 <div class="ms-val">{{ $stats['rejected'] }}</div>
-                <div class="ms-lbl">All Rejected Orders</div>
+                <div class="ms-lbl">{{ __('All Rejected Orders') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -78,7 +78,7 @@
             </div>
             <div>
                 <div class="ms-val">{{ $stats['returned_today'] }}</div>
-                <div class="ms-lbl">Returned Orders Today</div>
+                <div class="ms-lbl">{{ __('Returned Orders Today') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -87,7 +87,7 @@
             </div>
             <div>
                 <div class="ms-val">{{ number_format($stats['with_driver'], 2) }}</div>
-                <div class="ms-lbl">All Cash with Drivers</div>
+                <div class="ms-lbl">{{ __('All Cash with Drivers') }}</div>
             </div>
         </div>
     </div>
@@ -100,21 +100,21 @@
                 {{-- Search --}}
                 <div class="filter-search-wrap" style="flex: 1; width: 100%;">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" name="search" id="live-search" value="{{ request('search') }}" class="filter-input" placeholder="Search order #, batch #, receiver name, phone...">
+                    <input type="text" name="search" id="live-search" value="{{ request('search') }}" class="filter-input" placeholder="{{ __('Search order #, batch #, receiver name, phone...') }}">
                 </div>
             </div>
 
             <div class="filter-row">
                 {{-- Status --}}
                 <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1; min-width:180px;">
-                    <option value="">All Statuses</option>
-                    <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>Pending</option>
-                    <option value="assigned"  {{ request('status') === 'assigned'  ? 'selected' : '' }}>Assigned</option>
-                    <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
-                    <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                    <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>Rejected</option>
-                    <option value="returned"  {{ request('status') === 'returned'  ? 'selected' : '' }}>Returned</option>
-                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    <option value="">{{ __('All Statuses') }}</option>
+                    <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>{{ __('Pending') }}</option>
+                    <option value="assigned"  {{ request('status') === 'assigned'  ? 'selected' : '' }}>{{ __('Assigned') }}</option>
+                    <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>{{ __('Picked Up') }}</option>
+                    <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>{{ __('Delivered') }}</option>
+                    <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>{{ __('Rejected') }}</option>
+                    <option value="returned"  {{ request('status') === 'returned'  ? 'selected' : '' }}>{{ __('Returned') }}</option>
+                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
                 </select>
 
                 {{-- Searchable: Clients --}}
@@ -122,14 +122,14 @@
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
                             @php $selectedClient = $clients->firstWhere('id', request('client_profile_id')); @endphp
-                            {{ $selectedClient ? $selectedClient->company_name : 'All Clients' }}
+                            {{ $selectedClient ? $selectedClient->company_name : __('All Clients') }}
                         </span>
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </div>
                     <div class="ss-panel">
-                        <input type="text" class="ss-search-input" placeholder="Search clients...">
+                        <input type="text" class="ss-search-input" placeholder="{{ __('Search clients...') }}">
                         <div class="ss-opts">
-                            <div class="ss-opt {{ !request('client_profile_id') ? 'selected' : '' }}" data-value="">All Clients</div>
+                            <div class="ss-opt {{ !request('client_profile_id') ? 'selected' : '' }}" data-value="">{{ __('All Clients') }}</div>
                             @foreach($clients as $c)
                                 <div class="ss-opt {{ request('client_profile_id') == $c->id ? 'selected' : '' }}" data-value="{{ $c->id }}">{{ $c->company_name }}</div>
                             @endforeach
@@ -143,14 +143,14 @@
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
                             @php $selectedDriver = $drivers->firstWhere('id', request('driver_id')); @endphp
-                            {{ $selectedDriver ? $selectedDriver->name : 'All Drivers' }}
+                            {{ $selectedDriver ? $selectedDriver->name : __('All Drivers') }}
                         </span>
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </div>
                     <div class="ss-panel">
-                        <input type="text" class="ss-search-input" placeholder="Search drivers...">
+                        <input type="text" class="ss-search-input" placeholder="{{ __('Search drivers...') }}">
                         <div class="ss-opts">
-                            <div class="ss-opt {{ !request('driver_id') ? 'selected' : '' }}" data-value="">All Drivers</div>
+                            <div class="ss-opt {{ !request('driver_id') ? 'selected' : '' }}" data-value="">{{ __('All Drivers') }}</div>
                             @foreach($drivers as $d)
                                 <div class="ss-opt {{ request('driver_id') == $d->id ? 'selected' : '' }}" data-value="{{ $d->id }}">{{ $d->name }}</div>
                             @endforeach
@@ -164,14 +164,14 @@
                     <div class="ss-trigger" tabindex="0">
                         <span class="ss-label">
                             @php $selectedCity = $cities->firstWhere('id', request('city_id')); @endphp
-                            {{ $selectedCity ? $selectedCity->name : 'All Cities' }}
+                            {{ $selectedCity ? $selectedCity->name : __('All Cities') }}
                         </span>
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </div>
                     <div class="ss-panel">
-                        <input type="text" class="ss-search-input" placeholder="Search cities...">
+                        <input type="text" class="ss-search-input" placeholder="{{ __('Search cities...') }}">
                         <div class="ss-opts">
-                            <div class="ss-opt {{ !request('city_id') ? 'selected' : '' }}" data-value="">All Cities</div>
+                            <div class="ss-opt {{ !request('city_id') ? 'selected' : '' }}" data-value="">{{ __('All Cities') }}</div>
                             @foreach($cities as $city)
                                 <div class="ss-opt {{ request('city_id') == $city->id ? 'selected' : '' }}" data-value="{{ $city->id }}">{{ $city->name }}</div>
                             @endforeach
@@ -181,7 +181,7 @@
                 </div>
 
                 @if(request()->anyFilled(['search', 'status', 'payment_status', 'client_profile_id', 'driver_id', 'city_id']))
-                    <a href="{{ route('admin.orders.index') }}" class="btn-secondary" style="padding: 8px 14px; height: 35px; display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0;">Clear</a>
+                    <a href="{{ route('admin.orders.index') }}" class="btn-secondary" style="padding: 8px 14px; height: 35px; display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0;">{{ __('Clear') }}</a>
                 @endif
             </div>
 
@@ -192,17 +192,17 @@
     @if(auth()->user()->hasAdminAction('orders.assign_driver'))
     <div class="modal-overlay" id="assignDriverModal">
         <div class="modal-card" style="border-color: rgba(59,130,246,0.3); max-width: 440px;">
-            <h3>Assign Driver to Order</h3>
-            <p id="assign-modal-subtitle" style="margin-bottom: 18px;">Selected orders will be assigned and marked as Picked Up.</p>
+            <h3>{{ __('Assign Driver to Order') }}</h3>
+            <p id="assign-modal-subtitle" style="margin-bottom: 18px;">{{ __('Selected orders will be assigned and marked as Picked Up.') }}</p>
 
             <form id="assign-form" method="POST" action="{{ route('admin.orders.assign-driver') }}">
                 @csrf
                 <div id="assign-order-ids"></div>
 
                 <div class="form-group" style="text-align: left; margin-bottom: 22px;">
-                    <label class="form-label" for="bulk_driver_id">Driver Name</label>
+                    <label class="form-label" for="bulk_driver_id">{{ __('Driver Name') }}</label>
                     <select name="driver_id" id="bulk_driver_id" class="form-select" required style="width:100%">
-                        <option value="">Select Driver</option>
+                        <option value="">{{ __('Select Driver') }}</option>
                         @foreach($drivers as $d)
                             <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->phone }})</option>
                         @endforeach
@@ -210,8 +210,8 @@
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="closeModal('assignDriverModal')">Cancel</button>
-                    <button type="submit" class="btn-primary">Assign</button>
+                    <button type="button" class="btn-secondary" onclick="closeModal('assignDriverModal')">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn-primary">{{ __('Assign') }}</button>
                 </div>
             </form>
         </div>
@@ -228,10 +228,10 @@
             @if(auth()->user()->hasAdminAction('orders.assign_driver'))
             <button onclick="openBulkAssign()" class="btn-primary" style="padding:7px 16px; font-size:.83rem; margin-left:4px;">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="margin-right:5px;"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                Assign to Driver
+                {{ __('Assign to Driver') }}
             </button>
             @endif
-            <button onclick="clearSelection()" style="padding:7px 14px; font-size:.83rem; border:1px solid var(--border,#ddd); border-radius:7px; background:transparent; cursor:pointer; color:var(--text-sub,#555);">Clear</button>
+            <button onclick="clearSelection()" style="padding:7px 14px; font-size:.83rem; border:1px solid var(--border,#ddd); border-radius:7px; background:transparent; cursor:pointer; color:var(--text-sub,#555);">{{ __('Clear') }}</button>
         </div>
 
         <div class="table-wrap">
@@ -239,17 +239,17 @@
                 <thead>
                     <tr>
                         <th style="width:40px; text-align:center;">
-                            <label class="custom-cb" title="Select all pending orders">
+                            <label class="custom-cb" title="{{ __('Select all pending orders') }}">
                                 <input type="checkbox" id="select-all">
                                 <span class="custom-cb-ring"></span>
                             </label>
                         </th>
-                        <th>Order #</th>
-                        <th>Batch #</th>
-                        <th>Client</th>
-                        <th>Driver</th>
-                        <th>Status</th>
-                        <th style="width: 100px; text-align: center;">Actions</th>
+                        <th>{{ __('Order #') }}</th>
+                        <th>{{ __('Batch #') }}</th>
+                        <th>{{ __('Client') }}</th>
+                        <th>{{ __('Driver') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th style="width: 100px; text-align: center;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -285,7 +285,7 @@
                                 @if($order->driver)
                                     <div class="cell-main">{{ $order->driver->name }}</div>
                                 @else
-                                    <span class="cell-sub" style="font-style: italic;">Unassigned</span>
+                                    <span class="cell-sub" style="font-style: italic;">{{ __('Unassigned') }}</span>
                                 @endif
                             </td>
                             <td>
@@ -307,17 +307,17 @@
                             </td>
                             <td>
                                 <div class="act-btns" style="justify-content: center;">
-                                    <a href="{{ route('admin.orders.show', $order) }}" class="act-btn act-view" title="View Details">
+                                    <a href="{{ route('admin.orders.show', $order) }}" class="act-btn act-view" title="{{ __('View Details') }}">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     </a>
                                     @if($isPending)
                                         @if(auth()->user()->hasAdminAction('orders.assign_driver'))
-                                        <button class="act-btn act-edit" title="Assign Driver" onclick="openSingleAssign({{ $order->id }}, '#{{ $order->order_number }}')">
+                                        <button class="act-btn act-edit" title="{{ __('Assign Driver') }}" onclick="openSingleAssign({{ $order->id }}, '#{{ $order->order_number }}')">
                                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                         </button>
                                         @endif
                                         @if(auth()->user()->hasAdminAction('orders.delete'))
-                                        <button class="act-btn act-delete" onclick="confirmDelete('{{ route('admin.orders.destroy', $order) }}', 'Order #{{ $order->order_number }}')" title="Delete">
+                                        <button class="act-btn act-delete" onclick="confirmDelete('{{ route('admin.orders.destroy', $order) }}', '{{ __('Order #:number', ['number' => $order->order_number]) }}')" title="{{ __('Delete') }}">
                                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                         </button>
                                         @endif
@@ -328,7 +328,7 @@
                     @empty
                         <tr>
                             <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 30px;">
-                                No orders found matching the filter criteria.
+                                {{ __('No orders found matching the filter criteria.') }}
                             </td>
                         </tr>
                     @endforelse
@@ -340,7 +340,7 @@
         @if($orders->hasPages())
             <div class="pagination-wrap">
                 <div class="pag-info">
-                    Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }} entries
+                    {{ __('Showing') }} {{ $orders->firstItem() }} {{ __('to') }} {{ $orders->lastItem() }} {{ __('of') }} {{ $orders->total() }} {{ __('entries') }}
                 </div>
                 <div class="pag-links">
                     {{ $orders->links() }}
@@ -510,6 +510,12 @@
     </style>
 
     <script>
+    const i18nOrdersIndex = {
+        orderSelectedTpl: @json(__(':count order(s) selected')),
+        pendingWillAssignTpl: @json(__(':count pending order(s) will be assigned and marked as Picked Up.')),
+        orderWillAssignTpl: @json(__('Order :label will be assigned and marked as Picked Up.')),
+    };
+
     // Modal helpers
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -593,7 +599,7 @@
             var checked = getChecked();
             var total   = document.querySelectorAll('.order-checkbox').length;
             bulkBar.style.display = checked.length > 0 ? 'flex' : 'none';
-            bulkCount.textContent = checked.length + ' order' + (checked.length > 1 ? 's' : '') + ' selected';
+            bulkCount.textContent = i18nOrdersIndex.orderSelectedTpl.replace(':count', checked.length);
             selectAll.indeterminate = checked.length > 0 && checked.length < total;
             selectAll.checked = total > 0 && checked.length === total;
         }
@@ -627,13 +633,13 @@
         window.openBulkAssign = function() {
             var ids = getChecked().map(function(cb) { return cb.value; });
             buildHiddenInputs(ids);
-            subtitle.textContent = ids.length + ' pending order' + (ids.length > 1 ? 's' : '') + ' will be assigned and marked as Picked Up.';
+            subtitle.textContent = i18nOrdersIndex.pendingWillAssignTpl.replace(':count', ids.length);
             openModal('assignDriverModal');
         };
 
         window.openSingleAssign = function(orderId, orderLabel) {
             buildHiddenInputs([orderId]);
-            subtitle.textContent = 'Order ' + orderLabel + ' will be assigned and marked as Picked Up.';
+            subtitle.textContent = i18nOrdersIndex.orderWillAssignTpl.replace(':label', orderLabel);
             openModal('assignDriverModal');
         };
     })();

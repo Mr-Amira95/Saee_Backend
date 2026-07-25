@@ -42,6 +42,6 @@ class CompanyController extends Controller
 
         $profile->update($validated);
 
-        return back()->with('success', 'Company information updated.');
+        return back()->with('success', __('Company information updated.'));
     }
 }

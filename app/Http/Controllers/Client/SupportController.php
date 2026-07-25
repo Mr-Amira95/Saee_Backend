@@ -102,7 +102,7 @@ class SupportController extends Controller
         rescue(fn () => app(SupportNotificationService::class)->notifyAdminsNewTicket($ticket));
 
         return redirect()->route('client.support.index', ['ticket' => $ticket->id])
-            ->with('success', 'Support ticket created.');
+            ->with('success', __('Support ticket created.'));
     }
 
     public function show(SupportTicket $ticket): View

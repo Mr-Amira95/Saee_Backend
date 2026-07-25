@@ -36,25 +36,25 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return back()
-                ->withErrors(['phone' => 'The phone number or password is incorrect.'])
+                ->withErrors(['phone' => __('The phone number or password is incorrect.')])
                 ->withInput($request->only('phone'));
         }
 
         if (! in_array($user->role, ['client_master', 'client_employee'])) {
             return back()
-                ->withErrors(['phone' => 'You do not have client access.'])
+                ->withErrors(['phone' => __('You do not have client access.')])
                 ->withInput($request->only('phone'));
         }
 
         if ($user->status !== 'active') {
             return back()
-                ->withErrors(['phone' => 'Your account has been suspended. Please contact Saee support.'])
+                ->withErrors(['phone' => __('Your account has been suspended. Please contact Saee support.')])
                 ->withInput($request->only('phone'));
         }
 
         if ($user->hasExpiredClientContract()) {
             return back()
-                ->withErrors(['phone' => 'Your contract has been expired, please get in touch with the admin.'])
+                ->withErrors(['phone' => __('Your contract has been expired, please get in touch with the admin.')])
                 ->withInput($request->only('phone'));
         }
 
@@ -95,7 +95,7 @@ class AuthController extends Controller
 
         if (! $user) {
             return back()
-                ->withErrors(['phone' => 'No client account found with this phone number.'])
+                ->withErrors(['phone' => __('No client account found with this phone number.')])
                 ->withInput();
         }
 
@@ -137,7 +137,7 @@ class AuthController extends Controller
             ->first();
 
         if (! $user) {
-            return back()->withErrors(['code' => 'Invalid request.'])->withInput();
+            return back()->withErrors(['code' => __('Invalid request.')])->withInput();
         }
 
         $resetCode = PasswordResetCode::where('user_id', $user->id)
@@ -147,7 +147,7 @@ class AuthController extends Controller
             ->first();
 
         if (! $resetCode || ! Hash::check($request->code, $resetCode->code_hash)) {
-            return back()->withErrors(['code' => 'Invalid or expired code.'])->withInput();
+            return back()->withErrors(['code' => __('Invalid or expired code.')])->withInput();
         }
 
         $token = bin2hex(random_bytes(32));
@@ -177,7 +177,7 @@ class AuthController extends Controller
         $user = User::find($userId);
 
         if (! $user) {
-            return back()->withErrors(['password' => 'Session expired. Please start over.']);
+            return back()->withErrors(['password' => __('Session expired. Please start over.')]);
         }
 
         $resetCode = PasswordResetCode::where('user_id', $user->id)
@@ -187,7 +187,7 @@ class AuthController extends Controller
             ->first();
 
         if (! $resetCode || ! Hash::check($token, $resetCode->reset_token_hash)) {
-            return back()->withErrors(['password' => 'Session expired. Please start over.']);
+            return back()->withErrors(['password' => __('Session expired. Please start over.')]);
         }
 
         $user->update(['password' => Hash::make($request->password)]);
@@ -195,7 +195,7 @@ class AuthController extends Controller
 
         session()->forget(['_fp_reset_token', '_fp_user_id', '_fp_phone', '_fp_code_preview']);
 
-        return redirect()->route('client.login')->with('status', 'Password reset successfully. Please sign in.');
+        return redirect()->route('client.login')->with('status', __('Password reset successfully. Please sign in.'));
     }
 
     private function isAuthenticatedClient(): bool

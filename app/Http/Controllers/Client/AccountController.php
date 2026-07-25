@@ -49,7 +49,7 @@ class AccountController extends Controller
         $user->save();
 
         return redirect()->route('client.account.profile.edit')
-            ->with('success', 'Profile updated successfully.');
+            ->with('success', __('Profile updated successfully.'));
     }
 
     public function editPassword(): View
@@ -74,7 +74,7 @@ class AccountController extends Controller
         $user->save();
 
         return redirect()->route('client.account.password.edit')
-            ->with('success', 'Password updated successfully.');
+            ->with('success', __('Password updated successfully.'));
     }
 
     public function toggleNotifications(Request $request): \Illuminate\Http\JsonResponse

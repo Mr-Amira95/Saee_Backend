@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Support Desk')
-@section('page-title', 'Support Tickets')
+@section('title', __('Support Desk'))
+@section('page-title', __('Support Tickets'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <span class="current">Support Center</span>
+    <span class="current">{{ __('Support Center') }}</span>
 @endsection
 
 @section('head')
@@ -78,6 +78,11 @@
     .ticket-item.active {
         background: rgba(220, 38, 38, 0.08);
         border-left: 3px solid var(--red-lt);
+    }
+
+    html[dir="rtl"] .ticket-item.active {
+        border-left: none;
+        border-right: 3px solid var(--red-lt);
     }
 
     .ticket-item-hd {
@@ -185,6 +190,10 @@
         text-align: right;
     }
 
+    html[dir="rtl"] .msg-wrap.outgoing .msg-sender {
+        text-align: left;
+    }
+
     .msg-bubble {
         padding: 12px 16px;
         border-radius: 14px;
@@ -216,6 +225,10 @@
 
     .msg-wrap.outgoing .msg-time {
         text-align: right;
+    }
+
+    html[dir="rtl"] .msg-wrap.outgoing .msg-time {
+        text-align: left;
     }
 
     .chat-footer {
@@ -330,10 +343,10 @@
         {{-- Tickets Queue --}}
         <div class="chat-sidebar">
             <div class="chat-sidebar-head" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                <h3>Tickets Queue</h3>
+                <h3>{{ __('Tickets Queue') }}</h3>
                 @if(auth()->user()->hasAdminAction('support.open_ticket'))
                 <a href="{{ route('admin.support.create') }}" class="btn-primary" style="padding: 4px 8px; font-size: .75rem; box-shadow: none; border-radius: 6px; text-decoration: none;">
-                    + Open Ticket
+                    + {{ __('Open Ticket') }}
                 </a>
                 @endif
             </div>
@@ -351,7 +364,7 @@
                         </div>
                         <div class="ticket-title">{{ $t->title }}</div>
                         <div class="ticket-meta">
-                            <span>By: {{ $t->user ? $t->user->name : 'Guest Recipient' }}</span>
+                            <span>{{ __('By:') }} {{ $t->user ? $t->user->name : __('Guest Recipient') }}</span>
                             <span class="badge {{ $t->status === 'resolved' ? 'badge-active' : 'badge-pending' }}" style="padding: 2px 6px; font-size:.65rem">
                                 {{ strtoupper(str_replace('_', ' ', $t->status)) }}
                             </span>
@@ -359,7 +372,7 @@
                     </a>
                 @empty
                     <div style="text-align: center; padding: 40px 20px; color: var(--text-dim); font-size: .8rem;">
-                        No support tickets submitted.
+                        {{ __('No support tickets submitted.') }}
                     </div>
                 @endforelse
             </div>
@@ -373,11 +386,11 @@
                         <h2>{{ $activeTicket->title }} (#{{ $activeTicket->ticket_number }})</h2>
                         <p>
                             @if($activeTicket->order)
-                                Related Order: <a href="{{ route('admin.orders.show', $activeTicket->order) }}" style="color: var(--red-lt); font-weight:600">#{{ $activeTicket->order->order_number }}</a>
+                                {{ __('Related Order:') }} <a href="{{ route('admin.orders.show', $activeTicket->order) }}" style="color: var(--red-lt); font-weight:600">#{{ $activeTicket->order->order_number }}</a>
                             @endif
                         </p>
                     </div>
-                    
+
                     <div style="display:flex; gap: 8px;">
 @if($activeTicket->status !== 'resolved')
                             @if(auth()->user()->hasAdminAction('support.resolve'))
@@ -386,12 +399,12 @@
                             </form>
                             <button type="button" class="btn-danger" style="padding: 6px 12px; font-size:.78rem"
                                 onclick="document.getElementById('resolveConfirmModal').style.display='flex'">
-                                Resolve Ticket
+                                {{ __('Resolve Ticket') }}
                             </button>
                             @endif
                         @else
                             <span class="badge badge-active" style="padding: 6px 12px; font-size: .78rem;">
-                                <span class="badge-dot"></span> Resolved
+                                <span class="badge-dot"></span> {{ __('Resolved') }}
                             </span>
                         @endif
                     </div>
@@ -414,13 +427,13 @@
                         @if(auth()->user()->hasAdminAction('support.reply'))
                         <form id="adminChatForm" action="{{ route('admin.support.send', $activeTicket) }}" method="POST" class="chat-form">
                             @csrf
-                            <textarea id="adminChatInput" name="message" class="chat-input" placeholder="Type your support reply…" rows="1"></textarea>
-                            <button type="submit" id="adminSendBtn" class="chat-send-btn">Send Reply</button>
+                            <textarea id="adminChatInput" name="message" class="chat-input" placeholder="{{ __('Type your support reply…') }}" rows="1"></textarea>
+                            <button type="submit" id="adminSendBtn" class="chat-send-btn">{{ __('Send Reply') }}</button>
                         </form>
                         @endif
                     @else
                         <div style="text-align: center; color: var(--text-dim); font-size: .8rem; font-style: italic; padding: 10px;">
-                            This ticket has been resolved. Re-open by sending a WhatsApp trigger or creating a message.
+                            {{ __('This ticket has been resolved. Re-open by sending a WhatsApp trigger or creating a message.') }}
                         </div>
                     @endif
                 </div>
@@ -434,8 +447,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 14c0 3 2.5 5 5.5 5" />
                         </svg>
                     </div>
-                    <h3>Operations Support Center</h3>
-                    <p>Select a ticket conversation from the queue sidebar to begin chatting with clients or drivers.</p>
+                    <h3>{{ __('Operations Support Center') }}</h3>
+                    <p>{{ __('Select a ticket conversation from the queue sidebar to begin chatting with clients or drivers.') }}</p>
                 </div>
             @endif
         </div>
@@ -447,11 +460,11 @@
     <div id="resolveConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;">
         <div style="background:#0c1230;border:1px solid var(--bdr);border-radius:16px;padding:28px 30px;max-width:400px;width:90%;text-align:center;">
             <div style="font-size:2.2rem;margin-bottom:14px;">✅</div>
-            <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">Resolve this ticket?</h3>
-            <p style="font-size:.84rem;color:var(--text-sub);margin-bottom:24px;line-height:1.6;">The client will be notified that their issue has been resolved. They won't be able to reply until the ticket is reopened.</p>
+            <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">{{ __('Resolve this ticket?') }}</h3>
+            <p style="font-size:.84rem;color:var(--text-sub);margin-bottom:24px;line-height:1.6;">{{ __("The client will be notified that their issue has been resolved. They won't be able to reply until the ticket is reopened.") }}</p>
             <div style="display:flex;gap:10px;">
-                <button type="button" class="btn-secondary" style="flex:1;" onclick="document.getElementById('resolveConfirmModal').style.display='none'">Cancel</button>
-                <button type="button" class="btn-danger" style="flex:1;" onclick="document.getElementById('resolveForm').submit()">Yes, Resolve</button>
+                <button type="button" class="btn-secondary" style="flex:1;" onclick="document.getElementById('resolveConfirmModal').style.display='none'">{{ __('Cancel') }}</button>
+                <button type="button" class="btn-danger" style="flex:1;" onclick="document.getElementById('resolveForm').submit()">{{ __('Yes, Resolve') }}</button>
             </div>
         </div>
     </div>
@@ -462,6 +475,9 @@
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
 (function () {
+    const i18nSupport = {
+        justNow: @json(__('Just now')),
+    };
     const PUSHER_KEY    = '{{ config('broadcasting.connections.pusher.key') }}';
     const PUSHER_CLUSTER = '{{ config('broadcasting.connections.pusher.options.cluster') }}';
     const pusher  = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER });
@@ -474,7 +490,7 @@
         // Update sidebar item timestamp when a message arrives on any ticket
         const link = ticketList.querySelector(`a[data-ticket-id="${data.ticket_id}"]`);
         if (link) {
-            link.querySelector('.ticket-time').textContent = 'Just now';
+            link.querySelector('.ticket-time').textContent = i18nSupport.justNow;
             ticketList.prepend(link); // bubble to top
         }
     });
@@ -497,7 +513,7 @@
         a.innerHTML = `
             <div class="ticket-item-hd">
                 <span class="ticket-no">${data.ticket_number}</span>
-                <span class="ticket-time">Just now</span>
+                <span class="ticket-time">${i18nSupport.justNow}</span>
             </div>
             <div class="ticket-title">${data.title}</div>
             <div class="ticket-meta">

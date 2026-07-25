@@ -82,7 +82,7 @@ class OrderController extends Controller
         rescue(fn () => app(SupportNotificationService::class)->notifyAdminsNewOrder($order));
 
         return redirect()->route('client.orders.show', $order)
-            ->with('success', "Order #{$order->order_number} created successfully.");
+            ->with('success', __('Order #:number created successfully.', ['number' => $order->order_number]));
     }
 
     public function edit(Order $order): View
@@ -154,7 +154,7 @@ class OrderController extends Controller
         ]);
 
         return redirect()->route('client.orders.show', $order)
-            ->with('success', "Order #{$order->order_number} updated successfully.");
+            ->with('success', __('Order #:number updated successfully.', ['number' => $order->order_number]));
     }
 
     public function show(Order $order): View
@@ -173,14 +173,14 @@ class OrderController extends Controller
         $profile = $this->getClientProfile();
 
         abort_if($order->client_profile_id !== $profile->id, 403);
-        abort_if($order->status !== 'pending', 403, 'Only pending orders can be deleted.');
+        abort_if($order->status !== 'pending', 403, __('Only pending orders can be deleted.'));
 
         rescue(fn () => app(SupportNotificationService::class)->notifyAdminsCancelOrder($order));
 
         $order->delete();
 
         return redirect()->route('client.orders.index')
-            ->with('success', "Order #{$order->order_number} deleted.");
+            ->with('success', __('Order #:number deleted.', ['number' => $order->order_number]));
     }
 
     public function showImportImage(): View
@@ -215,11 +215,11 @@ class OrderController extends Controller
         try {
             $parsedOrders = $openAIService->parseImageForOrders($imagePath, [], $citiesData);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'AI Processing failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', __('AI Processing failed: :message', ['message' => $e->getMessage()]));
         }
 
         if (empty($parsedOrders)) {
-            return redirect()->back()->with('error', 'No order details could be extracted from the image.');
+            return redirect()->back()->with('error', __('No order details could be extracted from the image.'));
         }
 
         $rows = [];
@@ -309,7 +309,7 @@ class OrderController extends Controller
 
         if ($hasErrors) {
             return redirect()->route('client.orders.import.review')
-                ->with('error', 'AI parsed the image, but some details need manual selection or correction.');
+                ->with('error', __('AI parsed the image, but some details need manual selection or correction.'));
         }
 
         return redirect()->route('client.orders.import.review');
@@ -410,7 +410,7 @@ class OrderController extends Controller
             $expected = ['order_description', 'payment_type', 'delivery_on_customer', 'delivery_customer_amount', 'order_price', 'receiver_name', 'receiver_phone', 'city_id', 'area_id', 'address_text', 'notes', 'delivery_shift'];
 
             if (! $headers || count(array_intersect($headers, $expected)) < 5) {
-                return redirect()->back()->with('error', 'Invalid CSV format. Please make sure to use the template provided.');
+                return redirect()->back()->with('error', __('Invalid CSV format. Please make sure to use the template provided.'));
             }
 
             while (($row = fgetcsv($handle, 1000, ',')) !== false) {
@@ -426,7 +426,7 @@ class OrderController extends Controller
         }
 
         if (empty($data)) {
-            return redirect()->back()->with('error', 'The CSV file is empty.');
+            return redirect()->back()->with('error', __('The CSV file is empty.'));
         }
 
         $rows = [];
@@ -457,7 +457,7 @@ class OrderController extends Controller
 
         if ($hasErrors) {
             return redirect()->route('client.orders.import.review')
-                ->with('error', 'CSV parsed but some rows failed validation. Please correct them below.');
+                ->with('error', __('CSV parsed but some rows failed validation. Please correct them below.'));
         }
 
         return redirect()->route('client.orders.import.review');
@@ -486,7 +486,7 @@ class OrderController extends Controller
         $profile = $this->getClientProfile();
 
         if (empty($rows)) {
-            return redirect()->route('client.orders.import')->with('error', 'No order data found. Please re-upload your file.');
+            return redirect()->route('client.orders.import')->with('error', __('No order data found. Please re-upload your file.'));
         }
 
         $errors = [];
@@ -505,7 +505,7 @@ class OrderController extends Controller
             session(['client_import_errors' => $errors]);
 
             return redirect()->route('client.orders.import.review')
-                ->with('error', 'Some rows still have validation errors. Please correct them.');
+                ->with('error', __('Some rows still have validation errors. Please correct them.'));
         }
 
         $batchNumber = 'BATCH-' . now()->format('ymd') . '-' . $profile->id . '-' . strtoupper(substr(md5(uniqid()), 0, 4));
@@ -542,7 +542,7 @@ class OrderController extends Controller
         ));
 
         return redirect()->route('client.orders.index')
-            ->with('success', "Successfully imported {$count} orders. Batch: {$batchNumber}");
+            ->with('success', __('Successfully imported :count orders. Batch: :batch', ['count' => $count, 'batch' => $batchNumber]));
     }
 
     private function validateImportRow(array $row): array

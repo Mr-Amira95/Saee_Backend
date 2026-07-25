@@ -1,13 +1,13 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Open Support Ticket')
-@section('page-title', 'Support Tickets')
+@section('title', __('Open Support Ticket'))
+@section('page-title', __('Support Tickets'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.support.index') }}" style="color: var(--text-sub);">Support Center</a>
+    <a href="{{ route('admin.support.index') }}" style="color: var(--text-sub);">{{ __('Support Center') }}</a>
     <span class="sep">/</span>
-    <span class="current">Open Ticket</span>
+    <span class="current">{{ __('Open Ticket') }}</span>
 @endsection
 
 @section('head')
@@ -125,6 +125,9 @@
         pointer-events: none;
     }
 
+    html[dir="rtl"] .sd-search-icon { left: auto; right: 20px; }
+    html[dir="rtl"] .sd-search { padding: 7px 32px 7px 12px; }
+
     .sd-list {
         max-height: 220px;
         overflow-y: auto;
@@ -165,6 +168,8 @@
         color: var(--text-dim);
         margin-top: 2px;
     }
+
+    html[dir="rtl"] .sd-trigger { text-align: right; }
 
     .sd-option.selected .sd-option-sub {
         color: rgba(255,255,255,.5);
@@ -209,7 +214,7 @@
 
     <div class="card" style="padding: 32px;">
         <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--bdr);">
-            Open Support Ticket
+            {{ __('Open Support Ticket') }}
         </h2>
 
         <form action="{{ route('admin.support.store') }}" method="POST">
@@ -217,10 +222,10 @@
 
             {{-- ── User Searchable Dropdown ── --}}
             <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label">Select Client / Driver <span class="req">*</span></label>
+                <label class="form-label">{{ __('Select Client / Driver') }} <span class="req">*</span></label>
 
                 <select name="user_id" id="user_id" class="sd-hidden" required>
-                    <option value="">-- Choose User --</option>
+                    <option value="">-- {{ __('Choose User') }} --</option>
                     @foreach($users as $u)
                         <option value="{{ $u->id }}"
                             data-sub="{{ str_replace('_', ' ', ucfirst($u->role)) }}"
@@ -232,13 +237,13 @@
 
                 <div class="sd-wrap" id="sd-user">
                     <button type="button" class="sd-trigger" id="sd-user-trigger" aria-haspopup="listbox" aria-expanded="false">
-                        <span class="sd-trigger-label placeholder" id="sd-user-label">Choose a user…</span>
+                        <span class="sd-trigger-label placeholder" id="sd-user-label">{{ __('Choose a user…') }}</span>
                         <svg class="sd-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
                     </button>
                     <div class="sd-dropdown" id="sd-user-dropdown" role="listbox">
                         <div class="sd-search-wrap" style="position:relative;">
                             <svg class="sd-search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/></svg>
-                            <input type="text" class="sd-search" id="sd-user-search" placeholder="Search by name or role…" autocomplete="off">
+                            <input type="text" class="sd-search" id="sd-user-search" placeholder="{{ __('Search by name or role…') }}" autocomplete="off">
                         </div>
                         <div class="sd-list" id="sd-user-list" role="presentation">
                             @foreach($users as $u)
@@ -261,10 +266,10 @@
 
             {{-- ── Order Searchable Dropdown ── --}}
             <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label">Related Order <span style="color: var(--text-dim); font-weight: 400;">(Optional)</span></label>
+                <label class="form-label">{{ __('Related Order') }} <span style="color: var(--text-dim); font-weight: 400;">({{ __('Optional') }})</span></label>
 
                 <select name="order_id" id="order_id" class="sd-hidden">
-                    <option value="">-- Select Order --</option>
+                    <option value="">-- {{ __('Select Order') }} --</option>
                     @foreach($orders as $o)
                         <option value="{{ $o->id }}"
                             data-sub="{{ $o->receiver_name }} · {{ $o->receiver_phone }}"
@@ -276,13 +281,13 @@
 
                 <div class="sd-wrap" id="sd-order">
                     <button type="button" class="sd-trigger" id="sd-order-trigger" aria-haspopup="listbox" aria-expanded="false">
-                        <span class="sd-trigger-label placeholder" id="sd-order-label">No order selected</span>
+                        <span class="sd-trigger-label placeholder" id="sd-order-label">{{ __('No order selected') }}</span>
                         <svg class="sd-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
                     </button>
                     <div class="sd-dropdown" id="sd-order-dropdown" role="listbox">
                         <div class="sd-search-wrap" style="position:relative;">
                             <svg class="sd-search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/></svg>
-                            <input type="text" class="sd-search" id="sd-order-search" placeholder="Search by order number or name…" autocomplete="off">
+                            <input type="text" class="sd-search" id="sd-order-search" placeholder="{{ __('Search by order number or name…') }}" autocomplete="off">
                         </div>
                         <div class="sd-list" id="sd-order-list" role="presentation">
                             <button type="button" class="sd-option {{ old('order_id') == '' ? 'selected' : '' }}"
@@ -291,7 +296,7 @@
                                 data-sub=""
                                 data-search=""
                                 role="option">
-                                <span style="color: var(--text-dim); font-style: italic;">No order</span>
+                                <span style="color: var(--text-dim); font-style: italic;">{{ __('No order') }}</span>
                             </button>
                             @foreach($orders as $o)
                                 <button type="button" class="sd-option {{ old('order_id') == $o->id ? 'selected' : '' }}"
@@ -310,20 +315,20 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 20px;">
-                <label class="form-label">Subject Title <span class="req">*</span></label>
+                <label class="form-label">{{ __('Subject Title') }} <span class="req">*</span></label>
                 <input type="text" name="title" class="form-input" placeholder="e.g. Shipping Delay Inquiry" value="{{ old('title') }}" required>
                 @error('title')<p class="form-error">{{ $message }}</p>@enderror
             </div>
 
             <div class="form-group" style="margin-bottom: 28px;">
-                <label class="form-label">Initial Message <span class="req">*</span></label>
-                <textarea name="message" class="form-input" rows="5" placeholder="Describe the issue or start the conversation..." required style="height: auto; resize: none;">{{ old('message') }}</textarea>
+                <label class="form-label">{{ __('Initial Message') }} <span class="req">*</span></label>
+                <textarea name="message" class="form-input" rows="5" placeholder="{{ __('Describe the issue or start the conversation...') }}" required style="height: auto; resize: none;">{{ old('message') }}</textarea>
                 @error('message')<p class="form-error">{{ $message }}</p>@enderror
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 16px; border-top: 1px solid var(--bdr);">
-                <a href="{{ route('admin.support.index') }}" class="btn-secondary">Cancel</a>
-                <button type="submit" class="btn-primary">Create Ticket</button>
+                <a href="{{ route('admin.support.index') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+                <button type="submit" class="btn-primary">{{ __('Create Ticket') }}</button>
             </div>
         </form>
     </div>
