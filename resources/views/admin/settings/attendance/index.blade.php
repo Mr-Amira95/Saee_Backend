@@ -61,7 +61,6 @@
                         <th>{{ __('Check Out') }}</th>
                         <th>{{ __('Check Out Location') }}</th>
                         <th>{{ __('Duration') }}</th>
-                        <th style="width: 80px; text-align: center;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -133,21 +132,10 @@
                                     <span style="color: var(--red-lt); font-weight: 600; animation: dot-p 2.5s infinite;">● {{ __('Active') }}</span>
                                 @endif
                             </td>
-                            <td>
-                                <div style="display:flex; justify-content:center;">
-                                    <button
-                                        class="act-btn act-edit"
-                                        title="{{ __('Manually Adjust Times') }}"
-                                        onclick="openEditModal(@json(route('admin.attendance.update', $log)), @json($log->user->name), @json($log->check_in_at->format('Y-m-d H:i:s')), @json($log->check_out_at ? $log->check_out_at->format('Y-m-d H:i:s') : ''))"
-                                    >
-                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </button>
-                                </div>
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9">
+                            <td colspan="8">
                                 <div class="empty-state">
                                     <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -175,57 +163,4 @@
     </div>
 
 </div>
-
-{{-- Inline Edit Time Adjust Modal --}}
-<div class="modal-overlay" id="editTimeModal">
-    <div class="modal-card" style="max-width: 420px; text-align: left; background: #0b1228; border: 1px solid var(--bdr);">
-        <h3 style="font-size: 1.15rem; font-weight: 800; border-bottom: 1px solid var(--bdr); padding-bottom: 10px; margin-bottom: 15px; display:flex; align-items:center; gap:8px;">
-            <svg width="18" height="18" fill="none" stroke="var(--red-lt)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ __('Adjust Time Logs') }}
-        </h3>
-        <p style="font-size: .82rem; color: var(--text-sub); margin-bottom: 15px;">
-            {{ __('Correcting logs for:') }} <strong style="color: #fff;" id="modalEmployeeName">Name</strong>
-        </p>
-
-        <form id="editTimeForm" method="POST">
-            @csrf
-            @method('PATCH')
-
-            <div style="display:flex; flex-direction:column; gap:14px; margin-bottom: 22px;">
-                <div class="form-group">
-                    <label class="form-label" for="modalCheckInInput">{{ __('Check In Time') }}</label>
-                    <input type="text" name="check_in_at" id="modalCheckInInput" class="form-input" placeholder="YYYY-MM-DD HH:MM:SS" required>
-                    <span class="form-hint">{{ __('Format: YYYY-MM-DD HH:MM:SS') }}</span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="modalCheckOutInput">{{ __('Check Out Time') }}</label>
-                    <input type="text" name="check_out_at" id="modalCheckOutInput" class="form-input" placeholder="YYYY-MM-DD HH:MM:SS (optional)">
-                    <span class="form-hint">{{ __('Leave blank if the shift is still active.') }}</span>
-                </div>
-            </div>
-
-            <div class="modal-actions" style="justify-content: flex-end; gap: 8px;">
-                <button type="button" class="btn-secondary" onclick="closeEditModal()">{{ __('Cancel') }}</button>
-                <button type="submit" class="btn-primary" style="box-shadow:none;">{{ __('Save Changes') }}</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-function openEditModal(actionUrl, name, checkInVal, checkOutVal) {
-    document.getElementById('editTimeForm').action = actionUrl;
-    document.getElementById('modalEmployeeName').textContent = name;
-    document.getElementById('modalCheckInInput').value = checkInVal;
-    document.getElementById('modalCheckOutInput').value = checkOutVal;
-    document.getElementById('editTimeModal').classList.add('open');
-}
-function closeEditModal() {
-    document.getElementById('editTimeModal').classList.remove('open');
-}
-document.getElementById('editTimeModal').addEventListener('click', function(e) {
-    if (e.target === this) closeEditModal();
-});
-</script>
 @endsection
