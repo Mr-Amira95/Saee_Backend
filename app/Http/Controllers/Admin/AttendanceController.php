@@ -58,6 +58,10 @@ class AttendanceController extends Controller
      */
     public function checkIn(Request $request)
     {
+        $request->validate([
+            'location' => ['nullable', 'string', 'regex:/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/'],
+        ]);
+
         $userId = Auth::id();
         $today = now()->toDateString();
 
@@ -94,6 +98,10 @@ class AttendanceController extends Controller
      */
     public function checkOut(Request $request)
     {
+        $request->validate([
+            'location' => ['nullable', 'string', 'regex:/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/'],
+        ]);
+
         $userId = Auth::id();
         $today = now()->toDateString();
 

@@ -62,6 +62,10 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request): JsonResponse
     {
+        $request->validate([
+            'location' => ['nullable', 'string', 'regex:/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/'],
+        ]);
+
         /** @var \App\Models\User $user */
         $user = $request->user();
 
@@ -125,6 +129,10 @@ class AttendanceController extends Controller
 
     public function confirmCheckOut(Request $request): JsonResponse
     {
+        $request->validate([
+            'location' => ['nullable', 'string', 'regex:/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/'],
+        ]);
+
         /** @var \App\Models\User $user */
         $user = $request->user();
 

@@ -168,7 +168,7 @@
                     {{ __('Showing') }} {{ $attendances->firstItem() }} {{ __('to') }} {{ $attendances->lastItem() }} {{ __('of') }} {{ $attendances->total() }} {{ __('logs') }}
                 </div>
                 <div class="pag-links">
-                    {{ $attendances->links('pagination::bootstrap-4') }}
+                    {{ $attendances->links() }}
                 </div>
             </div>
         @endif
