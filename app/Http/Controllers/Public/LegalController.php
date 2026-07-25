@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class LegalController extends Controller
 {
     /**
      * Legacy endpoint (consumed by the driver app) — returns a single-language string.
-     * Defaults to English; pass ?lang=ar for Arabic.
+     * Language resolves from ?lang=ar, falling back to the Accept-Language header (see SetLocale), then English.
      */
     public function terms(Request $request): JsonResponse
     {
@@ -51,7 +52,8 @@ class LegalController extends Controller
     private function resolveSingle(string $key, Request $request): string
     {
         $value = SiteSetting::getVal($key, '');
-        $lang  = $request->query('lang') === 'ar' ? 'ar' : 'en';
+        $lang  = $request->query('lang') ?: App::getLocale();
+        $lang  = $lang === 'ar' ? 'ar' : 'en';
 
         if (is_array($value)) {
             return $value[$lang] ?? $value['en'] ?? '';

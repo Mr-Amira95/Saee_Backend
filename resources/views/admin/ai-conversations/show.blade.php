@@ -70,6 +70,10 @@
         background: rgba(79,70,229,.1); border: 1px solid rgba(79,70,229,.18);
         border-bottom-left-radius: 4px; color: var(--text);
     }
+    .msg-bubble p        { margin: 0 0 8px; }
+    .msg-bubble p:last-child { margin-bottom: 0; }
+    .msg-bubble ul, .msg-bubble ol { margin: 4px 0 8px; padding-inline-start: 20px; }
+    .msg-bubble a        { color: inherit; text-decoration: underline; }
     .msg-bubble.bubble-system {
         background: rgba(255,255,255,.04); border: 1px solid var(--bdr);
         border-radius: 8px; color: var(--text-dim); font-size: .78rem;
@@ -198,7 +202,7 @@
                             {{ $session->user ? strtoupper(substr($session->user->name, 0, 2)) : 'U' }}
                         </div>
                         <div>
-                            <div class="msg-bubble bubble-user">{{ $message->message }}</div>
+                            <div class="msg-bubble bubble-user">{!! nl2br(e($message->message)) !!}</div>
                             <div class="msg-meta">
                                 {{ $message->created_at->format('H:i') }}
                                 @if($message->tokens)
@@ -212,7 +216,7 @@
                     <div class="msg-row assistant">
                         <div class="msg-avatar avatar-assistant">AI</div>
                         <div>
-                            <div class="msg-bubble bubble-assistant">{{ $message->message }}</div>
+                            <div class="msg-bubble bubble-assistant">{!! $message->safeHtml() !!}</div>
                             <div class="msg-meta">
                                 {{ $message->created_at->format('H:i') }}
                                 @if($message->tokens)
