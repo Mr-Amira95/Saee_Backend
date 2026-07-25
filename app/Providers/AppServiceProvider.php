@@ -10,20 +10,18 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Kreait\Firebase\Contract\Messaging as FirebaseMessaging;
+use Kreait\Laravel\Firebase\FirebaseProjectManager;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->app->singleton(FirebaseMessaging::class, function ($app) {
-            if ($app->bound('firebase.messaging')) {
-                try {
-                    return $app->make('firebase.messaging');
-                } catch (\Throwable) {
-                    return null;
-                }
+            try {
+                return $app->make(FirebaseProjectManager::class)->project()->messaging();
+            } catch (\Throwable) {
+                return null;
             }
-            return null;
         });
     }
 
