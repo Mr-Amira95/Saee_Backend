@@ -355,7 +355,7 @@ class OrderController extends Controller
 
         $request->validate([
             'notes'          => ['nullable', 'string', 'max:1000'],
-            'location'       => ['nullable', 'string', 'max:255'],
+            'location'       => ['nullable', 'string', 'regex:/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/'],
             'payment_method' => [$requiresProof ? 'required' : 'nullable', Rule::in(['cash', 'bank_transfer', 'cliq'])],
             'proof_image'    => [$requiresProof ? 'required' : 'nullable', 'file', 'image', 'max:5120'],
         ]);
