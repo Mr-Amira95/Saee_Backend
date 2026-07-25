@@ -21,22 +21,20 @@ class FinanceController extends Controller
             ], 403);
         }
 
-        $summary = $this->buildSummary($user->id);
+        // Default to today when no date range is given, so drivers see today's activity by default.
+        $from = $request->filled('from') ? $request->input('from') : now()->toDateString();
+        $to   = $request->filled('to') ? $request->input('to') : now()->toDateString();
+
+        $summary = $this->buildSummary($user->id, $from, $to);
 
         $query = FinancialLedgerEntry::with('order')
             ->where('driver_id', $user->id)
+            ->whereDate('created_at', '>=', $from)
+            ->whereDate('created_at', '<=', $to)
             ->latest();
 
         if ($request->filled('type')) {
             $query->where('type', $request->input('type'));
-        }
-
-        if ($request->filled('from')) {
-            $query->whereDate('created_at', '>=', $request->input('from'));
-        }
-
-        if ($request->filled('to')) {
-            $query->whereDate('created_at', '<=', $request->input('to'));
         }
 
         if ($request->filled('order_number')) {
@@ -102,14 +100,18 @@ class FinanceController extends Controller
         ];
     }
 
-    private function buildSummary(int $driverId): array
+    private function buildSummary(int $driverId, string $from, string $to): array
     {
         $totalCollected = FinancialLedgerEntry::where('driver_id', $driverId)
             ->whereIn('type', ['cod_collection', 'delivery_collection'])
+            ->whereDate('created_at', '>=', $from)
+            ->whereDate('created_at', '<=', $to)
             ->sum('amount');
 
         $totalSettled = FinancialLedgerEntry::where('driver_id', $driverId)
             ->where('type', 'driver_settlement')
+            ->whereDate('created_at', '>=', $from)
+            ->whereDate('created_at', '<=', $to)
             ->sum('amount');
 
         return [
