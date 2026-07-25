@@ -330,7 +330,7 @@ const i18nDriverEdit = {
     plateNumberInvalid: @json(__('Please enter a valid plate number.')),
     validDateFormat: @json(__('Please enter a valid date in DD-MM-YYYY format.')),
     fullNameInvalid: @json(__('Full name must contain letters only.')),
-    usernameInvalid: @json(__('Username may only contain letters, numbers, dots, underscores and hyphens.')),
+    usernameInvalid: @json(__('Username may only contain letters/numbers/dots/underscores/hyphens.')),
     emailInvalid: @json(__('Please enter a valid email address.')),
     phoneInvalid: @json(__('Please enter a valid phone number.')),
     bankNameInvalid: @json(__('Bank name must contain English letters only.')),

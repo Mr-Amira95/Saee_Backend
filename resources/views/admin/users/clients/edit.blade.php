@@ -617,7 +617,7 @@ const i18nClientEdit = {
     cliqAliasInvalid: @json(__('Please enter a valid CliQ alias.')),
     deliveryPriceMin: @json(__('The Delivery price of :city must be at least 0')),
     fullNameInvalid: @json(__('Full name must contain letters only.')),
-    usernameInvalid: @json(__('Username may only contain letters, numbers, dots, underscores and hyphens.')),
+    usernameInvalid: @json(__('Username may only contain letters/numbers/dots/underscores/hyphens.')),
     emailInvalid: @json(__('Please enter a valid email address.')),
     phoneInvalid: @json(__('Please enter a valid phone number.')),
     bankNameInvalid: @json(__('Bank name must contain English letters only.')),

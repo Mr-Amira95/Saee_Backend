@@ -176,7 +176,7 @@
     <script>
         const i18nImportImage = {
             selectedTpl: @json(__('Selected: :file (:size MB)')),
-            supportedFormats: @json(__('Supported: JPG, JPEG, PNG, WEBP, GIF. Max size: 10MB.')),
+            supportedFormats: @json(__('Supported: JPG/JPEG/PNG/WEBP/GIF. Max size: 10MB.')),
         };
         const fileInput = document.getElementById('image');
         const submitBtn = document.getElementById('submitBtn');
