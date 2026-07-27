@@ -238,7 +238,7 @@
 
 @section('scripts')
     <script>
-        const i18n = {
+        const i18nOrderCreate = {
             searchClients: @json(__('Search clients...')),
             searchCities: @json(__('Search cities...')),
             searchAreas: @json(__('Search areas...')),
@@ -250,7 +250,7 @@
         class SearchableSelect {
             constructor(selectEl, placeholder) {
                 this.selectEl = selectEl;
-                this.placeholder = placeholder || i18n.searchDefault;
+                this.placeholder = placeholder || i18nOrderCreate.searchDefault;
                 this.options = [];
                 this._build();
             }
