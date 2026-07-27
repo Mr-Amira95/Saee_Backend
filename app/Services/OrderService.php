@@ -221,6 +221,36 @@ class OrderService
                 rescue(fn () => app(SupportNotificationService::class)->notifyClientOrderStatusChanged($order, $newStatus, $actor->id));
             }
 
+            if ($newStatus === 'picked_up') {
+                $receiver = $order->receiver;
+                SendWhatsappMessageJob::dispatch(
+                    'assign_order',
+                    $receiver?->receiver_phone ?? '',
+                    [
+                        'customer_name' => $receiver?->receiver_name ?? '',
+                        'order_number'  => $order->order_number ?? '',
+                    ],
+                    $order->id,
+                    [$order->order_number ?? ''],
+                    'ar',
+                )->onQueue(config('whatsapp.queue', 'default'));
+            }
+
+            if ($newStatus === 'delivered') {
+                $receiver = $order->receiver;
+                SendWhatsappMessageJob::dispatch(
+                    'delivered_order',
+                    $receiver?->receiver_phone ?? '',
+                    [
+                        'customer_name' => $receiver?->receiver_name ?? '',
+                        'order_number'  => $order->order_number ?? '',
+                    ],
+                    $order->id,
+                    [],
+                    'ar',
+                )->onQueue(config('whatsapp.queue', 'default'));
+            }
+
             return $order;
         });
     }

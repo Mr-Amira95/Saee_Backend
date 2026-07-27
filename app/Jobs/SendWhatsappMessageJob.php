@@ -22,11 +22,13 @@ class SendWhatsappMessageJob implements ShouldQueue
         public readonly string $phone,
         public readonly array  $variables = [],
         public readonly ?int   $orderId   = null,
+        public readonly array  $buttonParams = [],
+        public readonly string $languageCode = 'en_US',
     ) {}
 
     public function handle(WhatsAppService $service): void
     {
-        $result = $service->sendTemplate($this->event, $this->phone, $this->variables, $this->orderId);
+        $result = $service->sendTemplate($this->event, $this->phone, $this->variables, $this->orderId, $this->languageCode, $this->buttonParams);
 
         if (! $result['success']) {
             Log::warning('SendWhatsappMessageJob: send failed', [

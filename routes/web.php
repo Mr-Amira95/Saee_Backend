@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AboutPageController;
 use App\Http\Controllers\Admin\AboutValueController;
 use App\Http\Controllers\Admin\AiConversationController;
+use App\Http\Controllers\Admin\WhatsAppLogController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BulkOrderController;
@@ -208,6 +209,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('ai-conversations', [AiConversationController::class, 'index'])->name('ai-conversations.index');
         Route::get('ai-conversations/{aiConversation}', [AiConversationController::class, 'show'])->name('ai-conversations.show');
         Route::delete('ai-conversations/{aiConversation}', [AiConversationController::class, 'destroy'])->name('ai-conversations.destroy');
+
+        // WhatsApp Messages
+        Route::get('whatsapp-logs', [WhatsAppLogController::class, 'index'])->name('whatsapp-logs.index');
+        Route::get('whatsapp-logs/{order}', [WhatsAppLogController::class, 'show'])->name('whatsapp-logs.show');
 
         // Support Tickets & Chat Center
         Route::get('support', [SupportController::class, 'index'])->name('support.index');

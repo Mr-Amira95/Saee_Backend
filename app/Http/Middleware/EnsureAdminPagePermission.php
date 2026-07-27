@@ -21,6 +21,7 @@ class EnsureAdminPagePermission
         'admin.orders.'            => 'orders',
         'admin.support.'           => 'support',
         'admin.ai-conversations.'  => 'ai_conversations',
+        'admin.whatsapp-logs.'    => 'whatsapp_logs',
         'admin.reports.'          => 'reports',
         'admin.cities.'            => 'cities',
         'admin.rejection-reasons.' => 'rejection_reasons',

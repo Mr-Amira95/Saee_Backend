@@ -24,7 +24,8 @@ class WhatsAppService
         string $phone,
         array  $variables = [],
         ?int   $orderId   = null,
-        string $languageCode = 'en_US'
+        string $languageCode = 'en_US',
+        array  $buttonParams = []
     ): array {
         // 1. Validate phone
         if (empty(trim($phone))) {
@@ -60,7 +61,8 @@ class WhatsAppService
                 $event, // Meta template name must match event name
                 $languageCode,
                 $parameters,
-                $orderId
+                $orderId,
+                $buttonParams
             );
         }
 
@@ -71,10 +73,12 @@ class WhatsAppService
         // Log to database
         $status = $apiResult['success'] ? 'sent' : 'failed';
         $log = WhatsAppLog::create([
-            'order_id' => $orderId,
-            'phone'    => $phone,
-            'message'  => $message,
-            'status'   => $status,
+            'order_id'     => $orderId,
+            'phone'        => $phone,
+            'message'      => $message,
+            'status'       => $status,
+            'direction'    => 'outbound',
+            'message_type' => 'text',
         ]);
 
         if ($apiResult['success']) {
@@ -187,6 +191,11 @@ class WhatsAppService
     {
         $digits = preg_replace('/\D/', '', $phone);
 
+        // International prefix "00" → strip it before checking country code
+        if (str_starts_with($digits, '00')) {
+            $digits = substr($digits, 2);
+        }
+
         // Already has country code (Jordan 962, length 12)
         if (str_starts_with($digits, '962')) {
             return $digits;
@@ -234,6 +243,7 @@ class WhatsAppService
      * @param  string  $languageCode  Language code (e.g. 'en_US').
      * @param  array   $parameters    Positional array of parameters for the template body.
      * @param  int|null $orderId      Optional order ID for auditing.
+     * @param  array   $buttonParams  Positional array of parameters for the template's dynamic URL button (e.g. the order number appended to a "track order" link).
      * @return array{success: bool, log?: WhatsAppLog, error?: string, response?: array}
      */
     public function sendStructuredTemplate(
@@ -241,7 +251,8 @@ class WhatsAppService
         string $templateName,
         string $languageCode = 'en_US',
         array  $parameters = [],
-        ?int   $orderId    = null
+        ?int   $orderId    = null,
+        array  $buttonParams = []
     ): array {
         $normalizedPhone = $this->normalizePhone($phone);
         $url = sprintf('%s/%s/messages', rtrim(config('whatsapp.api_url'), '/'), config('whatsapp.sender'));
@@ -254,6 +265,18 @@ class WhatsAppService
                     'type' => 'text',
                     'text' => (string) $val
                 ], $parameters)
+            ];
+        }
+
+        if (!empty($buttonParams)) {
+            $components[] = [
+                'type'       => 'button',
+                'sub_type'   => 'url',
+                'index'      => '0',
+                'parameters' => array_map(fn($val) => [
+                    'type' => 'text',
+                    'text' => (string) $val
+                ], $buttonParams)
             ];
         }
 
@@ -278,10 +301,12 @@ class WhatsAppService
             $status  = $success ? 'sent' : 'failed';
 
             $log = WhatsAppLog::create([
-                'order_id' => $orderId,
-                'phone'    => $phone,
-                'message'  => "Template: {$templateName} (" . json_encode($parameters) . ")",
-                'status'   => $status,
+                'order_id'     => $orderId,
+                'phone'        => $phone,
+                'message'      => "Template: {$templateName} (" . json_encode($parameters) . ")",
+                'status'       => $status,
+                'direction'    => 'outbound',
+                'message_type' => 'template',
             ]);
 
             if ($success) {

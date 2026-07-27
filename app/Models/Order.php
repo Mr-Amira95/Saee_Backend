@@ -157,4 +157,9 @@ class Order extends Model
     {
         return $this->hasMany(SupportTicket::class);
     }
+
+    public function whatsappLogs(): HasMany
+    {
+        return $this->hasMany(WhatsAppLog::class)->orderBy('created_at');
+    }
 }

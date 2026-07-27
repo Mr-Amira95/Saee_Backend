@@ -14,6 +14,13 @@ class WhatsAppLog extends Model
         'phone',
         'message',
         'status',
+        'direction',
+        'message_type',
+        'meta',
+    ];
+
+    protected $casts = [
+        'meta' => 'array',
     ];
 
     public function order(): BelongsTo

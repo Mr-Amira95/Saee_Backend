@@ -155,6 +155,7 @@ class DatabaseSeeder extends Seeder
             'ai_conversations'  => ['label' => 'AI Conversation',    'actions' => [
                 'delete' => 'Delete AI Conversation',
             ]],
+            'whatsapp_logs'     => ['label' => 'WhatsApp Messages',  'actions' => []],
             'reports'           => ['label' => 'Reports',            'actions' => [
                 'center' => 'View Reports Center', 'kpi_insights' => 'View KPI Insights', 'rating' => 'View Rating',
             ]],

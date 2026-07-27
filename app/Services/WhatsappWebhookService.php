@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\WhatsAppLog;
 use Illuminate\Support\Facades\Log;
 
 class WhatsappWebhookService
@@ -15,28 +16,21 @@ class WhatsappWebhookService
         Log::info('WhatsApp webhook: processing payload', ['payload' => $payload]);
 
         foreach ($this->extractMessages($payload) as $message) {
-            $type = $message['type'] ?? null;
-
-            if ($type === 'location') {
-                $this->handleLocationMessage($message);
-            } else {
-                Log::info('WhatsApp webhook: unsupported message type, skipping.', ['type' => $type]);
-            }
+            $this->handleMessage($message);
         }
     }
 
     /**
-     * Process a location message: identify the order and save coordinates.
+     * Persist every incoming message to whatsapp_logs regardless of type, then
+     * run any type-specific side effects (e.g. saving a shared location).
      */
-    public function handleLocationMessage(array $message): void
+    public function handleMessage(array $message): void
     {
-        $phone        = $message['from']     ?? null;
-        $locationData = $message['location'] ?? null;
+        $phone = $message['from'] ?? null;
+        $type  = $message['type'] ?? 'unknown';
 
-        if (! $phone || ! $locationData) {
-            Log::warning('WhatsApp webhook: location message missing phone or location data.', [
-                'message' => $message,
-            ]);
+        if (! $phone) {
+            Log::warning('WhatsApp webhook: message missing sender phone.', ['message' => $message]);
             return;
         }
 
@@ -44,16 +38,49 @@ class WhatsappWebhookService
 
         if (! $order) {
             Log::warning('WhatsApp webhook: no active order found for phone.', ['phone' => $phone]);
-            return;
+        } else {
+            Log::info('WhatsApp webhook: order matched by phone.', [
+                'phone'        => $phone,
+                'order_id'     => $order->id,
+                'order_number' => $order->order_number,
+            ]);
         }
 
-        Log::info('WhatsApp webhook: order matched by phone.', [
+        [$body, $meta] = $this->describeMessage($type, $message);
+
+        WhatsAppLog::create([
+            'order_id'     => $order?->id,
             'phone'        => $phone,
-            'order_id'     => $order->id,
-            'order_number' => $order->order_number,
+            'message'      => $body,
+            'status'       => 'received',
+            'direction'    => 'inbound',
+            'message_type' => $type,
+            'meta'         => $meta,
         ]);
 
-        $this->saveCustomerLocation($order, $locationData);
+        if ($type === 'location' && $order && ! empty($message['location'])) {
+            $this->saveCustomerLocation($order, $message['location']);
+        }
+    }
+
+    /**
+     * Build a human-readable message body and a raw meta payload for a given
+     * incoming message type.
+     *
+     * @return array{0: string, 1: ?array}
+     */
+    private function describeMessage(string $type, array $message): array
+    {
+        return match ($type) {
+            'text' => [$message['text']['body'] ?? '', null],
+            'location' => [
+                $message['location']['address']
+                    ?? $message['location']['name']
+                    ?? trim(($message['location']['latitude'] ?? '') . ', ' . ($message['location']['longitude'] ?? '')),
+                $message['location'] ?? null,
+            ],
+            default => ["[{$type}]", $message[$type] ?? $message],
+        };
     }
 
     /**
@@ -64,7 +91,7 @@ class WhatsappWebhookService
     {
         $candidates = $this->generatePhoneCandidates($phone);
 
-        $order = Order::whereIn('receiver_phone', $candidates)
+        $order = Order::whereHas('receiver', fn ($q) => $q->whereIn('receiver_phone', $candidates))
             ->whereNotIn('status', ['delivered', 'cancelled', 'returned'])
             ->latest()
             ->first();
@@ -89,15 +116,12 @@ class WhatsappWebhookService
         // Prefer address string; fall back to place name
         $addressText = $address ?? $name ?? null;
 
-        $order->update([
+        $order->receiver()->update([
             'receiver_latitude'    => $latitude,
             'receiver_longitude'   => $longitude,
             'location_received_at' => now(),
-            // Only overwrite address fields when the incoming data has content
-            'address_text'         => $addressText ?? $order->address_text,
-            'address_location'     => ($latitude && $longitude)
-                ? "{$latitude},{$longitude}"
-                : $order->address_location,
+            // Only overwrite the address field when the incoming data has content
+            'address_text'         => $addressText ?? $order->receiver->address_text,
         ]);
 
         Log::info('WhatsApp webhook: customer location saved.', [
