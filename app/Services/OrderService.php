@@ -81,21 +81,6 @@ class OrderService
                 $this->logTracking($order->id, $actor->id, 'pending', 'assigned', "Order assigned to driver: {$driverName}.");
             }
 
-            // Use data array directly — avoids loading the receiver relation for the job
-            $driverUser = $driverProfile?->user ?? null;
-            SendWhatsappMessageJob::dispatch(
-                'order_created',
-                $data['receiver_phone'],
-                [
-                    'customer_name' => $data['receiver_name'] ?? '',
-                    'order_number'  => $order->order_number ?? '',
-                    'driver_name'   => $driverUser?->name  ?? '',
-                    'driver_phone'  => $driverUser?->phone ?? '',
-                    'location_link' => rescue(fn () => route('public.share-location', ['order_number' => $order->order_number]), ''),
-                ],
-                $order->id,
-            )->onQueue(config('whatsapp.queue', 'default'));
-
             return $order;
         }, 5);
     }

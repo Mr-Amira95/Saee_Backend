@@ -96,11 +96,10 @@ class UserManagementController extends Controller
         if ($data['otp_channel'] === 'email' && $user->email) {
             Mail::to($user->email)->send(new UserInvitationMail($user, $token));
         } else {
-            $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email ?? ''));
+            $queryTail = '?token='.urlencode($token).'&email='.urlencode($user->email ?? '');
             app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
-                'name' => $user->name,
-                'link' => $setPasswordUrl,
-            ]);
+                'user_name' => $user->name,
+            ], null, 'ar', [$queryTail]);
         }
 
         return redirect()->route('client.users.index')

@@ -388,16 +388,15 @@ class DriverController extends Controller
 
     private function sendInvitation(User $user, string $channel = 'whatsapp'): void
     {
-        $token          = Password::createToken($user);
-        $setPasswordUrl = url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email ?? ''));
+        $token = Password::createToken($user);
 
         if ($channel === 'email' && $user->email) {
             Mail::to($user->email)->send(new UserInvitationMail($user, $token));
         } else {
+            $queryTail = '?token='.urlencode($token).'&email='.urlencode($user->email ?? '');
             app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
-                'name' => $user->name,
-                'link' => $setPasswordUrl,
-            ]);
+                'user_name' => $user->name,
+            ], null, 'ar', [$queryTail]);
         }
     }
 

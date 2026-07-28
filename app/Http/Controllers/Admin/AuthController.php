@@ -124,9 +124,9 @@ class AuthController extends Controller
             'expires_at' => now()->addMinutes(5),
         ]);
 
-        app(WhatsAppService::class)->sendTemplate('password_reset_otp', $user->phone ?? '', [
+        app(WhatsAppService::class)->sendTemplate('otp', $user->phone ?? '', [
             'code' => $code,
-        ]);
+        ], null, 'ar', [$code]);
 
         $request->session()->put('admin_otp_user_id', $user->id);
 

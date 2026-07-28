@@ -128,9 +128,9 @@ class AuthController extends Controller
         if ($channel === 'email') {
             Mail::to($user->email)->send(new PasswordResetOtpMail($user, $code));
         } else {
-            app(WhatsAppService::class)->sendTemplate('password_reset_otp', $user->phone ?? '', [
+            app(WhatsAppService::class)->sendTemplate('otp', $user->phone ?? '', [
                 'code' => $code,
-            ]);
+            ], null, 'ar', [$code]);
         }
 
         $request->session()->put('otp_user_id', $user->id);

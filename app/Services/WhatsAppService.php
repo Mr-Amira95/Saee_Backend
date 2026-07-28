@@ -47,13 +47,21 @@ class WhatsAppService
         $provider = config('whatsapp.provider', 'meta');
 
         if ($provider === 'meta') {
-            // Parse placeholders from the template body in order to match Meta's positional parameters ({{1}}, {{2}}, etc.)
+            // Parse placeholders from the template body. Templates approved with named
+            // parameters (e.g. {{user_name}}) must send "parameter_name" per component;
+            // templates approved as positional (e.g. {{1}}) must not.
             preg_match_all('/\{\{([^}]+)\}\}/', $templateBody, $matches);
             $placeholderNames = $matches[1] ?? [];
+            $isNamed = in_array($event, config('whatsapp.named_templates', []), true);
 
             $parameters = [];
             foreach ($placeholderNames as $name) {
-                $parameters[] = $variables[trim($name)] ?? '';
+                $name = trim($name);
+                if ($isNamed) {
+                    $parameters[$name] = $variables[$name] ?? '';
+                } else {
+                    $parameters[] = $variables[$name] ?? '';
+                }
             }
 
             return $this->sendStructuredTemplate(
@@ -62,7 +70,8 @@ class WhatsAppService
                 $languageCode,
                 $parameters,
                 $orderId,
-                $buttonParams
+                $buttonParams,
+                $isNamed
             );
         }
 
@@ -244,6 +253,7 @@ class WhatsAppService
      * @param  array   $parameters    Positional array of parameters for the template body.
      * @param  int|null $orderId      Optional order ID for auditing.
      * @param  array   $buttonParams  Positional array of parameters for the template's dynamic URL button (e.g. the order number appended to a "track order" link).
+     * @param  bool    $isNamed       Whether the template body was approved with named parameters (e.g. {{user_name}}) rather than positional ({{1}}).
      * @return array{success: bool, log?: WhatsAppLog, error?: string, response?: array}
      */
     public function sendStructuredTemplate(
@@ -252,7 +262,8 @@ class WhatsAppService
         string $languageCode = 'en_US',
         array  $parameters = [],
         ?int   $orderId    = null,
-        array  $buttonParams = []
+        array  $buttonParams = [],
+        bool   $isNamed = false
     ): array {
         $normalizedPhone = $this->normalizePhone($phone);
         $url = sprintf('%s/%s/messages', rtrim(config('whatsapp.api_url'), '/'), config('whatsapp.sender'));
@@ -261,10 +272,16 @@ class WhatsAppService
         if (!empty($parameters)) {
             $components[] = [
                 'type' => 'body',
-                'parameters' => array_map(fn($val) => [
-                    'type' => 'text',
-                    'text' => (string) $val
-                ], $parameters)
+                'parameters' => $isNamed
+                    ? array_map(fn($name, $val) => [
+                        'type' => 'text',
+                        'parameter_name' => $name,
+                        'text' => (string) $val
+                    ], array_keys($parameters), array_values($parameters))
+                    : array_map(fn($val) => [
+                        'type' => 'text',
+                        'text' => (string) $val
+                    ], $parameters)
             ];
         }
 

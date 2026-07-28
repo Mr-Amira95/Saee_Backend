@@ -73,15 +73,14 @@ class ForgotPasswordController extends Controller
             'expires_at' => now()->addMinutes(5),
         ]);
 
-        // Temporary: send the code on both email and WhatsApp regardless of the user's configured channel.
-        if ($user->email) {
-            Mail::to($user->email)->send(new PasswordResetOtpMail($user, $code));
-        }
+        $channel = $user->otp_channel ?? 'whatsapp';
 
-        if ($user->phone) {
-            $this->whatsAppService->sendTemplate('password_reset_otp', $user->phone, [
+        if ($channel === 'email' && $user->email) {
+            Mail::to($user->email)->send(new PasswordResetOtpMail($user, $code));
+        } else {
+            $this->whatsAppService->sendTemplate('otp', $user->phone ?? '', [
                 'code' => $code,
-            ]);
+            ], null, 'ar', [$code]);
         }
 
         $data = ['expires_in_seconds' => 300];
