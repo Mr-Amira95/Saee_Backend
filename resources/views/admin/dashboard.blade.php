@@ -151,9 +151,9 @@
 
             <div style="display: flex; gap: 8px;">
                 @if(!$todayAttendance || $todayAttendance->check_out_at)
-                    <button class="btn-primary" id="dashboardCheckInBtn" onclick="submitAttendance('check-in')" style="padding: 8px 14px; font-size: .8rem; box-shadow: none;">Check In</button>
+                    <button class="btn-primary" id="dashboardCheckInBtn" onclick="submitAttendance('check-in')" style="padding: 8px 14px; font-size: .8rem; box-shadow: none;">{{ __('Check In') }}</button>
                 @else
-                    <button class="btn-danger" id="dashboardCheckOutBtn" onclick="submitAttendance('check-out')" style="padding: 8px 14px; font-size: .8rem;">Check Out</button>
+                    <button class="btn-danger" id="dashboardCheckOutBtn" onclick="submitAttendance('check-out')" style="padding: 8px 14px; font-size: .8rem;">{{ __('Check Out') }}</button>
                 @endif
             </div>
         </div>
@@ -167,10 +167,10 @@
             <div class="metric-icon">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             </div>
-            <span class="metric-trend">↑ Active</span>
+            <span class="metric-trend">{{ __('↑ Active') }}</span>
         </div>
         <div class="metric-val">{{ $activeDriversCount }}</div>
-        <div class="metric-lbl">Active Drivers</div>
+        <div class="metric-lbl">{{ __('Active Drivers') }}</div>
     </div>
 
     <div class="metric" style="--m-color:#3b82f6;--m-icon-bg:rgba(59,130,246,.12);animation-delay:.15s">
@@ -178,10 +178,10 @@
             <div class="metric-icon" style="color:#60a5fa">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </div>
-            <span class="metric-trend">↑ Registered</span>
+            <span class="metric-trend">{{ __('↑ Registered') }}</span>
         </div>
         <div class="metric-val">{{ $activeClientsCount }}</div>
-        <div class="metric-lbl">Client Companies</div>
+        <div class="metric-lbl">{{ __('Client Companies') }}</div>
     </div>
 
     <div class="metric" style="--m-color:#a855f7;--m-icon-bg:rgba(168,85,247,.12);animation-delay:.2s">
@@ -189,10 +189,10 @@
             <div class="metric-icon" style="color:#c084fc">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-            <span class="metric-trend">Total</span>
+            <span class="metric-trend">{{ __('Total') }}</span>
         </div>
         <div class="metric-val">{{ $totalOrdersCount }}</div>
-        <div class="metric-lbl">Total Orders</div>
+        <div class="metric-lbl">{{ __('Total Orders') }}</div>
     </div>
 
     <div class="metric" style="--m-color:#10b981;--m-icon-bg:rgba(16,185,129,.12);animation-delay:.25s">
@@ -200,10 +200,10 @@
             <div class="metric-icon" style="color:#34d399">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <span class="metric-trend">Delivered</span>
+            <span class="metric-trend">{{ __('Delivered') }}</span>
         </div>
         <div class="metric-val">{{ number_format($totalRevenue, 2) }}</div>
-        <div class="metric-lbl">Revenue (JD)</div>
+        <div class="metric-lbl">{{ __('Revenue (JD)') }}</div>
     </div>
 </div>
 
@@ -217,38 +217,38 @@
 @endphp
 <div class="panel" style="margin-bottom: 20px; animation: fu .5s .15s both;">
     <div class="panel-head">
-        <span class="panel-title">Operational Order Status</span>
-        <span style="font-size: .72rem; color: var(--text-dim); font-weight: 500;">Live distribution across states</span>
+        <span class="panel-title">{{ __('Operational Order Status') }}</span>
+        <span style="font-size: .72rem; color: var(--text-dim); font-weight: 500;">{{ __('Live distribution across states') }}</span>
     </div>
     <div style="padding: 20px 24px;">
         <!-- Status Bar -->
         <div style="height: 10px; display: flex; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,.04); margin-bottom: 20px;">
-            <div style="width: {{ $getPercentage('pending') }}%; background: var(--warning);" title="Pending: {{ round($getPercentage('pending'), 1) }}%"></div>
-            <div style="width: {{ $getPercentage('picked_up') }}%; background: var(--info);" title="In Transit: {{ round($getPercentage('picked_up'), 1) }}%"></div>
-            <div style="width: {{ $getPercentage('delivered') }}%; background: var(--success);" title="Delivered: {{ round($getPercentage('delivered'), 1) }}%"></div>
-            <div style="width: {{ $getPercentage('rejected') + $getPercentage('returned') }}%; background: #f87171;" title="Failed/Returned: {{ round($getPercentage('rejected') + $getPercentage('returned'), 1) }}%"></div>
-            <div style="width: {{ $getPercentage('cancelled') }}%; background: var(--text-dim);" title="Cancelled: {{ round($getPercentage('cancelled'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('pending') }}%; background: var(--warning);" title="{{ __('Pending') }}: {{ round($getPercentage('pending'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('picked_up') }}%; background: var(--info);" title="{{ __('In Transit') }}: {{ round($getPercentage('picked_up'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('delivered') }}%; background: var(--success);" title="{{ __('Delivered') }}: {{ round($getPercentage('delivered'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('rejected') + $getPercentage('returned') }}%; background: #f87171;" title="{{ __('Failed/Returned') }}: {{ round($getPercentage('rejected') + $getPercentage('returned'), 1) }}%"></div>
+            <div style="width: {{ $getPercentage('cancelled') }}%; background: var(--text-dim);" title="{{ __('Cancelled') }}: {{ round($getPercentage('cancelled'), 1) }}%"></div>
         </div>
         <!-- Grid details -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
             <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-pending" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>Pending</span>
+                <span class="badge badge-pending" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('Pending') }}</span>
                 <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['pending'] ?? 0 }}</div>
             </div>
             <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-info" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>In Transit</span>
+                <span class="badge badge-info" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('In Transit') }}</span>
                 <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['picked_up'] ?? 0 }}</div>
             </div>
             <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-success" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>Delivered</span>
+                <span class="badge badge-success" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('Delivered') }}</span>
                 <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['delivered'] ?? 0 }}</div>
             </div>
             <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-danger" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>Returned/Failed</span>
+                <span class="badge badge-danger" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('Returned/Failed') }}</span>
                 <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ ($statusCounts['returned'] ?? 0) + ($statusCounts['rejected'] ?? 0) }}</div>
             </div>
             <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-neutral" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>Cancelled</span>
+                <span class="badge badge-neutral" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('Cancelled') }}</span>
                 <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['cancelled'] ?? 0 }}</div>
             </div>
         </div>
@@ -260,8 +260,8 @@
     {{-- Recent activity --}}
     <div class="panel">
         <div class="panel-head">
-            <span class="panel-title">Recent Activity</span>
-            <span style="font-size: .72rem; color: var(--text-dim);">Real-time events</span>
+            <span class="panel-title">{{ __('Recent Activity') }}</span>
+            <span style="font-size: .72rem; color: var(--text-dim);">{{ __('Real-time events') }}</span>
         </div>
         <div class="activity-list">
             @forelse($recentActivities as $act)
@@ -273,7 +273,7 @@
                 </div>
             </div>
             @empty
-            <div style="padding: 30px; text-align: center; color: var(--text-dim); font-size: .84rem;">No recent activities today.</div>
+            <div style="padding: 30px; text-align: center; color: var(--text-dim); font-size: .84rem;">{{ __('No recent activities today.') }}</div>
             @endforelse
         </div>
     </div>
@@ -281,8 +281,8 @@
     {{-- Pending action center --}}
     <div class="panel">
         <div class="panel-head">
-            <span class="panel-title">Pending Action Items</span>
-            <span class="badge badge-pending" style="font-size:.72rem;">{{ $unassignedOrdersCount + $openTicketsCount }} unresolved</span>
+            <span class="panel-title">{{ __('Pending Action Items') }}</span>
+            <span class="badge badge-pending" style="font-size:.72rem;">{{ $unassignedOrdersCount + $openTicketsCount }} {{ __('unresolved') }}</span>
         </div>
         <div class="quick-stats" style="padding: 0;">
             <!-- Unassigned Orders Alert -->
@@ -290,15 +290,15 @@
                 <div style="display: flex; align-items: center; gap: 14px;">
                     <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245,158,11,.1); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink:0;">📦</div>
                     <div>
-                        <div style="font-size: .82rem; font-weight: 600; color: var(--text);">Unassigned Shipments</div>
-                        <div style="font-size: .72rem; color: var(--text-dim);">{{ $unassignedOrdersCount }} orders waiting for courier assignments</div>
+                        <div style="font-size: .82rem; font-weight: 600; color: var(--text);">{{ __('Unassigned Shipments') }}</div>
+                        <div style="font-size: .72rem; color: var(--text-dim);">{{ $unassignedOrdersCount }} {{ __('orders waiting for courier assignments') }}</div>
                     </div>
                 </div>
                 <div>
                     @if($unassignedOrdersCount > 0)
-                        <a href="{{ route('admin.orders.index') }}" class="btn-primary" style="padding: 5px 12px; font-size: .72rem; box-shadow: none; border-radius: 6px;">Dispatch</a>
+                        <a href="{{ route('admin.orders.index') }}" class="btn-primary" style="padding: 5px 12px; font-size: .72rem; box-shadow: none; border-radius: 6px;">{{ __('Dispatch') }}</a>
                     @else
-                        <span style="font-size: .72rem; color: var(--success); font-weight: 600;">● Cleared</span>
+                        <span style="font-size: .72rem; color: var(--success); font-weight: 600;">● {{ __('Cleared') }}</span>
                     @endif
                 </div>
             </div>
@@ -309,18 +309,18 @@
                 <div style="display: flex; align-items: center; gap: 14px;">
                     <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59,130,246,.1); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink:0;">💬</div>
                     <div style="min-width: 0;">
-                        <div style="font-size: .82rem; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Ticket #{{ $ticket->ticket_number }}: {{ $ticket->title }}</div>
+                        <div style="font-size: .82rem; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ __('Ticket #') }}{{ $ticket->ticket_number }}: {{ $ticket->title }}</div>
                         <div style="font-size: .72rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            By {{ $ticket->user->name ?? 'Client' }} • {{ $ticket->updated_at->diffForHumans() }}
+                            {{ __('By') }} {{ $ticket->user->name ?? __('Client') }} • {{ $ticket->updated_at->diffForHumans() }}
                         </div>
                     </div>
                 </div>
                 <div>
-                    <a href="{{ route('admin.support.index', ['ticket' => $ticket->ticket_number]) }}" class="btn-secondary" style="padding: 5px 12px; font-size: .72rem; border-radius: 6px;">Reply</a>
+                    <a href="{{ route('admin.support.index', ['ticket' => $ticket->ticket_number]) }}" class="btn-secondary" style="padding: 5px 12px; font-size: .72rem; border-radius: 6px;">{{ __('Reply') }}</a>
                 </div>
             </div>
             @empty
-            <div style="padding: 30px; text-align: center; color: var(--text-dim); font-size: .84rem;">No pending support tickets. All quiet!</div>
+            <div style="padding: 30px; text-align: center; color: var(--text-dim); font-size: .84rem;">{{ __('No pending support tickets. All quiet!') }}</div>
             @endforelse
         </div>
     </div>
@@ -340,18 +340,27 @@
 
 @section('scripts')
 <script>
+const dashboardI18n = {
+    locating: @json(__('Locating...')),
+    saving: @json(__('Saving...')),
+    success: @json(__('Success')),
+    verificationFailed: @json(__('Verification Failed')),
+    checkInFailed: @json(__('Check-in failed.')),
+    error: @json(__('Error')),
+    networkError: @json(__('A network error occurred. Please try again.')),
+};
 
 /* Post Attendance Check-In / Check-Out */
 function submitAttendance(type) {
     const btn = type === 'check-in' ? document.getElementById('dashboardCheckInBtn') : document.getElementById('dashboardCheckOutBtn');
     const statusText = document.getElementById('attendanceStatus');
     const originalText = btn.textContent;
-    
+
     btn.disabled = true;
-    btn.textContent = 'Locating...';
+    btn.textContent = dashboardI18n.locating;
 
     const sendAttendanceRequest = (coords = null) => {
-        btn.textContent = 'Saving...';
+        btn.textContent = dashboardI18n.saving;
         const url = type === 'check-in' 
             ? "{{ route('admin.attendance.check-in') }}" 
             : "{{ route('admin.attendance.check-out') }}";
@@ -367,17 +376,17 @@ function submitAttendance(type) {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showToast('Success', data.message, true, () => {
+                showToast(dashboardI18n.success, data.message, true, () => {
                     window.location.reload();
                 });
             } else {
-                showToast('Verification Failed', data.message || 'Check-in failed.', false);
+                showToast(dashboardI18n.verificationFailed, data.message || dashboardI18n.checkInFailed, false);
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
         })
         .catch(err => {
-            showToast('Error', 'A network error occurred. Please try again.', false);
+            showToast(dashboardI18n.error, dashboardI18n.networkError, false);
             btn.disabled = false;
             btn.textContent = originalText;
         });

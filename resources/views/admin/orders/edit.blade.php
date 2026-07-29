@@ -194,7 +194,7 @@
                         <option value="">{{ __('Select City') }}</option>
                         @foreach($cities as $city)
                             <option value="{{ $city->id }}" {{ old('city_id', $receiver?->city_id) == $city->id ? 'selected' : '' }}>
-                                {{ $city->name }}
+                                {{ app()->getLocale() === 'ar' ? ($city->name_ar ?: $city->name) : $city->name }}
                             </option>
                         @endforeach
                     </select>
@@ -236,6 +236,7 @@
 @section('scripts')
 <script>
     const citiesData = @json($cities);
+    const isArabicLocale = {{ app()->getLocale() === 'ar' ? 'true' : 'false' }};
     const preselectedCityId  = {{ old('city_id', $receiver?->city_id ?? 'null') }};
     const preselectedAreaId  = {{ old('area_id', $receiver?->area_id ?? 'null') }};
 
@@ -322,8 +323,9 @@
 
         _attachEvents() {
             this.input.addEventListener('focus', () => {
-                this._renderDropdown(this.input.value);
+                this._renderDropdown('');
                 this.dropdown.style.display = 'block';
+                this.input.select();
             });
             this.input.addEventListener('input', () => {
                 this.selectEl.value = '';
@@ -359,7 +361,7 @@
                 city.areas.forEach(area => {
                     const option = document.createElement('option');
                     option.value = area.id;
-                    option.textContent = area.name;
+                    option.textContent = isArabicLocale ? (area.name_ar || area.name) : area.name;
                     if (area.id == selectedAreaId) option.selected = true;
                     areaSelect.appendChild(option);
                 });

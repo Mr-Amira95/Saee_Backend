@@ -435,9 +435,9 @@ class ClientController extends Controller
 
             $type = $request->input('cliq_alias_type');
             if ($type === 'phone' && !preg_match('/^7[789][0-9]{7}$/', $value)) {
-                $fail('The CliQ phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+                $fail(__('The CliQ phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.'));
             } elseif ($type === 'alias' && !preg_match('/^[A-Za-z0-9]+$/', $value)) {
-                $fail('The CliQ alias must only contain letters and numbers.');
+                $fail(__('The CliQ alias must only contain letters and numbers.'));
             }
         };
     }
@@ -445,26 +445,26 @@ class ClientController extends Controller
     private function bankValidationMessages(): array
     {
         return [
-            'name.regex'      => 'The full name field must only contain letters and spaces.',
-            'username.regex'  => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
-            'email.regex'     => 'The email must be a valid address in the format name@domain.com.',
-            'email.required_if' => 'The email field is required when the notification channel is set to email.',
-            'phone.regex'     => 'The phone field must contain 6 to 15 digits only.',
-            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
-            'commercial_register_number.regex' => 'The commercial registration number must contain numbers only.',
-            'vat_number.regex' => 'The VAT number must contain numbers only.',
-            'company_email.regex' => 'The company email must be a valid address in the format name@domain.com.',
-            'expiry_date.date_format' => 'The account expiry date must be in the format DD-MM-YYYY.',
-            'expiry_date.after' => 'The account expiry date must be a date after today.',
-            'logo.image' => 'The logo must be an image (JPG, PNG, GIF, BMP, WEBP, or SVG).',
-            'bank_name.regex' => 'The bank name must only contain English letters.',
-            'account_name.regex' => 'The account holder name must only contain English letters.',
-            'account_number.regex' => 'The account number must contain digits only.',
-            'iban.regex' => 'The IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.',
-            'swift_code.regex' => 'The SWIFT / BIC code must only contain letters and numbers.',
-            'swift_code.min' => 'The SWIFT / BIC code must be between 8 and 11 characters.',
-            'swift_code.max' => 'The SWIFT / BIC code must be between 8 and 11 characters.',
-            'delivery_prices.*.min' => 'The :attribute must be at least 0',
+            'name.regex'      => __('The full name field must only contain letters and spaces.'),
+            'username.regex'  => __('The username must start with a letter or number, contain at least one letter, and cannot end with a special character.'),
+            'email.regex'     => __('The email must be a valid address in the format name@domain.com.'),
+            'email.required_if' => __('The email field is required when the notification channel is set to email.'),
+            'phone.regex'     => __('The phone field must contain 6 to 15 digits only.'),
+            'phone.required_if' => __('The phone field is required when the notification channel is set to WhatsApp.'),
+            'commercial_register_number.regex' => __('The commercial registration number must contain numbers only.'),
+            'vat_number.regex' => __('The VAT number must contain numbers only.'),
+            'company_email.regex' => __('The company email must be a valid address in the format name@domain.com.'),
+            'expiry_date.date_format' => __('The account expiry date must be in the format DD-MM-YYYY.'),
+            'expiry_date.after' => __('The account expiry date must be a date after today.'),
+            'logo.image' => __('The logo must be an image (JPG, PNG, GIF, BMP, WEBP, or SVG).'),
+            'bank_name.regex' => __('The bank name must only contain English letters.'),
+            'account_name.regex' => __('The account holder name must only contain English letters.'),
+            'account_number.regex' => __('The account number must contain digits only.'),
+            'iban.regex' => __('The IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.'),
+            'swift_code.regex' => __('The SWIFT / BIC code must only contain letters and numbers.'),
+            'swift_code.min' => __('The SWIFT / BIC code must be between 8 and 11 characters.'),
+            'swift_code.max' => __('The SWIFT / BIC code must be between 8 and 11 characters.'),
+            'delivery_prices.*.min' => __('The :attribute must be at least 0'),
         ];
     }
 

@@ -38,9 +38,9 @@ class AccountController extends Controller
             'email' => ['nullable', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', Rule::unique('users', 'phone')->ignore($user->id)],
         ], [
-            'name.regex' => 'The full name field must only contain letters and spaces.',
-            'email.regex' => 'The email must be a valid address in the format name@domain.com.',
-            'phone.regex' => 'The phone field must contain 6 to 15 digits only.',
+            'name.regex' => __('The full name field must only contain letters and spaces.'),
+            'email.regex' => __('The email must be a valid address in the format name@domain.com.'),
+            'phone.regex' => __('The phone field must contain 6 to 15 digits only.'),
         ]);
 
         $user->name  = $request->name;
@@ -67,7 +67,7 @@ class AccountController extends Controller
         $user = Auth::user();
 
         if (! Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+            return back()->withErrors(['current_password' => __('Current password is incorrect.')]);
         }
 
         $user->password = $request->password;

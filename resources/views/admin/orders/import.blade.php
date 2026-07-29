@@ -111,10 +111,10 @@
                 <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;" data-no-export="true">
                     <thead>
                         <tr style="position: sticky; top: 0; background: var(--card-hd, rgba(12,18,48,0.95));">
-                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 80px;">{{ __('City ID') }}</th>
-                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">{{ __('City Name') }}</th>
-                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 90px;">{{ __('Area ID') }}</th>
-                            <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">{{ __('Area Name') }}</th>
+                            <th class="no-sort" style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 80px;">{{ __('City ID') }}</th>
+                            <th class="no-sort" style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">{{ __('City Name') }}</th>
+                            <th class="no-sort" style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 90px;">{{ __('Area ID') }}</th>
+                            <th class="no-sort" style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">{{ __('Area Name') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -122,7 +122,7 @@
                             @if($city->areas->isEmpty())
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                                     <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt);">{{ $city->id }}</td>
-                                    <td style="padding: 7px 14px; color: var(--text); font-weight: 600;">{{ $city->name }}</td>
+                                    <td style="padding: 7px 14px; color: var(--text); font-weight: 600;">{{ app()->getLocale() === 'ar' ? ($city->name_ar ?: $city->name) : $city->name }}</td>
                                     <td colspan="2" style="padding: 7px 14px; color: var(--text-dim); font-style: italic;">{{ __('No areas') }}</td>
                                 </tr>
                             @else
@@ -130,10 +130,10 @@
                                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                                         @if($loop2 === 0)
                                             <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt); vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ $city->id }}</td>
-                                            <td style="padding: 7px 14px; color: var(--text); font-weight: 600; vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ $city->name }}</td>
+                                            <td style="padding: 7px 14px; color: var(--text); font-weight: 600; vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ app()->getLocale() === 'ar' ? ($city->name_ar ?: $city->name) : $city->name }}</td>
                                         @endif
                                         <td style="padding: 7px 14px; color: var(--text-dim); padding-left: 20px;">{{ $area->id }}</td>
-                                        <td style="padding: 7px 14px; color: var(--text);">{{ $area->name }}</td>
+                                        <td style="padding: 7px 14px; color: var(--text);">{{ app()->getLocale() === 'ar' ? ($area->name_ar ?: $area->name) : $area->name }}</td>
                                     </tr>
                                 @endforeach
                             @endif

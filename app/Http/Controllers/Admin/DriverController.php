@@ -81,6 +81,10 @@ class DriverController extends Controller
             'cliq_alias_type'        => 'nullable|in:alias,phone',
             'cliq_id'                => ['nullable', 'string', 'max:50', $this->cliqIdRule($request)],
             'bank_notes'             => 'nullable|string',
+            'attachment_labels'      => 'nullable|array',
+            'attachment_labels.*'    => 'nullable|string|max:255',
+            'attachment_files'       => 'nullable|array',
+            'attachment_files.*'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ], $this->bankValidationMessages());
 
         $data['license_expiry_date'] = Carbon::createFromFormat('d-m-Y', $data['license_expiry_date'])->format('Y-m-d');
@@ -407,9 +411,9 @@ class DriverController extends Controller
 
             $type = $request->input('cliq_alias_type');
             if ($type === 'phone' && !preg_match('/^7[789][0-9]{7}$/', $value)) {
-                $fail('The CliQ phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.');
+                $fail(__('The CliQ phone number must start with 7, have 7, 8, or 9 as the second digit, and be exactly 9 digits long.'));
             } elseif ($type === 'alias' && !preg_match('/^[A-Za-z0-9]+$/', $value)) {
-                $fail('The CliQ alias must only contain letters and numbers.');
+                $fail(__('The CliQ alias must only contain letters and numbers.'));
             }
         };
     }
@@ -417,24 +421,24 @@ class DriverController extends Controller
     private function bankValidationMessages(): array
     {
         return [
-            'name.regex'      => 'The full name field must only contain letters and spaces.',
-            'username.regex'  => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
-            'email.regex'     => 'The email must be a valid address in the format name@domain.com.',
-            'email.required_if' => 'The email field is required when the notification channel is set to email.',
-            'phone.regex'     => 'The phone field must contain 6 to 15 digits only.',
-            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
-            'national_id.regex' => 'The national ID must be exactly 10 digits.',
-            'license_number.regex' => 'The license number must contain letters and numbers only.',
-            'license_expiry_date.date_format' => 'The license expiry date must be in the format DD-MM-YYYY.',
-            'car_license_expiry.date_format' => 'The car license expiry date must be in the format DD-MM-YYYY.',
-            'vehicle_plate.regex' => 'The plate number must be in the format 1-2 digits, a dash, then 1-5 digits (e.g. 12-345).',
-            'bank_name.regex' => 'The bank name must only contain English letters.',
-            'account_name.regex' => 'The account holder name must only contain English letters.',
-            'account_number.regex' => 'The account number must contain digits only.',
-            'iban.regex' => 'The IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.',
-            'swift_code.regex' => 'The SWIFT / BIC code must only contain letters and numbers.',
-            'swift_code.min' => 'The SWIFT / BIC code must be between 8 and 11 characters.',
-            'swift_code.max' => 'The SWIFT / BIC code must be between 8 and 11 characters.',
+            'name.regex'      => __('The full name field must only contain letters and spaces.'),
+            'username.regex'  => __('The username must start with a letter or number, contain at least one letter, and cannot end with a special character.'),
+            'email.regex'     => __('The email must be a valid address in the format name@domain.com.'),
+            'email.required_if' => __('The email field is required when the notification channel is set to email.'),
+            'phone.regex'     => __('The phone field must contain 6 to 15 digits only.'),
+            'phone.required_if' => __('The phone field is required when the notification channel is set to WhatsApp.'),
+            'national_id.regex' => __('The national ID must be exactly 10 digits.'),
+            'license_number.regex' => __('The license number must contain letters and numbers only.'),
+            'license_expiry_date.date_format' => __('The license expiry date must be in the format DD-MM-YYYY.'),
+            'car_license_expiry.date_format' => __('The car license expiry date must be in the format DD-MM-YYYY.'),
+            'vehicle_plate.regex' => __('The plate number must be in the format 1-2 digits, a dash, then 1-5 digits (e.g. 12-345).'),
+            'bank_name.regex' => __('The bank name must only contain English letters.'),
+            'account_name.regex' => __('The account holder name must only contain English letters.'),
+            'account_number.regex' => __('The account number must contain digits only.'),
+            'iban.regex' => __('The IBAN must start with 2 letters, followed by 2 digits, then up to 30 alphanumeric characters.'),
+            'swift_code.regex' => __('The SWIFT / BIC code must only contain letters and numbers.'),
+            'swift_code.min' => __('The SWIFT / BIC code must be between 8 and 11 characters.'),
+            'swift_code.max' => __('The SWIFT / BIC code must be between 8 and 11 characters.'),
         ];
     }
 }

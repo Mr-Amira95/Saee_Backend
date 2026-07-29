@@ -1160,11 +1160,11 @@
                         <svg id="themeSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m0 13.5V21m8.942-8.942h-2.25M4.313 12H2.063m15.122-6.938l-1.591 1.591M6.818 17.182l-1.591 1.591m12.94 0l-1.591-1.591M6.818 6.818L5.227 5.227M12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
                     </button>
 
-                    @if (Route::has('login'))
+                    @if (Route::has('portal.login'))
                         @auth
                             <a href="{{ url('/admin/dashboard') }}" class="btn btn-secondary" id="btnDashboard">{{ __('Dashboard') }}</a>
                         @else
-                            <a href="{{ route('login') }}" class="btn btn-secondary" id="btnLogIn">{{ __('Admin Login') }}</a>
+                            <a href="{{ route('portal.login') }}" class="btn btn-secondary" id="btnLogIn">{{ __('Admin Login') }}</a>
                         @endauth
                     @else
                         <a href="#contact" class="btn btn-primary" id="btnGetQuoteNav">{{ __('Get a Quote') }}</a>

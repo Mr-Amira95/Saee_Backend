@@ -207,6 +207,10 @@ class ClientUserController extends Controller
                 $employee->update($employeeFields);
             }
 
+            if ($request->filled('status')) {
+                $employee->user?->update(['status' => $request->input('status')]);
+            }
+
             if ($request->has('permissions')) {
                 $this->syncPermissions($employee->user_id, $clientProfile->id, $request->input('permissions', []), $user->id);
             }

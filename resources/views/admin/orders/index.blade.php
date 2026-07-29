@@ -173,7 +173,7 @@
                         <div class="ss-opts">
                             <div class="ss-opt {{ !request('city_id') ? 'selected' : '' }}" data-value="">{{ __('All Cities') }}</div>
                             @foreach($cities as $city)
-                                <div class="ss-opt {{ request('city_id') == $city->id ? 'selected' : '' }}" data-value="{{ $city->id }}">{{ $city->name }}</div>
+                                <div class="ss-opt {{ request('city_id') == $city->id ? 'selected' : '' }}" data-value="{{ $city->id }}">{{ app()->getLocale() === 'ar' ? ($city->name_ar ?: $city->name) : $city->name }}</div>
                             @endforeach
                         </div>
                     </div>

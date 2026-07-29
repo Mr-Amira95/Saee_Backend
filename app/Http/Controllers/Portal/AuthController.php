@@ -35,7 +35,7 @@ class AuthController extends Controller
             'login'    => ['required', 'string'],
             'password' => ['required'],
         ], [
-            'login.required' => 'The username or phone field is required.',
+            'login.required' => __('The username or phone field is required.'),
         ]);
 
         $submitted = trim($request->input('login'));
@@ -45,31 +45,31 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($request->input('password'), $user->password)) {
             return back()
-                ->withErrors(['login' => 'The credentials you entered are incorrect.'])
+                ->withErrors(['login' => __('The credentials you entered are incorrect.')])
                 ->withInput($request->only('login'));
         }
 
         if (! \in_array($user->role, ['admin', 'superadmin', 'client_master', 'client_employee'])) {
             return back()
-                ->withErrors(['login' => 'This portal is for admin and client users only. Please use the mobile app.'])
+                ->withErrors(['login' => __('This portal is for admin and client users only. Please use the mobile app.')])
                 ->withInput($request->only('login'));
         }
 
         if ($user->status === 'pending') {
             return back()
-                ->withErrors(['login' => 'Your account is pending activation. Please wait until it is activated or contact the admin.'])
+                ->withErrors(['login' => __('Your account is pending activation. Please wait until it is activated or contact the admin.')])
                 ->withInput($request->only('login'));
         }
 
         if ($user->status !== 'active') {
             return back()
-                ->withErrors(['login' => 'Your account has been suspended. Please contact support.'])
+                ->withErrors(['login' => __('Your account has been suspended. Please contact support.')])
                 ->withInput($request->only('login'));
         }
 
         if ($user->hasExpiredClientContract()) {
             return back()
-                ->withErrors(['login' => 'Your contract has been expired, please get in touch with the admin.'])
+                ->withErrors(['login' => __('Your contract has been expired, please get in touch with the admin.')])
                 ->withInput($request->only('login'));
         }
 
@@ -91,7 +91,7 @@ class AuthController extends Controller
     public function sendResetLink(Request $request): RedirectResponse
     {
         $request->validate(['login' => ['required', 'string']], [
-            'login.required' => 'The username or phone field is required.',
+            'login.required' => __('The username or phone field is required.'),
         ]);
 
         $submitted = trim($request->input('login'));
@@ -100,11 +100,11 @@ class AuthController extends Controller
             ?? User::whereIn('phone', $this->phoneCandidates($submitted))->first();
 
         if (! $user || ! in_array($user->role, ['admin', 'superadmin', 'client_master', 'client_employee'])) {
-            return back()->withErrors(['login' => 'No account was found with that username or phone number.']);
+            return back()->withErrors(['login' => __('No account was found with that username or phone number.')]);
         }
 
         if ($user->status !== 'active') {
-            return back()->withErrors(['login' => 'This account is not active. Please contact support.']);
+            return back()->withErrors(['login' => __('This account is not active. Please contact support.')]);
         }
 
         PasswordResetCode::where('user_id', $user->id)
@@ -162,7 +162,7 @@ class AuthController extends Controller
 
         if (! $userId) {
             return redirect()->route('portal.forgot-password')
-                ->withErrors(['code' => 'Session expired. Please start again.']);
+                ->withErrors(['code' => __('Session expired. Please start again.')]);
         }
 
         $resetCode = PasswordResetCode::where('user_id', $userId)
@@ -174,7 +174,7 @@ class AuthController extends Controller
         if (! $resetCode) {
             $request->session()->forget(['otp_user_id', 'otp_channel']);
             return redirect()->route('portal.forgot-password')
-                ->withErrors(['login' => 'Code expired. Please request a new one.']);
+                ->withErrors(['login' => __('Code expired. Please request a new one.')]);
         }
 
         if ($resetCode->attempts >= 5) {

@@ -171,6 +171,7 @@ class BulkOrderController extends Controller
 
         session(['import_pending_rows' => $rows]);
         session(['import_errors' => $errors]);
+        session(['import_source' => 'image']);
 
         if ($hasErrors) {
             return redirect()->route('admin.orders.import.review')
@@ -266,9 +267,9 @@ class BulkOrderController extends Controller
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt|max:10240',
         ], [
-            'csv_file.required' => 'Please select a CSV file to upload.',
-            'csv_file.mimes'    => 'Unsupported file format. Only CSV files are accepted.',
-            'csv_file.max'      => 'The file is too large. Maximum allowed size is 10MB.',
+            'csv_file.required' => __('Please select a CSV file to upload.'),
+            'csv_file.mimes'    => __('Unsupported file format. Only CSV files are accepted.'),
+            'csv_file.max'      => __('The file is too large. Maximum allowed size is 10MB.'),
         ]);
 
         $file = $request->file('csv_file');
@@ -325,6 +326,7 @@ class BulkOrderController extends Controller
 
         session(['import_pending_rows' => $rows]);
         session(['import_errors' => $errors]);
+        session(['import_source' => 'csv']);
 
         if ($hasErrors) {
             return redirect()->route('admin.orders.import.review')
@@ -343,13 +345,15 @@ class BulkOrderController extends Controller
             return redirect()->route('admin.orders.import');
         }
 
+        $cancelRoute = session('import_source') === 'image' ? 'admin.orders.import-image' : 'admin.orders.import';
+
         $clients = ClientProfile::where('status', 'active')->orderBy('company_name')->get(['id', 'company_name']);
         $cities  = City::where('is_active', true)
             ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
             ->orderBy('name')
             ->get();
 
-        return view('admin.orders.import_confirm', compact('rows', 'rowErrors', 'clients', 'cities'));
+        return view('admin.orders.import_confirm', compact('rows', 'rowErrors', 'clients', 'cities', 'cancelRoute'));
     }
 
     public function storeConfirmed(Request $request)

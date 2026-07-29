@@ -1,6 +1,6 @@
 @extends('client.layouts.app')
-@section('title', 'Bulk Import Orders')
-@section('page-title', 'Bulk Import Orders')
+@section('title', __('Bulk Import Orders'))
+@section('page-title', __('Bulk Import Orders'))
 
 @push('styles')
 <style>
@@ -45,10 +45,10 @@
 
 <div class="page-hd">
     <div class="page-hd-left" style="display:flex;align-items:center;gap:10px;">
-        <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← Back</a>
+        <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">← {{ __('Back') }}</a>
         <div>
-            <h1>Bulk Import Orders</h1>
-            <p>Upload a CSV file containing multiple orders to import them instantly.</p>
+            <h1>{{ __('Bulk Import Orders') }}</h1>
+            <p>{{ __('Upload a CSV file containing multiple orders to import them instantly.') }}</p>
         </div>
     </div>
     <div class="page-hd-right">
@@ -58,7 +58,7 @@
         </a>
         <a href="{{ route('client.orders.template') }}" class="btn-primary">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Download CSV Template
+            {{ __('Download CSV Template') }}
         </a>
     </div>
 </div>
@@ -73,7 +73,7 @@
     <div class="form-section">
         <div class="form-section-title">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-            Upload CSV File
+            {{ __('Upload CSV File') }}
         </div>
 
         <form action="{{ route('client.orders.import.submit') }}" method="POST" enctype="multipart/form-data">
@@ -85,15 +85,15 @@
                     <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="display: inline-block;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px;">
-                    Drag and drop your template CSV here, or <span style="color: var(--red-lt); cursor: pointer;" onclick="document.getElementById('csv_file').click()">browse</span>
+                    {{ __('Drag and drop your template CSV here, or') }} <span style="color: var(--red-lt); cursor: pointer;" onclick="document.getElementById('csv_file').click()">{{ __('browse') }}</span>
                 </div>
-                <div style="font-size: 0.76rem; color: var(--text-dim);" id="file-name-display">Only CSV format is supported. Max file size: 10MB.</div>
+                <div style="font-size: 0.76rem; color: var(--text-dim);" id="file-name-display">{{ __('Only CSV format is supported. Max file size: 10MB.') }}</div>
                 <div style="font-size: 0.8rem; font-weight: 600; color: #ef4444; margin-top: 8px; display: none;" id="file-error-display"></div>
             </div>
 
             <div class="form-actions" style="margin-top: 18px;">
-                <a href="{{ route('client.orders.import') }}" class="btn-secondary">Cancel</a>
-                <button type="submit" class="btn-primary" id="submitBtn" disabled>Upload and Parse</button>
+                <a href="{{ route('client.orders.import') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+                <button type="submit" class="btn-primary" id="submitBtn" disabled>{{ __('Upload and Parse') }}</button>
             </div>
         </form>
     </div>
@@ -102,16 +102,16 @@
     <div class="form-section guidelines-panel">
         <div class="form-section-title" style="color: var(--text-sub);">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Cities &amp; Areas Reference — use these IDs in <code>city_id</code> and <code>area_id</code>
+            {!! __('Cities & Areas Reference — use these IDs in <code>city_id</code> and <code>area_id</code>') !!}
         </div>
         <div style="max-height: 220px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--bdr);">
             <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;" data-no-export="true">
                 <thead>
                     <tr style="position: sticky; top: 0; background: var(--card);">
-                        <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 80px;">City ID</th>
-                        <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">City Name</th>
-                        <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 90px;">Area ID</th>
-                        <th style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">Area Name</th>
+                        <th class="no-sort" style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 80px;">{{ __('City ID') }}</th>
+                        <th class="no-sort" style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">{{ __('City Name') }}</th>
+                        <th class="no-sort" style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr); width: 90px;">{{ __('Area ID') }}</th>
+                        <th class="no-sort" style="padding: 8px 14px; text-align: left; color: var(--text-dim); font-weight: 600; border-bottom: 1px solid var(--bdr);">{{ __('Area Name') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,24 +119,24 @@
                         @if($city->areas->isEmpty())
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                                 <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt);">{{ $city->id }}</td>
-                                <td style="padding: 7px 14px; color: var(--text); font-weight: 600;">{{ $city->name }}</td>
-                                <td colspan="2" style="padding: 7px 14px; color: var(--text-dim); font-style: italic;">No areas</td>
+                                <td style="padding: 7px 14px; color: var(--text); font-weight: 600;">{{ app()->getLocale() === 'ar' ? ($city->name_ar ?: $city->name) : $city->name }}</td>
+                                <td colspan="2" style="padding: 7px 14px; color: var(--text-dim); font-style: italic;">{{ __('No areas') }}</td>
                             </tr>
                         @else
                             @foreach($city->areas as $loop2 => $area)
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                                     @if($loop2 === 0)
                                         <td style="padding: 7px 14px; font-weight: 700; color: var(--red-lt); vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ $city->id }}</td>
-                                        <td style="padding: 7px 14px; color: var(--text); font-weight: 600; vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ $city->name }}</td>
+                                        <td style="padding: 7px 14px; color: var(--text); font-weight: 600; vertical-align: top;" rowspan="{{ $city->areas->count() }}">{{ app()->getLocale() === 'ar' ? ($city->name_ar ?: $city->name) : $city->name }}</td>
                                     @endif
                                     <td style="padding: 7px 14px; color: var(--text-dim); padding-left: 20px;">{{ $area->id }}</td>
-                                    <td style="padding: 7px 14px; color: var(--text);">{{ $area->name }}</td>
+                                    <td style="padding: 7px 14px; color: var(--text);">{{ app()->getLocale() === 'ar' ? ($area->name_ar ?: $area->name) : $area->name }}</td>
                                 </tr>
                             @endforeach
                         @endif
                     @endforeach
                     @if($cities->isEmpty())
-                        <tr><td colspan="4" style="padding: 14px; color: var(--text-dim); text-align: center;">No active cities found.</td></tr>
+                        <tr><td colspan="4" style="padding: 14px; color: var(--text-dim); text-align: center;">{{ __('No active cities found.') }}</td></tr>
                     @endif
                 </tbody>
             </table>
@@ -146,24 +146,24 @@
     {{-- Template Formatting Guidelines --}}
     <div class="form-section guidelines-panel">
         <div class="form-section-title" style="color: var(--text-sub);">
-            Template Formatting Guidelines
+            {{ __('Template Formatting Guidelines') }}
         </div>
         <div class="info-rows">
             <div class="info-row">
                 <span style="font-weight: 700; color: var(--text); width: 220px;">payment_type</span>
-                <strong>Use <code>cod</code> / <code>عند التسليم</code> or <code>prepaid</code> / <code>مدفوع</code>.</strong>
+                <strong>{!! __('Use <code>cod</code> / <code>عند التسليم</code> or <code>prepaid</code> / <code>مدفوع</code>.') !!}</strong>
             </div>
             <div class="info-row">
                 <span style="font-weight: 700; color: var(--text); width: 220px;">delivery_on_customer</span>
-                <strong>Use <code>Yes</code> / <code>نعم</code> if the customer pays the delivery fee, or <code>No</code> / <code>لا</code> if it is charged to you.</strong>
+                <strong>{!! __('Use <code>Yes</code> / <code>نعم</code> if the customer pays the delivery fee, or <code>No</code> / <code>لا</code> if it is charged to the client.') !!}</strong>
             </div>
             <div class="info-row">
                 <span style="font-weight: 700; color: var(--text); width: 220px;">order_price</span>
-                <strong>The amount driver should collect from customer for COD goods. Leave as <code>0.00</code> for prepaid orders.</strong>
+                <strong>{!! __('The amount driver should collect from customer for COD goods. Leave as <code>0.00</code> for prepaid orders.') !!}</strong>
             </div>
             <div class="info-row">
                 <span style="font-weight: 700; color: var(--text); width: 220px;">city_id &amp; area_id</span>
-                <strong>Must match database IDs. Make sure the <code>area_id</code> belongs to the specified <code>city_id</code>, otherwise the import will show errors.</strong>
+                <strong>{!! __('Must match database IDs. Make sure the <code>area_id</code> belongs to the specified <code>city_id</code>, otherwise the import will show errors.') !!}</strong>
             </div>
         </div>
     </div>
@@ -181,7 +181,8 @@
     const fileErrorDisplay = document.getElementById('file-error-display');
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    const DEFAULT_HINT = 'Only CSV format is supported. Max file size: 10MB.';
+    const DEFAULT_HINT = @json(__('Only CSV format is supported. Max file size: 10MB.'));
+    const SELECTED_LABEL = @json(__('Selected:'));
 
     function showFileError(message) {
         fileErrorDisplay.textContent = message;
@@ -206,16 +207,16 @@
             const isCsv = /\.csv$/i.test(file.name);
 
             if (!isCsv) {
-                showFileError('Unsupported file format. Only CSV files are accepted.');
+                showFileError(@json(__('Unsupported file format. Only CSV files are accepted.')));
                 return;
             }
 
             if (file.size > MAX_FILE_SIZE) {
-                showFileError('File size exceeds the 10MB limit. Please upload a smaller file.');
+                showFileError(@json(__('File size exceeds the 10MB limit. Please upload a smaller file.')));
                 return;
             }
 
-            fileNameDisplay.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            fileNameDisplay.textContent = `${SELECTED_LABEL} ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
             fileNameDisplay.style.color = '#3b82f6';
             submitBtn.disabled = false;
             dropzone.style.borderColor = 'rgba(59, 130, 246, 0.4)';

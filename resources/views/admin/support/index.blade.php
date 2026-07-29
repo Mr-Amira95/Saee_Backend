@@ -366,7 +366,7 @@
                         <div class="ticket-meta">
                             <span>{{ __('By:') }} {{ $t->user ? $t->user->name : __('Guest Recipient') }}</span>
                             <span class="badge {{ $t->status === 'resolved' ? 'badge-active' : 'badge-pending' }}" style="padding: 2px 6px; font-size:.65rem">
-                                {{ strtoupper(str_replace('_', ' ', $t->status)) }}
+                                {{ __(ucwords(str_replace('_', ' ', $t->status))) }}
                             </span>
                         </div>
                     </a>
@@ -477,6 +477,11 @@
 (function () {
     const i18nSupport = {
         justNow: @json(__('Just now')),
+        statusLabels: {
+            open: @json(__('Open')),
+            in_progress: @json(__('In Progress')),
+            resolved: @json(__('Resolved')),
+        },
     };
     const PUSHER_KEY    = '{{ config('broadcasting.connections.pusher.key') }}';
     const PUSHER_CLUSTER = '{{ config('broadcasting.connections.pusher.options.cluster') }}';
@@ -504,7 +509,7 @@
         if (ticketList.querySelector(`[data-ticket-id="${data.id}"]`)) return;
 
         const statusClass = data.status === 'resolved' ? 'badge-active' : 'badge-pending';
-        const statusLabel = data.status.replace('_', ' ').toUpperCase();
+        const statusLabel = i18nSupport.statusLabels[data.status] || data.status.replace('_', ' ').toUpperCase();
 
         const a = document.createElement('a');
         a.href = `?ticket=${data.ticket_number}`;

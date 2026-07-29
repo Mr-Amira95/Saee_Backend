@@ -522,6 +522,22 @@ function addAttachRow() {
             '<button type="button" class="btn-remove-att" onclick="removeAttachRow(' + i + ')" style="flex-shrink:0;">&#10005;</button>' +
         '</div>';
     document.getElementById('attachContainer').appendChild(row);
+
+    var fileInput = row.querySelector('input[type="file"]');
+    fileInput.addEventListener('change', function() {
+        var existingErr = row.querySelector('.js-err');
+        if (existingErr) existingErr.remove();
+        fileInput.classList.remove('is-error');
+        if (fileInput.files[0] && fileInput.files[0].size > 10 * 1024 * 1024) {
+            fileInput.classList.add('is-error');
+            var s = document.createElement('span');
+            s.className = 'form-error js-err';
+            s.style.gridColumn = '1 / -1';
+            s.textContent = i18nDriverCreate.fileSizeExceeded;
+            row.appendChild(s);
+            fileInput.value = '';
+        }
+    });
 }
 function removeAttachRow(i) {
     var el = document.getElementById('att-row-' + i);

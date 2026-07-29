@@ -192,7 +192,7 @@
             <p>{{ __('Review and adjust the') }} <span id="rowCountLabel">{{ count($rows) }}</span> {{ __('order(s) below, then click') }} <strong>{{ __('Confirm & Import') }}</strong> {{ __('to save them. You can remove any row using the delete icon.') }}</p>
         </div>
         <div class="page-hd-right">
-            <a href="{{ route('admin.orders.import') }}" class="btn-secondary">
+            <a href="{{ route($cancelRoute) }}" class="btn-secondary">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 {{ __('Cancel') }}
             </a>
@@ -382,7 +382,7 @@
                                 @foreach($cities as $city)
                                     <option value="{{ $city->id }}"
                                         {{ ($row['city_id'] ?? '') == $city->id ? 'selected' : '' }}>
-                                        {{ $city->id }} · {{ $city->name }}
+                                        {{ $city->id }} · {{ app()->getLocale() === 'ar' ? ($city->name_ar ?: $city->name) : $city->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -400,7 +400,7 @@
                                     @foreach($rowCity->areas as $area)
                                         <option value="{{ $area->id }}"
                                             {{ ($row['area_id'] ?? '') == $area->id ? 'selected' : '' }}>
-                                            {{ $area->id }} · {{ $area->name }}
+                                            {{ $area->id }} · {{ app()->getLocale() === 'ar' ? ($area->name_ar ?: $area->name) : $area->name }}
                                         </option>
                                     @endforeach
                                 @endif
@@ -457,10 +457,10 @@
         </div>
 
         <div class="form-actions" style="margin-top: 22px;">
-            <a href="{{ route('admin.orders.import') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+            <a href="{{ route($cancelRoute) }}" class="btn-secondary">{{ __('Cancel') }}</a>
             <button type="submit" class="btn-primary" id="confirmSubmitBtn">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                {{ __('Confirm & Import') }} <span id="submitRowCount">{{ count($rows) }}</span> {{ __('Order') }}<span id="submitRowPlural">{{ count($rows) !== 1 ? 's' : '' }}</span>
+                {{ __('Confirm & Import') }} <span id="submitRowCount">{{ count($rows) }}</span> {{ __('order(s)') }}
             </button>
         </div>
     </form>
@@ -473,7 +473,7 @@
         @foreach($cities as $city)
         {{ $city->id }}: [
             @foreach($city->areas as $area)
-            { id: {{ $area->id }}, name: {{ json_encode($area->name) }} },
+            { id: {{ $area->id }}, name: {!! json_encode(app()->getLocale() === 'ar' ? ($area->name_ar ?: $area->name) : $area->name) !!} },
             @endforeach
         ],
         @endforeach
@@ -513,7 +513,6 @@
         const remaining = document.querySelectorAll('.confirm-table tbody tr').length;
         document.getElementById('rowCountLabel').textContent = remaining;
         document.getElementById('submitRowCount').textContent = remaining;
-        document.getElementById('submitRowPlural').textContent = remaining !== 1 ? 's' : '';
 
         const submitBtn = document.getElementById('confirmSubmitBtn');
         submitBtn.disabled = remaining === 0;

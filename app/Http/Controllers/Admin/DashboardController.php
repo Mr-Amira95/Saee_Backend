@@ -38,9 +38,13 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(function ($log) {
+                $status = __(ucfirst(str_replace('_', ' ', $log->status)));
                 return [
                     'dot_color' => '#3b82f6', // Info blue
-                    'message' => 'Order <strong>#' . ($log->order->order_number ?? 'N/A') . '</strong> status updated to <strong>' . ucfirst(str_replace('_', ' ', $log->status)) . '</strong>' . ($log->notes ? " ({$log->notes})" : ''),
+                    'message' => __('Order :number status updated to :status', [
+                        'number' => '<strong>#' . ($log->order->order_number ?? __('N/A')) . '</strong>',
+                        'status' => '<strong>' . $status . '</strong>',
+                    ]) . ($log->notes ? " ({$log->notes})" : ''),
                     'time' => $log->created_at,
                 ];
             });
@@ -51,10 +55,12 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(function ($att) {
-                $action = $att->check_out_at ? 'checked out of' : 'checked into';
+                $message = $att->check_out_at
+                    ? __('Driver :name checked out of their shift', ['name' => '<strong>' . ($att->user->name ?? __('N/A')) . '</strong>'])
+                    : __('Driver :name checked into their shift', ['name' => '<strong>' . ($att->user->name ?? __('N/A')) . '</strong>']);
                 return [
                     'dot_color' => $att->check_out_at ? '#ef4444' : '#10b981', // Red for out, green for in
-                    'message' => 'Driver <strong>' . ($att->user->name ?? 'N/A') . '</strong> ' . $action . ' their shift',
+                    'message' => $message,
                     'time' => $att->updated_at,
                 ];
             });

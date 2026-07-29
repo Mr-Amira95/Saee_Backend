@@ -61,12 +61,12 @@ class UserManagementController extends Controller
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ], [
-            'name.regex' => 'The full name field must only contain letters and spaces.',
-            'username.regex' => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
-            'email.regex' => 'The email must be a valid address in the format name@domain.com.',
-            'email.required_if' => 'The email field is required when the notification channel is set to email.',
-            'phone.regex' => 'The phone field must contain 6 to 15 digits only.',
-            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
+            'name.regex' => __('The full name field must only contain letters and spaces.'),
+            'username.regex' => __('The username must start with a letter or number, contain at least one letter, and cannot end with a special character.'),
+            'email.regex' => __('The email must be a valid address in the format name@domain.com.'),
+            'email.required_if' => __('The email field is required when the notification channel is set to email.'),
+            'phone.regex' => __('The phone field must contain 6 to 15 digits only.'),
+            'phone.required_if' => __('The phone field is required when the notification channel is set to WhatsApp.'),
         ]);
 
         $profile = $this->getClientProfile();
@@ -137,12 +137,12 @@ class UserManagementController extends Controller
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ], [
-            'name.regex' => 'The full name field must only contain letters and spaces.',
-            'username.regex' => 'The username must start with a letter or number, contain at least one letter, and cannot end with a special character.',
-            'email.regex' => 'The email must be a valid address in the format name@domain.com.',
-            'email.required_if' => 'The email field is required when the notification channel is set to email.',
-            'phone.regex' => 'The phone field must contain 6 to 15 digits only.',
-            'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
+            'name.regex' => __('The full name field must only contain letters and spaces.'),
+            'username.regex' => __('The username must start with a letter or number, contain at least one letter, and cannot end with a special character.'),
+            'email.regex' => __('The email must be a valid address in the format name@domain.com.'),
+            'email.required_if' => __('The email field is required when the notification channel is set to email.'),
+            'phone.regex' => __('The phone field must contain 6 to 15 digits only.'),
+            'phone.required_if' => __('The phone field is required when the notification channel is set to WhatsApp.'),
         ]);
 
         $user->name = $request->name;
@@ -187,6 +187,23 @@ class UserManagementController extends Controller
                 DB::table('client_employee_permission_user')->insertOrIgnore($rows);
             }
         });
+    }
+
+    public function updateStatus(int $id): RedirectResponse
+    {
+        $profile = $this->getClientProfile();
+        $employee = $profile->employees()->with('user')->findOrFail($id);
+
+        $newStatus = $employee->status === 'active' ? 'suspended' : 'active';
+
+        DB::transaction(function () use ($employee, $newStatus) {
+            $employee->update(['status' => $newStatus]);
+            $employee->user?->update(['status' => $newStatus]);
+        });
+
+        return redirect()->route('client.users.index')->with('success', $newStatus === 'active'
+            ? __('Employee has been activated.')
+            : __('Employee has been suspended.'));
     }
 
     public function destroy(int $id): RedirectResponse

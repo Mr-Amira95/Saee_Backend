@@ -36,13 +36,12 @@
 }
 .phone-input-field:focus { outline: none; border-color: var(--red); }
 .phone-dropdown {
-    position: absolute; z-index: 500; top: calc(100% + 4px); left: 0;
+    position: fixed; z-index: 2000;
     width: 300px; background: var(--bg-2); border: 1px solid var(--bdr);
     border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.6);
     display: none; overflow: hidden;
 }
 .phone-dropdown.open { display: block; }
-.phone-dropdown.drop-up { top: auto; bottom: calc(100% + 4px); }
 .phone-dd-search {
     width: 100%; padding: 10px 12px; background: var(--bg);
     border: none; border-bottom: 1px solid var(--bdr);
@@ -70,10 +69,6 @@ html[dir="rtl"] .phone-input-field {
 html[dir="rtl"] .phone-ext-btn .arrow {
     margin-left: 0;
     margin-right: auto;
-}
-html[dir="rtl"] .phone-dropdown {
-    left: auto;
-    right: 0;
 }
 </style>
 @endsection
@@ -259,6 +254,33 @@ function initPhoneDropdown(btnId, flagId, codeId, valId, ddId, listId) {
     const listEl   = document.getElementById(listId);
     const searchEl = dd.querySelector('.phone-dd-search');
 
+    // Moved to <body> so it escapes the form section's stacking context
+    // (form sections use backdrop-filter, which traps absolutely-positioned
+    // descendants behind later sibling sections regardless of z-index).
+    document.body.appendChild(dd);
+
+    function positionDropdown() {
+        const btnRect = btn.getBoundingClientRect();
+        const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
+        dd.style.top = '';
+        dd.style.bottom = '';
+        dd.style.visibility = 'hidden';
+        dd.classList.add('open');
+        const ddHeight = dd.offsetHeight;
+        const ddWidth = dd.offsetWidth;
+        const spaceBelow = window.innerHeight - btnRect.bottom;
+        const spaceAbove = btnRect.top;
+        if (spaceBelow < ddHeight && spaceAbove > spaceBelow) {
+            dd.style.bottom = (window.innerHeight - btnRect.top + 4) + 'px';
+        } else {
+            dd.style.top = (btnRect.bottom + 4) + 'px';
+        }
+        let left = isRTL ? (btnRect.right - ddWidth) : btnRect.left;
+        left = Math.min(Math.max(left, 8), window.innerWidth - ddWidth - 8);
+        dd.style.left = left + 'px';
+        dd.style.visibility = '';
+    }
+
     function renderList(q) {
         q = (q || '').toLowerCase();
         listEl.innerHTML = '';
@@ -284,13 +306,10 @@ function initPhoneDropdown(btnId, flagId, codeId, valId, ddId, listId) {
     renderList('');
     btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        dd.classList.toggle('open');
         if (dd.classList.contains('open')) {
-            const btnRect = btn.getBoundingClientRect();
-            const ddHeight = dd.offsetHeight;
-            const spaceBelow = window.innerHeight - btnRect.bottom;
-            const spaceAbove = btnRect.top;
-            dd.classList.toggle('drop-up', spaceBelow < ddHeight && spaceAbove > spaceBelow);
+            dd.classList.remove('open');
+        } else {
+            positionDropdown();
             searchEl.focus();
         }
     });

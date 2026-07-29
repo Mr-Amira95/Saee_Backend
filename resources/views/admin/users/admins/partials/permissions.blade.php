@@ -28,7 +28,7 @@
                 <input type="checkbox" class="perm-page-checkbox" name="permissions[]" value="{{ $pagePerm->id }}"
                     {{ in_array($pagePerm->id, $grantedIds) ? 'checked' : '' }}>
                 <div>
-                    <div class="perm-name">{{ $pagePerm->display_name }}</div>
+                    <div class="perm-name">{{ __($pagePerm->display_name) }}</div>
                     @if($actionPerms->isNotEmpty())
                         <div class="perm-desc">{{ __('Grants read-only access until specific actions below are checked.') }}</div>
                     @endif
@@ -40,7 +40,7 @@
                 <label class="perm-item perm-action-item">
                     <input type="checkbox" class="perm-action-checkbox" name="permissions[]" value="{{ $perm->id }}"
                         {{ in_array($perm->id, $grantedIds) ? 'checked' : '' }}>
-                    <div class="perm-name">{{ $perm->display_name }}</div>
+                    <div class="perm-name">{{ __($perm->display_name) }}</div>
                 </label>
                 @endforeach
             </div>

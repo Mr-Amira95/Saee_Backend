@@ -29,8 +29,8 @@ class ClientEmployeeController extends Controller
     public function store(Request $request, ClientProfile $client)
     {
         $data = $request->validate([
-            'name'               => 'required|string|max:255',
-            'username'           => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_.-]+$/', 'unique:users,username'],
+            'name'               => ['required', 'string', 'min:1', 'max:255'],
+            'username'           => ['required', 'string', 'max:50', 'regex:/^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/', 'unique:users,username'],
             'email'              => ['required_if:otp_channel,email', 'nullable', 'email', 'unique:users,email'],
             'phone'              => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
             'phone_country_code' => 'nullable|string|max:10',
@@ -39,7 +39,7 @@ class ClientEmployeeController extends Controller
             'permissions'        => 'nullable|array',
             'permissions.*'      => 'integer|exists:permissions,id',
         ], [
-            'username.regex'  => 'The username field must only contain letters, numbers, dashes, underscores, and dots.',
+            'username.regex'  => __('Username must contain at least one letter, start with a letter or number, and cannot end with a special character.'),
             'email.required_if' => 'The email field is required when the notification channel is set to email.',
             'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
         ]);
@@ -96,7 +96,11 @@ class ClientEmployeeController extends Controller
     public function updateStatus(ClientProfile $client, ClientEmployee $employee)
     {
         $newStatus = $employee->status === 'active' ? 'suspended' : 'active';
-        $employee->update(['status' => $newStatus]);
+
+        DB::transaction(function () use ($employee, $newStatus) {
+            $employee->update(['status' => $newStatus]);
+            $employee->user?->update(['status' => $newStatus]);
+        });
 
         return back()->with('success', $newStatus === 'active'
             ? __('Employee has been activated.')

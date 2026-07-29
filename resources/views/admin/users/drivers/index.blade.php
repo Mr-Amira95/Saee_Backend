@@ -89,7 +89,7 @@
                     @php
                         $expiry = \Carbon\Carbon::parse($driver->license_expiry_date);
                         $isExpired = $expiry->isPast();
-                        $isSoon = !$isExpired && $expiry->diffInDays(now()) <= 30;
+                        $isSoon = !$isExpired && now()->startOfDay()->diffInDays($expiry, false) <= 30;
                     @endphp
                     <span style="color: {{ $isExpired ? 'var(--red-lt)' : ($isSoon ? 'var(--warning)' : 'inherit') }}">
                         {{ $expiry->format('d M Y') }}
@@ -103,7 +103,7 @@
                         @php
                             $carExpiry = \Carbon\Carbon::parse($driver->car_license_expiry);
                             $isCarExpired = $carExpiry->isPast();
-                            $isCarSoon = !$isCarExpired && $carExpiry->diffInDays(now()) <= 30;
+                            $isCarSoon = !$isCarExpired && now()->startOfDay()->diffInDays($carExpiry, false) <= 30;
                         @endphp
                         <span style="color: {{ $isCarExpired ? 'var(--red-lt)' : ($isCarSoon ? 'var(--warning)' : 'inherit') }}">
                             {{ $carExpiry->format('d M Y') }}

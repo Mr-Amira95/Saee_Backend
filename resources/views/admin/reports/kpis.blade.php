@@ -136,7 +136,7 @@
             </div>
             <div>
                 <div class="mini-stat-val" style="color:#60a5fa;">{{ number_format($totalOrders) }}</div>
-                <div class="mini-stat-lbl">Total Orders</div>
+                <div class="mini-stat-lbl">{{ __('Total Orders') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -145,7 +145,7 @@
             </div>
             <div>
                 <div class="mini-stat-val" style="color:#4ade80;">{{ number_format($deliveredCount) }}</div>
-                <div class="mini-stat-lbl">Delivered</div>
+                <div class="mini-stat-lbl">{{ __('Delivered') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -154,7 +154,7 @@
             </div>
             <div>
                 <div class="mini-stat-val" style="color:#f87171;">{{ number_format($failedCount) }}</div>
-                <div class="mini-stat-lbl">Rejected &amp; Returned</div>
+                <div class="mini-stat-lbl">{{ __('Rejected & Returned') }}</div>
             </div>
         </div>
         <div class="mini-stat">
@@ -163,7 +163,7 @@
             </div>
             <div>
                 <div class="mini-stat-val" style="color:#fbbf24;">{{ number_format($totalRatings) }}</div>
-                <div class="mini-stat-lbl">Customer Ratings</div>
+                <div class="mini-stat-lbl">{{ __('Customer Ratings') }}</div>
             </div>
         </div>
     </div>
@@ -174,18 +174,18 @@
         {{-- Delivery Success Rate --}}
         <div class="kpi-card" style="animation-delay:.05s">
             <div style="flex:1;">
-                <div class="kpi-label">Delivery Success Rate</div>
+                <div class="kpi-label">{{ __('Delivery Success Rate') }}</div>
                 <div class="kpi-val" style="color:#4ade80;">{{ $successRate }}%</div>
                 <div class="kpi-sub">
                     @if($successRate >= 90)
-                        <span style="color:#4ade80;font-weight:600;">● Excellent</span> — above target
+                        <span style="color:#4ade80;font-weight:600;">● {{ __('Excellent') }}</span> — {{ __('above target') }}
                     @elseif($successRate >= 75)
-                        <span style="color:#fbbf24;font-weight:600;">● Good</span> — within range
+                        <span style="color:#fbbf24;font-weight:600;">● {{ __('Good') }}</span> — {{ __('within range') }}
                     @else
-                        <span style="color:#f87171;font-weight:600;">● Needs attention</span>
+                        <span style="color:#f87171;font-weight:600;">● {{ __('Needs attention') }}</span>
                     @endif
                 </div>
-                <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($deliveredCount) }} of {{ number_format($deliveredCount + $failedCount) }} completed</div>
+                <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($deliveredCount) }} {{ __('of') }} {{ number_format($deliveredCount + $failedCount) }} {{ __('completed') }}</div>
             </div>
             <div class="kpi-ring">
                 <svg viewBox="0 0 36 36" width="100%" height="100%">
@@ -200,15 +200,15 @@
         @php
             $rColor  = $returnRate > 20 ? '#ef4444' : ($returnRate > 10 ? '#f59e0b' : '#22c55e');
             $rStroke = $returnRate > 20 ? '#ef4444' : ($returnRate > 10 ? '#f59e0b' : '#22c55e');
-            $rLabel  = $returnRate > 20 ? '● High — investigate' : ($returnRate > 10 ? '● Moderate — monitor' : '● Low — on track');
+            $rLabel  = $returnRate > 20 ? '● ' . __('High — investigate') : ($returnRate > 10 ? '● ' . __('Moderate — monitor') : '● ' . __('Low — on track'));
             $rLColor = $returnRate > 20 ? '#f87171' : ($returnRate > 10 ? '#fbbf24' : '#4ade80');
         @endphp
         <div class="kpi-card" style="animation-delay:.1s">
             <div style="flex:1;">
-                <div class="kpi-label">Rejection &amp; Return Rate</div>
+                <div class="kpi-label">{{ __('Rejection & Return Rate') }}</div>
                 <div class="kpi-val" style="color:{{ $rColor }};">{{ $returnRate }}%</div>
                 <div class="kpi-sub"><span style="color:{{ $rLColor }};font-weight:600;">{{ $rLabel }}</span></div>
-                <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($failedCount) }} of {{ number_format($deliveredCount + $failedCount) }} completed</div>
+                <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($failedCount) }} {{ __('of') }} {{ number_format($deliveredCount + $failedCount) }} {{ __('completed') }}</div>
             </div>
             <div class="kpi-ring">
                 <svg viewBox="0 0 36 36" width="100%" height="100%">
@@ -223,17 +223,17 @@
         @php $satPct = ($avgSatisfaction / 5) * 100; @endphp
         <div class="kpi-card" style="animation-delay:.15s">
             <div style="flex:1;">
-                <div class="kpi-label">Customer Satisfaction</div>
+                <div class="kpi-label">{{ __('Customer Satisfaction') }}</div>
                 <div class="kpi-val" style="color:#fbbf24;display:flex;align-items:center;gap:8px;">
                     {{ $avgSatisfaction }} <span style="font-size:1.5rem;">★</span>
                 </div>
                 <div class="kpi-sub">
-                    @if($avgSatisfaction >= 4.5) <span style="color:#4ade80;font-weight:600;">● Excellent</span>
-                    @elseif($avgSatisfaction >= 3.5) <span style="color:#fbbf24;font-weight:600;">● Good</span>
-                    @else <span style="color:#f87171;font-weight:600;">● Needs work</span>
+                    @if($avgSatisfaction >= 4.5) <span style="color:#4ade80;font-weight:600;">● {{ __('Excellent') }}</span>
+                    @elseif($avgSatisfaction >= 3.5) <span style="color:#fbbf24;font-weight:600;">● {{ __('Good') }}</span>
+                    @else <span style="color:#f87171;font-weight:600;">● {{ __('Needs work') }}</span>
                     @endif
                 </div>
-                <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($totalRatings) }} {{ Str::plural('review', $totalRatings) }}</div>
+                <div style="font-size:.7rem;color:var(--text-dim);margin-top:4px;">{{ number_format($totalRatings) }} {{ trans_choice(':count review|:count reviews', $totalRatings, ['count' => number_format($totalRatings)]) }}</div>
             </div>
             <div class="kpi-ring">
                 <svg viewBox="0 0 36 36" width="100%" height="100%">
@@ -249,15 +249,15 @@
     {{-- Full-width Driver Performance Leaderboard --}}
     <div class="table-card" style="animation: fu .45s .2s both;">
         <div style="padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;">
-            <span class="panel-title" style="font-size:.82rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">Active Drivers Performance Ranking</span>
-            <span style="font-size:.72rem;color:var(--text-dim);">{{ $drivers->count() }} active {{ Str::plural('driver', $drivers->count()) }}</span>
+            <span class="panel-title" style="font-size:.82rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Active Drivers Performance Ranking') }}</span>
+            <span style="font-size:.72rem;color:var(--text-dim);">{{ trans_choice(':count active driver|:count active drivers', $drivers->count(), ['count' => $drivers->count()]) }}</span>
         </div>
 
         @if($drivers->isEmpty())
             <div class="empty-state">
                 <svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                <h3>No Active Drivers</h3>
-                <p>Activate drivers to see their performance ranking here.</p>
+                <h3>{{ __('No Active Drivers') }}</h3>
+                <p>{{ __('Activate drivers to see their performance ranking here.') }}</p>
             </div>
         @else
             <div class="table-wrap">
@@ -265,12 +265,12 @@
                     <thead>
                         <tr>
                             <th style="width:46px;">#</th>
-                            <th>Driver</th>
-                            <th style="text-align:center;">Avg Rating</th>
-                            <th style="text-align:center;">Delivered Orders</th>
-                            <th style="text-align:center;">Rejected &amp; Returned</th>
-                            <th style="min-width:180px;">Success Rate</th>
-                            <th style="width:80px;text-align:center;">KPI</th>
+                            <th>{{ __('Driver') }}</th>
+                            <th style="text-align:center;">{{ __('Avg Rating') }}</th>
+                            <th style="text-align:center;">{{ __('Delivered Orders') }}</th>
+                            <th style="text-align:center;">{{ __('Rejected & Returned') }}</th>
+                            <th style="min-width:180px;">{{ __('Success Rate') }}</th>
+                            <th style="width:80px;text-align:center;">{{ __('KPI') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -309,7 +309,7 @@
                                     </div>
                                 </td>
                                 <td style="text-align:center;">
-                                    <a href="{{ route('admin.reports.driver-kpi', $d['driver']) }}" class="act-btn act-view" title="View driver KPI">
+                                    <a href="{{ route('admin.reports.driver-kpi', $d['driver']) }}" class="act-btn act-view" title="{{ __('View driver KPI') }}">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                                     </a>
                                 </td>
@@ -329,8 +329,8 @@
         {{-- Stars distribution bar chart --}}
         <div class="panel-card" style="animation-delay:.3s;">
             <div class="panel-head">
-                <span class="panel-title">Ratings Distribution</span>
-                <span class="badge badge-pending" style="font-size:.68rem;">{{ number_format($totalRatings) }} total</span>
+                <span class="panel-title">{{ __('Ratings Distribution') }}</span>
+                <span class="badge badge-pending" style="font-size:.68rem;">{{ number_format($totalRatings) }} {{ __('total') }}</span>
             </div>
             <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--bdr);">
                 <span style="font-size:2.4rem;font-weight:900;color:#fbbf24;letter-spacing:-.04em;">{{ $avgSatisfaction }}</span>
@@ -338,7 +338,7 @@
                     <div style="font-size:1.05rem;color:#fbbf24;">
                         @for($i=1;$i<=5;$i++) {{ $i <= round($avgSatisfaction) ? '★' : '☆' }} @endfor
                     </div>
-                    <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px;">{{ number_format($totalR) }} {{ Str::plural('review', $totalR) }}</div>
+                    <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px;">{{ trans_choice(':count review|:count reviews', $totalR, ['count' => number_format($totalR)]) }}</div>
                 </div>
             </div>
             <div style="padding:8px 0;">
@@ -364,11 +364,11 @@
             <div style="width:52px;height:52px;border-radius:14px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.15);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
                 <svg width="24" height="24" fill="none" stroke="#fbbf24" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
             </div>
-            <h3 style="font-size:1rem;font-weight:800;margin-bottom:6px;">Customer Ratings Log</h3>
-            <p style="font-size:.82rem;color:var(--text-sub);line-height:1.55;margin-bottom:20px;">Browse, filter, and search all {{ number_format($totalRatings) }} customer reviews by driver, star rating, or date range.</p>
+            <h3 style="font-size:1rem;font-weight:800;margin-bottom:6px;">{{ __('Customer Ratings Log') }}</h3>
+            <p style="font-size:.82rem;color:var(--text-sub);line-height:1.55;margin-bottom:20px;">{{ __('Browse, filter, and search all :count customer reviews by driver, star rating, or date range.', ['count' => number_format($totalRatings)]) }}</p>
             <a href="{{ route('admin.reports.ratings') }}" class="btn-primary" style="box-shadow:none;">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                View All Ratings
+                {{ __('View All Ratings') }}
             </a>
         </div>
 

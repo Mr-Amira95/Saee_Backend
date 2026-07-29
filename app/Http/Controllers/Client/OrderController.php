@@ -395,9 +395,9 @@ class OrderController extends Controller
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt|max:10240',
         ], [
-            'csv_file.required' => 'Please select a CSV file to upload.',
-            'csv_file.mimes'    => 'Unsupported file format. Only CSV files are accepted.',
-            'csv_file.max'      => 'The file is too large. Maximum allowed size is 10MB.',
+            'csv_file.required' => __('Please select a CSV file to upload.'),
+            'csv_file.mimes'    => __('Unsupported file format. Only CSV files are accepted.'),
+            'csv_file.max'      => __('The file is too large. Maximum allowed size is 10MB.'),
         ]);
 
         $path = $request->file('csv_file')->getRealPath();

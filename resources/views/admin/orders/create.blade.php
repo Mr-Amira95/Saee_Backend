@@ -25,17 +25,13 @@
             display: block;
         }
         .search-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
+            position: fixed;
             background: var(--bg-2);
             border: 1px solid var(--bdr);
             border-radius: 8px;
             max-height: 220px;
             overflow-y: auto;
-            z-index: 2000;
-            margin-top: 4px;
+            z-index: 3000;
             box-shadow: 0 8px 24px rgba(0,0,0,0.35);
         }
         .search-dropdown-item {
@@ -81,7 +77,7 @@
                 <div class="form-grid-2">
                     <div class="form-group">
                         <label class="form-label" for="client_profile_id">{{ __('Client Name') }} <span class="req">*</span></label>
-                        <select name="client_profile_id" id="client_profile_id" class="form-select @error('client_profile_id') err @enderror" required>
+                        <select name="client_profile_id" id="client_profile_id" class="form-select @error('client_profile_id') err @enderror">
                             <option value="">{{ __('Select Client') }}</option>
                             @foreach($clients as $client)
                                 <option value="{{ $client->id }}" {{ old('client_profile_id') == $client->id ? 'selected' : '' }}>
@@ -90,6 +86,7 @@
                             @endforeach
                         </select>
                         @error('client_profile_id') <span class="form-error">{{ $message }}</span> @enderror
+                        <span class="form-error" id="client_profile_id_error" style="display: none;"></span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="order_description">{{ __('Shipment Contents / Description') }}</label>
@@ -194,7 +191,7 @@
                             <option value="">{{ __('Select City') }}</option>
                             @foreach($cities as $city)
                                 <option value="{{ $city->id }}" {{ old('city_id') == $city->id ? 'selected' : '' }}>
-                                    {{ $city->name }}
+                                    {{ app()->getLocale() === 'ar' ? ($city->name_ar ?: $city->name) : $city->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -244,6 +241,7 @@
             searchAreas: @json(__('Search areas...')),
             noResultsFound: @json(__('No results found')),
             selectArea: @json(__('Select Area')),
+            clientRequired: @json(__('Please select a client.')),
         };
 
         // ── Searchable Select ──────────────────────────────────────────────
@@ -273,7 +271,7 @@
                 this.dropdown = document.createElement('div');
                 this.dropdown.className = 'search-dropdown';
                 this.dropdown.style.display = 'none';
-                wrapper.appendChild(this.dropdown);
+                document.body.appendChild(this.dropdown);
 
                 this._syncOptions();
                 this._attachEvents();
@@ -320,6 +318,25 @@
                 });
             }
 
+            _positionDropdown() {
+                const rect = this.wrapper.getBoundingClientRect();
+                const maxHeight = parseInt(getComputedStyle(this.dropdown).maxHeight, 10) || 220;
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const spaceAbove = rect.top;
+                const openUp = spaceBelow < maxHeight + 12 && spaceAbove > spaceBelow;
+
+                this.dropdown.style.left = rect.left + 'px';
+                this.dropdown.style.width = rect.width + 'px';
+
+                if (openUp) {
+                    this.dropdown.style.top = 'auto';
+                    this.dropdown.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+                } else {
+                    this.dropdown.style.bottom = 'auto';
+                    this.dropdown.style.top = (rect.bottom + 4) + 'px';
+                }
+            }
+
             setValue(value, text) {
                 this.selectEl.value = value;
                 this.input.value = text || '';
@@ -336,14 +353,17 @@
 
             _attachEvents() {
                 this.input.addEventListener('focus', () => {
-                    this._renderDropdown(this.input.value);
+                    this._renderDropdown('');
+                    this._positionDropdown();
                     this.dropdown.style.display = 'block';
+                    this.input.select();
                 });
 
                 this.input.addEventListener('input', () => {
                     // Clear hidden value if user edits text
                     this.selectEl.value = '';
                     this._renderDropdown(this.input.value);
+                    this._positionDropdown();
                     this.dropdown.style.display = 'block';
                 });
 
@@ -356,11 +376,18 @@
                         }
                     }, 150);
                 });
+
+                const reposition = () => {
+                    if (this.dropdown.style.display === 'block') this._positionDropdown();
+                };
+                window.addEventListener('scroll', reposition, true);
+                window.addEventListener('resize', reposition);
             }
         }
 
         // ── Init ──────────────────────────────────────────────────────────
         const citiesData = @json($cities);
+        const isArabicLocale = {{ app()->getLocale() === 'ar' ? 'true' : 'false' }};
 
         const clientSelect = document.getElementById('client_profile_id');
         const citySelect   = document.getElementById('city_id');
@@ -369,6 +396,34 @@
         const clientSS = new SearchableSelect(clientSelect, 'Search clients...');
         const citySS   = new SearchableSelect(citySelect,   'Search cities...');
         let   areaSS   = null;
+
+        // ── Client Selection Validation ─────────────────────────────────────
+        const clientErrorEl = document.getElementById('client_profile_id_error');
+
+        function showClientError() {
+            clientErrorEl.textContent = i18nOrderCreate.clientRequired;
+            clientErrorEl.style.display = 'block';
+            clientSS.input.classList.add('err');
+        }
+
+        function clearClientError() {
+            clientErrorEl.style.display = 'none';
+            clientErrorEl.textContent = '';
+            clientSS.input.classList.remove('err');
+        }
+
+        clientSelect.addEventListener('change', function () {
+            if (this.value) clearClientError();
+        });
+
+        document.getElementById('orderForm').addEventListener('submit', function (e) {
+            if (!clientSelect.value) {
+                e.preventDefault();
+                showClientError();
+                clientSS.input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                clientSS.input.focus();
+            }
+        });
 
         // ── Dynamic Areas Population ──────────────────────────────────────
         citySelect.addEventListener('change', function () {
@@ -381,7 +436,7 @@
                     city.areas.forEach(area => {
                         const option = document.createElement('option');
                         option.value = area.id;
-                        option.textContent = area.name;
+                        option.textContent = isArabicLocale ? (area.name_ar || area.name) : area.name;
                         if (area.id == "{{ old('area_id') }}") {
                             option.selected = true;
                         }

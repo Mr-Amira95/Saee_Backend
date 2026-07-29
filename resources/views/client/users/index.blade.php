@@ -61,6 +61,13 @@
                         <a href="{{ route('client.users.edit', $employee->id) }}" class="btn-secondary" style="font-size:.78rem;padding:5px 12px;text-decoration:none;display:inline-block;">
                             {{ __('Edit') }}
                         </a>
+                        <form method="POST" action="{{ route('client.users.status', $employee->id) }}" style="display:inline;">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn-secondary" style="font-size:.78rem;padding:5px 12px;">
+                                {{ $employee->status === 'active' ? __('Suspend') : __('Activate') }}
+                            </button>
+                        </form>
                         <form method="POST" action="{{ route('client.users.destroy', $employee->id) }}" style="display:inline;" onsubmit="return confirm('{{ __('Are you sure you want to delete this user? This action cannot be undone.') }}')">
                             @csrf
                             @method('DELETE')

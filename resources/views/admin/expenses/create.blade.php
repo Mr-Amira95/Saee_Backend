@@ -89,9 +89,11 @@
                 </div>
                 <div class="form-group" style="grid-column: span 2;">
                     <label class="form-label">{{ __('Receipt / Attachment') }} <span class="opt">{{ __('(optional)') }}</span></label>
-                    <input type="file" name="receipt" class="form-input"
+                    <input type="file" id="receipt" name="receipt" class="form-input @error('receipt') err @enderror"
                            accept=".jpg,.jpeg,.png,.pdf">
                     <span style="font-size:.75rem;color:var(--text-dim);margin-top:4px;display:block;">{{ __('JPG, PNG or PDF — max 5MB') }}</span>
+                    <span id="receipt-error" class="form-error" style="display:none;"></span>
+                    @error('receipt')<span class="form-error">{{ $message }}</span>@enderror
                 </div>
             </div>
         </div>
@@ -114,6 +116,38 @@
                 if (digits.length > 2) out += '-' + digits.slice(2, 4);
                 if (digits.length > 4) out += '-' + digits.slice(4, 8);
                 el.value = out;
+            });
+        })();
+
+        (function() {
+            var MAX_BYTES = 5 * 1024 * 1024;
+            var input = document.getElementById('receipt');
+            var errorEl = document.getElementById('receipt-error');
+            var form = input ? input.closest('form') : null;
+            if (!input || !errorEl || !form) return;
+
+            function showError(message) {
+                errorEl.textContent = message;
+                errorEl.style.display = message ? 'block' : 'none';
+                input.classList.toggle('err', !!message);
+            }
+
+            function validate() {
+                var file = input.files[0];
+                if (file && file.size > MAX_BYTES) {
+                    showError({!! json_encode(__('The receipt/attachment must not exceed 5MB.')) !!});
+                    return false;
+                }
+                showError('');
+                return true;
+            }
+
+            input.addEventListener('change', validate);
+
+            form.addEventListener('submit', function(e) {
+                if (!validate()) {
+                    e.preventDefault();
+                }
             });
         })();
     </script>

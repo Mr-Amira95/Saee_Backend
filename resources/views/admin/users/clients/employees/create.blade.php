@@ -217,7 +217,7 @@
             <div class="perm-card-hd">
                 <div class="perm-card-title">
                     <span class="perm-icon">{{ $icon }}</span>
-                    {{ ucwords(str_replace('_', ' ', $group)) }}
+                    {{ __($perms->first()->display_name) }}
                     <span class="perm-card-meta">{{ $count }} {{ __('permission(s)') }}</span>
                 </div>
                 <button type="button" class="perm-card-toggle" onclick="togglePermGroup(this, '{{ $groupKey }}')"
@@ -233,7 +233,7 @@
                         <input type="checkbox" name="permissions[]" value="{{ $perm->id }}"
                                {{ $isChecked ? 'checked' : '' }}
                                onchange="onPermChange(this)">
-                        <span class="perm-item-lbl">{{ $perm->display_name }}</span>
+                        <span class="perm-item-lbl">{{ __($perm->display_name) }}</span>
                     </label>
                     @endforeach
                 </div>
@@ -370,6 +370,7 @@ const i18nEmployeeCreate = {
     deselectAll: @json(__('Deselect All')),
     fullNameRequired: @json(__('Full name is required.')),
     usernameRequired: @json(__('Username is required.')),
+    usernameFormat: @json(__('Username must contain at least one letter, start with a letter or number, and cannot end with a special character.')),
     validEmail: @json(__('Please enter a valid email address.')),
 };
 
@@ -415,6 +416,25 @@ function togglePermGroup(btn, groupKey) {
     }
 
     function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+    function isValidUsername(v) { return /^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/.test(v.trim()); }
+
+    function clearFieldError(el) {
+        var container = el.closest ? (el.closest('.form-group') || el.parentElement) : el.parentElement;
+        el.classList.remove('is-error', 'js-marked');
+        var err = container.querySelector('.js-err');
+        if (err) err.remove();
+    }
+
+    function wireLiveValidation(name, validator, msg) {
+        var el = getField(name);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            clearFieldError(el);
+            if (el.value.trim() && !validator(el.value)) showFieldError(el, msg);
+        });
+    }
+
+    wireLiveValidation('username', isValidUsername, i18nEmployeeCreate.usernameFormat);
 
     form.addEventListener('submit', function(e) {
         clearErrors();
@@ -426,6 +446,10 @@ function togglePermGroup(btn, groupKey) {
         }
         req('name',     i18nEmployeeCreate.fullNameRequired);
         req('username', i18nEmployeeCreate.usernameRequired);
+        var uEl = getField('username');
+        if (uEl && uEl.value.trim() && !isValidUsername(uEl.value)) {
+            showFieldError(uEl, i18nEmployeeCreate.usernameFormat); if (!first) first = uEl;
+        }
         var eEl = getField('email');
         if (eEl && eEl.value.trim() && !isEmail(eEl.value)) {
             showFieldError(eEl, i18nEmployeeCreate.validEmail); if (!first) first = eEl;

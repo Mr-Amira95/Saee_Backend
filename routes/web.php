@@ -395,6 +395,7 @@ Route::prefix('client')->name('client.')->group(function () {
 
         // User Management (Team)
         Route::resource('users', UserManagementController::class)->except(['show'])->names('users');
+        Route::patch('users/{id}/status', [UserManagementController::class, 'updateStatus'])->name('users.status');
 
         // Account
         Route::get('account', [ClientAccountController::class, 'index'])->name('account.index');

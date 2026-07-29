@@ -857,6 +857,7 @@
     </style>
 
     @yield('head')
+    @stack('styles')
 </head>
 <body>
 <div class="shell">
@@ -1438,10 +1439,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const rows = table.querySelectorAll('tr');
 
             const excludedCols = {};
-            const actionHeaderLabels = ['actions', 'action', 'kpi', 'إجراءات', 'إجراء'];
+            const excludedHeaderLabels = ['actions', 'action', 'kpi', 'إجراءات', 'إجراء', 'icon', 'الأيقونة'];
             table.querySelectorAll('thead th').forEach(function(th, idx) {
                 const label = (th.textContent || '').trim().toLowerCase();
-                if (actionHeaderLabels.includes(label)) {
+                if (excludedHeaderLabels.includes(label)) {
                     excludedCols[idx] = true;
                 }
             });

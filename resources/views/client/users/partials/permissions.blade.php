@@ -38,7 +38,7 @@
             <input type="checkbox" name="permissions[]" value="{{ $perm->id }}" {{ $isChecked ? 'checked' : '' }}
                    onchange="this.closest('.perm-item').classList.toggle('is-checked', this.checked)">
             <span class="perm-item-icon">{{ $pageIcons[$perm->name] ?? '🔑' }}</span>
-            <span class="perm-item-lbl">{{ $perm->display_name }}</span>
+            <span class="perm-item-lbl">{{ __($perm->display_name) }}</span>
         </label>
         @endforeach
     </div>

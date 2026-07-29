@@ -71,7 +71,10 @@ class ExpenseController extends Controller
             'description'      => 'required|string|max:500',
             'vendor'           => 'nullable|string|max:255',
             'reference_number' => 'nullable|string|max:100',
-            'receipt'          => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+            'receipt'          => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [
+            'receipt.max'   => __('The receipt/attachment must not exceed 5MB.'),
+            'receipt.mimes' => __('The receipt/attachment must be a JPG, PNG or PDF file.'),
         ]);
 
         if ($request->hasFile('receipt')) {
