@@ -217,7 +217,9 @@ class AttendanceController extends Controller
             'receiver_phone'   => $o->receiver?->receiver_phone,
             'city'             => $o->city?->name,
             'client'           => $o->clientProfile?->company_name,
-            'rejection_reason' => $o->rejectionReason?->reason,
+            'rejection_reason' => app()->getLocale() === 'ar'
+                ? ($o->rejectionReason?->reason_ar ?: $o->rejectionReason?->reason)
+                : $o->rejectionReason?->reason,
         ];
 
         $mapReturned = fn (Order $o) => [
