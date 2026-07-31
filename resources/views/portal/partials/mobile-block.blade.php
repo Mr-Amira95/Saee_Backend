@@ -7,9 +7,6 @@
         <h1>{{ __('Best Viewed on Desktop') }}</h1>
         <p>{{ __('The Sa\'ee Logistics Portal is optimized for larger screens. Please switch to a laptop or desktop for the best experience.') }}</p>
         <button type="button" id="mobileBlockBack">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
             {{ __('Go Back') }}
         </button>
     </div>

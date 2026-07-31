@@ -67,6 +67,11 @@
 
     .status-row { display: flex; align-items: center; gap: 10px; }
     .status-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Clickable metric cards -> drill-down order list */
+    .metric-clickable { text-decoration: none; display: block; cursor: pointer; transition: transform .13s, border-color .13s, background .13s; }
+    .metric-clickable:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.16); }
+    .metric-active { background: rgba(220,38,38,.09); border-color: rgba(220,38,38,.35); }
 </style>
 @endsection
 
@@ -87,10 +92,10 @@
         </div>
     </div>
 
-    {{-- Metric Cards Row --}}
+    {{-- Metric Cards Row — click a status card to view its order list below --}}
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 20px;">
 
-        <div class="metric" style="--m-color:#60a5fa;--m-icon-bg:rgba(59,130,246,.12);animation-delay:.05s">
+        <a href="{{ route('admin.reports.index', ['status' => 'total']) }}" class="metric metric-clickable {{ $selectedStatus === 'total' ? 'metric-active' : '' }}" style="--m-color:#60a5fa;--m-icon-bg:rgba(59,130,246,.12);animation-delay:.05s">
             <div class="metric-head">
                 <div class="metric-icon">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
@@ -99,9 +104,9 @@
             </div>
             <div class="metric-val">{{ number_format($totalOrders) }}</div>
             <div class="metric-lbl">{{ __('Total Orders') }}</div>
-        </div>
+        </a>
 
-        <div class="metric" style="--m-color:#4ade80;--m-icon-bg:rgba(34,197,94,.12);animation-delay:.1s">
+        <a href="{{ route('admin.reports.index', ['status' => 'delivered']) }}" class="metric metric-clickable {{ $selectedStatus === 'delivered' ? 'metric-active' : '' }}" style="--m-color:#4ade80;--m-icon-bg:rgba(34,197,94,.12);animation-delay:.1s">
             <div class="metric-head">
                 <div class="metric-icon" style="color:#4ade80">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -110,9 +115,9 @@
             </div>
             <div class="metric-val" style="color:#4ade80;">{{ number_format($statusCounts['delivered'] ?? 0) }}</div>
             <div class="metric-lbl">{{ __('Delivered') }}</div>
-        </div>
+        </a>
 
-        <div class="metric" style="--m-color:#60a5fa;--m-icon-bg:rgba(59,130,246,.12);animation-delay:.15s">
+        <a href="{{ route('admin.reports.index', ['status' => 'in_transit']) }}" class="metric metric-clickable {{ $selectedStatus === 'in_transit' ? 'metric-active' : '' }}" style="--m-color:#60a5fa;--m-icon-bg:rgba(59,130,246,.12);animation-delay:.15s">
             <div class="metric-head">
                 <div class="metric-icon" style="color:#60a5fa">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
@@ -121,9 +126,9 @@
             </div>
             <div class="metric-val" style="color:#60a5fa;">{{ number_format($statusCounts['picked_up'] ?? 0) }}</div>
             <div class="metric-lbl">{{ __('In Transit') }}</div>
-        </div>
+        </a>
 
-        <div class="metric" style="--m-color:#fbbf24;--m-icon-bg:rgba(245,158,11,.12);animation-delay:.2s">
+        <a href="{{ route('admin.reports.index', ['status' => 'pending']) }}" class="metric metric-clickable {{ $selectedStatus === 'pending' ? 'metric-active' : '' }}" style="--m-color:#fbbf24;--m-icon-bg:rgba(245,158,11,.12);animation-delay:.2s">
             <div class="metric-head">
                 <div class="metric-icon" style="color:#fbbf24">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -132,9 +137,9 @@
             </div>
             <div class="metric-val" style="color:#fbbf24;">{{ number_format($statusCounts['pending'] ?? 0) }}</div>
             <div class="metric-lbl">{{ __('Pending Pickup') }}</div>
-        </div>
+        </a>
 
-        <div class="metric" style="--m-color:#f87171;--m-icon-bg:rgba(239,68,68,.12);animation-delay:.25s">
+        <a href="{{ route('admin.reports.index', ['status' => 'rejected_returned']) }}" class="metric metric-clickable {{ $selectedStatus === 'rejected_returned' ? 'metric-active' : '' }}" style="--m-color:#f87171;--m-icon-bg:rgba(239,68,68,.12);animation-delay:.25s">
             <div class="metric-head">
                 <div class="metric-icon" style="color:#f87171">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -143,7 +148,7 @@
             </div>
             <div class="metric-val" style="color:#f87171;">{{ number_format(($statusCounts['rejected'] ?? 0) + ($statusCounts['returned'] ?? 0)) }}</div>
             <div class="metric-lbl">{{ __('Rejected & Returns') }}</div>
-        </div>
+        </a>
 
         <div class="metric" style="--m-color:#c084fc;--m-icon-bg:rgba(168,85,247,.12);animation-delay:.3s">
             <div class="metric-head">
@@ -168,6 +173,101 @@
         </div>
 
     </div>
+
+    {{-- Drill-down order list for the selected status --}}
+    @if ($selectedStatus !== null)
+    <div class="chart-panel" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+            <div class="panel-heading" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">
+                {{ $statusLabels[$selectedStatus] }} {{ __('Orders') }} ({{ number_format($orders->total()) }})
+            </div>
+            <a href="{{ route('admin.reports.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.8rem;">
+                {{ __('Clear') }}
+            </a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>{{ __('Order #') }}</th>
+                        <th>{{ __('Client') }}</th>
+                        <th>{{ __('Receiver') }}</th>
+                        <th>{{ __('City') }}</th>
+                        <th>{{ __('Driver') }}</th>
+                        <th>{{ __('COD Amount') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Date') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($orders as $order)
+                        @php
+                            $statusClasses = [
+                                'pending'   => 'badge-pending',
+                                'assigned'  => 'badge-info',
+                                'picked_up' => 'badge-info',
+                                'delivered' => 'badge-active',
+                                'rejected'  => 'badge-suspended',
+                                'returned'  => 'badge-no',
+                                'cancelled' => 'badge-suspended',
+                            ];
+                        @endphp
+                        <tr>
+                            <td>
+                                <a href="{{ route('admin.orders.show', $order) }}" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">
+                                    #{{ $order->order_number }}
+                                </a>
+                            </td>
+                            <td><div class="cell-main">{{ $order->clientProfile->company_name ?? 'N/A' }}</div></td>
+                            <td>
+                                <div class="cell-main">{{ $order->receiver->receiver_name ?? '—' }}</div>
+                                <div class="cell-sub">{{ $order->receiver->receiver_phone ?? '' }}</div>
+                            </td>
+                            <td>{{ $order->receiver->city->name ?? '—' }}</td>
+                            <td>
+                                @if($order->driver)
+                                    {{ $order->driver->name }}
+                                @else
+                                    <span class="cell-sub" style="font-style: italic;">{{ __('Unassigned') }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($order->payment?->order_amount)
+                                    <span style="font-weight:700;color:#fbbf24;">{{ number_format($order->payment->order_amount, 2) }} JD</span>
+                                @else
+                                    <span style="color:var(--text-dim);">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge {{ $statusClasses[$order->status] ?? 'badge-no' }}">
+                                    <span class="badge-dot"></span>
+                                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                                </span>
+                            </td>
+                            <td><span style="font-size:.8rem;color:var(--text-dim);">{{ $order->created_at->format('d M Y') }}</span></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                                {{ __('No orders found for this filter.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if ($orders->hasPages())
+            <div class="pagination-wrap">
+                <div class="pag-info">
+                    {{ __('Showing') }} {{ $orders->firstItem() }} {{ __('to') }} {{ $orders->lastItem() }} {{ __('of') }} {{ $orders->total() }} {{ __('entries') }}
+                </div>
+                <div class="pag-links">
+                    {{ $orders->links() }}
+                </div>
+            </div>
+        @endif
+    </div>
+    @endif
 
     {{-- Charts Row --}}
     <div class="reports-main-grid">

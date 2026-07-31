@@ -75,6 +75,17 @@ PROMPT;
         'رقم الطلب', 'رقم الهاتف', 'اسمك', 'اسم المستلم', 'الاسم الكامل',
     ];
 
+    // Common tracking/filler words that must never be treated as part of a
+    // person's name, even when they appear as "2+ consecutive words" — this
+    // is what previously caused a bare "تتبع الشحنة" ("track the shipment")
+    // to be mistaken for the customer's name and searched against receivers.
+    private const NAME_STOPWORDS = [
+        'تتبع', 'الشحنة', 'شحنة', 'الطلب', 'طلب', 'طلبي', 'طلبى',
+        'اين', 'أين', 'وين', 'متى', 'توصيل', 'الرجاء', 'ارجو', 'أرجو',
+        'من', 'فضلك', 'لو', 'سمحت', 'سمحتم', 'حالة', 'وضعية', 'عن', 'على',
+        'هل', 'يمكن', 'ممكن', 'اريد', 'أريد', 'اقدر', 'أقدر', 'كم', 'كيف',
+    ];
+
     private const CLASSIFIER_SYSTEM_PROMPT = <<<PROMPT
 You are an intent classifier for SAEE Logistics' customer-support chatbot.
 Classify the customer's LATEST message into exactly one of two categories:
@@ -150,17 +161,36 @@ PROMPT;
      */
     public function classifyIntent(string $message, ChatSession $session, ?int $excludeMessageId = null): string
     {
-        if ($this->previousBotAskedForIdentifier($session)) {
+        if ($this->extractOrderNumber($message) !== null || $this->extractPhone($message) !== null) {
             return 'tracking';
         }
 
-        if ($this->extractOrderNumber($message) !== null || $this->extractPhone($message) !== null) {
+        // Only treat this as a continuation of the tracking flow if the new
+        // message actually looks like an identifier reply. Otherwise a
+        // previous "please give me your name/phone/order number" prompt
+        // would force EVERY subsequent message (including unrelated general
+        // questions) back into tracking, trapping the conversation.
+        if ($this->previousBotAskedForIdentifier($session) && $this->isPlausibleIdentifierReply($message)) {
             return 'tracking';
         }
 
         $recentHistory = $this->recentHistoryForClassification($session, $excludeMessageId);
 
         return $this->classifyIntentWithLLM($message, $recentHistory) ?? $this->detectIntent($message);
+    }
+
+    /**
+     * True if $message plausibly answers a "what's your name/phone/order
+     * number" prompt — i.e. it contains an extractable name, phone, or
+     * order number. Deliberately strict: a plain reply like "thanks" or
+     * "ok" must NOT be swept back into the tracking flow just because the
+     * bot previously asked for an identifier.
+     */
+    private function isPlausibleIdentifierReply(string $message): bool
+    {
+        return $this->extractOrderNumber($message) !== null
+            || $this->extractPhone($message) !== null
+            || $this->extractName($message) !== null;
     }
 
     /**
@@ -320,20 +350,55 @@ PROMPT;
             return trim(preg_replace('/\s+/', ' ', $m[1]));
         }
 
-        // Arabic: two or more consecutive Arabic words
-        if (preg_match('/[\x{0600}-\x{06FF}]{2,}(?:\s+[\x{0600}-\x{06FF}]{2,})+/u', $message, $m)) {
-            return trim($m[0]);
+        // Arabic: two to four consecutive Arabic-letter words (real names
+        // are short) — using the Arabic LETTERS range (0621–064A) rather
+        // than the full Arabic block, which also includes punctuation like
+        // "؟"; otherwise a question mark glued to the last word would be
+        // swallowed into the "word" and let whole questions slip through.
+        // Also reject outright if it's a question or contains a filler word
+        // (e.g. reject "تتبع الشحنة" and "ما هي طرق الدفع المتاحة؟").
+        if (! str_contains($message, '؟') && ! str_contains($message, '?')
+            && preg_match('/[\x{0621}-\x{064A}]{2,}(?:\s+[\x{0621}-\x{064A}]{2,}){1,3}/u', $message, $m)) {
+            $candidate = trim($m[0]);
+            if (! $this->containsNameStopword($candidate)) {
+                return $candidate;
+            }
         }
 
         // English: two+ consecutive capitalised words that don't look like sentence starts
         if (preg_match('/\b([A-Z][a-z]{2,}(?:\s+(?:Al-?|El-?|Bin\s+)?[A-Z][a-z]{2,})+)\b/', $message, $m)) {
             $candidate = $m[1];
-            if (! preg_match('/^(?:Please|Hello|Hi|Good|Thank|Sorry|Can|Could|Would|Where|What|When|How|My|The|I|We|Track|Order)\b/i', $candidate)) {
+            if (! preg_match('/^(?:Please|Hello|Hi|Good|Thank|Sorry|Can|Could|Would|Where|What|When|How|My|The|I|We|Track|Order)\b/i', $candidate)
+                && ! $this->containsNameStopword($candidate)) {
                 return $candidate;
             }
         }
 
         return null;
+    }
+
+    /**
+     * True if any word of the candidate matches a tracking/filler stopword
+     * or a tracking-intent keyword — used to stop generic phrases like
+     * "تتبع الشحنة" or "اين طلبي" from being misread as a person's name.
+     */
+    private function containsNameStopword(string $candidate): bool
+    {
+        $words = preg_split('/\s+/u', mb_strtolower($candidate));
+
+        foreach ($words as $word) {
+            if (in_array($word, self::NAME_STOPWORDS, true)) {
+                return true;
+            }
+
+            foreach (self::TRACKING_KEYWORDS as $keyword) {
+                if ($word === mb_strtolower($keyword)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function buildTrackingContext(string $message, ?int $clientProfileId = null): string

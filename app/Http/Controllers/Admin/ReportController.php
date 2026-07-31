@@ -14,10 +14,45 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
+    private const STATUS_LABELS = [
+        'total'             => 'All Orders',
+        'delivered'         => 'Delivered',
+        'in_transit'        => 'In Transit',
+        'pending'           => 'Pending Pickup',
+        'rejected_returned' => 'Rejected & Returns',
+    ];
+
+    private function applyStatusFilter($query, ?string $status): void
+    {
+        match ($status) {
+            'delivered'         => $query->where('orders.status', 'delivered'),
+            'in_transit'        => $query->where('orders.status', 'picked_up'),
+            'pending'           => $query->where('orders.status', 'pending'),
+            'rejected_returned' => $query->whereIn('orders.status', ['rejected', 'returned']),
+            default             => null,
+        };
+    }
+
+    private function ordersQuery(?string $status)
+    {
+        $query = Order::with(['clientProfile', 'receiver.city', 'receiver.area', 'payment', 'driverProfile.user']);
+
+        $this->applyStatusFilter($query, $status);
+
+        return $query->latest();
+    }
+
+    private function resolveStatus(Request $request): ?string
+    {
+        $status = $request->input('status');
+
+        return array_key_exists($status, self::STATUS_LABELS) ? $status : null;
+    }
+
     /**
      * Operational dashboard & reports center.
      */
-    public function index()
+    public function index(Request $request)
     {
         abort_unless(auth()->user()->hasAdminAction('reports.center'), 403);
 
@@ -43,9 +78,17 @@ class ReportController extends Controller
         $activeDrivers = User::where('role', 'driver')->where('status', 'active')->count();
         $activeClients = User::where('role', 'client_master')->where('status', 'active')->count();
 
+        $selectedStatus = $this->resolveStatus($request);
+
+        $orders = null;
+        if ($selectedStatus !== null) {
+            $orders = $this->ordersQuery($selectedStatus)->paginate(20)->withQueryString();
+        }
+
         return view('admin.reports.index', compact(
-            'totalOrders', 'statusCounts', 'dailyTrend', 'activeDrivers', 'activeClients'
-        ));
+            'totalOrders', 'statusCounts', 'dailyTrend', 'activeDrivers', 'activeClients',
+            'selectedStatus', 'orders'
+        ) + ['statusLabels' => self::STATUS_LABELS]);
     }
 
     /**

@@ -170,8 +170,8 @@ class ReportController extends Controller
                             ucfirst($o->status),
                             ucfirst($o->payment_status ?? ''),
                             $o->delivery_shift?->label() ?? "Doesn't Matter",
-                            $o->delivered_at?->toDateString() ?? '',
-                            $o->returned_at?->toDateString()  ?? '',
+                            $o->delivered_at?->toDateTimeString() ?? '',
+                            $o->returned_at?->toDateTimeString()  ?? '',
                         ]);
                     }
                 });
