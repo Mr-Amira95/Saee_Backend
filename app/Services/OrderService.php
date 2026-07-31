@@ -212,8 +212,8 @@ class OrderService
                     'assign_order',
                     $receiver?->receiver_phone ?? '',
                     [
-                        'customer_name' => $receiver?->receiver_name ?? '',
-                        'order_number'  => $order->order_number ?? '',
+                        'cutomer_name' => $receiver?->receiver_name ?? '',
+                        'order_number' => $order->order_number ?? '',
                     ],
                     $order->id,
                     [$order->order_number ?? ''],
@@ -227,8 +227,8 @@ class OrderService
                     'delivered_order',
                     $receiver?->receiver_phone ?? '',
                     [
-                        'customer_name' => $receiver?->receiver_name ?? '',
-                        'order_number'  => $order->order_number ?? '',
+                        'cutomer_name' => $receiver?->receiver_name ?? '',
+                        'order_number' => $order->order_number ?? '',
                     ],
                     $order->id,
                     [],
