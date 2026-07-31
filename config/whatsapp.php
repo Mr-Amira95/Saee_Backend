@@ -55,6 +55,8 @@ return [
      */
     'named_templates' => [
         'user_invitation',
+        'assign_order',
+        'delivered_order',
     ],
 
 ];
