@@ -198,25 +198,7 @@ class WhatsAppService
      */
     private function normalizePhone(string $phone): string
     {
-        $digits = preg_replace('/\D/', '', $phone);
-
-        // International prefix "00" → strip it before checking country code
-        if (str_starts_with($digits, '00')) {
-            $digits = substr($digits, 2);
-        }
-
-        // Already has country code (Jordan 962, length 12)
-        if (str_starts_with($digits, '962')) {
-            return $digits;
-        }
-
-        // Local format: leading 0 → strip and prepend 962
-        if (str_starts_with($digits, '0')) {
-            return '962' . substr($digits, 1);
-        }
-
-        // No leading 0 and no country code — assume Jordan
-        return '962' . $digits;
+        return WhatsAppLog::normalizePhone($phone);
     }
 
     /**

@@ -3,57 +3,126 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
 use App\Models\WhatsAppLog;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class WhatsAppLogController extends Controller
 {
+    /**
+     * List WhatsApp activity grouped into one conversation per phone number,
+     * merging messages across every order that phone has been attached to.
+     */
     public function index(Request $request)
     {
-        $query = Order::whereHas('whatsappLogs')
-            ->with('receiver')
-            ->withCount('whatsappLogs')
-            ->withCount(['whatsappLogs as inbound_logs_count' => fn ($q) => $q->where('direction', 'inbound')])
-            ->withMax('whatsappLogs', 'created_at');
+        $logs = WhatsAppLog::with('order:id,order_number,status,created_at')
+            ->orderBy('created_at')
+            ->get(['id', 'order_id', 'phone', 'message', 'status', 'direction', 'message_type', 'created_at']);
+
+        $conversations = $this->groupByPhone($logs);
 
         if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('receiver', fn ($rq) => $rq
-                      ->where('receiver_name', 'like', "%{$search}%")
-                      ->orWhere('receiver_phone', 'like', "%{$search}%"));
+            $search = mb_strtolower($request->input('search'));
+            $searchDigits = preg_replace('/\D/', '', $search);
+
+            $conversations = $conversations->filter(function ($c) use ($search, $searchDigits) {
+                if ($searchDigits !== '' && str_contains($c->phone, $searchDigits)) {
+                    return true;
+                }
+
+                if ($c->customerName && str_contains(mb_strtolower($c->customerName), $search)) {
+                    return true;
+                }
+
+                return $c->orders->contains(fn ($o) => str_contains(mb_strtolower($o->order_number), $search));
             });
         }
 
         if ($request->filled('type')) {
             if ($request->input('type') === 'replied') {
-                $query->has('whatsappLogs', '>=', 1)
-                    ->whereHas('whatsappLogs', fn ($q) => $q->where('direction', 'inbound'));
+                $conversations = $conversations->filter(fn ($c) => $c->inboundCount > 0);
             } elseif ($request->input('type') === 'no_reply') {
-                $query->whereDoesntHave('whatsappLogs', fn ($q) => $q->where('direction', 'inbound'));
+                $conversations = $conversations->filter(fn ($c) => $c->inboundCount === 0);
             }
         }
 
-        $orders = $query->orderByDesc('whatsapp_logs_max_created_at')->paginate(25)->withQueryString();
+        $conversations = $conversations->sortByDesc(fn ($c) => $c->lastActivity)->values();
+
+        $perPage = 25;
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $paginated = new LengthAwarePaginator(
+            $conversations->forPage($page, $perPage)->values(),
+            $conversations->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $stats = [
-            'conversations' => Order::whereHas('whatsappLogs')->count(),
-            'messages'      => WhatsAppLog::count(),
-            'inbound_today' => WhatsAppLog::where('direction', 'inbound')->whereDate('created_at', today())->count(),
-            'awaiting_reply' => Order::whereHas('whatsappLogs')
-                ->whereDoesntHave('whatsappLogs', fn ($q) => $q->where('direction', 'inbound'))
-                ->count(),
+            'conversations'  => $conversations->count(),
+            'messages'       => $logs->count(),
+            'inbound_today'  => $logs->where('direction', 'inbound')->filter(fn ($l) => $l->created_at->isToday())->count(),
+            'awaiting_reply' => $conversations->where('inboundCount', 0)->count(),
         ];
 
-        return view('admin.whatsapp-logs.index', compact('orders', 'stats'));
+        return view('admin.whatsapp-logs.index', ['conversations' => $paginated, 'stats' => $stats]);
     }
 
-    public function show(Order $order)
+    /**
+     * Show one unified chat thread for a phone number, across every order
+     * that phone has messaged about.
+     */
+    public function show(string $phone)
     {
-        $order->load(['whatsappLogs', 'receiver.city', 'receiver.area', 'driverProfile.user']);
+        $normalized = WhatsAppLog::normalizePhone($phone);
 
-        return view('admin.whatsapp-logs.show', compact('order'));
+        $logs = WhatsAppLog::with(['order.receiver.city', 'order.receiver.area', 'order.driverProfile.user'])
+            ->get()
+            ->filter(fn (WhatsAppLog $log) => WhatsAppLog::normalizePhone($log->phone) === $normalized)
+            ->sortBy('created_at')
+            ->values();
+
+        abort_if($logs->isEmpty(), 404);
+
+        $orders = $logs->pluck('order')->filter()->unique('id')->sortByDesc('created_at')->values();
+        $latestOrder = $orders->first();
+        $latestReceiver = $orders->first(fn ($o) => $o->receiver)?->receiver;
+
+        return view('admin.whatsapp-logs.show', [
+            'phone'          => $normalized,
+            'displayPhone'   => $latestReceiver?->receiver_phone ?? $logs->last()->phone,
+            'customerName'   => $latestReceiver?->receiver_name,
+            'logs'           => $logs,
+            'orders'         => $orders,
+            'latestOrder'    => $latestOrder,
+            'latestReceiver' => $latestReceiver,
+        ]);
+    }
+
+    /**
+     * Roll a flat log collection up into one summary object per phone number.
+     */
+    private function groupByPhone(Collection $logs): Collection
+    {
+        return $logs
+            ->groupBy(fn (WhatsAppLog $log) => WhatsAppLog::normalizePhone($log->phone))
+            ->map(function (Collection $group, string $normalizedPhone) {
+                $orders = $group->pluck('order')->filter()->unique('id')->sortByDesc('created_at')->values();
+                $latestReceiver = $orders->first(fn ($o) => $o->receiver)?->receiver;
+                $lastLog = $group->last();
+
+                return (object) [
+                    'phone'         => $normalizedPhone,
+                    'displayPhone'  => $latestReceiver?->receiver_phone ?? $lastLog->phone,
+                    'customerName'  => $latestReceiver?->receiver_name,
+                    'orders'        => $orders,
+                    'messageCount'  => $group->count(),
+                    'inboundCount'  => $group->where('direction', 'inbound')->count(),
+                    'lastLog'       => $lastLog,
+                    'lastActivity'  => $lastLog->created_at,
+                ];
+            })
+            ->values();
     }
 }

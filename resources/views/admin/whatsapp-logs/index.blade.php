@@ -78,8 +78,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{{ __('Order') }}</th>
                     <th>{{ __('Customer') }}</th>
+                    <th>{{ __('Orders') }}</th>
                     <th>{{ __('Messages') }}</th>
                     <th>{{ __('Last Message') }}</th>
                     <th>{{ __('Last Activity') }}</th>
@@ -87,49 +87,48 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($orders as $order)
-                @php
-                    $lastLog = $order->whatsappLogs->last();
-                @endphp
+                @forelse($conversations as $c)
                 <tr>
                     <td>
-                        <div class="cell-main">#{{ $order->order_number }}</div>
-                        <div class="cell-sub">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</div>
+                        @if($c->customerName)
+                            <div class="cell-main">{{ $c->customerName }}</div>
+                        @else
+                            <div class="cell-main">{{ __('Unknown Customer') }}</div>
+                        @endif
+                        <div class="cell-sub">{{ $c->displayPhone }}</div>
                     </td>
                     <td>
-                        @if($order->receiver)
-                            <div class="cell-main">{{ $order->receiver->receiver_name }}</div>
-                            <div class="cell-sub">{{ $order->receiver->receiver_phone }}</div>
+                        @if($c->orders->isEmpty())
+                            <span class="cell-sub">—</span>
                         @else
-                            <span class="badge badge-no">{{ __('No Receiver') }}</span>
+                            <div class="cell-main" style="font-size:.82rem">#{{ $c->orders->first()->order_number }}</div>
+                            @if($c->orders->count() > 1)
+                                <div class="cell-sub">+{{ $c->orders->count() - 1 }} {{ __('more order(s)') }}</div>
+                            @endif
                         @endif
                     </td>
                     <td>
-                        <span style="font-size:.88rem;font-weight:700;color:var(--text)">{{ $order->whatsapp_logs_count }}</span>
+                        <span style="font-size:.88rem;font-weight:700;color:var(--text)">{{ $c->messageCount }}</span>
                         <span style="font-size:.74rem;color:var(--text-dim)"> {{ __('msgs') }}</span>
-                        @if($order->inbound_logs_count > 0)
+                        @if($c->inboundCount > 0)
                             <span class="badge badge-active" style="margin-left:6px">{{ __('Replied') }}</span>
                         @else
                             <span class="badge badge-pending" style="margin-left:6px">{{ __('No Reply') }}</span>
                         @endif
                     </td>
                     <td style="max-width:260px">
-                        @if($lastLog)
-                            <div class="cell-main" style="font-size:.82rem">
-                                {{ $lastLog->direction === 'inbound' ? '⬅' : '➡' }}
-                                {{ Str::limit($lastLog->message, 60) }}
-                            </div>
-                            <div class="cell-sub">{{ $lastLog->direction === 'inbound' ? __('Customer') : __('Sent') }} · {{ $lastLog->message_type ?? 'text' }}</div>
-                        @else
-                            <span class="cell-sub">—</span>
-                        @endif
+                        <div class="cell-main" style="font-size:.82rem">
+                            {{ $c->lastLog->direction === 'inbound' ? '⬅' : '➡' }}
+                            {{ Str::limit($c->lastLog->message, 60) }}
+                        </div>
+                        <div class="cell-sub">{{ $c->lastLog->direction === 'inbound' ? __('Customer') : __('Sent') }} · {{ $c->lastLog->message_type ?? 'text' }}</div>
                     </td>
                     <td style="color:var(--text-sub);font-size:.82rem">
-                        {{ $order->whatsapp_logs_max_created_at ? \Carbon\Carbon::parse($order->whatsapp_logs_max_created_at)->diffForHumans() : '—' }}
+                        {{ $c->lastActivity->diffForHumans() }}
                     </td>
                     <td>
                         <div class="actions">
-                            <a href="{{ route('admin.whatsapp-logs.show', $order) }}" class="act-btn act-view" title="{{ __('View Conversation') }}">
+                            <a href="{{ route('admin.whatsapp-logs.show', $c->phone) }}" class="act-btn act-view" title="{{ __('View Conversation') }}">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </a>
                         </div>
@@ -150,28 +149,28 @@
         </table>
     </div>
 
-    @if($orders->hasPages())
+    @if($conversations->hasPages())
     <div class="pagination-wrap">
         <span class="pag-info">
-            {{ __('Showing') }} {{ $orders->firstItem() }}–{{ $orders->lastItem() }} {{ __('of') }} {{ $orders->total() }}
+            {{ __('Showing') }} {{ $conversations->firstItem() }}–{{ $conversations->lastItem() }} {{ __('of') }} {{ $conversations->total() }}
         </span>
         <div class="pag-links">
-            @if($orders->onFirstPage())
+            @if($conversations->onFirstPage())
                 <span class="disabled">‹</span>
             @else
-                <a href="{{ $orders->previousPageUrl() }}">‹</a>
+                <a href="{{ $conversations->previousPageUrl() }}">‹</a>
             @endif
 
-            @foreach($orders->getUrlRange(max(1, $orders->currentPage()-2), min($orders->lastPage(), $orders->currentPage()+2)) as $page => $url)
-                @if($page == $orders->currentPage())
+            @foreach($conversations->getUrlRange(max(1, $conversations->currentPage()-2), min($conversations->lastPage(), $conversations->currentPage()+2)) as $page => $url)
+                @if($page == $conversations->currentPage())
                     <span class="active">{{ $page }}</span>
                 @else
                     <a href="{{ $url }}">{{ $page }}</a>
                 @endif
             @endforeach
 
-            @if($orders->hasMorePages())
-                <a href="{{ $orders->nextPageUrl() }}">›</a>
+            @if($conversations->hasMorePages())
+                <a href="{{ $conversations->nextPageUrl() }}">›</a>
             @else
                 <span class="disabled">›</span>
             @endif

@@ -212,7 +212,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // WhatsApp Messages
         Route::get('whatsapp-logs', [WhatsAppLogController::class, 'index'])->name('whatsapp-logs.index');
-        Route::get('whatsapp-logs/{order}', [WhatsAppLogController::class, 'show'])->name('whatsapp-logs.show');
+        Route::get('whatsapp-logs/{phone}', [WhatsAppLogController::class, 'show'])->name('whatsapp-logs.show');
 
         // Support Tickets & Chat Center
         Route::get('support', [SupportController::class, 'index'])->name('support.index');

@@ -1,13 +1,13 @@
 @extends('admin.layouts.app')
 
-@section('title', __('WhatsApp') . ' — #' . $order->order_number)
+@section('title', __('WhatsApp') . ' — ' . $displayPhone)
 @section('page-title', __('WhatsApp Conversation'))
 
 @section('breadcrumb')
     <span class="sep">/</span>
     <a href="{{ route('admin.whatsapp-logs.index') }}">{{ __('WhatsApp Messages') }}</a>
     <span class="sep">/</span>
-    <span class="current">#{{ $order->order_number }}</span>
+    <span class="current">{{ $displayPhone }}</span>
 @endsection
 
 @section('head')
@@ -29,6 +29,14 @@
     .meta-lbl { font-size: .68rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
     .meta-val { font-size: .83rem; color: var(--text); word-break: break-all; }
 
+    .order-chip {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(255,255,255,.05); border: 1px solid var(--bdr);
+        border-radius: 7px; padding: 4px 8px; font-size: .74rem;
+        margin: 0 6px 6px 0;
+    }
+    .order-chip .status { color: var(--text-dim); font-size: .68rem; }
+
     .chat-card {
         background: var(--card); border: 1px solid var(--bdr);
         border-radius: 14px; backdrop-filter: blur(8px); overflow: hidden;
@@ -43,7 +51,13 @@
         display: flex; align-items: center; justify-content: center;
         font-size: .7rem; font-weight: 700; color: white;
     }
-    .chat-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .chat-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto; }
+
+    .day-divider {
+        text-align: center; font-size: .68rem; color: var(--text-dim);
+        text-transform: uppercase; letter-spacing: .08em;
+        margin: 6px 0; position: relative;
+    }
 
     .msg-row { display: flex; gap: 10px; }
     .msg-row.inbound { flex-direction: row-reverse; }
@@ -98,49 +112,55 @@
 
     {{-- Meta sidebar --}}
     <div class="convo-meta">
-        <div class="convo-meta-title">{{ __('Order Info') }}</div>
-
-        <div class="meta-row">
-            <span class="meta-lbl">{{ __('Order') }}</span>
-            <a href="{{ route('admin.orders.show', $order) }}" class="meta-val" style="font-weight:600">#{{ $order->order_number }}</a>
-            <span style="font-size:.74rem;color:var(--text-sub)">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span>
-        </div>
+        <div class="convo-meta-title">{{ __('Contact') }}</div>
 
         <div class="meta-row">
             <span class="meta-lbl">{{ __('Customer') }}</span>
-            @if($order->receiver)
-                <span class="meta-val" style="font-weight:600">{{ $order->receiver->receiver_name }}</span>
-                <span style="font-size:.74rem;color:var(--text-sub)">{{ $order->receiver->receiver_phone }}</span>
+            <span class="meta-val" style="font-weight:600">{{ $customerName ?? __('Unknown Customer') }}</span>
+            <span style="font-size:.74rem;color:var(--text-sub)">{{ $displayPhone }}</span>
+        </div>
+
+        <div class="meta-row">
+            <span class="meta-lbl">{{ __('Orders') }} ({{ $orders->count() }})</span>
+            @if($orders->isEmpty())
+                <span class="badge badge-no" style="width:fit-content">{{ __('No Linked Order') }}</span>
             @else
-                <span class="badge badge-no" style="width:fit-content">{{ __('No Receiver') }}</span>
+                <div>
+                    @foreach($orders as $o)
+                        <a href="{{ route('admin.orders.show', $o) }}" class="order-chip">
+                            #{{ $o->order_number }}
+                            <span class="status">{{ ucfirst(str_replace('_', ' ', $o->status)) }}</span>
+                        </a>
+                    @endforeach
+                </div>
             @endif
         </div>
 
-        @if($order->driverProfile?->user)
+        @if($latestOrder?->driverProfile?->user)
         <div class="meta-row">
-            <span class="meta-lbl">{{ __('Driver') }}</span>
-            <span class="meta-val">{{ $order->driverProfile->user->name }}</span>
+            <span class="meta-lbl">{{ __('Latest Driver') }}</span>
+            <span class="meta-val">{{ $latestOrder->driverProfile->user->name }}</span>
         </div>
         @endif
 
         <div class="meta-row">
             <span class="meta-lbl">{{ __('Messages') }}</span>
-            <span class="meta-val" style="font-size:1.2rem;font-weight:800">{{ $order->whatsappLogs->count() }}</span>
+            <span class="meta-val" style="font-size:1.2rem;font-weight:800">{{ $logs->count() }}</span>
         </div>
 
-        @if($order->receiver?->location_received_at)
+        @if($latestReceiver?->location_received_at)
         <div class="meta-row">
             <span class="meta-lbl">{{ __('Location Shared') }}</span>
-            <span class="meta-val">{{ $order->receiver->location_received_at->diffForHumans() }}</span>
-            @if($order->receiver->receiver_latitude && $order->receiver->receiver_longitude)
-                <a href="https://maps.google.com/?q={{ $order->receiver->receiver_latitude }},{{ $order->receiver->receiver_longitude }}" target="_blank" rel="noopener" style="font-size:.78rem">{{ __('Open in Maps') }}</a>
+            <span class="meta-val">{{ $latestReceiver->location_received_at->diffForHumans() }}</span>
+            @if($latestReceiver->receiver_latitude && $latestReceiver->receiver_longitude)
+                <a href="https://maps.google.com/?q={{ $latestReceiver->receiver_latitude }},{{ $latestReceiver->receiver_longitude }}" target="_blank" rel="noopener" style="font-size:.78rem">{{ __('Open in Maps') }}</a>
             @endif
         </div>
         @endif
 
         @php
-            $outboundCount = $order->whatsappLogs->where('direction', 'outbound')->count();
-            $inboundCount  = $order->whatsappLogs->where('direction', 'inbound')->count();
+            $outboundCount = $logs->where('direction', 'outbound')->count();
+            $inboundCount  = $logs->where('direction', 'inbound')->count();
         @endphp
         <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">
             <span style="font-size:.72rem;color:var(--text-sub)">
@@ -159,16 +179,22 @@
                 <svg width="16" height="16" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
             </div>
             <div>
-                <div style="font-size:.88rem;font-weight:700">{{ __('Conversation Thread') }}</div>
-                <div style="font-size:.74rem;color:var(--text-sub)">{{ $order->whatsappLogs->count() }} {{ __('messages') }}</div>
+                <div style="font-size:.88rem;font-weight:700">{{ $customerName ?? $displayPhone }}</div>
+                <div style="font-size:.74rem;color:var(--text-sub)">{{ $logs->count() }} {{ __('messages') }}</div>
             </div>
         </div>
 
-        @if($order->whatsappLogs->isEmpty())
-            <div class="chat-empty">{{ __('No WhatsApp messages for this order yet.') }}</div>
+        @if($logs->isEmpty())
+            <div class="chat-empty">{{ __('No WhatsApp messages for this contact yet.') }}</div>
         @else
         <div class="chat-body">
-            @foreach($order->whatsappLogs as $log)
+            @php $lastDay = null; @endphp
+            @foreach($logs as $log)
+                @php $day = $log->created_at->format('Y-m-d'); @endphp
+                @if($day !== $lastDay)
+                    <div class="day-divider">{{ $log->created_at->isToday() ? __('Today') : $log->created_at->format('d M Y') }}</div>
+                    @php $lastDay = $day; @endphp
+                @endif
                 <div class="msg-row {{ $log->direction }}">
                     <div class="msg-avatar avatar-{{ $log->direction }}">
                         {{ $log->direction === 'inbound' ? 'C' : 'US' }}
@@ -182,10 +208,13 @@
                             @endif
                         </div>
                         <div class="msg-meta">
-                            {{ $log->created_at->format('d M, H:i') }}
+                            {{ $log->created_at->format('H:i') }}
                             <span class="msg-type-badge">{{ $log->message_type ?? 'text' }}</span>
                             @if($log->direction === 'outbound')
                                 <span class="msg-type-badge">{{ $log->status }}</span>
+                            @endif
+                            @if($log->order && $orders->count() > 1)
+                                <span class="msg-type-badge">#{{ $log->order->order_number }}</span>
                             @endif
                         </div>
                     </div>
