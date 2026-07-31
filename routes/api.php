@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\CityController;
+use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\NotificationController;
@@ -130,6 +131,9 @@ Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () 
 
     Route::patch('profile/notifications', [NotificationPreferenceController::class, 'update'])
         ->name('api.profile.notifications.update');
+
+    Route::post('device-tokens', [DeviceTokenController::class, 'store'])
+        ->name('api.device-tokens.store');
 
     Route::get('notifications', [NotificationController::class, 'index'])
         ->name('api.notifications.index');

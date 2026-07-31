@@ -218,7 +218,7 @@ class SupportNotificationService
             ->all();
 
         if (! empty($tokens) && $this->messaging !== null) {
-            $this->sendFcmPush($tokens, $title, $message, $type, $record->id);
+            $this->sendFcmPush($tokens, $title, $message, $type, $record->id, null, null, $link);
         } else {
             $record->update(['fcm_status' => 'skipped']);
         }
@@ -253,7 +253,7 @@ class SupportNotificationService
             ->all();
 
         if (! empty($tokens) && $this->messaging !== null) {
-            $this->sendFcmPush($tokens, $title, $message, $type, $record->id, $entityType, $entityId);
+            $this->sendFcmPush($tokens, $title, $message, $type, $record->id, $entityType, $entityId, $record->link);
         } else {
             $record->update(['fcm_status' => 'skipped']);
         }
@@ -378,7 +378,7 @@ class SupportNotificationService
 
     private function sendFcmPush(
         array $tokens, string $title, string $message, string $type,
-        ?int $notificationId = null, ?string $entityType = null, ?int $entityId = null,
+        ?int $notificationId = null, ?string $entityType = null, ?int $entityId = null, ?string $link = null,
     ): void {
         $totalSent   = 0;
         $totalFailed = 0;
@@ -387,11 +387,14 @@ class SupportNotificationService
         try {
             $notification = Notification::create($title, $message);
 
-            $data = array_filter([
+            $data = [
+                'title'       => $title,
+                'message'     => $message,
                 'type'        => $type,
-                'entity_type' => $entityType,
-                'entity_id'   => $entityId !== null ? (string) $entityId : null,
-            ]);
+                'entity_type' => $entityType ?? '',
+                'entity_id'   => $entityId !== null ? (string) $entityId : '',
+                'link'        => $link ?? '',
+            ];
 
             foreach (array_chunk($tokens, 500) as $chunk) {
                 $multicast = CloudMessage::new()
@@ -423,9 +426,12 @@ class SupportNotificationService
                 if ($report->failures()->count() > 0) {
                     $dead = [];
                     foreach ($report->failures()->getItems() as $failure) {
-                        $dead[] = $failure->target()->value();
                         if ($failure->error()) {
                             $errorReasons[] = $failure->error()->getMessage();
+                        }
+                        // Only UNREGISTERED/NOT_FOUND (404/410) tokens are permanently dead.
+                        if ($failure->messageWasSentToUnknownToken()) {
+                            $dead[] = $failure->target()->value();
                         }
                     }
                     if (! empty($dead)) {
