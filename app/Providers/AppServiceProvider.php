@@ -19,7 +19,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(FirebaseMessaging::class, function ($app) {
             try {
                 return $app->make(FirebaseProjectManager::class)->project()->messaging();
-            } catch (\Throwable) {
+            } catch (\Throwable $e) {
+                logger()->error('[FCM DEBUG] Firebase Messaging binding failed to initialize — FCM sends will be skipped', [
+                    'error_class'   => $e::class,
+                    'error_message' => $e->getMessage(),
+                    'credentials'   => env('FIREBASE_CREDENTIALS', env('GOOGLE_APPLICATION_CREDENTIALS')),
+                ]);
+
                 return null;
             }
         });
