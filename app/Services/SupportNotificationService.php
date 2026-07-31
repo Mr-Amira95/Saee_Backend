@@ -231,6 +231,10 @@ class SupportNotificationService
         ?string $entityType = null, ?int $entityId = null,
     ): void {
         if (! User::where('id', $userId)->where('notifications_enabled', true)->exists()) {
+            logger()->info('[FCM DEBUG] sendToUser aborted: user has notifications disabled or does not exist', [
+                'user_id' => $userId,
+            ]);
+
             return;
         }
 
@@ -252,9 +256,22 @@ class SupportNotificationService
             ->pluck('fcm_token')
             ->all();
 
+        logger()->info('[FCM DEBUG] resolved device tokens for user', [
+            'user_id'          => $userId,
+            'notification_id'  => $record->id,
+            'token_count'      => count($tokens),
+            'tokens'           => $tokens,
+            'messaging_bound'  => $this->messaging !== null,
+        ]);
+
         if (! empty($tokens) && $this->messaging !== null) {
-            $this->sendFcmPush($tokens, $title, $message, $type, $record->id, $entityType, $entityId, $record->link);
+            $this->sendFcmPush($tokens, $title, $message, $type, $record->id, $entityType, $entityId, $record->link, $userId);
         } else {
+            logger()->info('[FCM DEBUG] FCM send skipped', [
+                'user_id'         => $userId,
+                'notification_id' => $record->id,
+                'reason'          => $this->messaging === null ? 'messaging_not_bound' : 'no_device_tokens',
+            ]);
             $record->update(['fcm_status' => 'skipped']);
         }
     }
@@ -379,6 +396,7 @@ class SupportNotificationService
     private function sendFcmPush(
         array $tokens, string $title, string $message, string $type,
         ?int $notificationId = null, ?string $entityType = null, ?int $entityId = null, ?string $link = null,
+        ?int $userId = null,
     ): void {
         $totalSent   = 0;
         $totalFailed = 0;
@@ -396,29 +414,64 @@ class SupportNotificationService
                 'link'        => $link ?? '',
             ];
 
+            $androidConfig = [
+                'priority' => 'high',
+                'notification' => [
+                    'sound' => 'default',
+                ],
+            ];
+            $apnsConfig = [
+                'headers' => [
+                    'apns-priority' => '10',
+                ],
+                'payload' => [
+                    'aps' => [
+                        'sound'             => 'default',
+                        'content-available' => 1,
+                    ],
+                ],
+            ];
+
+            logger()->info('[FCM DEBUG] dispatching FCM payload', [
+                'user_id'         => $userId,
+                'notification_id' => $notificationId,
+                'tokens'          => $tokens,
+                'payload'         => [
+                    'notification' => ['title' => $title, 'body' => $message],
+                    'data'         => $data,
+                    'android'      => $androidConfig,
+                    'apns'         => $apnsConfig,
+                ],
+            ]);
+
             foreach (array_chunk($tokens, 500) as $chunk) {
                 $multicast = CloudMessage::new()
                     ->withNotification($notification)
                     ->withData($data)
-                    ->withAndroidConfig(AndroidConfig::fromArray([
-                        'priority' => 'high',
-                        'notification' => [
-                            'sound' => 'default',
-                        ],
-                    ]))
-                    ->withApnsConfig(ApnsConfig::fromArray([
-                        'headers' => [
-                            'apns-priority' => '10',
-                        ],
-                        'payload' => [
-                            'aps' => [
-                                'sound'             => 'default',
-                                'content-available' => 1,
-                            ],
-                        ],
-                    ]));
+                    ->withAndroidConfig(AndroidConfig::fromArray($androidConfig))
+                    ->withApnsConfig(ApnsConfig::fromArray($apnsConfig));
 
                 $report = $this->messaging->sendMulticast($multicast, $chunk);
+
+                foreach ($report->getItems() as $item) {
+                    if ($item->isSuccess()) {
+                        logger()->info('[FCM DEBUG] token result: success', [
+                            'user_id'    => $userId,
+                            'token'      => $item->target()->value(),
+                            'message_id' => $item->result()['name'] ?? $item->result(),
+                        ]);
+                    } else {
+                        $error = $item->error();
+                        logger()->warning('[FCM DEBUG] token result: failure', [
+                            'user_id'       => $userId,
+                            'token'         => $item->target()->value(),
+                            'error_class'   => $error ? $error::class : null,
+                            'error_code'    => $error?->getCode(),
+                            'error_message' => $error?->getMessage(),
+                            'error_details' => $error && method_exists($error, 'errors') ? $error->errors() : null,
+                        ]);
+                    }
+                }
 
                 $totalSent   += $report->successes()->count();
                 $totalFailed += $report->failures()->count();
@@ -435,6 +488,7 @@ class SupportNotificationService
                         }
                     }
                     if (! empty($dead)) {
+                        logger()->info('[FCM DEBUG] deleting dead tokens', ['tokens' => $dead]);
                         UserDevice::whereIn('fcm_token', $dead)->delete();
                     }
                 }
