@@ -105,12 +105,12 @@ class Order extends Model
 
     public function clientProfile(): BelongsTo
     {
-        return $this->belongsTo(ClientProfile::class);
+        return $this->belongsTo(ClientProfile::class)->withTrashed();
     }
 
     public function driverProfile(): BelongsTo
     {
-        return $this->belongsTo(DriverProfile::class);
+        return $this->belongsTo(DriverProfile::class)->withTrashed();
     }
 
     public function handoverRequest(): BelongsTo

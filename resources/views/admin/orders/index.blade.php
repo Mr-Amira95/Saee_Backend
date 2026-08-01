@@ -279,7 +279,7 @@
                                 @endif
                             </td>
                             <td>
-                                <div class="cell-main">{{ $order->clientProfile->company_name }}</div>
+                                <div class="cell-main">{{ $order->clientProfile?->company_name ?? 'N/A' }}</div>
                             </td>
                             <td>
                                 @if($order->driver)
