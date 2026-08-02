@@ -10,7 +10,7 @@
 --}}
 @php
     $pageOrder = [
-        'clients', 'drivers', 'admins', 'orders', 'support', 'ai_conversations',
+        'clients', 'drivers', 'admins', 'orders', 'support', 'ai_conversations', 'whatsapp_logs',
         'reports', 'cities', 'rejection_reasons', 'finances', 'cms', 'attendance', 'notifications',
     ];
 @endphp
