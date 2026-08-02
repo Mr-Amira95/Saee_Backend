@@ -369,6 +369,7 @@ const i18nEmployeeCreate = {
     selectAll: @json(__('Select All')),
     deselectAll: @json(__('Deselect All')),
     fullNameRequired: @json(__('Full name is required.')),
+    fullNameFormat: @json(__('The full name field must only contain letters and spaces.')),
     usernameRequired: @json(__('Username is required.')),
     usernameFormat: @json(__('Username must contain at least one letter, start with a letter or number, and cannot end with a special character.')),
     validEmail: @json(__('Please enter a valid email address.')),
@@ -417,6 +418,7 @@ function togglePermGroup(btn, groupKey) {
 
     function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
     function isValidUsername(v) { return /^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/.test(v.trim()); }
+    function isValidName(v) { return /^[\p{L}\s]+$/u.test(v.trim()); }
 
     function clearFieldError(el) {
         var container = el.closest ? (el.closest('.form-group') || el.parentElement) : el.parentElement;
@@ -434,6 +436,7 @@ function togglePermGroup(btn, groupKey) {
         });
     }
 
+    wireLiveValidation('name',     isValidName,     i18nEmployeeCreate.fullNameFormat);
     wireLiveValidation('username', isValidUsername, i18nEmployeeCreate.usernameFormat);
 
     form.addEventListener('submit', function(e) {
@@ -446,6 +449,10 @@ function togglePermGroup(btn, groupKey) {
         }
         req('name',     i18nEmployeeCreate.fullNameRequired);
         req('username', i18nEmployeeCreate.usernameRequired);
+        var nEl = getField('name');
+        if (nEl && nEl.value.trim() && !isValidName(nEl.value)) {
+            showFieldError(nEl, i18nEmployeeCreate.fullNameFormat); if (!first) first = nEl;
+        }
         var uEl = getField('username');
         if (uEl && uEl.value.trim() && !isValidUsername(uEl.value)) {
             showFieldError(uEl, i18nEmployeeCreate.usernameFormat); if (!first) first = uEl;

@@ -29,7 +29,7 @@ class ClientEmployeeController extends Controller
     public function store(Request $request, ClientProfile $client)
     {
         $data = $request->validate([
-            'name'               => ['required', 'string', 'min:1', 'max:255'],
+            'name'               => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
             'username'           => ['required', 'string', 'max:50', 'regex:/^(?=.*[a-zA-Z])[a-zA-Z0-9]([a-zA-Z0-9_.-]*[a-zA-Z0-9])?$/', 'unique:users,username'],
             'email'              => ['required_if:otp_channel,email', 'nullable', 'email', 'unique:users,email'],
             'phone'              => ['required_if:otp_channel,whatsapp', 'nullable', 'string', 'max:20', 'unique:users,phone'],
@@ -39,6 +39,7 @@ class ClientEmployeeController extends Controller
             'permissions'        => 'nullable|array',
             'permissions.*'      => 'integer|exists:permissions,id',
         ], [
+            'name.regex'      => __('The full name field must only contain letters and spaces.'),
             'username.regex'  => __('Username must contain at least one letter, start with a letter or number, and cannot end with a special character.'),
             'email.required_if' => 'The email field is required when the notification channel is set to email.',
             'phone.required_if' => 'The phone field is required when the notification channel is set to WhatsApp.',
