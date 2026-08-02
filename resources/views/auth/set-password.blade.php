@@ -214,6 +214,7 @@
             <input type="hidden" name="email" value="{{ $email }}">
 
             {{-- Email (display only) --}}
+            @if($email)
             <div class="field">
                 <label class="field-label">{{ __('Email Address') }}</label>
                 <div class="field-wrap">
@@ -221,6 +222,7 @@
                     <input class="field-input" type="email" value="{{ $email }}" readonly style="cursor:default;opacity:.6;padding-right:14px;">
                 </div>
             </div>
+            @endif
 
             {{-- Password --}}
             <div class="field">

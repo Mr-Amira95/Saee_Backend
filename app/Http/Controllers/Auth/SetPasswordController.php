@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\SetPasswordTokenService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rules\Password as PasswordRule;
-use App\Models\User;
 
 class SetPasswordController extends Controller
 {
+    public function __construct(private readonly SetPasswordTokenService $tokens) {}
+
     public function show(Request $request, string $token = null)
     {
         return view('auth.set-password', [
@@ -24,7 +25,6 @@ class SetPasswordController extends Controller
     {
         $request->validate([
             'token'    => 'required',
-            'email'    => 'required|email',
             'password' => [
                 'required',
                 'string',
@@ -33,25 +33,24 @@ class SetPasswordController extends Controller
             ],
         ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                    'status'   => 'active',
-                ])->save();
+        $user = $this->tokens->resolve($request->string('token')->toString());
 
-                event(new PasswordReset($user));
-            }
-        );
-
-        if ($status === Password::PASSWORD_RESET) {
-            return redirect()->route('set-password.success');
+        if (! $user) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['token' => 'This invitation link is invalid or has expired. Please contact your administrator.']);
         }
 
-        return back()
-            ->withInput($request->only('email'))
-            ->withErrors(['token' => 'This invitation link is invalid or has expired. Please contact your administrator.']);
+        $user->forceFill([
+            'password' => Hash::make($request->input('password')),
+            'status'   => 'active',
+        ])->save();
+
+        $this->tokens->consume($request->string('token')->toString());
+
+        event(new PasswordReset($user));
+
+        return redirect()->route('set-password.success');
     }
 
     public function success()

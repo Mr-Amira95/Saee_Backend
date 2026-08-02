@@ -7,12 +7,12 @@ use App\Mail\UserInvitationMail;
 use App\Models\ClientEmployee;
 use App\Models\ClientProfile;
 use App\Models\User;
+use App\Services\SetPasswordTokenService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -78,7 +78,7 @@ class ClientEmployeeController extends Controller
             }
         });
 
-        $token = Password::createToken($user);
+        $token = app(SetPasswordTokenService::class)->issue($user);
 
         if ($data['otp_channel'] === 'email') {
             Mail::to($user->email)->send(new UserInvitationMail($user, $token));

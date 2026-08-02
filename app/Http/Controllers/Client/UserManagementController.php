@@ -6,13 +6,13 @@ use App\Mail\UserInvitationMail;
 use App\Models\ClientEmployee;
 use App\Models\Permission;
 use App\Models\User;
+use App\Services\SetPasswordTokenService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password as PasswordRule;
@@ -92,7 +92,7 @@ class UserManagementController extends Controller
 
         $this->syncPermissions($user->id, $profile->id, $data['permissions'] ?? []);
 
-        $token = Password::createToken($user);
+        $token = app(SetPasswordTokenService::class)->issue($user);
         if ($data['otp_channel'] === 'email' && $user->email) {
             Mail::to($user->email)->send(new UserInvitationMail($user, $token));
         } else {

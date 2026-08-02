@@ -9,9 +9,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Services\SetPasswordTokenService;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password as PasswordRule;
@@ -205,7 +205,7 @@ class AdminUserController extends Controller
 
     private function sendInvitation(User $user, string $channel = 'whatsapp'): void
     {
-        $token = Password::createToken($user);
+        $token = app(SetPasswordTokenService::class)->issue($user);
 
         if ($channel === 'email' && $user->email) {
             Mail::to($user->email)->send(new UserInvitationMail($user, $token));

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\PasswordResetOtpMail;
 use App\Models\PasswordResetCode;
 use App\Models\User;
+use App\Services\SetPasswordTokenService;
 use App\Services\WhatsAppService;
 use App\Traits\NormalizesPhone;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -190,10 +190,10 @@ class AuthController extends Controller
         $request->session()->forget(['otp_user_id', 'otp_channel']);
 
         $user  = User::find($userId);
-        $token = Password::createToken($user);
+        $token = app(SetPasswordTokenService::class)->issue($user);
 
         return redirect()->to(
-            url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email))
+            url('/set-password?token='.urlencode($token).'&email='.urlencode($user->email ?? ''))
         );
     }
 
