@@ -208,7 +208,9 @@ class SupportNotificationService
             ->pluck('id')
             ->all();
 
-        // TEMP DEBUG: disabled to isolate duplicate push notification bug
+        // Disabled: the mobile app's Echo listener builds its own OS notification from this
+        // broadcast, duplicating the FCM push whenever the app has a live socket (foreground/open).
+        // Re-enable once the mobile app only uses this event for in-app UI, not OS notifications.
         // foreach ($targetUserIds as $uid) {
         //     broadcast(new UserNotificationSent($uid, $title, $message, $type, $link, null, null));
         // }
@@ -250,7 +252,9 @@ class SupportNotificationService
             'entity_id'   => $entityId,
         ]);
 
-        // TEMP DEBUG: disabled to isolate duplicate push notification bug
+        // Disabled: the mobile app's Echo listener builds its own OS notification from this
+        // broadcast, duplicating the FCM push whenever the app has a live socket (foreground/open).
+        // Re-enable once the mobile app only uses this event for in-app UI, not OS notifications.
         // broadcast(new UserNotificationSent($userId, $title, $message, $type, $record->link, $entityType, $entityId));
 
         $tokens = UserDevice::where('user_id', $userId)

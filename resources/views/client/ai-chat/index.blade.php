@@ -543,10 +543,23 @@
     // Latin letters, so a single embedded Arabic name in an English reply
     // doesn't flip the whole bubble to RTL), to set per-bubble text direction
     // independent of the page's global <html dir="...">.
+    //
+    // Assistant replies are HTML and often contain data tokens (emails, phone
+    // numbers, URLs) plus tag names/attributes — all Latin characters that
+    // don't reflect the actual language of the message. Strip those out first
+    // so e.g. a mostly-Arabic contact-info answer with an email/phone number
+    // isn't misdetected as LTR (which also breaks the bidi layout of the
+    // Arabic label vs. the LTR value on that line).
     function detectTextDirection(text) {
-        const arabicCount = (text || '').match(/[؀-ۿ]/g)?.length || 0;
-        const latinCount = (text || '').match(/[A-Za-z]/g)?.length || 0;
-        return arabicCount > latinCount ? 'rtl' : 'ltr';
+        const visible = (text || '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g, ' ')
+            .replace(/https?:\/\/\S+/g, ' ')
+            .replace(/[+\d][\d\s\-()]{5,}/g, ' ');
+
+        const arabicCount = (visible.match(/[؀-ۿ]/g) || []).length;
+        const latinCount = (visible.match(/[A-Za-z]/g) || []).length;
+        return arabicCount >= latinCount ? 'rtl' : 'ltr';
     }
 
     // Apply suggestion chip to input field
