@@ -1816,6 +1816,7 @@
   "Choose User": "اختر المستخدم",
   "Callback URL / Redirect Link": "رابط الاستدعاء / رابط إعادة التوجيه",
   "Dispatch Notification": "إرسال الإشعار",
+  "Dispatching...": "جارٍ الإرسال...",
   "Notification Dispatch Audit Trail": "سجل تدقيق إرسال الإشعارات",
   "Alert Details": "تفاصيل التنبيه",
   "Target Group / User": "المجموعة / المستخدم المستهدف",

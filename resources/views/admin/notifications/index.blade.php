@@ -28,7 +28,7 @@
                     {{ __('Dispatch Alert') }}
                 </div>
 
-                <form action="{{ route('admin.notifications.store') }}" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+                <form action="{{ route('admin.notifications.store') }}" method="POST" style="display: flex; flex-direction: column; gap: 14px;" onsubmit="return handleDispatchSubmit(this)">
                     @csrf
 
                     <div class="form-group">
@@ -76,7 +76,7 @@
                         <input type="text" id="link" name="link" class="form-input" placeholder="E.g., /admin/orders">
                     </div>
 
-                    <button type="submit" class="btn-primary" style="justify-content: center; margin-top: 6px;">
+                    <button type="submit" id="dispatchBtn" class="btn-primary" style="justify-content: center; margin-top: 6px;">
                         {{ __('Dispatch Notification') }}
                     </button>
                 </form>
@@ -187,6 +187,17 @@
         } else {
             wrap.style.display = 'none';
         }
+    }
+
+    function handleDispatchSubmit(form) {
+        if (!form.checkValidity()) {
+            return true;
+        }
+        const btn = document.getElementById('dispatchBtn');
+        btn.disabled = true;
+        btn.dataset.originalText = btn.textContent;
+        btn.textContent = '{{ __('Dispatching...') }}';
+        return true;
     }
 </script>
 @endsection
