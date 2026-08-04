@@ -7,6 +7,7 @@ use App\Models\DriverProfile;
 use App\Models\Order;
 use App\Models\ClientProfile;
 use App\Models\FinancialLedgerEntry;
+use App\Models\HandoverRequest;
 use App\Models\User;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
@@ -44,15 +45,22 @@ class FinancialController extends Controller
                     ? Order::where('driver_profile_id', $driverProfile->id)
                         ->where('status', 'delivered')
                         ->where('payment_status', 'with_driver')
+                        ->whereNull('handover_request_id')
                         ->count()
                     : 0;
 
+                $pendingHandoverRequest = HandoverRequest::where('driver_id', $driver->id)
+                    ->where('status', 'pending')
+                    ->latest()
+                    ->first();
+
                 return [
-                    'driver'               => $driver,
-                    'balance'              => $balance,
-                    'pending_orders_count' => $pendingOrdersCount,
+                    'driver'                   => $driver,
+                    'balance'                  => $balance,
+                    'pending_orders_count'     => $pendingOrdersCount,
+                    'pending_handover_request' => $pendingHandoverRequest,
                 ];
-            })->filter(fn ($d) => $d['balance'] > 0 || $d['pending_orders_count'] > 0);
+            })->filter(fn ($d) => $d['balance'] > 0 || $d['pending_orders_count'] > 0 || $d['pending_handover_request']);
 
         $clientBalances = ClientProfile::orderBy('company_name')
             ->get()

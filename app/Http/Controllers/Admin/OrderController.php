@@ -17,6 +17,13 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    /**
+     * Final statuses — once an order reaches one of these, its driver
+     * assignment is locked. Deliberately excludes 'returned', which can
+     * still be reassigned for a redelivery attempt.
+     */
+    protected const CLOSED_STATUSES = ['delivered', 'rejected', 'cancelled'];
+
     protected $orderService;
 
     public function __construct(OrderService $orderService)
@@ -247,6 +254,16 @@ class OrderController extends Controller
             'rejection_reason_id' => 'nullable|required_if:status,rejected|exists:rejection_reasons,id',
             'notes'               => 'nullable|string',
         ]);
+
+        // Closed orders are final — the driver cannot be reassigned once an order
+        // has been delivered, rejected, or cancelled. Returned orders remain open
+        // for reassignment since they may still need a redelivery attempt.
+        if ($request->filled('driver_id') && in_array($order->status, self::CLOSED_STATUSES, true)) {
+            return redirect()->back()->with('error', __('Driver cannot be reassigned: order #:number is already :status.', [
+                'number' => $order->order_number,
+                'status' => __(ucfirst($order->status)),
+            ]));
+        }
 
         // Auto-promote to assigned when a driver is assigned to a pending or assigned order
         if ($request->filled('driver_id') && ($validated['status'] === 'pending' || $validated['status'] === 'assigned')) {

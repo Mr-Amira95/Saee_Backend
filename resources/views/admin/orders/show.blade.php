@@ -127,7 +127,7 @@
                 {{ __('Edit Order') }}
             </a>
             @endif
-            @if(auth()->user()->hasAdminAction('orders.assign_driver'))
+            @if(auth()->user()->hasAdminAction('orders.assign_driver') && !in_array($order->status, ['delivered', 'rejected', 'cancelled']))
             <button class="btn-primary" onclick="openModal('assignDriverModal')">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 {{ $order->driver ? __('Reassign Driver') : __('Assign Driver') }}
@@ -427,7 +427,7 @@
     @endif
 
     {{-- MODAL 1: Assign Driver --}}
-    @if(auth()->user()->hasAdminAction('orders.assign_driver'))
+    @if(auth()->user()->hasAdminAction('orders.assign_driver') && !in_array($order->status, ['delivered', 'rejected', 'cancelled']))
     <div class="modal-overlay" id="assignDriverModal">
         <div class="modal-card" style="border-color: rgba(59,130,246,0.3); max-width: 440px;">
             <h3>{{ __('Assign Driver to Order') }}</h3>

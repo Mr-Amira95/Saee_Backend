@@ -78,6 +78,10 @@
                                                 <a href="{{ route('admin.financials.settle-driver', $data['driver']) }}" class="btn-primary" style="padding: 6px 12px; font-size: 0.78rem; text-decoration: none; box-shadow: none;">
                                                     {{ __('Settle Cash') }}
                                                 </a>
+                                            @elseif($data['pending_handover_request'])
+                                                <a href="{{ route('admin.financials.handover-requests.show', $data['pending_handover_request']) }}" class="btn-primary" style="padding: 6px 12px; font-size: 0.78rem; text-decoration: none; box-shadow: none;">
+                                                    {{ __('Review Handover') }}
+                                                </a>
                                             @else
                                                 <span class="cell-sub" style="font-style: italic;">{{ __('Settled') }}</span>
                                             @endif
