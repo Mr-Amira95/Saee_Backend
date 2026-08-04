@@ -52,16 +52,16 @@
         <form method="POST" action="{{ route('admin.billing.issue', $invoice) }}">
             @csrf
             <div class="form-section-title">{{ __('Issue Invoice') }}</div>
-            <div class="form-grid-2">
-                <div class="form-group">
+            <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap;">
+                <div class="form-group" style="flex:1; min-width:200px;">
                     <label class="form-label">{{ __('Due Date') }} <span class="opt">{{ __('(optional)') }}</span></label>
                     <input type="date" name="due_date" class="form-input"
                            value="{{ now()->addDays(14)->format('Y-m-d') }}">
                 </div>
-            </div>
-            <div class="form-actions" style="padding-top:0;">
-                <button type="button" class="btn-secondary" onclick="document.getElementById('issue-form').style.display='none'">{{ __('Cancel') }}</button>
-                <button type="submit" class="btn-primary">{{ __('Confirm Issue') }}</button>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('issue-form').style.display='none'">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn-primary">{{ __('Confirm Issue') }}</button>
+                </div>
             </div>
         </form>
     </div>
@@ -73,8 +73,8 @@
         <form method="POST" action="{{ route('admin.billing.pay', $invoice) }}">
             @csrf
             <div class="form-section-title">{{ __('Record Payment') }}</div>
-            <div class="form-grid-2">
-                <div class="form-group">
+            <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap;">
+                <div class="form-group" style="flex:1; min-width:180px;">
                     <label class="form-label">{{ __('Payment Method') }} <span class="req">*</span></label>
                     <select name="payment_method" class="form-input" required>
                         <option value="bank_transfer">{{ __('Bank Transfer') }}</option>
@@ -82,14 +82,14 @@
                         <option value="cliq">{{ __('CliQ') }}</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="flex:1; min-width:180px;">
                     <label class="form-label">{{ __('Reference Number') }}</label>
                     <input type="text" name="reference_number" class="form-input" placeholder="{{ __('Optional') }}">
                 </div>
-            </div>
-            <div class="form-actions" style="padding-top:0;">
-                <button type="button" class="btn-secondary" onclick="document.getElementById('pay-form').style.display='none'">{{ __('Cancel') }}</button>
-                <button type="submit" class="btn-primary">{{ __('Confirm Payment') }}</button>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('pay-form').style.display='none'">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn-primary">{{ __('Confirm Payment') }}</button>
+                </div>
             </div>
         </form>
     </div>
