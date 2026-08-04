@@ -18,11 +18,16 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller
 {
     /**
-     * Final statuses — once an order reaches one of these, its driver
-     * assignment is locked. Deliberately excludes 'returned', which can
-     * still be reassigned for a redelivery attempt.
+     * Final statuses — once an order reaches one of these, its details
+     * can no longer be edited.
      */
     protected const CLOSED_STATUSES = ['delivered', 'rejected', 'cancelled'];
+
+    /**
+     * Statuses in which the driver assignment is locked — the closed
+     * statuses plus 'returned', which is no longer eligible for reassignment.
+     */
+    protected const DRIVER_LOCKED_STATUSES = ['delivered', 'rejected', 'cancelled', 'returned'];
 
     protected $orderService;
 
@@ -180,6 +185,8 @@ class OrderController extends Controller
 
     public function edit(Order $order)
     {
+        abort_if(in_array($order->status, self::CLOSED_STATUSES, true), 403, __('This order can no longer be edited.'));
+
         $order->load(['receiver', 'payment']);
         $cities = City::where('is_active', true)
             ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
@@ -196,6 +203,8 @@ class OrderController extends Controller
 
         // Check if updating order details
         if ($request->filled('receiver_name')) {
+            abort_if(in_array($order->status, self::CLOSED_STATUSES, true), 403, __('This order can no longer be edited.'));
+
             $validated = $request->validate([
                 'client_profile_id'        => 'required|exists:client_profiles,id',
                 'order_description'        => 'nullable|string|max:255',
@@ -255,10 +264,8 @@ class OrderController extends Controller
             'notes'               => 'nullable|string',
         ]);
 
-        // Closed orders are final — the driver cannot be reassigned once an order
-        // has been delivered, rejected, or cancelled. Returned orders remain open
-        // for reassignment since they may still need a redelivery attempt.
-        if ($request->filled('driver_id') && in_array($order->status, self::CLOSED_STATUSES, true)) {
+        // The driver cannot be reassigned once an order has reached a locked status.
+        if ($request->filled('driver_id') && in_array($order->status, self::DRIVER_LOCKED_STATUSES, true)) {
             return redirect()->back()->with('error', __('Driver cannot be reassigned: order #:number is already :status.', [
                 'number' => $order->order_number,
                 'status' => __(ucfirst($order->status)),
