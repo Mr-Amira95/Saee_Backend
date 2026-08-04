@@ -145,7 +145,7 @@
 
 @section('scripts')
     <script>
-        const i18n = {
+        const payoutI18n = {
             orderSingular: @json(__('order')),
             orderPlural: @json(__('orders')),
         };
@@ -175,7 +175,7 @@
             selectedCodSpan.textContent = cod.toFixed(2) + ' JD';
             selectedShippingSpan.textContent = '+' + shipping.toFixed(2) + ' JD';
             selectedNetSpan.textContent = net.toFixed(2) + ' JD';
-            selectedCountSpan.textContent = count + ' ' + (count !== 1 ? i18n.orderPlural : i18n.orderSingular);
+            selectedCountSpan.textContent = count + ' ' + (count !== 1 ? payoutI18n.orderPlural : payoutI18n.orderSingular);
             
             if (count > 0) {
                 submitButton.disabled = false;
