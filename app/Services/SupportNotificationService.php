@@ -15,7 +15,6 @@ use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\AndroidConfig;
 use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification;
 use Throwable;
 
 class SupportNotificationService
@@ -403,8 +402,6 @@ class SupportNotificationService
         $errorReasons = [];
 
         try {
-            $notification = Notification::create($title, $message);
-
             $data = [
                 'title'       => $title,
                 'message'     => $message,
@@ -446,7 +443,6 @@ class SupportNotificationService
 
             foreach (array_chunk($tokens, 500) as $chunk) {
                 $multicast = CloudMessage::new()
-                    ->withNotification($notification)
                     ->withData($data)
                     ->withAndroidConfig(AndroidConfig::fromArray($androidConfig))
                     ->withApnsConfig(ApnsConfig::fromArray($apnsConfig));
