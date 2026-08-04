@@ -87,8 +87,16 @@ class ChatMessage extends Model
      */
     public function textDirection(): string
     {
-        $visible = (string) $this->message;
-        $visible = preg_replace('/<[^>]*>/', ' ', $visible);
+        return self::detectDirection((string) $this->message);
+    }
+
+    /**
+     * Same detection, usable for raw AI reply strings that aren't yet
+     * persisted as a ChatMessage (e.g. the /api/chatbot/message response).
+     */
+    public static function detectDirection(string $text): string
+    {
+        $visible = preg_replace('/<[^>]*>/', ' ', $text);
         $visible = preg_replace('/[\w.+-]+@[\w-]+\.[\w.-]+/', ' ', $visible);
         $visible = preg_replace('/https?:\/\/\S+/', ' ', $visible);
         $visible = preg_replace('/[+\d][\d\s\-()]{5,}/', ' ', $visible);

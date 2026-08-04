@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Chatbot\SendMessageRequest;
+use App\Models\ChatMessage;
 use App\Models\ChatSession;
 use App\Services\OpenAIChatbotService;
 use Illuminate\Http\JsonResponse;
@@ -33,6 +34,7 @@ class ChatbotController extends Controller
             'success' => true,
             'reply'   => $result['reply'],
             'intent'  => $result['intent'],
+            'dir'     => ChatMessage::detectDirection((string) $result['reply']),
         ]);
     }
 
@@ -50,6 +52,7 @@ class ChatbotController extends Controller
             ->map(fn ($msg) => [
                 'role'       => $msg->role,
                 'message'    => $msg->message,
+                'dir'        => $msg->textDirection(),
                 'created_at' => $msg->created_at->toDateTimeString(),
             ]);
 
