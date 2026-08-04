@@ -562,7 +562,7 @@ PROMPT;
             "Order Number: {$order->order_number}",
             "Current Status: {$order->status}",
             "Receiver Name: {$order->receiver?->receiver_name}",
-            "Receiver Phone: {$order->receiver?->receiver_phone}",
+            "Receiver Phone: " . ltrim((string) $order->receiver?->receiver_phone, '+'),
             "Payment Type: {$order->payment?->payment_type}",
             "Payment Status: {$order->payment_status}",
             "Delivery Amount: " . ($order->payment?->client_delivery_amount ?? $order->payment?->customer_delivery_amount ?? 'N/A'),
