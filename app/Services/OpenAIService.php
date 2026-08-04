@@ -75,7 +75,8 @@ class OpenAIService
             "1. Extract receivers and phone numbers accurately.\n" .
             "2. Ensure you look at the provided reference tables carefully to match client_id, city_id, and area_id. Typo correction is encouraged.\n" .
             "3. If a value is empty or not present in the image, return null or the default value.\n" .
-            "4. Do NOT invent data.";
+            "4. Do NOT invent data.\n\n" .
+            "IMPORTANT: Only extract information that is actually visible in the image. Do NOT fabricate, guess, or hallucinate any values (names, phone numbers, addresses, prices, etc.) that are not clearly present in the image. If a field cannot be read from the image, leave it as an empty string, null, or the specified default value rather than making something up.";
 
         try {
             Log::info("Sending vision request to OpenAI using model: {$model}");
