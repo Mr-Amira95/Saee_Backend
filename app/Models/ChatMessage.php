@@ -79,4 +79,23 @@ class ChatMessage extends Model
 
         return $inner;
     }
+
+    /**
+     * Detect this message's text direction independent of the viewer's UI
+     * locale, mirroring the client-side detectTextDirection() JS so admin
+     * bubbles align (e.g. list bullets) the same way the client portal does.
+     */
+    public function textDirection(): string
+    {
+        $visible = (string) $this->message;
+        $visible = preg_replace('/<[^>]*>/', ' ', $visible);
+        $visible = preg_replace('/[\w.+-]+@[\w-]+\.[\w.-]+/', ' ', $visible);
+        $visible = preg_replace('/https?:\/\/\S+/', ' ', $visible);
+        $visible = preg_replace('/[+\d][\d\s\-()]{5,}/', ' ', $visible);
+
+        $arabicCount = preg_match_all('/[\x{0600}-\x{06FF}]/u', $visible);
+        $latinCount = preg_match_all('/[A-Za-z]/', $visible);
+
+        return $arabicCount >= $latinCount ? 'rtl' : 'ltr';
+    }
 }

@@ -73,7 +73,12 @@
     .msg-bubble p        { margin: 0 0 8px; }
     .msg-bubble p:last-child { margin-bottom: 0; }
     .msg-bubble ul, .msg-bubble ol { margin: 4px 0 8px; padding-inline-start: 20px; }
+    .msg-bubble li       { margin: 0 0 4px; }
+    .msg-bubble li:last-child { margin-bottom: 0; }
     .msg-bubble a        { color: inherit; text-decoration: underline; }
+    /* Per-message text direction — independent of the admin's own UI locale */
+    .msg-bubble[dir="rtl"] { text-align: right; }
+    .msg-bubble[dir="ltr"] { text-align: left; }
     .msg-bubble.bubble-system {
         background: rgba(255,255,255,.04); border: 1px solid var(--bdr);
         border-radius: 8px; color: var(--text-dim); font-size: .78rem;
@@ -202,7 +207,7 @@
                             {{ $session->user ? strtoupper(substr($session->user->name, 0, 2)) : 'U' }}
                         </div>
                         <div>
-                            <div class="msg-bubble bubble-user">{!! nl2br(e($message->message)) !!}</div>
+                            <div class="msg-bubble bubble-user" dir="{{ $message->textDirection() }}">{!! nl2br(e($message->message)) !!}</div>
                             <div class="msg-meta">
                                 {{ $message->created_at->format('H:i') }}
                                 @if($message->tokens)
@@ -216,7 +221,7 @@
                     <div class="msg-row assistant">
                         <div class="msg-avatar avatar-assistant">AI</div>
                         <div>
-                            <div class="msg-bubble bubble-assistant">{!! $message->safeHtml() !!}</div>
+                            <div class="msg-bubble bubble-assistant" dir="{{ $message->textDirection() }}">{!! $message->safeHtml() !!}</div>
                             <div class="msg-meta">
                                 {{ $message->created_at->format('H:i') }}
                                 @if($message->tokens)
