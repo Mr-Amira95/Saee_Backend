@@ -15,6 +15,7 @@ use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\AndroidConfig;
 use Kreait\Firebase\Messaging\ApnsConfig;
 use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 use Throwable;
 
 class SupportNotificationService
@@ -207,9 +208,10 @@ class SupportNotificationService
             ->pluck('id')
             ->all();
 
-        foreach ($targetUserIds as $uid) {
-            broadcast(new UserNotificationSent($uid, $title, $message, $type, $link, null, null));
-        }
+        // TEMP DEBUG: disabled to isolate duplicate push notification bug
+        // foreach ($targetUserIds as $uid) {
+        //     broadcast(new UserNotificationSent($uid, $title, $message, $type, $link, null, null));
+        // }
 
         $tokens = UserDevice::whereIn('user_id', $targetUserIds)
             ->where('notifications_enabled', true)
@@ -248,7 +250,8 @@ class SupportNotificationService
             'entity_id'   => $entityId,
         ]);
 
-        broadcast(new UserNotificationSent($userId, $title, $message, $type, $record->link, $entityType, $entityId));
+        // TEMP DEBUG: disabled to isolate duplicate push notification bug
+        // broadcast(new UserNotificationSent($userId, $title, $message, $type, $record->link, $entityType, $entityId));
 
         $tokens = UserDevice::where('user_id', $userId)
             ->where('notifications_enabled', true)
@@ -402,6 +405,8 @@ class SupportNotificationService
         $errorReasons = [];
 
         try {
+            $notification = Notification::create($title, $message);
+
             $data = [
                 'title'       => $title,
                 'message'     => $message,
@@ -443,6 +448,7 @@ class SupportNotificationService
 
             foreach (array_chunk($tokens, 500) as $chunk) {
                 $multicast = CloudMessage::new()
+                    ->withNotification($notification)
                     ->withData($data)
                     ->withAndroidConfig(AndroidConfig::fromArray($androidConfig))
                     ->withApnsConfig(ApnsConfig::fromArray($apnsConfig));
