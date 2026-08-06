@@ -73,6 +73,10 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             {{ __('Print Waybill') }}
         </a>
+        <a href="{{ route('client.orders.pdf', ['ids' => $order->id]) }}" target="_blank" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;display:inline-flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M4 10V6a2 2 0 012-2h6l6 6v4"/></svg>
+            {{ __('Download PDF') }}
+        </a>
         @if($order->status === 'pending')
         <a href="{{ route('client.orders.edit', $order) }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>

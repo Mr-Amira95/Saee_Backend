@@ -2,6 +2,13 @@
 @section('title', 'Company Information')
 @section('page-title', 'Company Information')
 
+@push('styles')
+<style>
+    .acct-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 600px) { .acct-grid-2 { grid-template-columns: 1fr; } }
+</style>
+@endpush
+
 @section('content')
 
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
@@ -30,7 +37,7 @@
         @error('company_name') <div class="form-error">{{ $message }}</div> @enderror
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div class="acct-grid-2">
         <div class="form-group">
             <label class="form-label" for="commercial_register_number">{{ __('Commercial Register No.') }}</label>
             <input id="commercial_register_number" name="commercial_register_number" type="text" inputmode="numeric" pattern="[0-9]*" title="{{ __('Numbers only') }}" class="form-input {{ $errors->has('commercial_register_number') ? 'has-error' : '' }}"
@@ -54,7 +61,7 @@
 <div class="card" style="margin-bottom:16px;">
     <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;">{{ __('Contact') }}</div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div class="acct-grid-2">
         <div class="form-group">
             <label class="form-label" for="email">{{ __('Company Email') }}</label>
             <input id="email" name="email" type="email" class="form-input {{ $errors->has('email') ? 'has-error' : '' }}"
@@ -76,7 +83,7 @@
 <div class="card" style="margin-bottom:20px;">
     <div style="font-size:.76rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;">{{ __('Location') }}</div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div class="acct-grid-2">
         <div class="form-group">
             <label class="form-label" for="city_id">{{ __('City') }}</label>
             <select id="city_id" name="city_id" class="form-select {{ $errors->has('city_id') ? 'has-error' : '' }}"

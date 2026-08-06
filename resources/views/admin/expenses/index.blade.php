@@ -22,7 +22,7 @@
     </div>
 
     {{-- Filter bar --}}
-    <div class="filter-bar" style="flex-wrap:nowrap;gap:8px;">
+    <div class="filter-bar" style="gap:8px;">
         <div class="filter-search-wrap" style="min-width:160px;max-width:220px;flex-shrink:0;">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
@@ -30,7 +30,7 @@
             <input type="text" id="tableSearch" class="filter-input" placeholder="{{ __('Search...') }}" autocomplete="off">
         </div>
 
-        <form action="{{ route('admin.expenses.index') }}" method="GET" style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;flex:1;">
+        <form action="{{ route('admin.expenses.index') }}" method="GET" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;">
             <select name="category" class="filter-select" style="flex-shrink:0;">
                 <option value="">{{ __('All Categories') }}</option>
                 @foreach($categories as $cat)

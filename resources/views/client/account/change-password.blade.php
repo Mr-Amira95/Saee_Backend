@@ -2,6 +2,13 @@
 @section('title', 'Change Password')
 @section('page-title', 'Change Password')
 
+@push('styles')
+<style>
+    .acct-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 600px) { .acct-grid-2 { grid-template-columns: 1fr; } }
+</style>
+@endpush
+
 @section('content')
 
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
@@ -30,7 +37,7 @@
         @error('current_password') <div class="form-error">{{ $message }}</div> @enderror
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div class="acct-grid-2">
         <div class="form-group" style="margin-bottom:0;">
             <label class="form-label" for="password">{{ __('New Password *') }}</label>
             <input id="password" name="password" type="password"

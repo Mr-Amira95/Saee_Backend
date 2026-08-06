@@ -10,7 +10,7 @@
 
 @section('content')
 
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
     <div>
         <h1 style="font-size:1.3rem;font-weight:800;">{{ __('Import Validation Report') }}</h1>
         <p style="font-size:.82rem;color:var(--text-sub);">{{ __('We parsed your spreadsheet but found errors. Please correct the template and re-upload.') }}</p>

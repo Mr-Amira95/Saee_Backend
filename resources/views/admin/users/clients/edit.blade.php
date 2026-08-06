@@ -124,6 +124,7 @@
     padding: 10px; background: var(--in-bg);
     border-radius: 8px; border: 1px solid var(--bdr); margin-bottom: 8px;
 }
+@media (max-width:600px) { .attach-row { grid-template-columns: 1fr; } }
 .btn-remove-att {
     background: rgba(220,38,38,.12); border: 1px solid rgba(220,38,38,.25);
     color: #dc2626; border-radius: 6px; padding: 6px 10px;

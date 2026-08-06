@@ -93,7 +93,7 @@
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="info-grid">
         {{-- Salary breakdown card --}}
         <div class="table-card" style="height:fit-content;">
             <div style="padding:16px;border-bottom:1px solid var(--bdr);">

@@ -19,6 +19,9 @@
     border-bottom: 1px solid var(--bdr);
 }
 .area-row:last-child { border-bottom: none; }
+@media (max-width: 600px) {
+    .area-row { grid-template-columns: 1fr; }
+}
 .area-remove {
     background: rgba(220,38,38,.1); border: 1px solid rgba(220,38,38,.2);
     color: #f87171; border-radius: 6px; padding: 5px 10px;

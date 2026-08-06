@@ -84,7 +84,7 @@
             <div class="form-section-title">{{ __('Settle Collections') }}</div>
 
             {{-- Summary stats row --}}
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px;">
                 <div style="background: var(--bg); border: 1px solid var(--bdr); border-radius: 10px; padding: 14px 16px;">
                     <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;">{{ __('Total Cash Held') }}</div>
                     <div style="font-size: 1.2rem; font-weight: 700; color: var(--text);">{{ number_format($totalCash, 2) }} JD</div>
@@ -100,7 +100,7 @@
             </div>
 
             {{-- Form inputs row --}}
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <div class="form-grid-2" style="margin-bottom: 20px;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label" for="reference_number">{{ __('Receipt / Reference Number') }}</label>
                     <input type="text" name="reference_number" id="reference_number" class="form-input" placeholder="{{ __('e.g. Cash receipt #1827') }}">

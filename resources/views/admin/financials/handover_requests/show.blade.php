@@ -11,6 +11,15 @@
     <span class="current">{{ __('Details') }}</span>
 @endsection
 
+@section('head')
+<style>
+    .handover-top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; margin-bottom: 24px; }
+    @media(max-width: 900px) {
+        .handover-top-grid { grid-template-columns: 1fr; }
+    }
+</style>
+@endsection
+
 @section('content')
     {{-- Back Link --}}
     <div style="margin-bottom: 20px;">
@@ -28,7 +37,7 @@
     @endif
 
     {{-- Top Row: Handover Summary + Action Required (each half width) --}}
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; margin-bottom: 24px;">
+    <div class="handover-top-grid">
 
         {{-- Summary Card --}}
         <div class="table-card" style="padding: 20px; @if($handoverRequest->status !== 'pending') grid-column: 1 / -1; @endif">

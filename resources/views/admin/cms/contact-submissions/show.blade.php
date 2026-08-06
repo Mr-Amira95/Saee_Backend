@@ -10,6 +10,13 @@
     <span class="current">{{ $submission->name }}</span>
 @endsection
 
+@section('head')
+<style>
+    .submission-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .submission-layout { grid-template-columns: 1fr; } }
+</style>
+@endsection
+
 @section('content')
 
 @if(session('success'))
@@ -34,7 +41,7 @@
     </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+<div class="submission-layout">
     <div class="table-card" style="height:fit-content;">
         <div style="padding:16px;border-bottom:1px solid var(--bdr);">
             <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Submission Details') }}</h3>

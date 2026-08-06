@@ -6,9 +6,14 @@
         </svg>
         <h1>{{ __('Best Viewed on Desktop') }}</h1>
         <p>{{ __('The Sa\'ee Logistics Portal is optimized for larger screens. Please switch to a laptop or desktop for the best experience.') }}</p>
-        <button type="button" id="mobileBlockBack">
-            {{ __('Go Back') }}
-        </button>
+        <div class="mobile-block-actions">
+            <button type="button" id="mobileBlockBack">
+                {{ __('Go Back') }}
+            </button>
+            <button type="button" id="mobileBlockContinue">
+                {{ __('Continue on Mobile') }}
+            </button>
+        </div>
     </div>
 </div>
 
@@ -28,6 +33,7 @@
     .mobile-block-card svg { color: #dc2626; margin-bottom: 20px; }
     .mobile-block-card h1 { font-family: 'Inter', system-ui, sans-serif; font-size: 1.3rem; font-weight: 800; color: #f1f5f9; margin: 0 0 10px; letter-spacing: -.02em; }
     .mobile-block-card p { font-family: 'Inter', system-ui, sans-serif; font-size: .9rem; color: #94a3b8; line-height: 1.55; margin: 0 0 26px; }
+    .mobile-block-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
     .mobile-block-card button {
         display: flex; align-items: center; justify-content: center; gap: 8px;
         padding: 12px 24px; background: #dc2626; color: #fff; border: none; border-radius: 10px;
@@ -35,14 +41,23 @@
     }
     .mobile-block-card button svg { display: block; flex-shrink: 0; }
     html[dir="rtl"] .mobile-block-card button svg { transform: scaleX(-1); }
+    .mobile-block-card #mobileBlockContinue { background: transparent; color: #94a3b8; border: 1px solid #334155; }
 
     @media (max-width: 767px) {
         .mobile-block { display: flex; }
     }
+    .mobile-block.mobile-block-dismissed { display: none !important; }
 </style>
 
 <script>
     document.getElementById('mobileBlockBack').addEventListener('click', function () {
         window.location.href = 'https://saee-logistics.com/';
     });
+    document.getElementById('mobileBlockContinue').addEventListener('click', function () {
+        sessionStorage.setItem('mobileBlockDismissed', '1');
+        document.getElementById('mobileBlock').classList.add('mobile-block-dismissed');
+    });
+    if (sessionStorage.getItem('mobileBlockDismissed') === '1') {
+        document.getElementById('mobileBlock').classList.add('mobile-block-dismissed');
+    }
 </script>

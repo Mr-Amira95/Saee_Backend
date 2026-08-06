@@ -14,6 +14,7 @@
 <style>
     .tabs-nav {
         display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid var(--bdr); padding-bottom: 12px;
+        flex-wrap: wrap;
     }
     .tab-btn {
         background: rgba(255,255,255,.03); border: 1px solid var(--bdr); border-radius: 8px;

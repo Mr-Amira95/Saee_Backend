@@ -172,7 +172,7 @@
 
 @section('content')
 
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
     <div>
         <h1 style="font-size:1.3rem;font-weight:800;">{{ __('Confirm Import') }}</h1>
         <p style="font-size:.82rem;color:var(--text-sub);">{{ __('Review and adjust the') }} <span id="rowCountLabel">{{ count($rows) }}</span> {{ __('order(s) below, then click') }} <strong>{{ __('Confirm & Import') }}</strong> {{ __('to save them. You can remove any row using the delete icon.') }}</p>

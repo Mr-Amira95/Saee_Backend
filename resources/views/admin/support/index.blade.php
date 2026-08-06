@@ -29,6 +29,10 @@
         overflow: hidden;
         backdrop-filter: blur(8px);
     }
+    @media(max-width: 900px) {
+        .chat-layout { grid-template-columns: 1fr; }
+        .chat-sidebar { max-height: 240px; border-right: none; border-bottom: 1px solid var(--bdr); }
+    }
 
     /* ─── Ticket Sidebar ─── */
     .chat-sidebar {

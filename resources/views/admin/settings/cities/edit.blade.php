@@ -33,6 +33,9 @@
     gap: 10px; align-items: center; padding: 14px;
     background: rgba(220,38,38,.04); border-top: 1px solid rgba(220,38,38,.12);
 }
+@media (max-width: 600px) {
+    .add-area-row { grid-template-columns: 1fr; }
+}
 </style>
 @endsection
 

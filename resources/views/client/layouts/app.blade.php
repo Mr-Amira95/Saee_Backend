@@ -327,6 +327,46 @@
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
+        /* ── Hamburger & mobile sidebar drawer ────────────── */
+        .hamburger-btn { display: none; }
+        .sidebar-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.55); z-index: 190;
+        }
+        .sidebar-backdrop.open { display: block; animation: fu .2s; }
+        .sidebar-close-btn { display: none; }
+
+        @media (max-width: 900px) {
+            .hamburger-btn {
+                display: flex; align-items: center; justify-content: center;
+                width: 35px; height: 35px; border-radius: 9px; flex-shrink: 0;
+                background: rgba(255,255,255,.04); border: 1px solid var(--bdr);
+                color: var(--text-sub); cursor: pointer;
+            }
+            .hamburger-btn:hover { background: rgba(255,255,255,.07); color: var(--text); }
+            .sidebar {
+                position: fixed; top: 0; left: 0; height: 100vh; z-index: 200;
+                transform: translateX(-100%);
+                transition: transform .28s cubic-bezier(.4,0,.2,1);
+                box-shadow: 12px 0 40px rgba(0,0,0,.45);
+            }
+            .sidebar.open { transform: translateX(0); }
+            html[dir="rtl"] .sidebar { transform: translateX(100%); }
+            html[dir="rtl"] .sidebar.open { transform: translateX(0); }
+            .sidebar-close-btn {
+                display: flex; align-items: center; justify-content: center;
+                width: 30px; height: 30px; border-radius: 8px; margin-left: auto;
+                background: rgba(255,255,255,.04); border: 1px solid var(--bdr);
+                color: var(--text-sub); cursor: pointer; flex-shrink: 0;
+            }
+            .topbar-title { max-width: 45vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        }
+        @media (max-width: 600px) {
+            .content { padding: 16px; }
+            .page-hd { flex-direction: column; }
+            .topbar { padding: 0 14px; }
+        }
+
         @keyframes slide-in { from { opacity:0; transform: translateX(-16px); } to { opacity:1; transform: translateX(0); } }
 
         /* ─── Light Mode Overrides ───────────────────────── */
@@ -405,11 +445,15 @@
 <body>
 
 <div class="shell">
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
     {{-- ═══════════ SIDEBAR ════════════ --}}
     <aside class="sidebar">
         <div class="sidebar-logo">
             <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;">
             <img id="logoLight" src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;display:none;">
+            <button class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="{{ __('Close menu') }}">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
 
         <nav class="sidebar-nav">
@@ -521,6 +565,9 @@
         {{-- Topbar --}}
         <header class="topbar">
             <div class="topbar-left">
+                <button class="hamburger-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" aria-label="{{ __('Toggle menu') }}">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                </button>
                 <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
             </div>
             <div class="topbar-right">
@@ -803,6 +850,18 @@ function updateThemeIcons() {
     }
 }
 document.addEventListener('DOMContentLoaded', updateThemeIcons);
+
+// Mobile sidebar drawer toggle
+function toggleSidebar(force) {
+    const sidebar  = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const open = typeof force === 'boolean' ? force : !sidebar.classList.contains('open');
+    sidebar.classList.toggle('open', open);
+    backdrop.classList.toggle('open', open);
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') toggleSidebar(false);
+});
 
 // Load unread count on page load
 fetch('{{ route("client.notifications.unread") }}')

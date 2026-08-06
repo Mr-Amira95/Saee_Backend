@@ -82,6 +82,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
         padding: 16px 24px;
         background: rgba(10, 12, 28, 0.6);
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -349,6 +351,8 @@
         align-items: center;
         padding: 16px 20px;
         width: 220px;
+        max-width: 100%;
+        box-sizing: border-box;
         background: rgba(10, 12, 28, 0.75);
         border: 1px solid rgba(239, 68, 68, 0.35);
         border-radius: 16px;

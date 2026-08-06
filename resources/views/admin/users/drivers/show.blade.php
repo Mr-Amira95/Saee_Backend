@@ -36,6 +36,13 @@ html.light-theme .leaflet-popup-content-wrapper { background: #ffffff; color: #0
 html.light-theme .leaflet-popup-tip { background: #ffffff; }
 html.light-theme .leaflet-control-attribution { background: rgba(255,255,255,.7) !important; color: #64748b !important; }
 html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
+
+.bank-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.location-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width:900px) {
+    .bank-details-grid { grid-template-columns: 1fr; }
+    .location-grid { grid-template-columns: 1fr; }
+}
 </style>
 @endsection
 
@@ -280,7 +287,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     <div class="info-card">
         <div class="info-card-title">{{ __('Bank Details') }}</div>
         @if($driver->bankDetail && array_filter($driver->bankDetail->only(['bank_name','account_name','account_number','iban','swift_code','cliq_id'])))
-        <div class="info-rows" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="info-rows bank-details-grid">
             <div class="info-row" style="border-bottom:none;padding-bottom:0;">
                 <span class="info-row-key">{{ __('Bank Name') }}</span>
                 <span class="info-row-val">{{ $driver->bankDetail->bank_name ?: '—' }}</span>
@@ -334,7 +341,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
     {{-- Last Known Location --}}
     <div class="info-card" style="grid-column: span 2;">
         <div class="info-card-title">{{ __('Last Known Location') }}</div>
-        <div class="info-rows" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div class="info-rows location-grid">
             <div class="info-row" style="border-bottom: none; padding-bottom: 0;">
                 <span class="info-row-key">{{ __('Latitude') }}</span>
                 <span class="info-row-val" style="font-family:monospace;">{{ $driver->current_latitude ?? '—' }}</span>

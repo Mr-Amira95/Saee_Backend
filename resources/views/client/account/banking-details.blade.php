@@ -2,6 +2,13 @@
 @section('title', 'Banking Details')
 @section('page-title', 'Banking Details')
 
+@push('styles')
+<style>
+    .acct-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 600px) { .acct-grid-2 { grid-template-columns: 1fr; } }
+</style>
+@endpush
+
 @section('content')
 
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
@@ -40,7 +47,7 @@
         @error('iban') <div class="form-error">{{ $message }}</div> @enderror
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div class="acct-grid-2">
         <div class="form-group">
             <label class="form-label" for="swift_code">{{ __('SWIFT / BIC Code') }}</label>
             <input id="swift_code" name="swift_code" type="text" class="form-input {{ $errors->has('swift_code') ? 'has-error' : '' }}"

@@ -158,9 +158,9 @@ html[dir="rtl"] .phone-dropdown {
     @if($admin->role !== 'superadmin')
     <div class="form-section">
         <div class="form-section-title">{{ __('Permissions') }}</div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
             <p style="font-size: .82rem; color: var(--text-sub);">{{ __('Check a page to give this admin access to it. Existing permissions will be replaced.') }}</p>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-page-groups input[type=checkbox]').forEach(c=>c.checked=true); window.syncAllPermCards && window.syncAllPermCards();">{{ __('Select All') }}</button>
                 <button type="button" class="btn-secondary" style="font-size: .75rem; padding: 5px 10px;" onclick="document.querySelectorAll('.perm-page-groups input[type=checkbox]').forEach(c=>c.checked=false); window.syncAllPermCards && window.syncAllPermCards();">{{ __('Clear All') }}</button>
             </div>

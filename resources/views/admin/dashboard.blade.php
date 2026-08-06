@@ -105,6 +105,17 @@
     .qs-bar-wrap { height: 3px; background: rgba(255,255,255,.06); border-radius: 2px; margin-top: 4px; width: 100px; }
     .qs-bar   { height: 3px; border-radius: 2px; width: 0; transition: width 1s cubic-bezier(.4,0,.2,1) .4s; }
     .qs-val   { font-size: .76rem; font-weight: 700; color: var(--text-dim); white-space: nowrap; }
+
+    /* ─── Mobile adjustments ──────────────────────── */
+    @media (max-width: 600px) {
+        .welcome-row { padding: 16px 18px; }
+        /* attendance-widget uses inline min-width:280px which is too tight once welcome-row
+           wraps on narrow screens; let it take the full row width instead. */
+        .attendance-widget { min-width: 100% !important; }
+        /* customToast is only right/left-anchored (not both) with max-width:380px, which can
+           push it past the opposite viewport edge on phones; dock it to both sides instead. */
+        #customToast { left: 12px !important; right: 12px !important; max-width: calc(100% - 24px) !important; }
+    }
 </style>
 @endsection
 

@@ -76,6 +76,10 @@
         gap: 40px;
         margin-bottom: 40px;
     }
+    @media(max-width: 600px) {
+        .inv-grid { grid-template-columns: 1fr; gap: 20px; }
+        .invoice-card { padding: 24px; }
+    }
 
     .inv-bill-title {
         font-size: .7rem;
@@ -129,6 +133,7 @@
 
     .inv-totals {
         width: 300px;
+        max-width: 100%;
         margin-left: auto;
         margin-bottom: 30px;
     }

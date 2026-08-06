@@ -30,7 +30,7 @@
     </div>
 </div>
 
-<div class="filter-bar" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+<div class="filter-bar" style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
     <form method="GET" action="{{ route('admin.drivers.index') }}" class="filter-form" style="margin:0; flex:1; max-width:320px;" id="search-form">
         <input
             class="filter-search"

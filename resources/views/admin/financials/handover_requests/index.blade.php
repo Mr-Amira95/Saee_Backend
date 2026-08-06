@@ -32,7 +32,7 @@
 
     {{-- Tab Navigation --}}
     <div style="margin-top: 18px;">
-        <div style="display: flex; border-bottom: 2px solid var(--bdr); gap: 4px;">
+        <div style="display: flex; border-bottom: 2px solid var(--bdr); gap: 4px; flex-wrap: wrap;">
             <button id="tab-pending-btn" onclick="switchTab('pending')"
                 style="display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: none; border: none; border-bottom: 2px solid #f59e0b; margin-bottom: -2px; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: #f59e0b; transition: all 0.15s;">
                 <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.15);">

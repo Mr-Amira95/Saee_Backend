@@ -89,7 +89,7 @@
         </div>
     </form>
 
-    <div style="margin-top:32px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="margin-top:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
         <h2 style="font-size:1.05rem;font-weight:700;margin:0;">{{ __('Flow Steps') }}</h2>
         <a href="{{ route('admin.cms.flow-steps.index') }}" class="btn-secondary">{{ __('Manage Flow Steps') }} &rarr;</a>
     </div>

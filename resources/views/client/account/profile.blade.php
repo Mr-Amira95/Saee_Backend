@@ -2,6 +2,13 @@
 @section('title', 'Edit Profile')
 @section('page-title', 'Edit Profile')
 
+@push('styles')
+<style>
+    .acct-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 600px) { .acct-grid-2 { grid-template-columns: 1fr; } }
+</style>
+@endpush
+
 @section('content')
 
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
@@ -29,7 +36,7 @@
         @error('name') <div class="form-error">{{ $message }}</div> @enderror
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div class="acct-grid-2">
         <div class="form-group" style="margin-bottom:0;">
             <label class="form-label" for="email">{{ __('Email Address') }}</label>
             <input id="email" name="email" type="email" class="form-input {{ $errors->has('email') ? 'has-error' : '' }}"

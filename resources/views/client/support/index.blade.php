@@ -257,6 +257,26 @@
         opacity: .95;
     }
 
+    /* ─── Mobile: stack ticket list above chat window ─── */
+    @media (max-width: 900px) {
+        .chat-layout {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr;
+        }
+        .chat-sidebar {
+            border-right: none;
+            border-bottom: 1px solid var(--bdr);
+            max-height: 260px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .chat-window-head { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+        .chat-body { padding: 16px; }
+        .chat-footer { padding: 12px 16px; }
+        .msg-wrap { max-width: 88%; }
+    }
+
     .toast-notif { position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid var(--bdr);color:var(--text);padding:12px 18px;border-radius:10px;font-size:.84rem;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:9999;animation:toastIn .2s ease; }
     @keyframes toastIn { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:translateY(0); } }
 

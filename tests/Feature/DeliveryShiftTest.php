@@ -416,4 +416,83 @@ class DeliveryShiftTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee("SA'EE LOGISTICS", false);
     }
+
+    public function test_client_can_download_pdf_for_a_single_order()
+    {
+        $order = $this->orderService->createOrder([
+            'client_profile_id' => $this->client->id,
+            'payment_type' => 'cod',
+            'order_price' => 100.00,
+            'receiver_name' => 'Receiver PDF Single',
+            'receiver_phone' => '0790000001',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'address_text' => '123 Client PDF St',
+        ], $this->admin);
+
+        $response = $this->actingAs($this->clientUser)->get(route('client.orders.pdf', ['ids' => $order->id]));
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_client_can_download_pdf_for_multiple_orders()
+    {
+        $orderOne = $this->orderService->createOrder([
+            'client_profile_id' => $this->client->id,
+            'payment_type' => 'cod',
+            'order_price' => 100.00,
+            'receiver_name' => 'Receiver PDF Multi 1',
+            'receiver_phone' => '0790000001',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'address_text' => '123 Client PDF Multi St',
+        ], $this->admin);
+
+        $orderTwo = $this->orderService->createOrder([
+            'client_profile_id' => $this->client->id,
+            'payment_type' => 'cod',
+            'order_price' => 50.00,
+            'receiver_name' => 'Receiver PDF Multi 2',
+            'receiver_phone' => '0790000002',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'address_text' => '456 Client PDF Multi St',
+        ], $this->admin);
+
+        $response = $this->actingAs($this->clientUser)->get(route('client.orders.pdf', [
+            'ids' => [$orderOne->id, $orderTwo->id],
+        ]));
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_client_cannot_download_pdf_for_another_clients_order()
+    {
+        $otherClientUser = User::factory()->create([
+            'role' => 'client_master',
+            'status' => 'active',
+            'phone' => '079' . rand(1000000, 9999999),
+        ]);
+        $otherClient = ClientProfile::create([
+            'master_user_id' => $otherClientUser->id,
+            'company_name' => 'Other Merchant',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'status' => 'active',
+        ]);
+
+        $foreignOrder = $this->orderService->createOrder([
+            'client_profile_id' => $otherClient->id,
+            'payment_type' => 'cod',
+            'order_price' => 100.00,
+            'receiver_name' => 'Receiver Foreign',
+            'receiver_phone' => '0790000003',
+            'city_id' => $this->city->id,
+            'area_id' => $this->area->id,
+            'address_text' => '789 Other St',
+        ], $this->admin);
+
+        $response = $this->actingAs($this->clientUser)->get(route('client.orders.pdf', ['ids' => $foreignOrder->id]));
+        $response->assertStatus(404);
+    }
 }

@@ -3,6 +3,14 @@
 @section('title', __('Invoice') . ' ' . $invoice->invoice_number)
 @section('page-title', __('Invoice Detail'))
 
+@push('styles')
+<style>
+    @media (max-width: 600px) {
+        .form-grid-2 { grid-template-columns: 1fr !important; }
+    }
+</style>
+@endpush
+
 @section('content')
     {{-- Header --}}
     <div class="page-hd">
@@ -11,7 +19,7 @@
             <p>{{ $invoice->clientProfile->company_name ?? $invoice->clientProfile->masterUser->name }}
                &nbsp;·&nbsp; {{ \Carbon\Carbon::parse($invoice->period_start)->format('d M Y') }} – {{ \Carbon\Carbon::parse($invoice->period_end)->format('d M Y') }}</p>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             @php $sv = $invoice->status->value ?? $invoice->status; @endphp
             @if($sv === 'issued' || $sv === 'overdue')
                 <button type="button" class="btn-primary" onclick="document.getElementById('pay-form').style.display='block'">

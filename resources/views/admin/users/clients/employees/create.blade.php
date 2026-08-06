@@ -246,8 +246,8 @@
 
     <div class="form-actions" style="flex-wrap:wrap;gap:16px;">
         {{-- Invitation / OTP channel toggle --}}
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-right:auto;user-select:none;">
-            <span style="font-size:.85rem;color:var(--text-sub);white-space:nowrap;">{{ __('Send invitation & OTP via') }}</span>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-right:auto;user-select:none;flex-wrap:wrap;">
+            <span style="font-size:.85rem;color:var(--text-sub);">{{ __('Send invitation & OTP via') }}</span>
             <div style="position:relative;display:inline-flex;align-items:center;background:var(--in-bg);border:1px solid var(--bdr);border-radius:8px;padding:3px;gap:2px;" id="invChannelWrap">
                 <input type="hidden" name="otp_channel" id="invChannelInput" value="whatsapp">
                 <button type="button" id="btnWhatsapp"

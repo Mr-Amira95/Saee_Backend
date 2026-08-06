@@ -340,6 +340,7 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::post('orders/import-image', [ClientOrderController::class, 'importImage'])->name('orders.import-image.submit');
         Route::get('orders/export', [ClientOrderController::class, 'export'])->name('orders.export');
         Route::get('orders/print-all', [ClientOrderController::class, 'printAll'])->name('orders.print-all');
+        Route::get('orders/pdf', [ClientOrderController::class, 'pdf'])->name('orders.pdf');
         Route::get('orders/{order}/print', [ClientOrderController::class, 'printOrder'])->name('orders.print');
         Route::get('orders/create', [ClientOrderController::class, 'create'])->name('orders.create');
         Route::post('orders', [ClientOrderController::class, 'store'])->name('orders.store');
