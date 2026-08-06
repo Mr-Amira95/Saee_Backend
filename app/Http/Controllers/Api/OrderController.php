@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\OrderPdfExportRequest;
 use App\Http\Resources\Api\OrderResource;
 use App\Models\Area;
 use App\Models\Attendance;
@@ -15,6 +16,7 @@ use App\Models\User;
 use App\Services\OpenAIService;
 use App\Services\OrderService;
 use App\Services\SupportNotificationService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -149,6 +151,88 @@ class OrderController extends Controller
             'success' => true,
             'message' => __('Order retrieved successfully.'),
             'data'    => new OrderResource($order),
+        ]);
+    }
+
+    public function exportPdf(OrderPdfExportRequest $request): Response|JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Only client accounts can export order PDFs.'),
+            ], 403);
+        }
+
+        $ids = $request->orderIds();
+
+        $query = Order::where('client_profile_id', $clientProfile->id)
+            ->with(['clientProfile', 'receiver.city', 'receiver.area', 'payment']);
+
+        if (! empty($ids)) {
+            $query->whereIn('id', $ids);
+        } else {
+            if ($request->filled('status')) {
+                $status = $request->input('status');
+                if ($status === 'active') {
+                    $query->whereIn('status', ['pending', 'assigned', 'picked_up']);
+                } else {
+                    $query->where('status', $status);
+                }
+            }
+
+            if ($request->filled('payment_type')) {
+                $query->whereHas('payment', fn ($pq) => $pq->where('payment_type', $request->input('payment_type')));
+            }
+
+            if ($request->filled('from')) {
+                $query->whereDate('created_at', '>=', $request->input('from'));
+            }
+
+            if ($request->filled('to')) {
+                $query->whereDate('created_at', '<=', $request->input('to'));
+            }
+        }
+
+        $orders = $query->latest()->get();
+
+        if (! empty($ids) && $orders->count() !== count(array_unique($ids))) {
+            return response()->json([
+                'success' => false,
+                'message' => __('One or more requested orders were not found.'),
+            ], 404);
+        }
+
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('No orders found.'),
+            ], 404);
+        }
+
+        try {
+            $pdfBytes = Pdf::loadView('shared.orders.pdf', ['orders' => $orders])
+                ->setPaper('a4')
+                ->output();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('Unable to generate PDF.'),
+            ], 500);
+        }
+
+        $filename = 'orders-' . now()->format('Y-m-d-His') . '.pdf';
+
+        return response($pdfBytes, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Length'      => (string) strlen($pdfBytes),
         ]);
     }
 

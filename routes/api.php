@@ -192,6 +192,10 @@ Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () 
     Route::post('orders', [OrderController::class, 'store'])
         ->name('api.orders.store');
 
+    // Dedicated mobile-app PDF export — Bearer-token authenticated, must never redirect to the web login page
+    Route::get('client/orders/pdf', [OrderController::class, 'exportPdf'])
+        ->name('api.orders.pdf');
+
     Route::get('orders/by-reference/{reference_code?}', [OrderController::class, 'showByReference'])
         ->name('api.orders.by-reference');
 
