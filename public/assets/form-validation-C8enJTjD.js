@@ -1,0 +1,1 @@
+import{C as e}from"./site-layout-Bh6tjjxu.js";var t=e(`circle-check`,[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`m9 12 2 2 4-4`,key:`dzmm74`}]]),n=/\p{L}/u,r=/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z]{2,}$/,i=/^[0-9][0-9,\s]*$/;export{t as i,n,i as r,r as t};
