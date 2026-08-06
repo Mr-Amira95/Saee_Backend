@@ -544,7 +544,6 @@
             </a>
             @endif
             <div class="sidebar-user">
-                <div class="u-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
                 <div class="u-info">
                     <div class="u-name">{{ auth()->user()->name }}</div>
                     <div class="u-role">{{ auth()->user()->role === 'client_master' ? __('Account Owner') : __('Team Member') }}</div>

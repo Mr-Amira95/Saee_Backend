@@ -190,6 +190,9 @@
             <a href="{{ route('admin.cms.showcase-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.showcase-page.*') || request()->routeIs('admin.cms.showcase-capabilities.*') || request()->routeIs('admin.cms.showcase-how-it-works.*') || request()->routeIs('admin.cms.showcase-metrics.*') || request()->routeIs('admin.cms.showcase-screenshots.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Showcases') }}
             </a>
+            <a href="{{ route('admin.cms.download-app-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.download-app-page.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Download Application') }}
+            </a>
             <a href="{{ route('admin.cms.why-saee-page.index') }}" class="nav-sub-item {{ request()->routeIs('admin.cms.why-saee-page.*') || request()->routeIs('admin.cms.why-saee-reasons.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __("Why Sa'ee") }}
             </a>

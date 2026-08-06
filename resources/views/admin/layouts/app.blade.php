@@ -931,9 +931,6 @@
                     <span class="notif-dot" id="notifDot" style="display: none;"></span>
                 </div>
 
-                <div class="icon-btn">
-                    <div class="u-avatar" style="width:24px;height:24px;font-size:.65rem;border-radius:6px">{{ strtoupper(substr(auth()->user()->name,0,2)) }}</div>
-                </div>
             </div>
         </header>
 

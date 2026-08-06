@@ -30,6 +30,7 @@ use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ContactInformationController;
 use App\Http\Controllers\Public\ContactSubmissionController;
 use App\Http\Controllers\Public\CustomerStoriesController;
+use App\Http\Controllers\Public\DownloadAppController;
 use App\Http\Controllers\Public\FaqController as PublicFaqController;
 use App\Http\Controllers\Public\FlowController;
 use App\Http\Controllers\Public\ForBusinessController;
@@ -61,6 +62,7 @@ Route::prefix('public')->name('api.public.')->group(function () {
     Route::get('flow', [FlowController::class, 'show'])->name('flow');
     Route::get('industries', [IndustriesController::class, 'show'])->name('industries');
     Route::get('showcases', [ShowcasesController::class, 'show'])->name('showcases');
+    Route::get('download-app', [DownloadAppController::class, 'show'])->name('download-app');
     Route::get('why-saee', [WhySaeeController::class, 'show'])->name('why-saee');
     Route::get('customer-stories', [CustomerStoriesController::class, 'show'])->name('customer-stories');
     Route::get('faq', [PublicFaqController::class, 'show'])->name('faq');

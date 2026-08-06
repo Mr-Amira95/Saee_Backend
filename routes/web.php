@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\CustomerTestimonialController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ClientEmployeeController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DownloadAppPageController;
 use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\DriverPayrollController;
 use App\Http\Controllers\Admin\ExpenseController;
@@ -185,6 +186,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('cms/about-page', [AboutPageController::class, 'index'])->name('cms.about-page.index');
         Route::put('cms/about-page', [AboutPageController::class, 'update'])->name('cms.about-page.update');
         Route::resource('cms/about-values', AboutValueController::class)->names('cms.about-values');
+
+        // Website CMS — Download Application Page
+        Route::get('cms/download-app-page', [DownloadAppPageController::class, 'index'])->name('cms.download-app-page.index');
+        Route::put('cms/download-app-page', [DownloadAppPageController::class, 'update'])->name('cms.download-app-page.update');
         Route::get('settings/site', [SiteSettingController::class, 'index'])->name('settings.site.index');
         Route::post('settings/site', [SiteSettingController::class, 'update'])->name('settings.site.update');
         Route::get('settings/legal', [LegalContentController::class, 'index'])->name('settings.legal.index');
