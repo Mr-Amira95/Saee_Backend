@@ -121,8 +121,11 @@
             </a>
             <a href="{{ route('client.reports.print', request()->only('from', 'to', 'status')) }}" target="_blank" class="btn-secondary" style="padding:7px 14px;font-size:.8rem;">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                {{ __('Export PDF') }}
+                {{ __('Print Report') }}
             </a>
+            @if($orders->total() > 0)
+                <x-export-pdf-button :href="route('client.reports.export-pdf', request()->only('from', 'to', 'status'))" style="padding:7px 14px;font-size:.8rem;" />
+            @endif
             <a href="{{ route('client.reports.index', request()->only('from', 'to')) }}" class="btn-secondary" style="padding:7px 14px;font-size:.8rem;">
                 {{ __('Clear') }}
             </a>

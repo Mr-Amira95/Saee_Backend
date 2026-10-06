@@ -50,6 +50,7 @@ use App\Http\Controllers\Admin\ShowcasePageController;
 use App\Http\Controllers\Admin\ShowcaseScreenshotController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SupportController;
+use App\Http\Controllers\Admin\WaybillController;
 use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\Client\AccountController as ClientAccountController;
 use App\Http\Controllers\Client\AiChatController;
@@ -64,6 +65,7 @@ use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\ReportController as ClientReportController;
 use App\Http\Controllers\Client\SupportController as ClientSupportController;
 use App\Http\Controllers\Client\UserManagementController;
+use App\Http\Controllers\Client\WaybillController as ClientWaybillController;
 use App\Http\Controllers\Portal\AuthController as PortalAuthController;
 use App\Http\Controllers\PublicCmsController;
 use App\Http\Controllers\PublicOrderLocationController;
@@ -122,6 +124,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Protected — must be authenticated admin/superadmin
     Route::middleware(['admin.auth', 'admin.permission'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('dashboard/export-pdf', [DashboardController::class, 'exportPdf'])->name('dashboard.export-pdf');
+
+        // Export PDF (waybills) for an explicit list of orders — shared by every orders table
+        Route::post('waybills/export-pdf', [WaybillController::class, 'export'])->name('waybills.export');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
         // CMS Management
@@ -237,6 +243,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Reports & Exports Center
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
         Route::get('reports/kpis', [ReportController::class, 'kpis'])->name('reports.kpis');
         Route::get('reports/ratings', [ReportController::class, 'ratings'])->name('reports.ratings');
         Route::get('reports/drivers/{driver}/kpi', [ReportController::class, 'driverKpi'])->name('reports.driver-kpi');
@@ -335,6 +342,9 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::get('/', [ClientDashboardController::class, 'index'])->name('dashboard');
         Route::get('track', [ClientDashboardController::class, 'track'])->name('track');
 
+        // Export PDF (waybills) for an explicit list of orders — shared by every orders table
+        Route::post('waybills/export-pdf', [ClientWaybillController::class, 'export'])->name('waybills.export');
+
         // Orders
         Route::get('orders/import/template', [ClientOrderController::class, 'downloadTemplate'])->name('orders.template');
         Route::get('orders/import/review', [ClientOrderController::class, 'showReview'])->name('orders.import.review');
@@ -384,6 +394,7 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::get('reports', [ClientReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [ClientReportController::class, 'export'])->name('reports.export');
         Route::get('reports/print', [ClientReportController::class, 'print'])->name('reports.print');
+        Route::get('reports/export-pdf', [ClientReportController::class, 'exportPdf'])->name('reports.export-pdf');
 
         // AI Chatbot Assistant
         Route::get('ai-assistant', [AiChatController::class, 'index'])->name('ai-chat.index');

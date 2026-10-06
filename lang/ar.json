@@ -1500,6 +1500,7 @@
   "Only client accounts can edit orders.": "يمكن فقط لحسابات العملاء تعديل الطلبات.",
   "Only pending orders can be edited.": "يمكن فقط تعديل الطلبات المعلقة.",
   "Only pending orders can be cancelled.": "يمكن فقط إلغاء الطلبات المعلقة.",
+  "Only assigned orders can be cancelled by the driver.": "يمكن للسائق إلغاء الطلبات المسندة إليه فقط.",
   "Order cancelled successfully.": "تم إلغاء الطلب بنجاح.",
   "Only client accounts can import orders.": "يمكن فقط لحسابات العملاء استيراد الطلبات.",
   "Invalid CSV format. Please download and use the provided template.": "صيغة ملف CSV غير صحيحة. يرجى تحميل واستخدام القالب المرفق.",
@@ -1937,6 +1938,9 @@
   "Proof of Delivery Photo": "صورة إثبات التسليم",
   "Proof of Delivery": "إثبات التسليم",
   "No proof photo uploaded": "لم يتم رفع صورة إثبات",
+  "Delivery Location": "موقع التسليم",
+  "Open in Google Maps": "فتح في خرائط جوجل",
+  "No delivery location recorded": "لم يتم تسجيل موقع التسليم",
   "National ID Attachment": "مرفق الهوية الوطنية",
   "Required": "مطلوب",
   "View PDF": "عرض PDF",
@@ -2372,5 +2376,12 @@
   "National ID is required.": "الرقم الوطني مطلوب.",
   "License number is required.": "رقم الرخصة مطلوب.",
   "Password must be at least 8 characters and include letters and numbers.": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل وتحتوي على أحرف وأرقام.",
-  "The file size must not exceed the allowed limit.": "يجب ألا يتجاوز حجم الملف الحد المسموح به."
+  "The file size must not exceed the allowed limit.": "يجب ألا يتجاوز حجم الملف الحد المسموح به.",
+  "Open Live Map": "فتح الخريطة المباشرة",
+  "Google Maps API key is not configured.": "لم يتم إعداد مفتاح Google Maps API.",
+  "All Assigned Orders": "جميع الطلبات المعيّنة",
+  "All Delivered Orders": "جميع الطلبات المسلّمة",
+  "Rejected, Returned & Cancelled Orders": "الطلبات المرفوضة والمرتجعة والملغاة",
+  "Rejected, Returned & Cancelled": "مرفوض ومرتجع وملغى",
+  "Print Report": "طباعة التقرير"
 }

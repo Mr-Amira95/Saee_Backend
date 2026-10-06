@@ -263,6 +263,21 @@
                     @endif
                 </div>
                 <div>
+                    <div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">{{ __('Delivery Location') }}</div>
+                    @if($order->delivery_latitude !== null && $order->delivery_longitude !== null)
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <span dir="ltr" style="font-family:monospace;font-size:.85rem;">{{ $order->delivery_latitude }}, {{ $order->delivery_longitude }}</span>
+                            <a href="https://www.google.com/maps?q={{ $order->delivery_latitude }},{{ $order->delivery_longitude }}" target="_blank" rel="noopener"
+                               style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:8px;color:var(--red-lt);font-size:.8rem;text-decoration:none;">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                {{ __('Open in Google Maps') }}
+                            </a>
+                        </div>
+                    @else
+                        <span style="font-size:.82rem;color:var(--text-dim);font-style:italic;">{{ __('No delivery location recorded') }}</span>
+                    @endif
+                </div>
+                <div>
                     <div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">
                         {{ __('National ID Attachment') }}
                     </div>

@@ -34,6 +34,7 @@ class OrderResource extends JsonResource
             'receiver_phone'           => $receiver?->receiver_phone,
             'address_text'             => $receiver?->address_text,
             'notes'                    => $this->notes,
+            'cancellation_reason'      => $this->cancellation_reason,
             'signature_url'            => $this->signature_path
                 ? Storage::disk('public')->url($this->signature_path)
                 : null,
@@ -43,6 +44,8 @@ class OrderResource extends JsonResource
             'national_id_attachment_url' => $this->national_id_attachment_path
                 ? Storage::disk('public')->url($this->national_id_attachment_path)
                 : null,
+            'delivery_latitude'        => $this->delivery_latitude,
+            'delivery_longitude'       => $this->delivery_longitude,
             'city'                     => $this->whenLoaded('receiver', fn () => $this->receiver?->city ? [
                 'id'      => $this->receiver->city->id,
                 'name'    => $this->receiver->city->name,

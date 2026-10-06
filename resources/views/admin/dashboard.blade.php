@@ -36,6 +36,18 @@
         border-color: rgba(15, 23, 42, 0.08) !important;
     }
 
+    /* ─── Operational status cards (clickable when count > 0) ─── */
+    .status-card {
+        display: block; text-decoration: none;
+        background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px;
+        padding: 12px; text-align: center;
+        transition: transform .13s, border-color .13s, background .13s;
+    }
+    .status-card-clickable { cursor: pointer; }
+    .status-card-clickable:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.16); }
+    html.light-theme .status-card-clickable:hover { border-color: rgba(15,23,42,.18); }
+    .status-card-active { background: rgba(220,38,38,.09); border-color: rgba(220,38,38,.35); }
+
     /* ─── Metric cards ────────────────────────────── */
     .cards-grid {
         display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -79,19 +91,6 @@
     .panel-link  { font-size: .75rem; color: var(--red-lt); text-decoration: none; }
     .panel-link:hover { text-decoration: underline; }
 
-    /* Activity list */
-    .activity-list { padding: 8px 0; }
-    .activity-item {
-        display: flex; align-items: flex-start; gap: 14px;
-        padding: 11px 20px; transition: background .12s;
-    }
-    .activity-item:hover { background: rgba(255,255,255,.018); }
-    .activity-dot  { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-    .activity-body { flex: 1; }
-    .activity-msg  { font-size: .82rem; color: var(--text-sub); line-height: 1.45; }
-    .activity-msg strong { color: var(--text); }
-    .activity-time { font-size: .72rem; color: var(--text-dim); margin-top: 3px; }
-
     /* Quick stats */
     .quick-stats  { padding: 8px 0; }
     .qs-item {
@@ -105,6 +104,49 @@
     .qs-bar-wrap { height: 3px; background: rgba(255,255,255,.06); border-radius: 2px; margin-top: 4px; width: 100px; }
     .qs-bar   { height: 3px; border-radius: 2px; width: 0; transition: width 1s cubic-bezier(.4,0,.2,1) .4s; }
     .qs-val   { font-size: .76rem; font-weight: 700; color: var(--text-dim); white-space: nowrap; }
+
+    /* ─── Live map shortcut ───────────────────────── */
+    .live-map-panel { margin-bottom: 20px; animation: fu .5s .08s both; }
+    .live-map-meta  { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .live-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 3px 9px; border-radius: 100px;
+        background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.2);
+        font-size: .68rem; font-weight: 600; color: #4ade80;
+    }
+    .live-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #22c55e; box-shadow: 0 0 5px #22c55e;
+        animation: dot-p 1.6s infinite;
+    }
+    @keyframes dot-p { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+    #dashboardMap { width: 100%; height: 300px; background: #0c1230; z-index: 0; }
+    html.light-theme #dashboardMap { background: #e5e3df; }
+    .gmap-driver-marker {
+        position: absolute; transform: translate(-50%, -50%); cursor: pointer;
+        width: 32px; height: 32px; border-radius: 50%;
+        background: linear-gradient(135deg,#7f1d1d,#dc2626); border: 2px solid #f87171;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px; font-weight: 700; color: #fff; font-family: inherit;
+        box-shadow: 0 2px 8px rgba(0,0,0,.5);
+    }
+    .gmap-popup { font-size: .8rem; line-height: 1.7; color: #0f172a; }
+    .gmap-popup b { color: #dc2626; }
+    .gmap-popup .ts { color: #64748b; font-size: .75em; }
+    html:not(.light-theme) .gm-style .gm-style-iw-c { background: #0c1230; border: 1px solid rgba(255,255,255,.1); box-shadow: 0 8px 30px rgba(0,0,0,.6); }
+    html:not(.light-theme) .gm-style .gm-style-iw-d { overflow: auto !important; }
+    html:not(.light-theme) .gm-style .gm-style-iw-tc::after { background: #0c1230; }
+    html:not(.light-theme) .gm-style .gm-ui-hover-effect > span { background-color: #94a3b8 !important; }
+    html:not(.light-theme) .gmap-popup { color: #f1f5f9; }
+    html:not(.light-theme) .gmap-popup b { color: #fca5a5; }
+    .live-map-empty {
+        position: absolute; inset: 0; z-index: 5; pointer-events: none;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .live-map-empty > div {
+        background: var(--card); backdrop-filter: blur(6px); border: 1px solid var(--bdr);
+        border-radius: 12px; padding: 14px 22px; font-size: .8rem; color: var(--text-sub); text-align: center;
+    }
 
     /* ─── Mobile adjustments ──────────────────────── */
     @media (max-width: 600px) {
@@ -170,6 +212,37 @@
         </div>
     @endif
 </div>
+
+{{-- Live driver map shortcut --}}
+@if($canViewLiveMap)
+<div class="panel live-map-panel">
+    <div class="panel-head">
+        <div class="live-map-meta">
+            <span class="panel-title">{{ __('Live Driver Map') }}</span>
+            <span class="live-badge"><span class="live-dot"></span>{{ __('Live') }}</span>
+            <span style="font-size:.72rem;color:var(--text-dim);" id="dashboardDriverCount">
+                {{ $mapDrivers->count() }} {{ __('driver(s) with known location') }}
+            </span>
+        </div>
+        <a href="{{ route('admin.drivers.live-map') }}" class="btn-primary" style="padding: 6px 14px; font-size: .75rem; box-shadow: none; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+            {{ __('Open Live Map') }}
+        </a>
+    </div>
+    <div style="position:relative;">
+        <div id="dashboardMap"></div>
+        @if(! config('services.google.maps_api_key'))
+        <div class="live-map-empty">
+            <div>{{ __('Google Maps API key is not configured.') }}</div>
+        </div>
+        @elseif($mapDrivers->isEmpty())
+        <div class="live-map-empty" id="dashboardMapEmpty">
+            <div>{{ __('No drivers with a known location yet.') }}</div>
+        </div>
+        @endif
+    </div>
+</div>
+@endif
 
 {{-- Metric cards --}}
 <div class="cards-grid">
@@ -240,55 +313,134 @@
             <div style="width: {{ $getPercentage('rejected') + $getPercentage('returned') }}%; background: #f87171;" title="{{ __('Failed/Returned') }}: {{ round($getPercentage('rejected') + $getPercentage('returned'), 1) }}%"></div>
             <div style="width: {{ $getPercentage('cancelled') }}%; background: var(--text-dim);" title="{{ __('Cancelled') }}: {{ round($getPercentage('cancelled'), 1) }}%"></div>
         </div>
-        <!-- Grid details -->
+        <!-- Grid details — click a non-zero card to list its orders below -->
+        @php
+            $statusCards = [
+                'pending'         => ['label' => __('Pending'),         'badge' => 'badge-pending', 'count' => $statusCounts['pending'] ?? 0],
+                'in_transit'      => ['label' => __('In Transit'),      'badge' => 'badge-info',    'count' => $statusCounts['picked_up'] ?? 0],
+                'delivered'       => ['label' => __('Delivered'),       'badge' => 'badge-success', 'count' => $statusCounts['delivered'] ?? 0],
+                'returned_failed' => ['label' => __('Returned/Failed'), 'badge' => 'badge-danger',  'count' => ($statusCounts['returned'] ?? 0) + ($statusCounts['rejected'] ?? 0)],
+                'cancelled'       => ['label' => __('Cancelled'),       'badge' => 'badge-neutral', 'count' => $statusCounts['cancelled'] ?? 0],
+            ];
+        @endphp
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
-            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-pending" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('Pending') }}</span>
-                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['pending'] ?? 0 }}</div>
-            </div>
-            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-info" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('In Transit') }}</span>
-                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['picked_up'] ?? 0 }}</div>
-            </div>
-            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-success" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('Delivered') }}</span>
-                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['delivered'] ?? 0 }}</div>
-            </div>
-            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-danger" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('Returned/Failed') }}</span>
-                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ ($statusCounts['returned'] ?? 0) + ($statusCounts['rejected'] ?? 0) }}</div>
-            </div>
-            <div style="background: rgba(255,255,255,.015); border: 1px solid var(--bdr); border-radius: 10px; padding: 12px; text-align: center;">
-                <span class="badge badge-neutral" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ __('Cancelled') }}</span>
-                <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $statusCounts['cancelled'] ?? 0 }}</div>
-            </div>
+            @foreach($statusCards as $key => $card)
+                @php $cardActive = $selectedStatus === $key ? ' status-card-active' : ''; @endphp
+                @if($card['count'] > 0)
+                    <a href="{{ route('admin.dashboard', ['status' => $key]) }}#order-status" class="status-card status-card-clickable{{ $cardActive }}">
+                @else
+                    <div class="status-card{{ $cardActive }}">
+                @endif
+                    <span class="badge {{ $card['badge'] }}" style="font-size:.65rem; padding: 2px 7px;"><span class="badge-dot"></span>{{ $card['label'] }}</span>
+                    <div style="font-size: 1.35rem; font-weight: 800; margin-top: 4px; color: var(--text);">{{ $card['count'] }}</div>
+                @if($card['count'] > 0)
+                    </a>
+                @else
+                    </div>
+                @endif
+            @endforeach
         </div>
     </div>
 </div>
 
-{{-- Bottom two-column --}}
-<div class="bottom-grid">
-    {{-- Recent activity --}}
-    <div class="panel">
-        <div class="panel-head">
-            <span class="panel-title">{{ __('Recent Activity') }}</span>
-            <span style="font-size: .72rem; color: var(--text-dim);">{{ __('Real-time events') }}</span>
-        </div>
-        <div class="activity-list">
-            @forelse($recentActivities as $act)
-            <div class="activity-item">
-                <div class="activity-dot" style="background:{{ $act['dot_color'] }}"></div>
-                <div class="activity-body">
-                    <div class="activity-msg">{!! $act['message'] !!}</div>
-                    <div class="activity-time">{{ $act['time']->diffForHumans() }}</div>
-                </div>
-            </div>
-            @empty
-            <div style="padding: 30px; text-align: center; color: var(--text-dim); font-size: .84rem;">{{ __('No recent activities today.') }}</div>
-            @endforelse
+{{-- Drill-down order list for the selected status card --}}
+@if($selectedStatus !== null)
+<div class="panel" id="order-status" style="margin-bottom: 20px; scroll-margin-top: 80px;">
+    <div class="panel-head">
+        <span class="panel-title">{{ $statusCards[$selectedStatus]['label'] }} {{ __('Orders') }} ({{ number_format($statusOrders->total()) }})</span>
+        <div style="display:flex;gap:8px;">
+            @if($statusOrders->total() > 0)
+                <x-export-pdf-button :href="route('admin.dashboard.export-pdf', ['status' => $selectedStatus])" style="padding:5px 12px;font-size:.75rem;" />
+            @endif
+            <a href="{{ route('admin.dashboard') }}" class="btn-secondary" style="padding:5px 12px;font-size:.75rem;">{{ __('Clear') }}</a>
         </div>
     </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ __('Order #') }}</th>
+                    <th>{{ __('Client') }}</th>
+                    <th>{{ __('Receiver') }}</th>
+                    <th>{{ __('City') }}</th>
+                    <th>{{ __('Driver') }}</th>
+                    <th>{{ __('COD Amount') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('Date') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $orderStatusClasses = [
+                        'pending'   => 'badge-pending',
+                        'assigned'  => 'badge-info',
+                        'picked_up' => 'badge-info',
+                        'delivered' => 'badge-active',
+                        'rejected'  => 'badge-suspended',
+                        'returned'  => 'badge-no',
+                        'cancelled' => 'badge-suspended',
+                    ];
+                @endphp
+                @forelse($statusOrders as $order)
+                    <tr>
+                        <td>
+                            <a href="{{ route('admin.orders.show', $order) }}" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">
+                                #{{ $order->order_number }}
+                            </a>
+                        </td>
+                        <td><div class="cell-main">{{ $order->clientProfile->company_name ?? 'N/A' }}</div></td>
+                        <td>
+                            <div class="cell-main">{{ $order->receiver->receiver_name ?? '—' }}</div>
+                            <div class="cell-sub">{{ $order->receiver->receiver_phone ?? '' }}</div>
+                        </td>
+                        <td>{{ $order->receiver->city->name ?? '—' }}</td>
+                        <td>
+                            @if($order->driver)
+                                {{ $order->driver->name }}
+                            @else
+                                <span class="cell-sub" style="font-style: italic;">{{ __('Unassigned') }}</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($order->payment?->order_amount)
+                                <span style="font-weight:700;color:#fbbf24;">{{ number_format($order->payment->order_amount, 2) }} JD</span>
+                            @else
+                                <span style="color:var(--text-dim);">—</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge {{ $orderStatusClasses[$order->status] ?? 'badge-no' }}">
+                                <span class="badge-dot"></span>
+                                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                            </span>
+                        </td>
+                        <td><span style="font-size:.8rem;color:var(--text-dim);">{{ $order->created_at->format('d M Y') }}</span></td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                            {{ __('No orders found for this filter.') }}
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    @if($statusOrders->hasPages())
+        <div class="pagination-wrap">
+            <div class="pag-info">
+                {{ __('Showing') }} {{ $statusOrders->firstItem() }} {{ __('to') }} {{ $statusOrders->lastItem() }} {{ __('of') }} {{ $statusOrders->total() }} {{ __('entries') }}
+            </div>
+            <div class="pag-links">
+                {{ $statusOrders->links() }}
+            </div>
+        </div>
+    @endif
+</div>
+@endif
 
+{{-- Bottom two-column --}}
+<div class="bottom-grid">
     {{-- Pending action center --}}
     <div class="panel">
         <div class="panel-head">
@@ -350,6 +502,173 @@
 @endsection
 
 @section('scripts')
+@if($canViewLiveMap && config('services.google.maps_api_key'))
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+@php
+$dashboardSeedDrivers = $mapDrivers->map(fn ($d) => [
+    'id'   => $d->id,
+    'name' => $d->user->name ?? '—',
+    'lat'  => (float) $d->current_latitude,
+    'lng'  => (float) $d->current_longitude,
+    'ts'   => $d->location_updated_at ? $d->location_updated_at->diffForHumans() : '—',
+])->values()->all();
+@endphp
+<script>
+window.initDashboardMap = function () {
+    var i18n = {
+        lat: @json(__('Lat:')),
+        lng: @json(__('Lng:')),
+        justNow: @json(__('Just now')),
+        driverCountTpl: @json(__(':count driver(s) with known location')),
+    };
+    var DEFAULT_CENTER = { lat: 31.9454, lng: 35.9284 }, DEFAULT_ZOOM = 9, MAX_FIT_ZOOM = 14;
+
+    var BASE_STYLES = [
+        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+    ];
+    var DARK_STYLES = BASE_STYLES.concat([
+        { elementType: 'geometry', stylers: [{ color: '#0f1a3a' }] },
+        { elementType: 'labels.text.stroke', stylers: [{ color: '#0c1230' }] },
+        { elementType: 'labels.text.fill', stylers: [{ color: '#8a94b0' }] },
+        { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#2b3a6b' }] },
+        { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#cbd5e1' }] },
+        { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#111c40' }] },
+        { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1e2a50' }] },
+        { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#141d3d' }] },
+        { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
+        { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#2b3a6b' }] },
+        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#070b1f' }] },
+        { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#475569' }] },
+    ]);
+
+    function isLight() {
+        return document.documentElement.classList.contains('light-theme');
+    }
+
+    var map = new google.maps.Map(document.getElementById('dashboardMap'), {
+        center: DEFAULT_CENTER,
+        zoom: DEFAULT_ZOOM,
+        gestureHandling: 'cooperative',
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        clickableIcons: false,
+        backgroundColor: isLight() ? '#e5e3df' : '#0c1230',
+        styles: isLight() ? BASE_STYLES : DARK_STYLES,
+    });
+
+    document.addEventListener('themechange', function () {
+        map.setOptions({ styles: isLight() ? BASE_STYLES : DARK_STYLES });
+    });
+
+    var infoWindow = new google.maps.InfoWindow({ pixelOffset: new google.maps.Size(0, -18) });
+    var openMarkerId = null;
+    google.maps.event.addListener(infoWindow, 'closeclick', function () { openMarkerId = null; });
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str == null ? '' : String(str);
+        return div.innerHTML;
+    }
+
+    function popupHtml(m) {
+        return '<div class="gmap-popup"><b>' + escapeHtml(m.name) + '</b><br>'
+             + i18n.lat + ' ' + m.position.lat().toFixed(5) + '<br>'
+             + i18n.lng + ' ' + m.position.lng().toFixed(5) + '<br>'
+             + '<span class="ts">' + escapeHtml(m.ts) + '</span></div>';
+    }
+
+    function openPopup(m) {
+        openMarkerId = m.id;
+        infoWindow.setContent(popupHtml(m));
+        infoWindow.setPosition(m.position);
+        infoWindow.open({ map: map });
+    }
+
+    // HTML marker (initials avatar) drawn as a map overlay
+    function DriverMarker(id, name, lat, lng, ts) {
+        this.id = id;
+        this.name = name;
+        this.ts = ts;
+        this.position = new google.maps.LatLng(lat, lng);
+        this.div = null;
+        this.setMap(map);
+    }
+    DriverMarker.prototype = new google.maps.OverlayView();
+    DriverMarker.prototype.onAdd = function () {
+        var self = this;
+        this.div = document.createElement('div');
+        this.div.className = 'gmap-driver-marker';
+        this.div.textContent = (this.name || '?').substring(0, 2).toUpperCase();
+        this.div.title = this.name || '';
+        this.div.addEventListener('click', function () { openPopup(self); });
+        google.maps.OverlayView.preventMapHitsAndGesturesFrom(this.div);
+        this.getPanes().overlayMouseTarget.appendChild(this.div);
+    };
+    DriverMarker.prototype.draw = function () {
+        var projection = this.getProjection();
+        if (!this.div || !projection) return;
+        var point = projection.fromLatLngToDivPixel(this.position);
+        if (point) {
+            this.div.style.left = point.x + 'px';
+            this.div.style.top = point.y + 'px';
+        }
+    };
+    DriverMarker.prototype.onRemove = function () {
+        if (this.div) this.div.remove();
+        this.div = null;
+    };
+    DriverMarker.prototype.update = function (name, lat, lng, ts) {
+        this.name = name;
+        this.ts = ts;
+        this.position = new google.maps.LatLng(lat, lng);
+        this.draw();
+        if (openMarkerId === this.id) openPopup(this);
+    };
+
+    var markers = {};
+
+    function addOrUpdateMarker(id, name, lat, lng, ts) {
+        if (markers[id]) {
+            markers[id].update(name, lat, lng, ts);
+        } else {
+            markers[id] = new DriverMarker(id, name, lat, lng, ts);
+        }
+    }
+
+    var SEED = @json($dashboardSeedDrivers);
+    if (SEED.length > 0) {
+        var bounds = new google.maps.LatLngBounds();
+        SEED.forEach(function (d) {
+            addOrUpdateMarker(d.id, d.name, d.lat, d.lng, d.ts);
+            bounds.extend({ lat: d.lat, lng: d.lng });
+        });
+        map.fitBounds(bounds, 30);
+        google.maps.event.addListenerOnce(map, 'idle', function () {
+            if (map.getZoom() > MAX_FIT_ZOOM) map.setZoom(MAX_FIT_ZOOM);
+        });
+    }
+
+    // Real-time position updates
+    var pusher = new Pusher('{{ config("broadcasting.connections.pusher.key") }}', {
+        cluster: '{{ config("broadcasting.connections.pusher.options.cluster") }}',
+        forceTLS: true,
+    });
+
+    pusher.subscribe('admin.drivers').bind('location.updated', function (data) {
+        addOrUpdateMarker(data.driver_id, data.name, parseFloat(data.latitude), parseFloat(data.longitude), i18n.justNow);
+
+        var emptyEl = document.getElementById('dashboardMapEmpty');
+        if (emptyEl) emptyEl.remove();
+
+        var countEl = document.getElementById('dashboardDriverCount');
+        if (countEl) countEl.textContent = i18n.driverCountTpl.replace(':count', Object.keys(markers).length);
+    });
+};
+</script>
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ urlencode(config('services.google.maps_api_key')) }}&callback=initDashboardMap&loading=async&language={{ app()->getLocale() }}"></script>
+@endif
 <script>
 const dashboardI18n = {
     locating: @json(__('Locating...')),

@@ -270,8 +270,8 @@ class OrderController extends Controller
             'signature'              => ['required', 'file', 'image', 'max:5120'],
             'proof_image'            => ['nullable', 'file', 'image', 'max:5120'],
             'national_id_attachment' => [$requiresNationalId ? 'required' : 'nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'latitude'               => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude'              => ['nullable', 'numeric', 'between:-180,180'],
+            'latitude'               => ['required', 'numeric', 'between:-90,90'],
+            'longitude'              => ['required', 'numeric', 'between:-180,180'],
         ]);
 
         $signaturePath = $request->file('signature')
@@ -289,6 +289,8 @@ class OrderController extends Controller
             'signature_path'              => $signaturePath,
             'proof_image_path'            => $proofImagePath,
             'national_id_attachment_path' => $nationalIdAttachmentPath,
+            'delivery_latitude'           => $request->input('latitude'),
+            'delivery_longitude'          => $request->input('longitude'),
         ], $user);
 
         $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
@@ -351,6 +353,53 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('Order rejected successfully.'),
+            'data'    => new OrderResource($order),
+        ]);
+    }
+
+    public function driverCancel(Request $request, Order $order): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Unauthorized.'),
+            ], 403);
+        }
+
+        if (! $this->isDriverCheckedIn($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('You are not checked in. Please check in to perform this action.'),
+                'code'    => 'NOT_CHECKED_IN',
+            ], 403);
+        }
+
+        if ($order->status !== 'assigned') {
+            return response()->json([
+                'success' => false,
+                'message' => __('Only assigned orders can be cancelled by the driver.'),
+                'code'    => 'INVALID_STATUS_TRANSITION',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $order = $this->orderService->updateStatus($order, 'cancelled', [
+            'cancellation_reason' => trim($validated['reason']),
+        ], $user);
+
+        rescue(fn () => app(SupportNotificationService::class)->notifyClientOrderStatusChanged($order, 'cancelled', $user->id));
+
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Order cancelled successfully.'),
             'data'    => new OrderResource($order),
         ]);
     }

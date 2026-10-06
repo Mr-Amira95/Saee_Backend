@@ -8,6 +8,14 @@
     <span class="current">{{ __('Orders') }}</span>
 @endsection
 
+@section('head')
+<style>
+    .mini-stat-link { text-decoration: none; color: inherit; cursor: pointer; transition: transform .13s, border-color .13s, background .13s; }
+    .mini-stat-link:hover { transform: translateY(-2px); border-color: var(--ms-color); }
+    .mini-stat-active { border-color: var(--ms-color); box-shadow: inset 0 0 0 1px var(--ms-color); }
+</style>
+@endsection
+
 @section('content')
     {{-- Page Header --}}
     <div class="page-hd">
@@ -16,10 +24,7 @@
             <p>{{ __('Create, track, and manage all courier shipments.') }}</p>
         </div>
         <div class="page-hd-right">
-            <a href="{{ route('admin.orders.print-all', request()->query()) }}" target="_blank" class="btn-secondary">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                {{ __('Print Waybills') }}
-            </a>
+            <x-export-pdf-button :href="route('admin.orders.print-all', request()->query())" />
             <a href="{{ route('admin.orders.export', request()->query()) }}" class="btn-secondary">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 {{ __('Export CSV') }}
@@ -43,53 +48,30 @@
         </div>
     </div>
 
-    {{-- Stats Row --}}
+    {{-- Stats Row — click a card to filter the list by that status (click again to clear) --}}
+    @php
+        $statCards = [
+            'pending'                     => ['label' => __('All Pending Orders'),   'color' => '#f59e0b', 'bg' => 'rgba(245, 158, 11, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
+            'assigned'                    => ['label' => __('All Assigned Orders'),  'color' => '#6366f1', 'bg' => 'rgba(99, 102, 241, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>'],
+            'picked_up'                   => ['label' => __('All Picked Up Orders'), 'color' => '#3b82f6', 'bg' => 'rgba(59, 130, 246, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1m-6 0a1 1 0 001-1m-6 0H3"/>'],
+            'delivered'                   => ['label' => __('All Delivered Orders'), 'color' => '#10b981', 'bg' => 'rgba(16, 185, 129, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
+            'rejected_returned_cancelled' => ['label' => __('Rejected, Returned & Cancelled Orders'), 'color' => '#ef4444', 'bg' => 'rgba(239, 68, 68, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
+        ];
+    @endphp
     <div class="mini-stats">
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div>
-                <div class="ms-val">{{ $stats['pending'] }}</div>
-                <div class="ms-lbl">{{ __('All Pending Orders') }}</div>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1m-6 0a1 1 0 001-1m-6 0H3"/></svg>
-            </div>
-            <div>
-                <div class="ms-val">{{ $stats['picked_up'] }}</div>
-                <div class="ms-lbl">{{ __('All Picked Up Orders') }}</div>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div>
-                <div class="ms-val">{{ $stats['rejected'] }}</div>
-                <div class="ms-lbl">{{ __('All Rejected Orders') }}</div>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-            </div>
-            <div>
-                <div class="ms-val">{{ $stats['returned_today'] }}</div>
-                <div class="ms-lbl">{{ __('Returned Orders Today') }}</div>
-            </div>
-        </div>
-        <div class="mini-stat">
-            <div class="mini-stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m-4-6h8"/></svg>
-            </div>
-            <div>
-                <div class="ms-val">{{ number_format($stats['with_driver'], 2) }}</div>
-                <div class="ms-lbl">{{ __('All Cash with Drivers') }}</div>
-            </div>
-        </div>
+        @foreach($statCards as $key => $card)
+            @php $isActive = request('status') === $key; @endphp
+            <a href="{{ route('admin.orders.index', array_merge(request()->except(['status', 'page']), $isActive ? [] : ['status' => $key])) }}"
+               class="mini-stat mini-stat-link {{ $isActive ? 'mini-stat-active' : '' }}" style="--ms-color: {{ $card['color'] }};">
+                <div class="mini-stat-icon" style="background: {{ $card['bg'] }}; color: {{ $card['color'] }};">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">{!! $card['icon'] !!}</svg>
+                </div>
+                <div>
+                    <div class="ms-val">{{ number_format($stats[$key]) }}</div>
+                    <div class="ms-lbl">{{ $card['label'] }}</div>
+                </div>
+            </a>
+        @endforeach
     </div>
 
     {{-- Filters --}}
@@ -115,6 +97,7 @@
                     <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>{{ __('Rejected') }}</option>
                     <option value="returned"  {{ request('status') === 'returned'  ? 'selected' : '' }}>{{ __('Returned') }}</option>
                     <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
+                    <option value="rejected_returned_cancelled" {{ request('status') === 'rejected_returned_cancelled' ? 'selected' : '' }}>{{ __('Rejected, Returned & Cancelled') }}</option>
                 </select>
 
                 {{-- Searchable: Clients --}}

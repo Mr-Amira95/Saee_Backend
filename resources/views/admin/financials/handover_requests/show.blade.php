@@ -143,7 +143,10 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 {{ __('Delivered Orders (Cash to Settle)') }}
             </h3>
-            <span class="badge badge-success">{{ $deliveredOrders->count() }} {{ __('orders') }}</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-success">{{ $deliveredOrders->count() }} {{ __('orders') }}</span>
+                <x-export-pdf-button :orders="$deliveredOrders" style="padding:6px 12px;font-size:.78rem;" />
+            </div>
         </div>
         <div class="table-wrap">
             <table>
@@ -198,7 +201,10 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z"/></svg>
                 {{ __('Rejected Orders (Returns to Confirm)') }}
             </h3>
-            <span class="badge badge-pending">{{ $rejectedOrders->count() }} {{ __('orders') }}</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-pending">{{ $rejectedOrders->count() }} {{ __('orders') }}</span>
+                <x-export-pdf-button :orders="$rejectedOrders" style="padding:6px 12px;font-size:.78rem;" />
+            </div>
         </div>
         <div class="table-wrap">
             <table>

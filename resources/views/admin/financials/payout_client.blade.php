@@ -28,7 +28,10 @@
                     <input type="checkbox" id="selectAll" style="width: 16px; height: 16px; accent-color: var(--red);">
                     <label for="selectAll" style="font-size: .8rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; cursor: pointer; user-select: none;">{{ __('Select All Orders') }}</label>
                 </div>
-                <span style="font-size: 0.75rem; color: var(--text-dim);">{{ __('Only delivered COD orders needing payout are listed') }}</span>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 0.75rem; color: var(--text-dim);">{{ __('Only delivered COD orders needing payout are listed') }}</span>
+                    <x-export-pdf-button :orders="$orders" style="padding:6px 12px;font-size:.78rem;" />
+                </div>
             </div>
 
             <div class="table-wrap">

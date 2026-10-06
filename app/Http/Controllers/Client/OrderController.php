@@ -7,6 +7,7 @@ use App\Models\City;
 use App\Models\Order;
 use App\Services\OrderService;
 use App\Services\SupportNotificationService;
+use App\Services\WaybillExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -657,22 +658,20 @@ class OrderController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function printAll(Request $request)
+    public function printAll(Request $request, WaybillExportService $waybills)
     {
         $profile = $this->getClientProfile();
-        $orders = $this->getFilteredQuery($request, $profile->id, true)->latest()->get();
-        return view('shared.orders.print', compact('orders'));
+        return $waybills->render($this->getFilteredQuery($request, $profile->id, false)->latest());
     }
 
-    public function printOrder(Order $order)
+    public function printOrder(Order $order, WaybillExportService $waybills)
     {
         $profile = $this->getClientProfile();
         if ($order->client_profile_id !== $profile->id) {
             abort(403, __('Unauthorized action.'));
         }
 
-        $order->load(['clientProfile', 'driverProfile.user', 'receiver.city', 'receiver.area', 'payment']);
-        return view('shared.orders.print', ['orders' => [$order]]);
+        return $waybills->render($order);
     }
 
     public function pdf(Request $request)

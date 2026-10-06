@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\RejectionReason;
 use App\Services\OrderService;
 use App\Services\SupportNotificationService;
+use App\Services\WaybillExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,14 @@ class OrderController extends Controller
      */
     protected const DRIVER_LOCKED_STATUSES = ['delivered', 'rejected', 'cancelled', 'returned'];
 
+    /**
+     * Grouped values accepted by the `status` filter, each covering several
+     * order statuses (used by the merged stats card).
+     */
+    protected const STATUS_GROUPS = [
+        'rejected_returned_cancelled' => ['rejected', 'returned', 'cancelled'],
+    ];
+
     protected $orderService;
 
     public function __construct(OrderService $orderService)
@@ -45,18 +54,19 @@ class OrderController extends Controller
         $drivers = User::where('role', 'driver')->where('status', 'active')->orderBy('name')->get();
         $cities = City::where('is_active', true)->orderBy('name')->get();
 
-        $statsBase = $this->getFilteredQuery($request, false);
+        // Stats ignore the status filter so every card keeps its count while one is selected
+        $statusCounts = $this->getFilteredQuery($request, false, false)
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status');
 
         $stats = [
-            'pending'        => (clone $statsBase)->where('status', 'pending')->count(),
-            'assigned'       => (clone $statsBase)->where('status', 'assigned')->count(),
-            'picked_up'      => (clone $statsBase)->where('status', 'picked_up')->count(),
-            'rejected'       => (clone $statsBase)->where('status', 'rejected')->count(),
-            'returned_today' => (clone $statsBase)->where('status', 'returned')->whereDate('updated_at', today())->count(),
-            'with_driver'    => (clone $statsBase)
-                ->where('payment_status', 'with_driver')
-                ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
-                ->sum(DB::raw('COALESCE(order_payments.order_amount, 0) + COALESCE(order_payments.customer_delivery_amount, 0)')),
+            'pending'                     => $statusCounts['pending'] ?? 0,
+            'assigned'                    => $statusCounts['assigned'] ?? 0,
+            'picked_up'                   => $statusCounts['picked_up'] ?? 0,
+            'delivered'                   => $statusCounts['delivered'] ?? 0,
+            'rejected_returned_cancelled' => collect(self::STATUS_GROUPS['rejected_returned_cancelled'])
+                ->sum(fn ($status) => $statusCounts[$status] ?? 0),
         ];
 
         return view('admin.orders.index', compact('orders', 'clients', 'drivers', 'cities', 'stats'));
@@ -124,16 +134,14 @@ class OrderController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function printAll(Request $request)
+    public function printAll(Request $request, WaybillExportService $waybills)
     {
-        $orders = $this->getFilteredQuery($request, true)->orderBy('created_at', 'desc')->get();
-        return view('shared.orders.print', compact('orders'));
+        return $waybills->render($this->getFilteredQuery($request, false)->orderBy('created_at', 'desc'));
     }
 
-    public function printOrder(Order $order)
+    public function printOrder(Order $order, WaybillExportService $waybills)
     {
-        $order->load(['clientProfile', 'driverProfile.user', 'receiver.city', 'receiver.area', 'payment']);
-        return view('shared.orders.print', ['orders' => [$order]]);
+        return $waybills->render($order);
     }
 
     public function create()
@@ -383,7 +391,7 @@ class OrderController extends Controller
         ]);
     }
 
-    private function getFilteredQuery(Request $request, $withRelations = true)
+    private function getFilteredQuery(Request $request, $withRelations = true, $withStatus = true)
     {
         $query = Order::query();
 
@@ -403,8 +411,13 @@ class OrderController extends Controller
             });
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
+        if ($withStatus && $request->filled('status')) {
+            $status = $request->input('status');
+            if (is_string($status) && isset(self::STATUS_GROUPS[$status])) {
+                $query->whereIn('status', self::STATUS_GROUPS[$status]);
+            } else {
+                $query->where('status', $status);
+            }
         }
         if ($request->filled('payment_status')) {
             $query->where('payment_status', $request->input('payment_status'));

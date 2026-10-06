@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\DriverRating;
 use App\Models\FinancialLedgerEntry;
+use App\Services\WaybillExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -89,6 +90,19 @@ class ReportController extends Controller
             'totalOrders', 'statusCounts', 'dailyTrend', 'activeDrivers', 'activeClients',
             'selectedStatus', 'orders'
         ) + ['statusLabels' => self::STATUS_LABELS]);
+    }
+
+    /**
+     * Export PDF (waybills) for every order in the selected status drill-down.
+     */
+    public function exportPdf(Request $request, WaybillExportService $waybills)
+    {
+        abort_unless(auth()->user()->hasAdminAction('reports.center'), 403);
+
+        $status = $this->resolveStatus($request);
+        abort_if($status === null, 404);
+
+        return $waybills->render($this->ordersQuery($status));
     }
 
     /**

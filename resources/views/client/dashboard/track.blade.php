@@ -30,6 +30,9 @@
             <h1>{{ $orders->count() }} {{ $orders->count() === 1 ? __('result') : __('results') }}</h1>
             <p>{{ __('Showing orders matching') }} "{{ $query }}"</p>
         </div>
+        <div class="page-hd-right">
+            <x-export-pdf-button :orders="$orders" />
+        </div>
     </div>
 
     <div class="table-card">

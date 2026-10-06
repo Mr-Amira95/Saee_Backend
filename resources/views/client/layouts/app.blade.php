@@ -449,8 +449,8 @@
     {{-- ═══════════ SIDEBAR ════════════ --}}
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;">
-            <img id="logoLight" src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee LogisticsServices" style="width:130px;height:auto;object-fit:contain;display:none;">
+            <img id="logoDark"  src="{{ asset('saee_logo_dark.png') }}" alt="Sa'ee LogisticsServices" style="width:180px;max-width:100%;height:auto;object-fit:contain;">
+            <img id="logoLight" src="{{ asset('saee_logo_light.png') }}" alt="Sa'ee LogisticsServices" style="width:180px;max-width:100%;height:auto;object-fit:contain;display:none;">
             <button class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="{{ __('Close menu') }}">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>

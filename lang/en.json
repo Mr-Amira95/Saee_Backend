@@ -1473,6 +1473,7 @@
   "Only client accounts can edit orders.": "Only client accounts can edit orders.",
   "Only pending orders can be edited.": "Only pending orders can be edited.",
   "Only pending orders can be cancelled.": "Only pending orders can be cancelled.",
+  "Only assigned orders can be cancelled by the driver.": "Only assigned orders can be cancelled by the driver.",
   "Order cancelled successfully.": "Order cancelled successfully.",
   "Only client accounts can import orders.": "Only client accounts can import orders.",
   "Invalid CSV format. Please download and use the provided template.": "Invalid CSV format. Please download and use the provided template.",
@@ -1910,6 +1911,9 @@
   "Proof of Delivery Photo": "Proof of Delivery Photo",
   "Proof of Delivery": "Proof of Delivery",
   "No proof photo uploaded": "No proof photo uploaded",
+  "Delivery Location": "Delivery Location",
+  "Open in Google Maps": "Open in Google Maps",
+  "No delivery location recorded": "No delivery location recorded",
   "National ID Attachment": "National ID Attachment",
   "Required": "Required",
   "View PDF": "View PDF",
@@ -2346,5 +2350,12 @@
   "National ID is required.": "National ID is required.",
   "License number is required.": "License number is required.",
   "Password must be at least 8 characters and include letters and numbers.": "Password must be at least 8 characters and include letters and numbers.",
-  "The file size must not exceed the allowed limit.": "The file size must not exceed the allowed limit."
+  "The file size must not exceed the allowed limit.": "The file size must not exceed the allowed limit.",
+  "Open Live Map": "Open Live Map",
+  "Google Maps API key is not configured.": "Google Maps API key is not configured.",
+  "All Assigned Orders": "All Assigned Orders",
+  "All Delivered Orders": "All Delivered Orders",
+  "Rejected, Returned & Cancelled Orders": "Rejected, Returned & Cancelled Orders",
+  "Rejected, Returned & Cancelled": "Rejected, Returned & Cancelled",
+  "Print Report": "Print Report"
 }

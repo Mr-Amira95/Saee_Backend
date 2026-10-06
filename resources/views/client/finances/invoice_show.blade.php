@@ -23,6 +23,7 @@
                 </svg>
                 {{ __('Print Invoice') }}
             </a>
+            <x-export-pdf-button :orders="$orders" />
             <a href="{{ route('client.financials.invoices') }}" class="btn-secondary">&larr; {{ __('Back') }}</a>
         </div>
     </div>

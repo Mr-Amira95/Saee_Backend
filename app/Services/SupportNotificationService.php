@@ -318,12 +318,14 @@ class SupportNotificationService
             'delivered'  => 'Order Delivered',
             'rejected'   => 'Order Rejected',
             'picked_up'  => 'Order Picked Up',
+            'cancelled'  => 'Order Cancelled',
             default      => 'Order Status Updated',
         };
         $message = match ($status) {
             'delivered'  => "Your order #{$order->order_number} has been delivered.",
             'rejected'   => "Your order #{$order->order_number} has been rejected.",
             'picked_up'  => "Your order #{$order->order_number} has been picked up by the driver.",
+            'cancelled'  => "Your order #{$order->order_number} has been cancelled by the driver. Reason: {$order->cancellation_reason}",
             default      => "Your order #{$order->order_number} status has been updated to {$status}.",
         };
 

@@ -235,7 +235,10 @@
     <div class="table-card">
         <div style="padding:16px;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;">
             <h3 style="font-size:.9rem;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.08em;">{{ __('Included Orders') }}</h3>
-            <span style="font-size:.8rem;color:var(--text-dim);">{{ $invoice->orders->count() }} {{ __('orders') }}</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:.8rem;color:var(--text-dim);">{{ $invoice->orders->count() }} {{ __('orders') }}</span>
+                <x-export-pdf-button :orders="$invoice->orders" style="padding:6px 12px;font-size:.78rem;" />
+            </div>
         </div>
         <div class="table-wrap">
             <table>

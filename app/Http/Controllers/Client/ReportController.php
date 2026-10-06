@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Models\Order;
+use App\Services\WaybillExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -180,6 +181,20 @@ class ReportController extends Controller
         };
 
         return new StreamedResponse($callback, 200, $headers);
+    }
+
+    /**
+     * Export PDF (waybills) for every order matching the report filters.
+     */
+    public function exportPdf(Request $request, WaybillExportService $waybills)
+    {
+        $profile = $this->getClientProfile();
+
+        $from   = $request->filled('from') ? $request->from : now()->subDays(29)->toDateString();
+        $to     = $request->filled('to')   ? $request->to   : now()->toDateString();
+        $status = $this->resolveStatus($request);
+
+        return $waybills->render($this->ordersQuery($profile->id, $from, $to, $status));
     }
 
     public function print(Request $request)

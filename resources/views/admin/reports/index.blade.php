@@ -181,9 +181,14 @@
             <div class="panel-heading" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">
                 {{ $statusLabels[$selectedStatus] }} {{ __('Orders') }} ({{ number_format($orders->total()) }})
             </div>
-            <a href="{{ route('admin.reports.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.8rem;">
-                {{ __('Clear') }}
-            </a>
+            <div style="display:flex;gap:8px;">
+                @if($orders->total() > 0)
+                    <x-export-pdf-button :href="route('admin.reports.export-pdf', ['status' => $selectedStatus])" style="padding:7px 14px;font-size:.8rem;" />
+                @endif
+                <a href="{{ route('admin.reports.index') }}" class="btn-secondary" style="padding:7px 14px;font-size:.8rem;">
+                    {{ __('Clear') }}
+                </a>
+            </div>
         </div>
         <div class="table-wrap">
             <table>

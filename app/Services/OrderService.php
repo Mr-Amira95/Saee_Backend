@@ -89,7 +89,7 @@ class OrderService
      * Update order status with tracking logs and financial transactions.
      *
      * $extra may contain: driver_id (user id), signature_path, proof_image_path,
-     * rejection_reason_id, notes.
+     * rejection_reason_id, cancellation_reason, notes.
      */
     public function updateStatus(Order $order, string $newStatus, array $extra = [], User $actor): Order
     {
@@ -128,6 +128,8 @@ class OrderService
                 $order->signature_path   = $extra['signature_path'] ?? null;
                 $order->proof_image_path = $extra['proof_image_path'] ?? null;
                 $order->national_id_attachment_path = $extra['national_id_attachment_path'] ?? $order->national_id_attachment_path;
+                $order->delivery_latitude  = $extra['delivery_latitude'] ?? null;
+                $order->delivery_longitude = $extra['delivery_longitude'] ?? null;
                 $order->rejection_reason_id = null;
 
                 $payment = $order->payment;
@@ -195,7 +197,12 @@ class OrderService
                 $this->logTracking($order->id, $actor->id, $oldStatus, 'returned', 'Order returned to hub/client.');
 
             } elseif ($newStatus === 'cancelled') {
-                $this->logTracking($order->id, $actor->id, $oldStatus, 'cancelled', 'Order cancelled.');
+                $order->cancellation_reason = $extra['cancellation_reason'] ?? $order->cancellation_reason;
+
+                $description = isset($extra['cancellation_reason'])
+                    ? "Order cancelled. Reason: {$extra['cancellation_reason']}"
+                    : 'Order cancelled.';
+                $this->logTracking($order->id, $actor->id, $oldStatus, 'cancelled', $description);
             } else {
                 $this->logTracking($order->id, $actor->id, $oldStatus, $newStatus, "Order status changed to {$newStatus}.");
             }

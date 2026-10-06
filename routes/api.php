@@ -226,6 +226,9 @@ Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () 
     Route::post('driver/pickup', [OrderController::class, 'pickup'])
         ->name('api.driver.pickup');
 
+    Route::post('driver/orders/{order}/cancel', [OrderController::class, 'driverCancel'])
+        ->name('api.driver.orders.cancel');
+
     Route::get('driver/route',              [RouteController::class, 'show'])
         ->name('api.driver.route.show');
 

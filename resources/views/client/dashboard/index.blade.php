@@ -339,6 +339,7 @@
         <p>{{ __('Your pending and in-transit shipments') }}</p>
     </div>
     <div class="page-hd-right">
+        <x-export-pdf-button :orders="$activeOrders" />
         <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="text-decoration:none;">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
             {{ __('All Orders') }}
