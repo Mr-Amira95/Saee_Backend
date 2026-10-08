@@ -16,7 +16,7 @@ use App\Models\User;
 use App\Services\OpenAIService;
 use App\Services\OrderService;
 use App\Services\SupportNotificationService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\WaybillExportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -154,24 +154,21 @@ class OrderController extends Controller
         ]);
     }
 
-    public function exportPdf(OrderPdfExportRequest $request): Response|JsonResponse
+    public function exportPdf(OrderPdfExportRequest $request, WaybillExportService $waybills): Response|JsonResponse
     {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        $clientProfile = $this->resolveClientProfile($user);
+        $query = $this->waybillOrdersQuery($user);
 
-        if (! $clientProfile) {
+        if (! $query) {
             return response()->json([
                 'success' => false,
-                'message' => __('Only client accounts can export order PDFs.'),
+                'message' => __('Only client and driver accounts can export order PDFs.'),
             ], 403);
         }
 
         $ids = $request->orderIds();
-
-        $query = Order::where('client_profile_id', $clientProfile->id)
-            ->with(['clientProfile', 'receiver.city', 'receiver.area', 'payment']);
 
         if (! empty($ids)) {
             $query->whereIn('id', $ids);
@@ -198,26 +195,65 @@ class OrderController extends Controller
             }
         }
 
-        $orders = $query->latest()->get();
-
-        if (! empty($ids) && $orders->count() !== count(array_unique($ids))) {
-            return response()->json([
-                'success' => false,
-                'message' => __('One or more requested orders were not found.'),
-            ], 404);
-        }
-
-        if ($orders->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => __('No orders found.'),
-            ], 404);
+        if ($error = $this->waybillSelectionError($query, $ids)) {
+            return $error;
         }
 
         try {
-            $pdfBytes = Pdf::loadView('shared.orders.pdf', ['orders' => $orders])
-                ->setPaper('a4')
-                ->output();
+            return $waybills->download($query->latest());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('Unable to generate PDF.'),
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate the waybills PDF for order_id / order_ids, store it and return its link.
+     */
+    public function storeWaybills(Request $request, WaybillExportService $waybills): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $request->validate([
+            'order_id'    => ['required_without:order_ids', 'nullable', 'integer', 'min:1'],
+            'order_ids'   => ['required_without:order_id', 'nullable'],
+        ]);
+
+        $query = $this->waybillOrdersQuery($user);
+
+        if (! $query) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Only client and driver accounts can export order PDFs.'),
+            ], 403);
+        }
+
+        $ids = array_values(array_unique(array_merge(
+            $waybills->idsFrom($request, 'order_ids'),
+            $waybills->idsFrom($request, 'order_id'),
+        )));
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('The given data was invalid.'),
+                'errors'  => ['order_ids' => [__('Please provide at least one valid order ID.')]],
+            ], 422);
+        }
+
+        $query->whereIn('id', $ids);
+
+        if ($error = $this->waybillSelectionError($query, $ids)) {
+            return $error;
+        }
+
+        try {
+            $file = $waybills->store($query->latest());
         } catch (\Throwable $e) {
             report($e);
 
@@ -227,13 +263,11 @@ class OrderController extends Controller
             ], 500);
         }
 
-        $filename = 'orders-' . now()->format('Y-m-d-His') . '.pdf';
-
-        return response($pdfBytes, 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Content-Length'      => (string) strlen($pdfBytes),
-        ]);
+        return response()->json([
+            'success' => true,
+            'message' => __('Waybills PDF generated successfully.'),
+            'data'    => $file,
+        ], 201);
     }
 
     public function deliver(Request $request, Order $order): JsonResponse
@@ -1285,6 +1319,56 @@ class OrderController extends Controller
         }
 
         return $user->isAdmin() || $user->isSuperAdmin();
+    }
+
+    /**
+     * Orders the user may export waybills for: a client's own company orders,
+     * or a driver's assigned orders. Null for any other account type.
+     */
+    private function waybillOrdersQuery(User $user)
+    {
+        if ($user->isDriver()) {
+            $driverProfile = $user->driverProfile;
+
+            return $driverProfile ? Order::where('driver_profile_id', $driverProfile->id) : null;
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        return $clientProfile ? Order::where('client_profile_id', $clientProfile->id) : null;
+    }
+
+    /**
+     * JSON error when the requested orders can't all be exported, or null when they can.
+     *
+     * @param  array<int, int>  $ids
+     */
+    private function waybillSelectionError($query, array $ids): ?JsonResponse
+    {
+        $count = (clone $query)->count();
+
+        if (! empty($ids) && $count !== count(array_unique($ids))) {
+            return response()->json([
+                'success' => false,
+                'message' => __('One or more requested orders were not found.'),
+            ], 404);
+        }
+
+        if ($count === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => __('No orders found.'),
+            ], 404);
+        }
+
+        if ($count > WaybillExportService::MAX_ORDERS) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Too many orders to export at once (maximum :max). Please narrow your filters.', ['max' => WaybillExportService::MAX_ORDERS]),
+            ], 422);
+        }
+
+        return null;
     }
 
     private function resolveClientProfile(User $user): ?ClientProfile

@@ -8,7 +8,6 @@ use App\Models\Order;
 use App\Services\OrderService;
 use App\Services\SupportNotificationService;
 use App\Services\WaybillExportService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -674,36 +673,17 @@ class OrderController extends Controller
         return $waybills->render($order);
     }
 
-    public function pdf(Request $request)
+    public function pdf(Request $request, WaybillExportService $waybills)
     {
         $profile = $this->getClientProfile();
 
-        $ids = $request->input('ids');
-        if (is_string($ids)) {
-            $ids = array_values(array_filter(array_map('trim', explode(',', $ids)), 'strlen'));
-        }
+        $ids = $waybills->idsFrom($request);
 
-        if (! empty($ids)) {
-            $orders = Order::where('client_profile_id', $profile->id)
-                ->whereIn('id', $ids)
-                ->with(['clientProfile', 'receiver.city', 'receiver.area', 'payment'])
-                ->latest()
-                ->get();
-        } else {
-            $orders = $this->getFilteredQuery($request, $profile->id, true)->latest()->get();
-        }
+        $query = ! empty($ids)
+            ? Order::where('client_profile_id', $profile->id)->whereIn('id', $ids)
+            : $this->getFilteredQuery($request, $profile->id, false);
 
-        if ($orders->isEmpty()) {
-            abort(404, __('No orders found.'));
-        }
-
-        $filename = $orders->count() === 1
-            ? "waybill-{$orders->first()->order_number}.pdf"
-            : 'waybills-' . now()->format('Ymd_His') . '.pdf';
-
-        return Pdf::loadView('shared.orders.pdf', ['orders' => $orders])
-            ->setPaper('a4')
-            ->stream($filename);
+        return $waybills->download($query->latest());
     }
 
     private function getFilteredQuery(Request $request, $clientId, $withRelations = true)

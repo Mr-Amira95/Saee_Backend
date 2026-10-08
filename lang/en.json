@@ -2357,5 +2357,9 @@
   "All Delivered Orders": "All Delivered Orders",
   "Rejected, Returned & Cancelled Orders": "Rejected, Returned & Cancelled Orders",
   "Rejected, Returned & Cancelled": "Rejected, Returned & Cancelled",
-  "Print Report": "Print Report"
+  "Print Report": "Print Report",
+  "Too many orders to export at once (maximum :max). Please narrow your filters.": "Too many orders to export at once (maximum :max). Please narrow your filters.",
+  "Only client and driver accounts can export order PDFs.": "Only client and driver accounts can export order PDFs.",
+  "Please provide at least one valid order ID.": "Please provide at least one valid order ID.",
+  "Waybills PDF generated successfully.": "Waybills PDF generated successfully."
 }

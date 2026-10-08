@@ -201,6 +201,10 @@ Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () 
     Route::get('client/orders/pdf', [OrderController::class, 'exportPdf'])
         ->name('api.orders.pdf');
 
+    // Waybills PDF for order_id / order_ids — stored on the public disk, returns the file's link
+    Route::post('orders/waybills', [OrderController::class, 'storeWaybills'])
+        ->name('api.orders.waybills');
+
     Route::get('orders/by-reference/{reference_code?}', [OrderController::class, 'showByReference'])
         ->name('api.orders.by-reference');
 

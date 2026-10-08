@@ -16,9 +16,11 @@
             line-height: 1.4;
         }
 
+        @page {
+            margin: 10mm 12mm;
+        }
         .print-page {
-            width: 100%;
-            padding: 10mm 12mm;
+            padding: 0;
         }
         .print-page.with-break {
             page-break-after: always;
@@ -87,7 +89,7 @@
             font-size: 10px;
             color: #64748b;
             margin-top: 4px;
-            font-weight: 600;
+            font-weight: bold;
         }
 
         .parties-grid {
@@ -119,12 +121,12 @@
         }
         .info-label {
             color: #64748b;
-            font-weight: 500;
+            font-weight: normal;
             display: inline-block;
             width: 85px;
         }
         .info-value {
-            font-weight: 500;
+            font-weight: normal;
         }
 
         .shipment-details {
@@ -152,13 +154,14 @@
             border: 1px solid #e2e8f0;
             background: #f8fafc;
             padding: 12px;
-            width: 60mm;
+            width: 80mm;
             margin-left: auto;
             margin-bottom: 20px;
         }
         .finance-row td {
             padding: 4px 0;
             font-size: 11px;
+            white-space: nowrap;
         }
         .finance-row.total td {
             border-top: 1px solid #e2e8f0;
@@ -189,7 +192,7 @@
         .sig-label {
             font-size: 10px;
             color: #64748b;
-            font-weight: 500;
+            font-weight: normal;
         }
 
         .disclaimer-note {
@@ -212,7 +215,7 @@
                 <td class="company-details" style="width: 33%;">
                     <h1>SA'EE LOGISTICS</h1>
                     <p>{{ __('Reliable Delivery Solutions') }}</p>
-                    <p>{{ __('Phone:') }} +962 7 9080 0989</p>
+                    <p>{{ __('Phone:') }} <span>+962 7 9080 0989</span></p>
                     <p>support@saee.logistics</p>
                 </td>
                 <td class="logo-center" style="width: 34%;">
@@ -221,7 +224,7 @@
                 <td class="waybill-title" style="width: 33%;">
                     <h2>{{ __('DELIVERY WAYBILL') }}</h2>
                     <div class="order-no">#{{ $order->order_number }}</div>
-                    <div class="order-date">{{ __('Date:') }} {{ $order->created_at?->format('Y-m-d H:i') }}</div>
+                    <div class="order-date">{{ __('Date:') }} <span>{{ $order->created_at?->format('Y-m-d H:i') }}</span></div>
                 </td>
             </tr>
         </table>
@@ -229,7 +232,9 @@
         <table class="layout header-spacer"><tr><td></td></tr></table>
 
         <div class="barcode-wrap">
-            {!! QrCode::size(70)->generate($order->order_number) !!}
+            {{-- dompdf ignores inline <svg>; an SVG data-URI image renders --}}
+            <img src="data:image/svg+xml;base64,{{ base64_encode(QrCode::format('svg')->size(70)->margin(0)->generate($order->order_number)) }}" width="70" height="70" alt="">
+            <br>
             <div class="barcode-text">*{{ $order->order_number }}*</div>
         </div>
 
