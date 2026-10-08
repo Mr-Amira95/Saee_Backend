@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientEmployee extends Model
 {
+    use BroadcastsRealtimeChanges;
     use SoftDeletes;
 
     protected $fillable = [
@@ -38,5 +40,10 @@ class ClientEmployee extends Model
     public function invitation(): BelongsTo
     {
         return $this->belongsTo(ClientEmployeeInvitation::class);
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['clients' => $this->realtimeCurrentAndPrevious('client_profile_id')];
     }
 }

@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
+use App\Realtime\RealtimeHub;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DriverRating extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $table = 'driver_ratings';
 
     protected $fillable = [
@@ -31,5 +35,13 @@ class DriverRating extends Model
     public function driver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'driver_id');
+    }
+
+    public function realtimeAudience(): array
+    {
+        $audience = app(RealtimeHub::class)->orderAudience($this->order_id);
+        $audience['drivers'][] = $this->driver_id;
+
+        return $audience;
     }
 }

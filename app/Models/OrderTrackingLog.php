@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
+use App\Realtime\RealtimeHub;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderTrackingLog extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'order_id',
         'user_id',
@@ -33,5 +37,10 @@ class OrderTrackingLog extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function realtimeAudience(): array
+    {
+        return app(RealtimeHub::class)->orderAudience($this->order_id);
     }
 }

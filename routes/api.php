@@ -40,10 +40,15 @@ use App\Http\Controllers\Public\ServicesController as PublicServicesController;
 use App\Http\Controllers\Public\ShowcasesController;
 use App\Http\Controllers\Public\SiteSettingController as PublicSiteSettingController;
 use App\Http\Controllers\Public\WhySaeeController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 // Fallback login route — prevents Laravel redirecting API clients to a web login page.
 Route::get('login', fn () => response()->json(['message' => 'Unauthenticated.'], 401))->name('login');
+
+// Pusher private-channel authorization for the mobile app: POST /api/broadcasting/auth (Bearer token).
+// Channels are defined in routes/channels.php.
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 // WhatsApp webhook endpoints (no auth — called by Meta/provider)
 Route::prefix('webhooks')->group(function () {

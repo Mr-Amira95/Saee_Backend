@@ -230,7 +230,7 @@
         </a>
     </div>
     <div style="position:relative;">
-        <div id="dashboardMap"></div>
+        <div id="dashboardMap" data-live-ignore></div>
         @if(! config('services.google.maps_api_key'))
         <div class="live-map-empty">
             <div>{{ __('Google Maps API key is not configured.') }}</div>
@@ -651,7 +651,7 @@ window.initDashboardMap = function () {
     }
 
     // Real-time position updates
-    var pusher = new Pusher('{{ config("broadcasting.connections.pusher.key") }}', {
+    var pusher = window.saeePusher || new Pusher('{{ config("broadcasting.connections.pusher.key") }}', {
         cluster: '{{ config("broadcasting.connections.pusher.options.cluster") }}',
         forceTLS: true,
     });

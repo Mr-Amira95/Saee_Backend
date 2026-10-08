@@ -110,10 +110,15 @@ class ClientDeliveryBillingService
      */
     public function markOverdueInvoices(): int
     {
-        return ClientDeliveryInvoice::where('status', DeliveryInvoiceStatus::Issued)
+        // Updated one by one (not a bulk query) so each change is broadcast to the client in realtime.
+        $invoices = ClientDeliveryInvoice::where('status', DeliveryInvoiceStatus::Issued)
             ->whereNotNull('due_date')
             ->where('due_date', '<', now()->toDateString())
-            ->update(['status' => DeliveryInvoiceStatus::Overdue]);
+            ->get();
+
+        $invoices->each(fn (ClientDeliveryInvoice $invoice) => $invoice->update(['status' => DeliveryInvoiceStatus::Overdue]));
+
+        return $invoices->count();
     }
 
     private function generateInvoiceNumber(): string

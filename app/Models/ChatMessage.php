@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatMessage extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'chat_session_id',
         'role',

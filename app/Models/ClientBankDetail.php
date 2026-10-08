@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClientBankDetail extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'client_profile_id',
         'bank_name',
@@ -22,5 +25,10 @@ class ClientBankDetail extends Model
     public function clientProfile(): BelongsTo
     {
         return $this->belongsTo(ClientProfile::class);
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['clients' => $this->realtimeCurrentAndPrevious('client_profile_id')];
     }
 }

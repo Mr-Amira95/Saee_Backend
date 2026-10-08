@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
+use App\Realtime\RealtimeHub;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderReceiver extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $primaryKey = 'order_id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -47,5 +51,10 @@ class OrderReceiver extends Model
     public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class);
+    }
+
+    public function realtimeAudience(): array
+    {
+        return app(RealtimeHub::class)->orderAudience($this->order_id);
     }
 }

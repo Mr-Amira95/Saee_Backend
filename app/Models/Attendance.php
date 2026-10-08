@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attendance extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'user_id',
         'date',
@@ -28,5 +31,10 @@ class Attendance extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['drivers' => $this->realtimeCurrentAndPrevious('user_id')];
     }
 }

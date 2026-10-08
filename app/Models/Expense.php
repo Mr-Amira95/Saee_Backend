@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Enums\ExpenseCategory;
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Expense extends Model
 {
+    use BroadcastsRealtimeChanges;
     use SoftDeletes;
 
     protected $fillable = [

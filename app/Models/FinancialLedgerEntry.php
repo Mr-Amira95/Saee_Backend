@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class FinancialLedgerEntry extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'order_id',
         'client_profile_id',
@@ -51,5 +54,13 @@ class FinancialLedgerEntry extends Model
     public function invoice(): HasOne
     {
         return $this->hasOne(Invoice::class, 'payout_ledger_entry_id');
+    }
+
+    public function realtimeAudience(): array
+    {
+        return [
+            'clients' => $this->realtimeCurrentAndPrevious('client_profile_id'),
+            'drivers' => $this->realtimeCurrentAndPrevious('driver_id'),
+        ];
     }
 }

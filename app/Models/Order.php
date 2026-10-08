@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
+use App\Realtime\RealtimeHub;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
+    use BroadcastsRealtimeChanges;
     use SoftDeletes;
 
     protected $fillable = [
@@ -166,5 +169,15 @@ class Order extends Model
     public function whatsappLogs(): HasMany
     {
         return $this->hasMany(WhatsAppLog::class)->orderBy('created_at');
+    }
+
+    public function realtimeAudience(): array
+    {
+        $hub = app(RealtimeHub::class);
+
+        return [
+            'clients' => $this->realtimeCurrentAndPrevious('client_profile_id'),
+            'drivers' => array_map(fn ($id) => $hub->driverUserId($id), $this->realtimeCurrentAndPrevious('driver_profile_id')),
+        ];
     }
 }

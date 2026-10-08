@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class HandoverRequest extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'driver_id',
         'status', // 'pending', 'approved'
@@ -38,5 +41,10 @@ class HandoverRequest extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['drivers' => $this->realtimeCurrentAndPrevious('driver_id')];
     }
 }

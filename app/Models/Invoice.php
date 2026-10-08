@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'invoice_number',
         'client_profile_id',
@@ -48,5 +51,10 @@ class Invoice extends Model
         // Let's hook a direct relationship via ClientProfile or through the payout ledger entry
         return $this->hasMany(Order::class, 'client_profile_id', 'client_profile_id')
             ->where('payment_status', 'paid');
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['clients' => $this->realtimeCurrentAndPrevious('client_profile_id')];
     }
 }

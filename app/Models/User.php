@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -15,6 +16,8 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    use BroadcastsRealtimeChanges;
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, SoftDeletes;
 
@@ -279,5 +282,10 @@ class User extends Authenticatable
         }
 
         return $counted > 0 ? round($totalHours / $counted, 1) : null;
+    }
+
+    public function realtimeIgnoredAttributes(): array
+    {
+        return ['updated_at', 'remember_token'];
     }
 }

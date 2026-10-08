@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
+use App\Realtime\RealtimeHub;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderPayment extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $primaryKey = 'order_id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -33,5 +37,10 @@ class OrderPayment extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function realtimeAudience(): array
+    {
+        return app(RealtimeHub::class)->orderAudience($this->order_id);
     }
 }

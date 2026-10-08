@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DriverProfile;
 use App\Models\Order;
+use App\Realtime\RealtimeHub;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -187,6 +188,15 @@ class RouteOptimizationService
     {
         foreach ($orders as $order) {
             Order::where('id', $order->id)->update(['route_order' => $order->route_order]);
+        }
+
+        // The bulk update above bypasses model events (and OrderObserver) on purpose,
+        // so tell the driver app / admins once that the stop order changed.
+        $hub          = app(RealtimeHub::class);
+        $driverUserId = $hub->driverUserId($orders->first()?->driver_profile_id);
+
+        if ($driverUserId) {
+            $hub->record('driver_route', $driverUserId, 'updated', [], [$driverUserId]);
         }
     }
 

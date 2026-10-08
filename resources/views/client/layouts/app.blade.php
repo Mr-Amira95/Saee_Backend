@@ -638,6 +638,7 @@
                 </div>
             </footer>
         </div>
+        @include('shared.realtime')
     </div>
 
 </div>
@@ -1227,8 +1228,14 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (e) {}
         }
 
-        const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
-            cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}'
+        // One shared connection per tab; auth endpoint is for the private realtime channel.
+        const pusher = window.saeePusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
+            cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+            channelAuthorization: {
+                endpoint: '{{ url('/broadcasting/auth') }}',
+                transport: 'ajax',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            }
         });
 
         const channel = pusher.subscribe('user-notifications.{{ auth()->id() }}');

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WhatsAppLog extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $table = 'whatsapp_logs';
 
     protected $fillable = [

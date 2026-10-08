@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,7 @@ use Illuminate\Support\Carbon;
 
 class DriverProfile extends Model
 {
+    use BroadcastsRealtimeChanges;
     use SoftDeletes;
 
     protected $fillable = [
@@ -76,5 +78,16 @@ class DriverProfile extends Model
         return $this->locationHistories()
             ->whereBetween('recorded_at', [$from, $to])
             ->orderBy('recorded_at');
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['drivers' => [$this->user_id]];
+    }
+
+    public function realtimeIgnoredAttributes(): array
+    {
+        // Live GPS pings are pushed separately (DriverLocationUpdated) — don't refresh pages for them.
+        return ['updated_at', 'current_latitude', 'current_longitude', 'location_updated_at'];
     }
 }

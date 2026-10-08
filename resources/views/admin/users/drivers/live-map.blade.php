@@ -347,7 +347,7 @@ window.initLiveMap = function () {
     };
 
     // ── Pusher real-time listener ──────────────────────────────────
-    var pusher = new Pusher('{{ config("broadcasting.connections.pusher.key") }}', {
+    var pusher = window.saeePusher || new Pusher('{{ config("broadcasting.connections.pusher.key") }}', {
         cluster: '{{ config("broadcasting.connections.pusher.options.cluster") }}',
         forceTLS: true,
     });

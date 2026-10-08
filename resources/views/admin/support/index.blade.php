@@ -489,7 +489,7 @@
     };
     const PUSHER_KEY    = '{{ config('broadcasting.connections.pusher.key') }}';
     const PUSHER_CLUSTER = '{{ config('broadcasting.connections.pusher.options.cluster') }}';
-    const pusher  = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER });
+    const pusher  = window.saeePusher || new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER });
 
     // ── 1. Real-time new tickets in sidebar ──────────────────
     const ticketList = document.querySelector('.ticket-list');

@@ -4,9 +4,14 @@ namespace App\Providers;
 
 use App\Models\Order;
 use App\Observers\OrderObserver;
+use App\Realtime\RealtimeHub;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Queue\Events\JobExceptionOccurred;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Kreait\Firebase\Contract\Messaging as FirebaseMessaging;
@@ -29,12 +34,15 @@ class AppServiceProvider extends ServiceProvider
                 return null;
             }
         });
+
+        $this->app->singleton(RealtimeHub::class);
     }
 
     public function boot(): void
     {
         Order::observe(OrderObserver::class);
         $this->configureRateLimiters();
+        $this->configureRealtimeFlush();
 
         Paginator::defaultView('vendor.pagination.custom');
 
@@ -51,6 +59,18 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('unreadSupportMessagesCount', \App\Models\SupportMessage::unreadForUserCount(auth()->id()));
             }
         });
+    }
+
+    /**
+     * Realtime changes are buffered and sent once: after the HTTP response is
+     * delivered (terminating), or after each queue job in long-running workers.
+     */
+    private function configureRealtimeFlush(): void
+    {
+        $flush = fn () => $this->app->make(RealtimeHub::class)->flush();
+
+        $this->app->terminating($flush);
+        Event::listen([JobProcessed::class, JobFailed::class, JobExceptionOccurred::class], $flush);
     }
 
     private function configureRateLimiters(): void

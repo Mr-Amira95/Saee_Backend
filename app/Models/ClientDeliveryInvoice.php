@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Enums\DeliveryInvoiceStatus;
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ClientDeliveryInvoice extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'invoice_number',
         'client_profile_id',
@@ -79,5 +82,10 @@ class ClientDeliveryInvoice extends Model
     public function scopeOverdue($query)
     {
         return $query->where('status', DeliveryInvoiceStatus::Overdue);
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['clients' => $this->realtimeCurrentAndPrevious('client_profile_id')];
     }
 }

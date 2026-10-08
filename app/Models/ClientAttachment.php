@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class ClientAttachment extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = [
         'client_profile_id',
         'label',
@@ -39,5 +42,10 @@ class ClientAttachment extends Model
         if ($bytes >= 1048576) return round($bytes / 1048576, 1).' MB';
         if ($bytes >= 1024)    return round($bytes / 1024, 1).' KB';
         return $bytes.' B';
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['clients' => $this->realtimeCurrentAndPrevious('client_profile_id')];
     }
 }

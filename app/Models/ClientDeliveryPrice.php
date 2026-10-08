@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClientDeliveryPrice extends Model
 {
+    use BroadcastsRealtimeChanges;
+
     protected $fillable = ['client_profile_id', 'city_id', 'delivery_price'];
 
     protected function casts(): array
@@ -22,5 +25,10 @@ class ClientDeliveryPrice extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['clients' => $this->realtimeCurrentAndPrevious('client_profile_id')];
     }
 }

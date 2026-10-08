@@ -364,7 +364,7 @@ html.light-theme .leaflet-control-attribution a { color: #475569 !important; }
             </div>
         </div>
         @if($driver->current_latitude && $driver->current_longitude)
-            <div id="map" style="width: 100%; height: 350px; border-radius: 12px; border: 1px solid var(--bdr); margin-top: 20px; background: #0c1230; z-index: 0;"></div>
+            <div id="map" data-live-ignore style="width: 100%; height: 350px; border-radius: 12px; border: 1px solid var(--bdr); margin-top: 20px; background: #0c1230; z-index: 0;"></div>
         @else
             <div style="margin-top:16px;padding:14px;background:var(--in-bg);border-radius:10px;text-align:center;">
                 <div style="font-size:.78rem;color:var(--text-dim);">{{ __('No location data available yet.') }}</div>

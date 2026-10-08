@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BroadcastsRealtimeChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClientProfile extends Model
 {
+    use BroadcastsRealtimeChanges;
     use SoftDeletes;
 
     protected $fillable = [
@@ -112,5 +114,10 @@ class ClientProfile extends Model
 
         $city = City::find($cityId);
         return $city ? (float) $city->delivery_price : 0.0;
+    }
+
+    public function realtimeAudience(): array
+    {
+        return ['clients' => [$this->getKey()]];
     }
 }
