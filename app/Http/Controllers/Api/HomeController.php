@@ -7,6 +7,7 @@ use App\Http\Resources\Api\AttendanceResource;
 use App\Http\Resources\Api\OrderResource;
 use App\Models\Attendance;
 use App\Models\Order;
+use App\Services\ClientDashboardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -151,6 +152,13 @@ class HomeController extends Controller
             ->limit(20)
             ->get();
 
+        $metrics = app(ClientDashboardService::class)->metrics($clientProfile->id);
+
+        $last7Days = [];
+        foreach ($metrics['days_trend'] as $date => $count) {
+            $last7Days[] = ['date' => $date, 'count' => $count];
+        }
+
         return response()->json([
             'success' => true,
             'message' => __('Home data retrieved successfully.'),
@@ -162,6 +170,18 @@ class HomeController extends Controller
                     'delivered' => (int) $summary->delivered,
                     'returned' => (int) $summary->returned,
                     'rejected' => (int) $summary->rejected,
+                ],
+                'dashboard' => [
+                    'pending_cash' => $metrics['pending_cash'],
+                    'account_balance' => $metrics['balance'],
+                    'shipping_volume' => [
+                        'total' => array_sum($metrics['days_trend']),
+                        'last_7_days' => $last7Days,
+                    ],
+                    'pending_pickup' => $metrics['stats']['pending'],
+                    'in_transit' => $metrics['stats']['picked_up'],
+                    'delivered_today' => $metrics['stats']['delivered_today'],
+                    'returned_failed' => $metrics['stats']['returned'],
                 ],
                 'active_orders' => OrderResource::collection($activeOrders),
             ],

@@ -13,7 +13,7 @@
 
         <div style="flex:1;min-width:180px;">
             <div style="font-size:1.05rem;font-weight:700;">{{ $user->name }}</div>
-            <div style="font-size:.82rem;color:var(--text-sub);margin-top:2px;">{{ $user->phone }}</div>
+            <div style="font-size:.82rem;color:var(--text-sub);margin-top:2px;">@if($user->phone){{ ($user->phone_country_code ?? '+962') . ' ' . $user->phone }}@endif</div>
             @if($user->email)
             <div style="font-size:.82rem;color:var(--text-sub);">{{ $user->email }}</div>
             @endif
@@ -32,7 +32,7 @@
         <div style="text-align:right;min-width:160px;">
             <div style="font-size:.74rem;color:var(--text-dim);margin-bottom:4px;">{{ __('Account Owner') }}</div>
             <div style="font-size:.86rem;font-weight:600;">{{ $masterUser->name }}</div>
-            <div style="font-size:.78rem;color:var(--text-sub);">{{ $masterUser->phone }}</div>
+            <div style="font-size:.78rem;color:var(--text-sub);">@if($masterUser->phone){{ ($masterUser->phone_country_code ?? '+962') . ' ' . $masterUser->phone }}@endif</div>
         </div>
         @endif
 

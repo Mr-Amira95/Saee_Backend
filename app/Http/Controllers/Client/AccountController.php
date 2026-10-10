@@ -37,6 +37,7 @@ class AccountController extends Controller
             'name'  => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
             'email' => ['nullable', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/', Rule::unique('users', 'phone')->ignore($user->id)],
+            'phone_country_code' => ['nullable', 'string', 'max:10'],
         ], [
             'name.regex' => __('The full name field must only contain letters and spaces.'),
             'email.regex' => __('The email must be a valid address in the format name@domain.com.'),
@@ -46,6 +47,7 @@ class AccountController extends Controller
         $user->name  = $request->name;
         $user->email = $request->email ?: null;
         $user->phone = $request->phone ?: null;
+        $user->phone_country_code = $request->phone_country_code ?: '+962';
         $user->save();
 
         return redirect()->route('client.account.profile.edit')
