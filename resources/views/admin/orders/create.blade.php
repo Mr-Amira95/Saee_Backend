@@ -124,48 +124,7 @@
                 </div>
             </div>
 
-            {{-- 3. Pricing & Payments --}}
-            <div class="form-section">
-                <div class="form-section-title">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m-4-6h8"/></svg>
-                    {{ __('Pricing & Payment Options') }}
-                </div>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label class="form-label" for="payment_type">{{ __('Payment Type') }} <span class="req">*</span></label>
-                        <select name="payment_type" id="payment_type" class="form-select @error('payment_type') err @enderror" required>
-                            <option value="cod" {{ old('payment_type', 'cod') === 'cod' ? 'selected' : '' }}>{{ __('COD (Cash on Delivery)') }}</option>
-                            <option value="prepaid" {{ old('payment_type') === 'prepaid' ? 'selected' : '' }}>{{ __('Prepaid') }}</option>
-                        </select>
-                        @error('payment_type') <span class="form-error">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="form-group" id="orderPriceGroup">
-                        <label class="form-label" for="order_price">{{ __('COD Order Price (JD)') }} <span class="req">*</span></label>
-                        <input type="number" name="order_price" id="order_price" step="0.01" class="form-input @error('order_price') err @enderror" value="{{ old('order_price') }}" placeholder="0.00">
-                        @error('order_price') <span class="form-error">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-
-                <div class="form-grid-2" style="margin-top: 18px; border-top: 1px solid var(--bdr); padding-top: 18px;">
-                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px;">
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="delivery_on_customer" id="delivery_on_customer" value="1" {{ old('delivery_on_customer') ? 'checked' : '' }}>
-                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                        </label>
-                        <label class="form-label" for="delivery_on_customer" style="cursor: pointer;">{{ __('Delivery Charges On Customer') }}</label>
-                    </div>
-
-                    <div class="form-group" id="customerAmountGroup" style="display: none;">
-                        <label class="form-label" for="delivery_customer_amount">{{ __('Customer Delivery Fee (JD)') }} <span class="req">*</span></label>
-                        <input type="number" name="delivery_customer_amount" id="delivery_customer_amount" step="0.01" class="form-input @error('delivery_customer_amount') err @enderror" value="{{ old('delivery_customer_amount', '0.00') }}">
-                        @error('delivery_customer_amount') <span class="form-error">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-
-            </div>
-
-            {{-- 4. Receiver & Address Details --}}
+            {{-- 3. Receiver & Address Details --}}
             <div class="form-section">
                 <div class="form-section-title">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -223,6 +182,47 @@
                     <textarea name="notes" id="notes" class="form-textarea @error('notes') err @enderror" placeholder="{{ __('Any remarks for the driver...') }}">{{ old('notes') }}</textarea>
                     @error('notes') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
+            </div>
+
+            {{-- 4. Pricing & Payments --}}
+            <div class="form-section">
+                <div class="form-section-title">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 16v1m-4-6h8"/></svg>
+                    {{ __('Pricing & Payment Options') }}
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="payment_type">{{ __('Payment Type') }} <span class="req">*</span></label>
+                        <select name="payment_type" id="payment_type" class="form-select @error('payment_type') err @enderror" required>
+                            <option value="cod" {{ old('payment_type', 'cod') === 'cod' ? 'selected' : '' }}>{{ __('COD (Cash on Delivery)') }}</option>
+                            <option value="prepaid" {{ old('payment_type') === 'prepaid' ? 'selected' : '' }}>{{ __('Prepaid') }}</option>
+                        </select>
+                        @error('payment_type') <span class="form-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-group" id="orderPriceGroup">
+                        <label class="form-label" for="order_price">{{ __('COD Order Price (JD)') }} <span class="req">*</span></label>
+                        <input type="number" name="order_price" id="order_price" step="0.01" class="form-input @error('order_price') err @enderror" value="{{ old('order_price') }}" placeholder="0.00">
+                        @error('order_price') <span class="form-error">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <div class="form-grid-2" style="margin-top: 18px; border-top: 1px solid var(--bdr); padding-top: 18px;">
+                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px;">
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="delivery_on_customer" id="delivery_on_customer" value="1" {{ (old('_token') ? old('delivery_on_customer') : true) ? 'checked' : '' }}>
+                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                        </label>
+                        <label class="form-label" for="delivery_on_customer" style="cursor: pointer;">{{ __('Delivery Charges On Customer') }}</label>
+                    </div>
+
+                    <div class="form-group" id="customerAmountGroup" style="display: none;">
+                        <label class="form-label" for="delivery_customer_amount">{{ __('Customer Delivery Fee (JD)') }} <span class="req">*</span></label>
+                        <input type="number" name="delivery_customer_amount" id="delivery_customer_amount" step="0.01" class="form-input @error('delivery_customer_amount') err @enderror" value="{{ old('delivery_customer_amount') }}" placeholder="0.00">
+                        @error('delivery_customer_amount') <span class="form-error">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
             </div>
 
             <div class="form-actions">
@@ -493,6 +493,25 @@
         if (deliveryOnCustomerCheck.checked) {
             deliveryOnCustomerCheck.dispatchEvent(new Event('change'));
         }
+
+        // ── Default Customer Delivery Fee ─────────────────────────────────
+        // Client's custom city price, falling back to the city's default. Stays editable.
+        const defaultDeliveryPrices = @json($defaultDeliveryPrices);
+        const clientDeliveryPrices  = @json($clientDeliveryPrices);
+        const customerAmountInput   = document.getElementById('delivery_customer_amount');
+
+        function applyDefaultDeliveryFee() {
+            const cityId = citySelect.value;
+            if (!cityId) return;
+            const custom = (clientDeliveryPrices[clientSelect.value] || {})[cityId];
+            const price  = custom ?? defaultDeliveryPrices[cityId] ?? 0;
+            customerAmountInput.value = Number(price).toFixed(2);
+        }
+
+        clientSelect.addEventListener('change', applyDefaultDeliveryFee);
+        citySelect.addEventListener('change', applyDefaultDeliveryFee);
+        // Keep any value the user submitted before a validation error.
+        if (customerAmountInput.value === '') applyDefaultDeliveryFee();
 
         // ── Batch Number Generator ────────────────────────────────────────
         function generateBatchNumber() {

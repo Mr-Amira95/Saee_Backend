@@ -57,8 +57,8 @@
         .sidebar-logo-text { font-size: .78rem; font-weight: 700; color: rgba(255,255,255,.4); letter-spacing: .14em; text-transform: uppercase; }
 
         .sidebar-nav { flex: 1; padding: 14px 8px; overflow-y: auto; }
-        .sidebar-nav::-webkit-scrollbar { width: 4px; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 2px; }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
 
         .nav-label {
             font-size: .64rem; font-weight: 700; color: var(--text-dim);
@@ -185,9 +185,10 @@
 
         /* ─── Content ────────────────────────────────────── */
         .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 26px; }
-        .content::-webkit-scrollbar { width: 6px; }
+        .content::-webkit-scrollbar { width: 10px; }
         .content::-webkit-scrollbar-track { background: transparent; }
-        .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 3px; }
+        .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 5px; }
+        .content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
 
         /* ─── Flash messages ─────────────────────────────── */
         .flash {
@@ -666,6 +667,9 @@
             background: var(--bg);
             color: var(--text);
         }
+        html.light-theme .content::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.25); }
+        html.light-theme .content::-webkit-scrollbar-thumb:hover { background: rgba(15, 23, 42, 0.4); }
+        html.light-theme .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.2); }
         html.light-theme .nav-item:hover { background: rgba(15, 23, 42, 0.04); color: var(--text); }
         html.light-theme .nav-sub-item:hover { background: rgba(15, 23, 42, 0.03); color: var(--text-sub); }
         html.light-theme .topbar { background: rgba(255, 255, 255, 0.7); border-bottom: 1px solid var(--bdr); }

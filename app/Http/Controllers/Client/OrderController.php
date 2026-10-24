@@ -80,7 +80,13 @@ class OrderController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('client.orders.create', compact('cities'));
+        // Client's custom price per city, falling back to the city's default price.
+        $customPrices = $this->getClientProfile()->deliveryPrices()->pluck('delivery_price', 'city_id');
+        $deliveryPrices = $cities->mapWithKeys(fn (City $city) => [
+            $city->id => (float) ($customPrices[$city->id] ?? $city->delivery_price),
+        ]);
+
+        return view('client.orders.create', compact('cities', 'deliveryPrices'));
     }
 
     public function store(Request $request): RedirectResponse

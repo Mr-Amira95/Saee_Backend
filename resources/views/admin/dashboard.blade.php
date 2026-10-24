@@ -75,6 +75,10 @@
     .metric-trend { font-size: .7rem; font-weight: 700; color: #4ade80; }
     .metric-val   { font-size: 1.65rem; font-weight: 900; letter-spacing: -.03em; line-height: 1; margin-bottom: 5px; }
     .metric-lbl   { font-size: .75rem; color: var(--text-dim); font-weight: 500; }
+    a.metric { display: block; text-decoration: none; color: inherit; cursor: pointer; transition: border-color .2s, transform .13s; }
+    a.metric:hover { transform: translateY(-2px); }
+    .metric-active { border-color: var(--m-color, #ef4444); }
+    .metric-active .metric-lbl { color: var(--text); }
 
     /* ─── Bottom two-col ─────────────────────────── */
     .bottom-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
@@ -246,7 +250,7 @@
 
 {{-- Metric cards --}}
 <div class="cards-grid">
-    <div class="metric" style="--m-color:#ef4444;--m-icon-bg:rgba(220,38,38,.12);animation-delay:.1s">
+    <a href="{{ $selectedCard === 'drivers' ? route('admin.dashboard') : route('admin.dashboard', ['card' => 'drivers']).'#metric-list' }}" class="metric{{ $selectedCard === 'drivers' ? ' metric-active' : '' }}" style="--m-color:#ef4444;--m-icon-bg:rgba(220,38,38,.12);animation-delay:.1s">
         <div class="metric-head">
             <div class="metric-icon">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -255,9 +259,9 @@
         </div>
         <div class="metric-val">{{ $activeDriversCount }}</div>
         <div class="metric-lbl">{{ __('Active Drivers') }}</div>
-    </div>
+    </a>
 
-    <div class="metric" style="--m-color:#3b82f6;--m-icon-bg:rgba(59,130,246,.12);animation-delay:.15s">
+    <a href="{{ $selectedCard === 'clients' ? route('admin.dashboard') : route('admin.dashboard', ['card' => 'clients']).'#metric-list' }}" class="metric{{ $selectedCard === 'clients' ? ' metric-active' : '' }}" style="--m-color:#3b82f6;--m-icon-bg:rgba(59,130,246,.12);animation-delay:.15s">
         <div class="metric-head">
             <div class="metric-icon" style="color:#60a5fa">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -266,9 +270,9 @@
         </div>
         <div class="metric-val">{{ $activeClientsCount }}</div>
         <div class="metric-lbl">{{ __('Client Companies') }}</div>
-    </div>
+    </a>
 
-    <div class="metric" style="--m-color:#a855f7;--m-icon-bg:rgba(168,85,247,.12);animation-delay:.2s">
+    <a href="{{ $selectedCard === 'orders' ? route('admin.dashboard') : route('admin.dashboard', ['card' => 'orders']).'#metric-list' }}" class="metric{{ $selectedCard === 'orders' ? ' metric-active' : '' }}" style="--m-color:#a855f7;--m-icon-bg:rgba(168,85,247,.12);animation-delay:.2s">
         <div class="metric-head">
             <div class="metric-icon" style="color:#c084fc">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
@@ -277,9 +281,9 @@
         </div>
         <div class="metric-val">{{ $totalOrdersCount }}</div>
         <div class="metric-lbl">{{ __('Total Orders') }}</div>
-    </div>
+    </a>
 
-    <div class="metric" style="--m-color:#10b981;--m-icon-bg:rgba(16,185,129,.12);animation-delay:.25s">
+    <a href="{{ $selectedCard === 'revenue' ? route('admin.dashboard') : route('admin.dashboard', ['card' => 'revenue']).'#metric-list' }}" class="metric{{ $selectedCard === 'revenue' ? ' metric-active' : '' }}" style="--m-color:#10b981;--m-icon-bg:rgba(16,185,129,.12);animation-delay:.25s">
         <div class="metric-head">
             <div class="metric-icon" style="color:#34d399">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -288,8 +292,188 @@
         </div>
         <div class="metric-val">{{ number_format($totalRevenue, 2) }}</div>
         <div class="metric-lbl">{{ __('Revenue (JD)') }}</div>
-    </div>
+    </a>
 </div>
+
+{{-- Drill-down list for the selected metric card --}}
+@if($selectedCard !== null)
+@php
+    $metricTitles = [
+        'drivers' => __('Active Drivers'),
+        'clients' => __('Client Companies'),
+        'orders'  => __('Total Orders'),
+        'revenue' => __('Revenue (JD)'),
+    ];
+    $metricOrderStatusClasses = [
+        'pending'   => 'badge-pending',
+        'assigned'  => 'badge-info',
+        'picked_up' => 'badge-info',
+        'delivered' => 'badge-active',
+        'rejected'  => 'badge-suspended',
+        'returned'  => 'badge-no',
+        'cancelled' => 'badge-suspended',
+    ];
+@endphp
+<div class="panel" id="metric-list" style="margin-bottom: 20px; scroll-margin-top: 80px; animation: fu .35s both;">
+    <div class="panel-head">
+        <span class="panel-title">
+            {{ $metricTitles[$selectedCard] }} ({{ number_format($cardItems->total()) }})
+            @if($selectedCard === 'revenue')
+                <span style="text-transform:none;color:#34d399;margin-inline-start:6px;">{{ number_format($totalRevenue, 2) }} JD</span>
+            @endif
+        </span>
+        <a href="{{ route('admin.dashboard') }}" class="btn-secondary" style="padding:5px 12px;font-size:.75rem;">{{ __('Close') }}</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            @if($selectedCard === 'drivers')
+                <thead>
+                    <tr>
+                        <th>{{ __('Driver') }}</th>
+                        <th>{{ __('Phone') }}</th>
+                        <th>{{ __('Vehicle') }}</th>
+                        <th>{{ __('Availability') }}</th>
+                        <th>{{ __('Orders') }}</th>
+                        <th>{{ __('Delivered') }}</th>
+                        <th>{{ __('Joined') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($cardItems as $driver)
+                        <tr>
+                            <td>
+                                <a href="{{ route('admin.drivers.show', $driver) }}" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">{{ $driver->user->name ?? '—' }}</a>
+                                <div class="cell-sub">{{ $driver->user->email ?? '' }}</div>
+                            </td>
+                            <td>{{ $driver->user->phone ?? '—' }}</td>
+                            <td>
+                                <div class="cell-main">{{ $driver->vehicle_type ? ucfirst($driver->vehicle_type) : '—' }}</div>
+                                <div class="cell-sub">{{ $driver->vehicle_plate ?? '' }}</div>
+                            </td>
+                            <td>
+                                @if($driver->is_available)
+                                    <span class="badge badge-active"><span class="badge-dot"></span>{{ __('Available') }}</span>
+                                @else
+                                    <span class="badge badge-no"><span class="badge-dot"></span>{{ __('Unavailable') }}</span>
+                                @endif
+                            </td>
+                            <td style="font-weight:700;">{{ number_format($driver->orders_count) }}</td>
+                            <td style="font-weight:700;color:#34d399;">{{ number_format($driver->delivered_orders_count) }}</td>
+                            <td><span style="font-size:.8rem;color:var(--text-dim);">{{ $driver->created_at?->format('d M Y') }}</span></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 30px;">{{ __('No Active Drivers') }}</td></tr>
+                    @endforelse
+                </tbody>
+            @elseif($selectedCard === 'clients')
+                <thead>
+                    <tr>
+                        <th>{{ __('Company') }}</th>
+                        <th>{{ __('Contact') }}</th>
+                        <th>{{ __('City') }}</th>
+                        <th>{{ __('Orders') }}</th>
+                        <th>{{ __('Balance') }}</th>
+                        <th>{{ __('Joined') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($cardItems as $client)
+                        <tr>
+                            <td>
+                                <a href="{{ route('admin.clients.show', $client) }}" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">{{ $client->company_name }}</a>
+                                @if($client->company_name_ar)
+                                    <div class="cell-sub">{{ $client->company_name_ar }}</div>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="cell-main">{{ $client->email ?? '—' }}</div>
+                                <div class="cell-sub">{{ $client->company_phone ? trim(($client->company_phone_country_code ?? '').' '.$client->company_phone) : '' }}</div>
+                            </td>
+                            <td>{{ $client->city->name ?? '—' }}</td>
+                            <td style="font-weight:700;">{{ number_format($client->orders_count) }}</td>
+                            <td><span style="font-weight:700;color:#fbbf24;">{{ number_format($client->balance ?? 0, 2) }} JD</span></td>
+                            <td><span style="font-size:.8rem;color:var(--text-dim);">{{ $client->created_at?->format('d M Y') }}</span></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 30px;">{{ __('No clients found.') }}</td></tr>
+                    @endforelse
+                </tbody>
+            @else
+                <thead>
+                    <tr>
+                        <th>{{ __('Order #') }}</th>
+                        <th>{{ __('Client') }}</th>
+                        <th>{{ __('Receiver') }}</th>
+                        <th>{{ __('City') }}</th>
+                        <th>{{ __('Driver') }}</th>
+                        <th>{{ __('COD Amount') }}</th>
+                        @if($selectedCard === 'revenue')
+                            <th>{{ __('Delivery Fee') }}</th>
+                        @endif
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Date') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($cardItems as $order)
+                        <tr>
+                            <td>
+                                <a href="{{ route('admin.orders.show', $order) }}" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">#{{ $order->order_number }}</a>
+                            </td>
+                            <td><div class="cell-main">{{ $order->clientProfile->company_name ?? 'N/A' }}</div></td>
+                            <td>
+                                <div class="cell-main">{{ $order->receiver->receiver_name ?? '—' }}</div>
+                                <div class="cell-sub">{{ $order->receiver->receiver_phone ?? '' }}</div>
+                            </td>
+                            <td>{{ $order->receiver->city->name ?? '—' }}</td>
+                            <td>
+                                @if($order->driver)
+                                    {{ $order->driver->name }}
+                                @else
+                                    <span class="cell-sub" style="font-style: italic;">{{ __('Unassigned') }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($order->payment?->order_amount)
+                                    <span style="font-weight:700;color:#fbbf24;">{{ number_format($order->payment->order_amount, 2) }} JD</span>
+                                @else
+                                    <span style="color:var(--text-dim);">—</span>
+                                @endif
+                            </td>
+                            @if($selectedCard === 'revenue')
+                                <td><span style="font-weight:700;color:#34d399;">{{ number_format($order->payment->client_delivery_amount ?? 0, 2) }} JD</span></td>
+                            @endif
+                            <td>
+                                <span class="badge {{ $metricOrderStatusClasses[$order->status] ?? 'badge-no' }}">
+                                    <span class="badge-dot"></span>
+                                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                                </span>
+                            </td>
+                            <td><span style="font-size:.8rem;color:var(--text-dim);">{{ $order->created_at->format('d M Y') }}</span></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="{{ $selectedCard === 'revenue' ? 9 : 8 }}" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                                {{ __('No orders found for this filter.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            @endif
+        </table>
+    </div>
+    @if($cardItems->hasPages())
+        <div class="pagination-wrap">
+            <div class="pag-info">
+                {{ __('Showing') }} {{ $cardItems->firstItem() }} {{ __('to') }} {{ $cardItems->lastItem() }} {{ __('of') }} {{ $cardItems->total() }} {{ __('entries') }}
+            </div>
+            <div class="pag-links">
+                {{ $cardItems->links() }}
+            </div>
+        </div>
+    @endif
+</div>
+@endif
 
 {{-- Segmented Status Bar & Operational Distribution Card --}}
 @php

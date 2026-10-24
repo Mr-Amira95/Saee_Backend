@@ -1079,6 +1079,7 @@
   "Search areas...": "Search areas...",
   "Search by INV number or merchant name...": "Search by INV number or merchant name...",
   "Search cities...": "Search cities...",
+  "Search statuses...": "Search statuses...",
   "Search clients...": "Search clients...",
   "Search country or code…": "Search country or code…",
   "Search name, email or phone…": "Search name, email or phone…",
@@ -2365,5 +2366,6 @@
   "Orders behind": "Orders behind",
   "Show all orders": "Show all orders",
   "View orders": "View orders",
-  "Orders: :count": "Orders: :count"
+  "Orders: :count": "Orders: :count",
+  "Unavailable": "Unavailable"
 }

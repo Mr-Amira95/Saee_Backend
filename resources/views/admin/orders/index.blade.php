@@ -88,17 +88,36 @@
 
             <div class="filter-row">
                 {{-- Status --}}
-                <select name="status" class="filter-select" onchange="this.form.submit()" style="flex:1; min-width:180px;">
-                    <option value="">{{ __('All Statuses') }}</option>
-                    <option value="pending"   {{ request('status') === 'pending'   ? 'selected' : '' }}>{{ __('Pending') }}</option>
-                    <option value="assigned"  {{ request('status') === 'assigned'  ? 'selected' : '' }}>{{ __('Assigned') }}</option>
-                    <option value="picked_up" {{ request('status') === 'picked_up' ? 'selected' : '' }}>{{ __('Picked Up') }}</option>
-                    <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>{{ __('Delivered') }}</option>
-                    <option value="rejected"  {{ request('status') === 'rejected'  ? 'selected' : '' }}>{{ __('Rejected') }}</option>
-                    <option value="returned"  {{ request('status') === 'returned'  ? 'selected' : '' }}>{{ __('Returned') }}</option>
-                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
-                    <option value="rejected_returned_cancelled" {{ request('status') === 'rejected_returned_cancelled' ? 'selected' : '' }}>{{ __('Rejected, Returned & Cancelled') }}</option>
-                </select>
+                @php
+                    $statusOptions = [
+                        'pending'                     => __('Pending'),
+                        'assigned'                    => __('Assigned'),
+                        'picked_up'                   => __('Picked Up'),
+                        'delivered'                   => __('Delivered'),
+                        'rejected'                    => __('Rejected'),
+                        'returned'                    => __('Returned'),
+                        'cancelled'                   => __('Cancelled'),
+                        'rejected_returned_cancelled' => __('Rejected, Returned & Cancelled'),
+                    ];
+                @endphp
+                <div class="ss-wrap" style="flex:1; min-width:180px;">
+                    <div class="ss-trigger" tabindex="0">
+                        <span class="ss-label">
+                            {{ $statusOptions[request('status')] ?? __('All Statuses') }}
+                        </span>
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="ss-panel">
+                        <input type="text" class="ss-search-input" placeholder="{{ __('Search statuses...') }}">
+                        <div class="ss-opts">
+                            <div class="ss-opt {{ !request('status') ? 'selected' : '' }}" data-value="">{{ __('All Statuses') }}</div>
+                            @foreach($statusOptions as $value => $text)
+                                <div class="ss-opt {{ request('status') === $value ? 'selected' : '' }}" data-value="{{ $value }}">{{ $text }}</div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                </div>
 
                 {{-- Searchable: Clients --}}
                 <div class="ss-wrap" style="flex:1; min-width:180px;">

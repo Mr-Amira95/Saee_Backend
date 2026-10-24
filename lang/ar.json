@@ -1102,6 +1102,7 @@
   "Search areas...": "البحث في المناطق...",
   "Search by INV number or merchant name...": "البحث برقم الفاتورة أو اسم التاجر...",
   "Search cities...": "البحث في المدن...",
+  "Search statuses...": "البحث في الحالات...",
   "Search clients...": "البحث في العملاء...",
   "Search country or code…": "البحث عن دولة أو رمز…",
   "Search name, email or phone…": "البحث بالاسم أو البريد الإلكتروني أو الهاتف…",
@@ -2391,5 +2392,6 @@
   "Orders behind": "الطلبات المكوّنة لـ",
   "Show all orders": "عرض جميع الطلبات",
   "View orders": "عرض الطلبات",
-  "Orders: :count": "الطلبات: :count"
+  "Orders: :count": "الطلبات: :count",
+  "Unavailable": "غير متاح"
 }

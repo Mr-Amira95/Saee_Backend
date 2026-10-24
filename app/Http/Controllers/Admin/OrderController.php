@@ -19,14 +19,8 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller
 {
     /**
-     * Final statuses — once an order reaches one of these, its details
-     * can no longer be edited.
-     */
-    protected const CLOSED_STATUSES = ['delivered', 'rejected', 'cancelled'];
-
-    /**
-     * Statuses in which the driver assignment is locked — the closed
-     * statuses plus 'returned', which is no longer eligible for reassignment.
+     * Final statuses in which the driver assignment is locked and the
+     * order is no longer eligible for reassignment.
      */
     protected const DRIVER_LOCKED_STATUSES = ['delivered', 'rejected', 'cancelled', 'returned'];
 
@@ -146,10 +140,16 @@ class OrderController extends Controller
 
     public function create()
     {
-        $clients = ClientProfile::where('status', 'active')->orderBy('company_name')->get();
+        $clients = ClientProfile::where('status', 'active')->with('deliveryPrices')->orderBy('company_name')->get();
         $cities = City::where('is_active', true)->with('areas')->orderBy('name')->get();
 
-        return view('admin.orders.create', compact('clients', 'cities'));
+        // Default price per city, plus each client's custom overrides (client_id => [city_id => price]).
+        $defaultDeliveryPrices = $cities->mapWithKeys(fn (City $city) => [$city->id => (float) $city->delivery_price]);
+        $clientDeliveryPrices = $clients->mapWithKeys(fn (ClientProfile $client) => [
+            $client->id => $client->deliveryPrices->mapWithKeys(fn ($p) => [$p->city_id => (float) $p->delivery_price]),
+        ]);
+
+        return view('admin.orders.create', compact('clients', 'cities', 'defaultDeliveryPrices', 'clientDeliveryPrices'));
     }
 
     public function store(Request $request)
@@ -193,8 +193,6 @@ class OrderController extends Controller
 
     public function edit(Order $order)
     {
-        abort_if(in_array($order->status, self::CLOSED_STATUSES, true), 403, __('This order can no longer be edited.'));
-
         $order->load(['receiver', 'payment']);
         $cities = City::where('is_active', true)
             ->with(['areas' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
@@ -211,8 +209,6 @@ class OrderController extends Controller
 
         // Check if updating order details
         if ($request->filled('receiver_name')) {
-            abort_if(in_array($order->status, self::CLOSED_STATUSES, true), 403, __('This order can no longer be edited.'));
-
             $validated = $request->validate([
                 'client_profile_id'        => 'required|exists:client_profiles,id',
                 'order_description'        => 'nullable|string|max:255',

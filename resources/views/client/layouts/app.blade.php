@@ -51,8 +51,8 @@
         }
         .sidebar-logo-text { font-size: .75rem; font-weight: 700; color: rgba(255,255,255,.35); letter-spacing: .14em; text-transform: uppercase; }
         .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
-        .sidebar-nav::-webkit-scrollbar { width: 3px; }
-        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 2px; }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
         .nav-label { font-size: .62rem; font-weight: 700; color: var(--text-dim); letter-spacing: .14em; text-transform: uppercase; padding: 12px 10px 5px; }
         .nav-item {
             display: flex; align-items: center; gap: 10px;
@@ -167,8 +167,9 @@
 
         /* ── Content ─────────────────────────────────────── */
         .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 26px; }
-        .content::-webkit-scrollbar { width: 5px; }
-        .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 3px; }
+        .content::-webkit-scrollbar { width: 10px; }
+        .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 5px; }
+        .content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
 
         /* ── Flash messages ──────────────────────────────── */
         .flash { border-radius: 11px; padding: 12px 16px; font-size: .85rem; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; animation: fu .4s both; }
@@ -380,6 +381,9 @@
             --in-bg:    rgba(15, 23, 42, 0.02); --in-bdr: rgba(15, 23, 42, 0.08);
         }
         html.light-theme body { background: var(--bg); color: var(--text); }
+        html.light-theme .content::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.25); }
+        html.light-theme .content::-webkit-scrollbar-thumb:hover { background: rgba(15, 23, 42, 0.4); }
+        html.light-theme .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.2); }
         html.light-theme .topbar { background: rgba(255, 255, 255, 0.7); border-bottom: 1px solid var(--bdr); }
         html.light-theme .icon-btn { background: rgba(15, 23, 42, 0.04); border-color: var(--bdr); }
         html.light-theme .icon-btn:hover { background: rgba(15, 23, 42, 0.07); }

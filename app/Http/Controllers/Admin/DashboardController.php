@@ -23,6 +23,9 @@ class DashboardController extends Controller
         'cancelled'       => ['cancelled'],
     ];
 
+    /** Drill-down lists for the top metric cards */
+    private const METRIC_CARDS = ['drivers', 'clients', 'orders', 'revenue'];
+
     public function index(Request $request): View
     {
         // 1. Metric stats
@@ -71,6 +74,15 @@ class DashboardController extends Controller
                 ->fragment('order-status');
         }
 
+        // 6. Drill-down list for the clicked metric card
+        $selectedCard = $this->resolveCard($request);
+        $cardItems = $selectedCard !== null
+            ? $this->metricCardQuery($selectedCard)
+                ->paginate(20)
+                ->withQueryString()
+                ->fragment('metric-list')
+            : null;
+
         return view('admin.dashboard', compact(
             'activeDriversCount',
             'activeClientsCount',
@@ -83,7 +95,9 @@ class DashboardController extends Controller
             'canViewLiveMap',
             'mapDrivers',
             'selectedStatus',
-            'statusOrders'
+            'statusOrders',
+            'selectedCard',
+            'cardItems'
         ));
     }
 
@@ -108,5 +122,36 @@ class DashboardController extends Controller
     private function statusOrdersQuery(string $status)
     {
         return Order::whereIn('status', self::STATUS_FILTERS[$status])->latest();
+    }
+
+    private function resolveCard(Request $request): ?string
+    {
+        $card = $request->query('card');
+
+        return is_string($card) && in_array($card, self::METRIC_CARDS, true) ? $card : null;
+    }
+
+    /** Mirrors the queries behind each metric card count so the list matches the number shown. */
+    private function metricCardQuery(string $card)
+    {
+        return match ($card) {
+            'drivers' => DriverProfile::with('user')
+                ->whereHas('user', fn($q) => $q->where('status', 'active'))
+                ->withCount([
+                    'orders',
+                    'orders as delivered_orders_count' => fn($q) => $q->where('status', 'delivered'),
+                ])
+                ->latest(),
+            'clients' => ClientProfile::with('city')
+                ->where('status', 'active')
+                ->withCount('orders')
+                ->latest(),
+            'orders' => Order::with(['clientProfile', 'receiver.city', 'payment', 'driverProfile.user'])
+                ->latest(),
+            'revenue' => Order::with(['clientProfile', 'receiver.city', 'payment', 'driverProfile.user'])
+                ->where('status', 'delivered')
+                ->whereHas('payment')
+                ->latest(),
+        };
     }
 }
