@@ -169,7 +169,9 @@ class HomeController extends Controller
             ->limit(20)
             ->get();
 
-        $metrics = app(ClientDashboardService::class)->metrics($clientProfile->id);
+        $dashboardService = app(ClientDashboardService::class);
+        $metrics = $dashboardService->metrics($clientProfile->id);
+        $cash = $dashboardService->cashBreakdown($clientProfile->id);
 
         $last7Days = [];
         foreach ($metrics['days_trend'] as $date => $count) {
@@ -189,8 +191,8 @@ class HomeController extends Controller
                     'rejected' => (int) $summary->rejected,
                 ],
                 'dashboard' => [
-                    'pending_cash' => $metrics['pending_cash'],
-                    'account_balance' => $metrics['balance'],
+                    'pending_cash' => $cash['pending_cash'],
+                    'account_balance' => $cash['balance'],
                     'shipping_volume' => [
                         'total' => array_sum($metrics['days_trend']),
                         'last_7_days' => $last7Days,

@@ -63,4 +63,51 @@ class ClientDashboardService
             'days_trend' => $daysTrend,
         ];
     }
+
+    /**
+     * Pending cash and account balance, each with the orders that make up the total (mobile API).
+     */
+    public function cashBreakdown(int $clientProfileId): array
+    {
+        return [
+            'pending_cash' => $this->cashFromOrders($clientProfileId, ['pending', 'picked_up']),
+            'balance' => $this->cashFromOrders($clientProfileId, ['delivered']),
+        ];
+    }
+
+    private function cashFromOrders(int $clientProfileId, array $statuses): array
+    {
+        $orders = Order::with(['receiver', 'payment'])
+            ->where('client_profile_id', $clientProfileId)
+            ->whereIn('status', $statuses)
+            ->where('payment_status', '!=', 'paid')
+            ->whereHas('payment')
+            ->latest()
+            ->get()
+            ->map(function (Order $order) {
+                $orderAmount = (float) ($order->payment->order_amount ?? 0);
+                $deliveryAmount = $order->payment->delivery_on_customer
+                    ? (float) ($order->payment->customer_delivery_amount ?? 0)
+                    : 0.0;
+
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'status' => $order->status,
+                    'payment_status' => $order->payment_status,
+                    'receiver_name' => $order->receiver?->receiver_name,
+                    'order_amount' => $orderAmount,
+                    'delivery_amount' => $deliveryAmount,
+                    'amount' => $orderAmount + $deliveryAmount,
+                    'delivered_at' => $order->delivered_at?->toDateTimeString(),
+                    'created_at' => $order->created_at?->toDateTimeString(),
+                ];
+            })
+            ->values();
+
+        return [
+            'total' => (float) $orders->sum('amount'),
+            'orders' => $orders,
+        ];
+    }
 }

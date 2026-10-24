@@ -56,17 +56,46 @@ class ReportController extends Controller
         $completed = $delivered + $returned;
         $successRate = $completed > 0 ? round(($delivered / $completed) * 100, 1) : 0.0;
 
-        // ── Financial totals ──────────────────────────────────────────────────
-        $financials = (clone $base)
-            ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
-            ->select(
-                DB::raw('SUM(order_payments.order_amount) as total_cod'),
-                DB::raw('SUM(order_payments.customer_delivery_amount) as total_delivery')
-            )
-            ->first();
+        // ── Orders behind the financial totals & success rate ─────────────────
+        $orders = (clone $base)
+            ->with(['receiver', 'payment'])
+            ->latest('orders.created_at')
+            ->get();
 
-        $totalCod      = (float) ($financials->total_cod      ?? 0);
-        $totalDelivery = (float) ($financials->total_delivery ?? 0);
+        $paymentRows = $orders
+            ->filter(fn (Order $order) => $order->payment)
+            ->map(function (Order $order) {
+                $orderAmount    = (float) ($order->payment->order_amount ?? 0);
+                $deliveryAmount = (float) ($order->payment->customer_delivery_amount ?? 0);
+
+                return [
+                    'id'              => $order->id,
+                    'order_number'    => $order->order_number,
+                    'status'          => $order->status,
+                    'receiver_name'   => $order->receiver?->receiver_name,
+                    'order_amount'    => $orderAmount,
+                    'delivery_amount' => $deliveryAmount,
+                    'net_amount'      => round($orderAmount - $deliveryAmount, 2),
+                    'created_at'      => $order->created_at?->toDateTimeString(),
+                ];
+            })
+            ->values();
+
+        $totalCod      = (float) $paymentRows->sum('order_amount');
+        $totalDelivery = (float) $paymentRows->sum('delivery_amount');
+
+        $completedOrders = $orders
+            ->filter(fn (Order $order) => in_array($order->status, ['delivered', 'returned', 'rejected'], true))
+            ->map(fn (Order $order) => [
+                'id'            => $order->id,
+                'order_number'  => $order->order_number,
+                'status'        => $order->status,
+                'receiver_name' => $order->receiver?->receiver_name,
+                'delivered_at'  => $order->delivered_at?->toDateTimeString(),
+                'returned_at'   => $order->returned_at?->toDateTimeString(),
+                'created_at'    => $order->created_at?->toDateTimeString(),
+            ])
+            ->values();
 
         // ── Daily trend (zero-filled) ─────────────────────────────────────────
         $rawTrend = (clone $base)
@@ -132,10 +161,24 @@ class ReportController extends Controller
                 'returned'       => $returned,
                 'pending'        => $pending,
                 'in_transit'     => $inTransit,
-                'success_rate'   => $successRate,
-                'total_cod'      => $totalCod,
-                'total_delivery' => $totalDelivery,
-                'net_cod'        => round($totalCod - $totalDelivery, 2),
+                'success_rate'   => [
+                    'rate'      => $successRate,
+                    'delivered' => $delivered,
+                    'completed' => $completed,
+                    'orders'    => $completedOrders,
+                ],
+                'total_cod'      => [
+                    'total'  => $totalCod,
+                    'orders' => $paymentRows->filter(fn ($row) => $row['order_amount'] != 0)->values(),
+                ],
+                'total_delivery' => [
+                    'total'  => $totalDelivery,
+                    'orders' => $paymentRows->filter(fn ($row) => $row['delivery_amount'] != 0)->values(),
+                ],
+                'net_cod'        => [
+                    'total'  => round($totalCod - $totalDelivery, 2),
+                    'orders' => $paymentRows,
+                ],
             ],
             'status_breakdown' => $statusCounts,
             'daily_trend'      => $dailyTrend,
