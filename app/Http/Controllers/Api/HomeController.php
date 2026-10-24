@@ -70,15 +70,29 @@ class HomeController extends Controller
         $completedOrders = $completedOrderIds->count();
         $rejectedOrders = $rejectedOrderIds->count();
 
-        $cashCollected = Order::where('driver_profile_id', $driverProfileId)
+        $cashOrders = Order::with(['receiver', 'payment'])
+            ->where('driver_profile_id', $driverProfileId)
             ->where('payment_status', 'with_driver')
-            ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
-            ->selectRaw(
-                'COALESCE(SUM(order_payments.order_amount), 0)'
-                . ' + COALESCE(SUM(CASE WHEN order_payments.delivery_on_customer = 1 THEN order_payments.customer_delivery_amount ELSE 0 END), 0)'
-                . ' AS total'
-            )
-            ->value('total');
+            ->whereHas('payment')
+            ->latest('delivered_at')
+            ->get()
+            ->map(function (Order $order) {
+                $orderAmount = (float) ($order->payment->order_amount ?? 0);
+                $deliveryAmount = $order->payment->delivery_on_customer
+                    ? (float) ($order->payment->customer_delivery_amount ?? 0)
+                    : 0.0;
+
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'status' => $order->status,
+                    'receiver_name' => $order->receiver?->receiver_name,
+                    'order_amount' => $orderAmount,
+                    'delivery_amount' => $deliveryAmount,
+                    'collected_amount' => $orderAmount + $deliveryAmount,
+                    'delivered_at' => $order->delivered_at?->toDateTimeString(),
+                ];
+            });
 
         $isCheckedIn = $attendance && $attendance->check_in_at && !$attendance->check_out_at;
 
@@ -113,7 +127,10 @@ class HomeController extends Controller
                     'completed_orders' => $completedOrders,
                     'rejected_orders' => $rejectedOrders,
                     'assigned_orders' => $assignedOrders,
-                    'cash_collected' => (float) ($cashCollected ?? 0),
+                    'cash_collected' => [
+                        'total' => (float) $cashOrders->sum('collected_amount'),
+                        'orders' => $cashOrders->values(),
+                    ],
                 ],
                 'orders' => OrderResource::collection($orders),
             ],
