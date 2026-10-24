@@ -25,6 +25,12 @@ class OrderPdfExportRequest extends FormRequest
         if (is_array($ids)) {
             $this->merge(['ids' => $ids]);
         }
+
+        $status = $this->input('status');
+
+        if (is_string($status)) {
+            $this->merge(['status' => array_values(array_filter(array_map('trim', explode(',', $status)), 'strlen'))]);
+        }
     }
 
     public function rules(): array
@@ -32,7 +38,8 @@ class OrderPdfExportRequest extends FormRequest
         return [
             'ids'          => ['nullable', 'array'],
             'ids.*'        => ['integer', 'min:1'],
-            'status'       => ['nullable', 'string', Rule::in([
+            'status'       => ['nullable', 'array'],
+            'status.*'     => ['string', Rule::in([
                 'pending', 'assigned', 'picked_up', 'delivered', 'rejected', 'returned', 'cancelled', 'active',
             ])],
             'payment_type' => ['nullable', 'string', 'in:cod,prepaid'],

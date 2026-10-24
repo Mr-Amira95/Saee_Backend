@@ -138,7 +138,7 @@ class HomeController extends Controller
             ->selectRaw("
                 COUNT(*) as total,
                 SUM(CASE WHEN status = 'pending'   THEN 1 ELSE 0 END) as pending,
-                SUM(CASE WHEN status = 'picked_up' THEN 1 ELSE 0 END) as in_transit,
+                SUM(CASE WHEN status IN ('assigned', 'picked_up') THEN 1 ELSE 0 END) as in_transit,
                 SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered,
                 SUM(CASE WHEN status = 'returned'  THEN 1 ELSE 0 END) as returned,
                 SUM(CASE WHEN status = 'rejected'  THEN 1 ELSE 0 END) as rejected

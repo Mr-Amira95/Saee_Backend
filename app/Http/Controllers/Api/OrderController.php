@@ -66,16 +66,7 @@ class OrderController extends Controller
         }
 
         if ($request->filled('status')) {
-            $status = $request->input('status');
-            if ($status === 'active') {
-                $query->whereIn('status', ['pending', 'assigned', 'picked_up']);
-            } elseif (is_array($status)) {
-                $query->whereIn('status', $status);
-            } elseif (is_string($status) && str_contains($status, ',')) {
-                $query->whereIn('status', explode(',', $status));
-            } else {
-                $query->where('status', $status);
-            }
+            $query->whereIn('status', $this->resolveStatuses($request->input('status')));
         }
 
         if ($request->filled('payment_status')) {
@@ -133,6 +124,27 @@ class OrderController extends Controller
         ]);
     }
 
+    /**
+     * Normalise a status filter into a list of statuses. Accepts a single value,
+     * a comma-separated string (status=pending,delivered) or an array
+     * (status[]=pending&status[]=delivered). The "active" alias expands to
+     * pending, assigned and picked_up and can be combined with other statuses.
+     *
+     * @return array<int, string>
+     */
+    private function resolveStatuses(string|array $status): array
+    {
+        $statuses = is_array($status) ? $status : explode(',', $status);
+
+        return collect($statuses)
+            ->map(fn ($s) => trim((string) $s))
+            ->filter()
+            ->flatMap(fn ($s) => $s === 'active' ? ['pending', 'assigned', 'picked_up'] : [$s])
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     public function show(Request $request, Order $order): JsonResponse
     {
         /** @var \App\Models\User $user */
@@ -174,12 +186,7 @@ class OrderController extends Controller
             $query->whereIn('id', $ids);
         } else {
             if ($request->filled('status')) {
-                $status = $request->input('status');
-                if ($status === 'active') {
-                    $query->whereIn('status', ['pending', 'assigned', 'picked_up']);
-                } else {
-                    $query->where('status', $status);
-                }
+                $query->whereIn('status', $this->resolveStatuses($request->input('status')));
             }
 
             if ($request->filled('payment_type')) {
