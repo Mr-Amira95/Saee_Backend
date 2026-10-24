@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Models\Area;
 use App\Models\City;
 use App\Models\Order;
+use App\Models\OrderPayment;
 use App\Services\OrderService;
 use App\Services\SupportNotificationService;
 use App\Services\WaybillExportService;
@@ -40,9 +41,36 @@ class OrderController extends Controller
         ];
 
         $query = $this->getFilteredQuery($request, $clientId, true);
+        $cashFilter = $this->cashFilterSummary($request, $query);
         $orders = $query->latest()->paginate(20)->withQueryString();
 
-        return view('client.orders.index', compact('orders', 'profile', 'stats'));
+        return view('client.orders.index', compact('orders', 'profile', 'stats', 'cashFilter'));
+    }
+
+    /**
+     * Label and total for the active `cash` filter, so the list shows where the figure comes from.
+     */
+    private function cashFilterSummary(Request $request, $query): ?array
+    {
+        $filters = [
+            'pending_cash'  => [__('Pending Cash'), 'COALESCE(order_amount, 0) + CASE WHEN delivery_on_customer = 1 THEN COALESCE(customer_delivery_amount, 0) ELSE 0 END'],
+            'balance'       => [__('Account Balance'), 'COALESCE(order_amount, 0) + CASE WHEN delivery_on_customer = 1 THEN COALESCE(customer_delivery_amount, 0) ELSE 0 END'],
+            'cod'           => [__('Total COD Value'), 'COALESCE(order_amount, 0)'],
+            'delivery_fees' => [__('Delivery Fees'), 'COALESCE(customer_delivery_amount, 0)'],
+        ];
+
+        $key = $request->input('cash');
+        if (! isset($filters[$key])) {
+            return null;
+        }
+
+        [$label, $amountSql] = $filters[$key];
+
+        $total = (float) OrderPayment::whereIn('order_id', (clone $query)->select('orders.id'))
+            ->selectRaw("COALESCE(SUM({$amountSql}), 0) as total")
+            ->value('total');
+
+        return ['key' => $key, 'label' => $label, 'total' => $total];
     }
 
     public function create(): View
@@ -712,6 +740,18 @@ class OrderController extends Controller
         if ($request->filled('to')) {
             $query->whereDate('created_at', '<=', $request->to);
         }
+        // Orders behind a cash figure (dashboard Pending Cash / Account Balance, report COD / Delivery Fees)
+        match ($request->input('cash')) {
+            'pending_cash'  => $query->whereIn('status', ['pending', 'picked_up'])
+                ->where('payment_status', '!=', 'paid')
+                ->whereHas('payment'),
+            'balance'       => $query->where('status', 'delivered')
+                ->where('payment_status', '!=', 'paid')
+                ->whereHas('payment'),
+            'cod'           => $query->whereHas('payment', fn ($pq) => $pq->where('order_amount', '>', 0)),
+            'delivery_fees' => $query->whereHas('payment', fn ($pq) => $pq->where('customer_delivery_amount', '>', 0)),
+            default         => null,
+        };
         if ($request->filled('q')) {
             $term = $request->q;
             $query->where(function ($q) use ($term) {

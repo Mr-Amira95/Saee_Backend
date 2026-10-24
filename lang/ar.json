@@ -2387,5 +2387,9 @@
   "Too many orders to export at once (maximum :max). Please narrow your filters.": "عدد الطلبات كبير جداً للتصدير دفعة واحدة (الحد الأقصى :max). يرجى تضييق نطاق الفلاتر.",
   "Only client and driver accounts can export order PDFs.": "يمكن لحسابات العملاء والسائقين فقط تصدير ملفات PDF للطلبات.",
   "Please provide at least one valid order ID.": "يرجى إدخال رقم طلب صالح واحد على الأقل.",
-  "Waybills PDF generated successfully.": "تم إنشاء ملف PDF لبوالص الشحن بنجاح."
+  "Waybills PDF generated successfully.": "تم إنشاء ملف PDF لبوالص الشحن بنجاح.",
+  "Orders behind": "الطلبات المكوّنة لـ",
+  "Show all orders": "عرض جميع الطلبات",
+  "View orders": "عرض الطلبات",
+  "Orders: :count": "الطلبات: :count"
 }

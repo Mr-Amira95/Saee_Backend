@@ -210,16 +210,18 @@
 
 {{-- COD & Delivery Fees --}}
 <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
-    <div class="kpi-card kpi-accent-purple">
+    <a href="{{ route('client.orders.index', ['cash' => 'cod', 'from' => $from, 'to' => $to]) }}"
+       class="kpi-card kpi-accent-purple kpi-clickable" style="text-decoration:none;display:block;">
         <div class="kpi-label">{{ __('Total COD Value') }}</div>
         <div class="kpi-value" style="color:#c084fc;font-size:1.5rem;">{{ number_format($totalCod, 2) }}</div>
         <div class="kpi-sub">JD {{ __('collected from customers') }}</div>
-    </div>
-    <div class="kpi-card kpi-accent-teal">
+    </a>
+    <a href="{{ route('client.orders.index', ['cash' => 'delivery_fees', 'from' => $from, 'to' => $to]) }}"
+       class="kpi-card kpi-accent-teal kpi-clickable" style="text-decoration:none;display:block;">
         <div class="kpi-label">{{ __('Delivery Fees') }}</div>
         <div class="kpi-value" style="color:#2dd4bf;font-size:1.5rem;">{{ number_format($totalDelivery, 2) }}</div>
         <div class="kpi-sub">JD {{ __('total delivery charges') }}</div>
-    </div>
+    </a>
 </div>
 
 {{-- Trend + Donut Row --}}

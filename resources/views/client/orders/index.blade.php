@@ -88,8 +88,28 @@
     </div>
 </div>
 
+{{-- Cash breakdown banner (from dashboard / reports cards) --}}
+@if($cashFilter)
+<div class="card" style="padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-color:rgba(251,191,36,.25);">
+    <div>
+        <div style="font-size:.69rem;font-weight:700;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;">{{ __('Orders behind') }} {{ $cashFilter['label'] }}</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#fbbf24;line-height:1.2;">{{ number_format($cashFilter['total'], 2) }} <span style="font-size:.9rem;font-weight:600;">JD</span></div>
+        <div style="font-size:.72rem;color:var(--text-dim);">
+            {{ __('Orders: :count', ['count' => $orders->total()]) }}
+            @if(request('from') || request('to'))
+                · {{ request('from') ?: '…' }} → {{ request('to') ?: '…' }}
+            @endif
+        </div>
+    </div>
+    <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:8px 14px;font-size:.82rem;">{{ __('Show all orders') }}</a>
+</div>
+@endif
+
 {{-- Filters --}}
 <form method="GET" action="{{ route('client.orders.index') }}">
+@if($cashFilter)
+    <input type="hidden" name="cash" value="{{ $cashFilter['key'] }}">
+@endif
 <div class="filter-bar">
     <div class="filter-search-wrap">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -111,7 +131,7 @@
     <input type="date" name="from" class="filter-input" style="max-width:140px;padding:8px 10px;" value="{{ request('from') }}" title="{{ __('From date') }}">
     <input type="date" name="to"   class="filter-input" style="max-width:140px;padding:8px 10px;" value="{{ request('to') }}" title="{{ __('To date') }}">
     <button type="submit" class="btn-primary" style="padding:8px 16px;font-size:.82rem;">{{ __('Filter') }}</button>
-    @if(request()->anyFilled(['q','status','payment_type','from','to']))
+    @if(request()->anyFilled(['q','status','payment_type','from','to','cash']))
         <a href="{{ route('client.orders.index') }}" class="btn-secondary" style="padding:8px 14px;font-size:.82rem;">{{ __('Clear') }}</a>
     @endif
 </div>

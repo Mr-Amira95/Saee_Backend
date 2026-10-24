@@ -86,6 +86,8 @@
         background: linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(12,18,48,0.85) 100%);
         border-color: rgba(34,197,94,0.2) !important;
     }
+    .cash-card-link { transition: transform .13s; }
+    .cash-card-link:hover { transform: translateY(-2px); }
     html.light-theme .card-account-balance {
         background: linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(255,255,255,1) 100%) !important;
         border-color: rgba(34,197,94,0.3) !important;
@@ -214,7 +216,7 @@
 @endphp
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; animation: fu .45s .05s both;">
     <!-- Pending Cash Card -->
-    <div class="card card-pending-cash" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <a href="{{ route('client.orders.index', ['cash' => 'pending_cash']) }}" class="card card-pending-cash cash-card-link" style="display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit;">
         <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <span style="font-size: .74rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em;">{{ __('Pending Cash') }}</span>
@@ -228,11 +230,12 @@
         </div>
         <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.04); display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: .74rem; color: var(--text-dim);">{{ __('Orders: Active') }}</span>
+            <span style="font-size: .74rem; font-weight: 600; color: var(--text-sub);">{{ __('View orders') }} &rarr;</span>
         </div>
-    </div>
+    </a>
 
     <!-- Account Balance Card -->
-    <div class="card card-account-balance" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <a href="{{ route('client.orders.index', ['cash' => 'balance']) }}" class="card card-account-balance cash-card-link" style="display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit;">
         <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <span style="font-size: .74rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em;">{{ __('Account Balance') }}</span>
@@ -246,8 +249,9 @@
         </div>
         <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.04); display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: .74rem; color: var(--text-dim);">{{ __('Orders: Delivered') }}</span>
+            <span style="font-size: .74rem; font-weight: 600; color: var(--text-sub);">{{ __('View orders') }} &rarr;</span>
         </div>
-    </div>
+    </a>
 
     <!-- Trend line card -->
     <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
