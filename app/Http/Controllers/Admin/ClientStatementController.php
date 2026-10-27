@@ -65,19 +65,18 @@ class ClientStatementController extends Controller
 
         $request->validate([
             'client_id' => ['required', 'exists:client_profiles,id'],
-            'format'    => ['required', Rule::in(['csv', 'pdf'])],
         ]);
 
         $client    = ClientProfile::findOrFail($request->input('client_id'));
         $statement = $this->statements->export($client, $this->filters($request), $request->user());
 
+        // The invoice page offers the PDF / Excel downloads and Confirm Payment
         return redirect()
             ->route('admin.financials.client-statements.show', $statement)
-            ->with('success', __('Statement :number exported. :count orders are now marked as exported.', [
+            ->with('success', __('Invoice :number generated for :count orders. Download it as PDF or Excel below.', [
                 'number' => $statement->statement_number,
                 'count'  => $statement->orders_count,
-            ]))
-            ->with('download_url', route('admin.financials.client-statements.download', [$statement, $request->input('format')]));
+            ]));
     }
 
     public function show(ClientStatement $statement)

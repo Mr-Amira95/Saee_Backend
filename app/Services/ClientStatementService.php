@@ -321,7 +321,7 @@ class ClientStatementService
 
             fputcsv($file, [
                 'Order #', 'Date', 'Order Status', 'Receiver Name', 'Receiver Phone', 'City', 'Area',
-                'Payment Type', 'COD (JD)', 'Delivery Paid by Customer (JD)', 'Saee Delivery Fee (JD)', 'Net (JD)',
+                'Payment Type', 'COD (JD)', 'Customer Delivery (JD)', 'Saee Delivery Fee (JD)', 'Net (JD)',
             ]);
 
             foreach ($orders as $order) {

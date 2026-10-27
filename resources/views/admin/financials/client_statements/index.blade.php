@@ -20,6 +20,12 @@
         'paid'       => ['class' => 'badge-active', 'label' => __('Paid')],
         'superseded' => ['class' => 'badge-no',     'label' => __('Superseded')],
     ];
+    // Order status shown as an icon before the order number (hover for the label)
+    $statusIcons = [
+        'delivered' => ['color' => '#22c55e', 'path' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+        'returned'  => ['color' => '#f59e0b', 'path' => 'M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6'],
+        'rejected'  => ['color' => '#f87171', 'path' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'],
+    ];
     $canManage = auth()->user()->hasAdminAction('finances.client_statements');
     $tabUrl = fn ($t) => route('admin.financials.client-statements.index', array_merge(request()->except(['tab', 'page']), ['tab' => $t]));
 @endphp
@@ -27,7 +33,7 @@
     <div class="page-hd">
         <div class="page-hd-left">
             <h1>{{ __('Client Statements') }}</h1>
-            <p>{{ __('One report per client: COD + delivery paid by customer − Saee delivery fee. Export it, then confirm the payment once the client is paid.') }}</p>
+            <p>{{ __('Generate one invoice per client: COD + customer delivery − Saee delivery fee. Download it as PDF or Excel, then confirm the payment once the client is paid.') }}</p>
         </div>
     </div>
 
@@ -44,14 +50,10 @@
 
     {{-- Filter bar --}}
     <div class="filter-bar">
-        <form action="{{ route('admin.financials.client-statements.index') }}" method="GET" class="filter-form" style="flex-wrap: wrap;">
+        {{-- Filters apply as soon as a value changes --}}
+        <form action="{{ route('admin.financials.client-statements.index') }}" method="GET" class="filter-form" style="flex-wrap: wrap;"
+              onchange="this.submit()">
             <input type="hidden" name="tab" value="{{ $tab }}">
-
-            <div class="filter-search-wrap">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" name="search" value="{{ $filters['search'] }}" class="filter-input"
-                       placeholder="{{ $tab === 'orders' ? __('Order #, receiver, phone, statement #…') : __('Statement #…') }}">
-            </div>
 
             <select name="client_id" class="filter-select">
                 <option value="">{{ __('All Clients') }}</option>
@@ -79,7 +81,6 @@
                 </select>
             @endif
 
-            <button type="submit" class="btn-primary" style="box-shadow:none; padding: 8px 16px;">{{ __('Filter') }}</button>
             <a href="{{ route('admin.financials.client-statements.index', ['tab' => $tab]) }}" class="btn-secondary" style="padding: 8px 16px;">{{ __('Reset') }}</a>
         </form>
     </div>
@@ -89,7 +90,7 @@
         @foreach([
             [__('Orders'), number_format($totals['orders']), 'var(--text)'],
             [__('COD'), number_format($totals['cod'], 2) . ' JD', 'var(--text)'],
-            [__('Delivery Paid by Customer'), '+' . number_format($totals['customer_delivery'], 2) . ' JD', '#60a5fa'],
+            [__('Customer Delivery'), '+' . number_format($totals['customer_delivery'], 2) . ' JD', '#60a5fa'],
             [__('Saee Delivery Fees'), '−' . number_format($totals['client_delivery'], 2) . ' JD', 'var(--red-lt)'],
             [__('Net Due to Client'), number_format($totals['net'], 2) . ' JD', $totals['net'] < 0 ? 'var(--red-lt)' : '#22c55e'],
         ] as [$label, $value, $color])
@@ -100,18 +101,18 @@
         @endforeach
     </div>
 
-    {{-- Export --}}
+    {{-- Generate invoice (creates the statement, then opens its page for PDF / Excel) --}}
     @if($canManage)
     <div class="table-card" style="padding: 14px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 240px; font-size: .84rem; color: var(--text-sub);">
             @if(! $filters['client_id'])
-                {{ __('Select a client to export a statement. Each statement is for one client.') }}
+                {{ __('Select a client to generate an invoice. Each invoice is for one client.') }}
             @elseif($filters['payment_status'] === 'paid')
-                {{ __('Paid orders cannot be exported again.') }}
+                {{ __('Paid orders are already invoiced and cannot be invoiced again.') }}
             @elseif(! $exportable || $exportable['orders'] === 0)
-                {{ __('There are no orders to export for the selected filters.') }}
+                {{ __('There are no orders to invoice for the selected filters.') }}
             @else
-                {!! __('Export :count orders (net :net JD). Ready and already-exported orders in these filters are included; paid orders are not.', [
+                {!! __('Generate an invoice for :count orders (net :net JD). Ready and already-invoiced orders in these filters are included; paid orders are not.', [
                     'count' => '<strong>' . $exportable['orders'] . '</strong>',
                     'net'   => '<strong>' . number_format($exportable['net'], 2) . '</strong>',
                 ]) !!}
@@ -119,16 +120,15 @@
         </div>
 
         @if($filters['client_id'] && $exportable && $exportable['orders'] > 0)
-            <form action="{{ route('admin.financials.client-statements.export') }}" method="POST" style="display: flex; gap: 8px;"
-                  onsubmit="return confirm(@js(__('Create a new statement and mark these orders as exported? Any earlier statement that contains them will be superseded.')))">
+            <form action="{{ route('admin.financials.client-statements.export') }}" method="POST"
+                  onsubmit="return confirm(@js(__('Generate a new invoice for these orders? They will be marked as exported, and any earlier invoice that contains them will be superseded.')))">
                 @csrf
                 @foreach(['client_id', 'from', 'to', 'payment_status', 'search'] as $key)
                     @if($filters[$key])
                         <input type="hidden" name="{{ $key }}" value="{{ $filters[$key] }}">
                     @endif
                 @endforeach
-                <button type="submit" name="format" value="csv" class="btn-primary" style="box-shadow: none; padding: 8px 16px;">{{ __('Export Excel') }}</button>
-                <button type="submit" name="format" value="pdf" class="btn-secondary" style="padding: 8px 16px;">{{ __('Export PDF') }}</button>
+                <button type="submit" class="btn-primary" style="box-shadow: none; padding: 8px 18px;">{{ __('Generate Invoice') }}</button>
             </form>
         @endif
     </div>
@@ -152,9 +152,6 @@
                         <tr>
                             <th>{{ __('Order #') }}</th>
                             <th>{{ __('Client') }}</th>
-                            <th>{{ __('Receiver') }}</th>
-                            <th>{{ __('Date') }}</th>
-                            <th>{{ __('Order Status') }}</th>
                             <th>{{ __('COD') }}</th>
                             <th>{{ __('Customer Delivery') }}</th>
                             <th>{{ __('Saee Fee') }}</th>
@@ -167,18 +164,16 @@
                             @php
                                 $amounts = app(\App\Services\ClientStatementService::class)->amounts($order);
                                 $ps = in_array($order->payment_status, ['exported', 'paid'], true) ? $order->payment_status : 'ready';
+                                $statusIcon = $statusIcons[$order->status] ?? $statusIcons['rejected'];
                             @endphp
                             <tr>
-                                <td>
-                                    <a href="{{ route('admin.orders.show', $order) }}" target="_blank" style="color: var(--red-lt); font-weight: 700; text-decoration: none;">#{{ $order->order_number }}</a>
+                                <td style="white-space: nowrap;">
+                                    <span title="{{ __(ucfirst($order->status)) }}" style="display: inline-flex; vertical-align: middle; margin-inline-end: 6px; color: {{ $statusIcon['color'] }};">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $statusIcon['path'] }}"/></svg>
+                                    </span>
+                                    <a href="{{ route('admin.orders.show', $order) }}" target="_blank" style="color: var(--red-lt); font-weight: 700; text-decoration: none; vertical-align: middle;">#{{ $order->order_number }}</a>
                                 </td>
                                 <td>{{ $order->clientProfile?->company_name }}</td>
-                                <td>
-                                    <div class="cell-main">{{ $order->receiver?->receiver_name }}</div>
-                                    <div class="cell-sub">{{ $order->receiver?->receiver_phone }}</div>
-                                </td>
-                                <td style="white-space: nowrap;">{{ ($order->delivered_at ?? $order->returned_at ?? $order->created_at)->format('Y-m-d') }}</td>
-                                <td><span class="badge {{ $order->status === 'delivered' ? 'badge-active' : 'badge-suspended' }}">{{ __(ucfirst($order->status)) }}</span></td>
                                 <td style="white-space: nowrap;">{{ number_format($amounts['cod'], 2) }}</td>
                                 <td style="white-space: nowrap;">{{ number_format($amounts['customer_delivery'], 2) }}</td>
                                 <td style="white-space: nowrap; color: var(--red-lt);">−{{ number_format($amounts['client_delivery'], 2) }}</td>
@@ -192,7 +187,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" style="text-align: center; color: var(--text-dim); padding: 40px;">{{ __('No orders found for the selected filters.') }}</td>
+                                <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 40px;">{{ __('No orders found for the selected filters.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>

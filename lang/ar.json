@@ -2450,5 +2450,19 @@
   "Payment confirmed. All orders in statement :number are now paid.": "تم تأكيد الدفع. جميع طلبات الكشف :number أصبحت مدفوعة.",
   "Only exported statements can be marked as paid.": "يمكن تأكيد دفع الكشوفات المصدّرة فقط.",
   "Until": "حتى",
-  "All dates": "جميع التواريخ"
+  "All dates": "جميع التواريخ",
+  "Page": "صفحة",
+  "Reliable Delivery Solutions": "حلول توصيل موثوقة",
+  "CLIENT STATEMENT": "كشف حساب العميل",
+  "Statement Details": "تفاصيل الكشف",
+  "Note:": "ملاحظة:",
+  "This statement lists the cash on delivery collected for the client, plus delivery fees paid by customers, minus Saee delivery fees. A negative net amount is due from the client to Saee.": "يوضح هذا الكشف مبالغ الدفع عند الاستلام المحصّلة لصالح العميل، مضافاً إليها رسوم التوصيل المدفوعة من الزبائن، مخصوماً منها رسوم توصيل ساعي. المبلغ الصافي السالب يكون مستحقاً من العميل لصالح ساعي.",
+  "Generate one invoice per client: COD + customer delivery − Saee delivery fee. Download it as PDF or Excel, then confirm the payment once the client is paid.": "أنشئ فاتورة واحدة لكل عميل: الدفع عند الاستلام + توصيل العميل − رسوم توصيل ساعي. قم بتحميلها بصيغة PDF أو Excel، ثم أكّد الدفع عند تسليم المبلغ للعميل.",
+  "Select a client to generate an invoice. Each invoice is for one client.": "اختر عميلاً لإنشاء فاتورة. كل فاتورة تخص عميلاً واحداً.",
+  "Paid orders are already invoiced and cannot be invoiced again.": "الطلبات المدفوعة تمت فوترتها مسبقاً ولا يمكن فوترتها مرة أخرى.",
+  "There are no orders to invoice for the selected filters.": "لا توجد طلبات للفوترة حسب الفلاتر المحددة.",
+  "Generate an invoice for :count orders (net :net JD). Ready and already-invoiced orders in these filters are included; paid orders are not.": "إنشاء فاتورة لـ :count طلب (الصافي :net دينار). تشمل الطلبات الجاهزة والمفوترة سابقاً ضمن هذه الفلاتر، ولا تشمل الطلبات المدفوعة.",
+  "Generate a new invoice for these orders? They will be marked as exported, and any earlier invoice that contains them will be superseded.": "إنشاء فاتورة جديدة لهذه الطلبات؟ سيتم تحويلها إلى حالة \"تم التصدير\"، وسيتم استبدال أي فاتورة سابقة تحتوي عليها.",
+  "Generate Invoice": "إنشاء فاتورة",
+  "Invoice :number generated for :count orders. Download it as PDF or Excel below.": "تم إنشاء الفاتورة :number لـ :count طلب. يمكنك تحميلها بصيغة PDF أو Excel أدناه."
 }

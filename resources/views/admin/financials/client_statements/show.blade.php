@@ -55,7 +55,7 @@
         @foreach([
             [__('Orders'), number_format($statement->orders_count), 'var(--text)'],
             [__('COD'), number_format($statement->total_cod, 2) . ' JD', 'var(--text)'],
-            [__('Delivery Paid by Customer'), '+' . number_format($statement->total_customer_delivery, 2) . ' JD', '#60a5fa'],
+            [__('Customer Delivery'), '+' . number_format($statement->total_customer_delivery, 2) . ' JD', '#60a5fa'],
             [__('Saee Delivery Fees'), '−' . number_format($statement->total_client_delivery, 2) . ' JD', 'var(--red-lt)'],
             [__('Net Due to Client'), number_format($statement->net_amount, 2) . ' JD', $statement->net_amount < 0 ? 'var(--red-lt)' : '#22c55e'],
         ] as [$label, $value, $color])
@@ -142,8 +142,4 @@
             </div>
         @endif
     </div>
-
-    @if(session('download_url'))
-        <script>window.addEventListener('load', function () { window.location.href = @json(session('download_url')); });</script>
-    @endif
 @endsection

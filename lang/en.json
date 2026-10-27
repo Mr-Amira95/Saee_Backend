@@ -2424,5 +2424,19 @@
   "Payment confirmed. All orders in statement :number are now paid.": "Payment confirmed. All orders in statement :number are now paid.",
   "Only exported statements can be marked as paid.": "Only exported statements can be marked as paid.",
   "Until": "Until",
-  "All dates": "All dates"
+  "All dates": "All dates",
+  "Page": "Page",
+  "Reliable Delivery Solutions": "Reliable Delivery Solutions",
+  "CLIENT STATEMENT": "CLIENT STATEMENT",
+  "Statement Details": "Statement Details",
+  "Note:": "Note:",
+  "This statement lists the cash on delivery collected for the client, plus delivery fees paid by customers, minus Saee delivery fees. A negative net amount is due from the client to Saee.": "This statement lists the cash on delivery collected for the client, plus delivery fees paid by customers, minus Saee delivery fees. A negative net amount is due from the client to Saee.",
+  "Generate one invoice per client: COD + customer delivery − Saee delivery fee. Download it as PDF or Excel, then confirm the payment once the client is paid.": "Generate one invoice per client: COD + customer delivery − Saee delivery fee. Download it as PDF or Excel, then confirm the payment once the client is paid.",
+  "Select a client to generate an invoice. Each invoice is for one client.": "Select a client to generate an invoice. Each invoice is for one client.",
+  "Paid orders are already invoiced and cannot be invoiced again.": "Paid orders are already invoiced and cannot be invoiced again.",
+  "There are no orders to invoice for the selected filters.": "There are no orders to invoice for the selected filters.",
+  "Generate an invoice for :count orders (net :net JD). Ready and already-invoiced orders in these filters are included; paid orders are not.": "Generate an invoice for :count orders (net :net JD). Ready and already-invoiced orders in these filters are included; paid orders are not.",
+  "Generate a new invoice for these orders? They will be marked as exported, and any earlier invoice that contains them will be superseded.": "Generate a new invoice for these orders? They will be marked as exported, and any earlier invoice that contains them will be superseded.",
+  "Generate Invoice": "Generate Invoice",
+  "Invoice :number generated for :count orders. Download it as PDF or Excel below.": "Invoice :number generated for :count orders. Download it as PDF or Excel below."
 }

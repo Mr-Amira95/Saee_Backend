@@ -24,7 +24,7 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;animation:fu .5s both;">
         @foreach([
             [__('COD Collected'), number_format($totals['cod'], 2), '#22c55e'],
-            [__('Delivery Paid by Customer'), '+' . number_format($totals['customer_delivery'], 2), '#60a5fa'],
+            [__('Customer Delivery'), '+' . number_format($totals['customer_delivery'], 2), '#60a5fa'],
             [__('Saee Delivery Fees'), '−' . number_format($totals['client_delivery'], 2), '#f87171'],
             [__('Net Amount'), number_format($totals['net'], 2), $totals['net'] < 0 ? '#f87171' : '#22c55e'],
         ] as [$label, $value, $color])
