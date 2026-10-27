@@ -33,7 +33,6 @@ return [
         'admin.reports.*'          => ['*'],
         'admin.orders.*'           => [...$orderTypes, 'financial_ledger_entry'],
         'admin.financials.*'       => $financeTypes,
-        'admin.billing.*'          => ['client_delivery_invoice', 'financial_ledger_entry', 'order', 'order_payment'],
         'admin.expenses.*'         => ['expense'],
         'admin.payroll.*'          => ['driver_payment', 'driver_profile', 'financial_ledger_entry', 'attendance'],
         'admin.attendance.*'       => ['attendance'],
@@ -47,8 +46,7 @@ return [
         'client.reports.*'         => ['*'],
         'client.track'             => $orderTypes,
         'client.orders.*'          => [...$orderTypes, 'financial_ledger_entry'],
-        'client.financials.*'      => ['invoice', 'financial_ledger_entry', 'order', 'order_payment'],
-        'client.billing.*'         => ['client_delivery_invoice', 'financial_ledger_entry', 'order'],
+        'client.statements.*'      => ['financial_ledger_entry', 'order', 'order_payment'],
         'client.users.*'           => ['client_employee'],
     ],
 

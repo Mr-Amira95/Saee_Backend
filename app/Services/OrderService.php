@@ -271,14 +271,8 @@ class OrderService
                         'notes'             => $notes ?? 'Driver cash settled to company for order ' . $order->order_number,
                     ]);
 
-                    $payment = $order->payment;
-                    if ($payment->delivery_on_customer) {
-                        $order->payment_status = 'with_company';
-                    } elseif ($payment->payment_type === 'prepaid' || $payment->order_amount == 0) {
-                        $order->payment_status = 'paid';
-                    } else {
-                        $order->payment_status = 'with_company';
-                    }
+                    // Cash is now at Saee; the order becomes "paid" only once its client statement is paid
+                    $order->payment_status = 'with_company';
                     $order->save();
 
                     $this->logTracking(
@@ -290,128 +284,6 @@ class OrderService
                     );
                     $count++;
                 }
-            }
-
-            return $count;
-        });
-    }
-
-    /**
-     * Log company paying COD collections to the Client.
-     */
-    public function payoutClient(ClientProfile $client, array $orderIds, User $actor, ?string $ref = null, ?string $notes = null, ?string $attachmentPath = null): int
-    {
-        $ref = $ref ?: 'PAY-' . now()->format('YmdHis') . '-C' . $client->id;
-
-        return DB::transaction(function () use ($client, $orderIds, $actor, $ref, $notes, $attachmentPath) {
-            $count = 0;
-            $orders = Order::whereIn('id', $orderIds)
-                ->where('client_profile_id', $client->id)
-                ->where('status', 'delivered')
-                ->where('payment_status', 'with_company')
-                ->with('payment')
-                ->get();
-
-            $totalCod = 0;
-            $totalShipping = 0;
-            $totalCustomerDelivery = 0;
-            $payoutLedgerEntry = null;
-
-            foreach ($orders as $order) {
-                $payment = $order->payment;
-                $driverUserId = $order->driverProfile?->user_id;
-
-                $shippingFee = (float) ($payment->client_delivery_amount ?? 0);
-                if ($shippingFee > 0) {
-                    FinancialLedgerEntry::create([
-                        'order_id'          => $order->id,
-                        'client_profile_id' => $client->id,
-                        'driver_id'         => $driverUserId,
-                        'from_account'      => 'client',
-                        'to_account'        => 'company',
-                        'amount'            => $shippingFee,
-                        'type'              => 'shipping_charge',
-                        'reference_number'  => $ref,
-                        'recorded_by'       => $actor->id,
-                        'notes'             => 'Delivery charge for order ' . $order->order_number,
-                    ]);
-                    $totalShipping += $shippingFee;
-                }
-
-                if ($payment->payment_type === 'cod' && $payment->order_amount > 0) {
-                    $customerDelivery = $payment->delivery_on_customer ? (float) ($payment->customer_delivery_amount ?? 0) : 0;
-                    $ledger = FinancialLedgerEntry::create([
-                        'order_id'          => $order->id,
-                        'client_profile_id' => $client->id,
-                        'driver_id'         => $driverUserId,
-                        'from_account'      => 'company',
-                        'to_account'        => 'client',
-                        'amount'            => $payment->order_amount + $customerDelivery,
-                        'type'              => 'client_payout',
-                        'reference_number'  => $ref,
-                        'recorded_by'       => $actor->id,
-                        'notes'             => $notes ?? 'COD payout to client for order ' . $order->order_number,
-                    ]);
-
-                    if (!$payoutLedgerEntry) {
-                        $payoutLedgerEntry = $ledger;
-                    }
-
-                    $totalCod += $payment->order_amount;
-                    $totalCustomerDelivery += $customerDelivery;
-                } elseif ($payment->delivery_on_customer && ($payment->customer_delivery_amount ?? 0) > 0) {
-                    $custDel = (float) $payment->customer_delivery_amount;
-                    $ledger = FinancialLedgerEntry::create([
-                        'order_id'          => $order->id,
-                        'client_profile_id' => $client->id,
-                        'driver_id'         => $driverUserId,
-                        'from_account'      => 'company',
-                        'to_account'        => 'client',
-                        'amount'            => $custDel,
-                        'type'              => 'client_payout',
-                        'reference_number'  => $ref,
-                        'recorded_by'       => $actor->id,
-                        'notes'             => $notes ?? 'Delivery fee payout to client for order ' . $order->order_number,
-                    ]);
-
-                    if (!$payoutLedgerEntry) {
-                        $payoutLedgerEntry = $ledger;
-                    }
-
-                    $totalCustomerDelivery += $custDel;
-                }
-
-                $order->payment_status = 'paid';
-                $order->save();
-
-                $this->logTracking(
-                    $order->id,
-                    $actor->id,
-                    $order->status,
-                    $order->status,
-                    "Payout completed to client for order " . $order->order_number . "."
-                );
-                $count++;
-            }
-
-            if ($count > 0 && $payoutLedgerEntry) {
-                $invoiceNumber = 'INV-' . now()->format('Ymd') . '-' . rand(1000, 9999);
-                $invoice = \App\Models\Invoice::create([
-                    'invoice_number'         => $invoiceNumber,
-                    'client_profile_id'      => $client->id,
-                    'payout_ledger_entry_id' => $payoutLedgerEntry->id,
-                    'total_orders'           => $count,
-                    'cod_amount'                  => $totalCod,
-                    'shipping_amount'             => $totalShipping,
-                    'customer_delivery_amount'    => $totalCustomerDelivery,
-                    'net_amount'                  => $totalCod + $totalCustomerDelivery - $totalShipping,
-                    'status'                 => 'paid',
-                    'notes'                  => $notes ?? 'Auto-generated invoice for client payout.',
-                    'attachment_path'        => $attachmentPath,
-                ]);
-
-                // Notify client users about the payout
-                rescue(fn () => app(SupportNotificationService::class)->notifyClientPayoutMade($invoice, $actor->id));
             }
 
             return $count;
@@ -537,7 +409,8 @@ class OrderService
             foreach ($rejectedOrders as $order) {
                 $order->update([
                     'status'         => 'returned',
-                    'payment_status' => 'no_payment',
+                    // Keep the status if the order is already on a client statement
+                    'payment_status' => in_array($order->payment_status, ['exported', 'paid'], true) ? $order->payment_status : 'no_payment',
                     'returned_at'    => now(),
                 ]);
 

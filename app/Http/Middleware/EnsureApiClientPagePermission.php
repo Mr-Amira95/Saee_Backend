@@ -16,9 +16,9 @@ class EnsureApiClientPagePermission
     protected array $pages = [
         'api.orders.'          => 'orders',
         'api.support.'         => 'support',
-        'api.client.invoices.' => 'payout_invoices',
-        'api.wallet.'          => 'payout_invoices',
-        'api.client.billing.'  => 'billing',
+        'api.client.invoices.' => 'statements',
+        'api.wallet.'          => 'statements',
+        'api.client.billing.'  => 'statements',
         'api.reports.'         => 'reports',
         'api.users.'           => 'team',
         'api.bank-details.'    => 'account',

@@ -196,8 +196,7 @@
             $groupIcons = [
                 'orders'          => '📦',
                 'support'         => '🎧',
-                'payout_invoices' => '🧾',
-                'billing'         => '💳',
+                'statements'      => '🧾',
                 'reports'         => '📊',
                 'team'            => '👥',
                 'account'         => '⚙️',

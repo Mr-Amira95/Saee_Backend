@@ -342,9 +342,9 @@ class SupportNotificationService
         }
     }
 
-    public function notifyClientPayoutMade(Invoice $invoice, int $actorId): void
+    public function notifyClientStatementPaid(ClientStatement $statement, int $actorId): void
     {
-        $client = $invoice->clientProfile;
+        $client = $statement->clientProfile;
         if (! $client) {
             return;
         }
@@ -353,8 +353,8 @@ class SupportNotificationService
         $employeeUserIds = $client->employees()->pluck('user_id')->toArray();
         $userIds = array_merge($userIds, $employeeUserIds);
 
-        $title = 'COD Payout Received';
-        $message = "A COD payout of " . number_format($invoice->net_amount, 2) . " JD has been processed. Invoice: {$invoice->invoice_number}.";
+        $title = 'Statement Paid';
+        $message = "Statement {$statement->statement_number} has been paid. Net amount: " . number_format($statement->net_amount, 2) . " JD.";
 
         foreach (array_unique(array_filter($userIds)) as $userId) {
             $this->sendToUser(
@@ -363,8 +363,8 @@ class SupportNotificationService
                 message:    $message,
                 type:       'info',
                 createdBy:  $actorId,
-                entityType: 'client_payout',
-                entityId:   $invoice->id,
+                entityType: 'client_statement',
+                entityId:   $statement->id,
             );
         }
     }
@@ -394,8 +394,9 @@ class SupportNotificationService
             return route('client.orders.show', $entityId);
         }
 
-        if ($entityType === 'client_payout') {
-            return route('client.financials.invoices.show', $entityId);
+        // 'client_payout' notifications predate statements; both open the statements page
+        if ($entityType === 'client_statement' || $entityType === 'client_payout') {
+            return route('client.statements.index');
         }
 
         return null;

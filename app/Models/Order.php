@@ -23,6 +23,7 @@ class Order extends Model
         'client_profile_id',
         'driver_profile_id',
         'handover_request_id',
+        'client_statement_id',
         'order_description',
         'status',
         'payment_status',
@@ -125,6 +126,11 @@ class Order extends Model
     public function handoverRequest(): BelongsTo
     {
         return $this->belongsTo(HandoverRequest::class);
+    }
+
+    public function clientStatement(): BelongsTo
+    {
+        return $this->belongsTo(ClientStatement::class);
     }
 
     public function payment(): HasOne

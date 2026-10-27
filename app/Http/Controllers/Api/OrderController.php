@@ -480,7 +480,8 @@ class OrderController extends Controller
 
         $order->update([
             'status'         => 'returned',
-            'payment_status' => 'no_payment',
+            // Keep the status if the order is already on a client statement
+            'payment_status' => in_array($order->payment_status, ['exported', 'paid'], true) ? $order->payment_status : 'no_payment',
             'returned_at'    => now(),
         ]);
 

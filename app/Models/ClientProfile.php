@@ -95,6 +95,11 @@ class ClientProfile extends Model
         return $this->hasMany(FinancialLedgerEntry::class);
     }
 
+    public function statements(): HasMany
+    {
+        return $this->hasMany(ClientStatement::class);
+    }
+
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);

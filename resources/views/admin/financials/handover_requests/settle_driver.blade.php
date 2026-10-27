@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
     <span class="sep">/</span>
-    <a href="{{ route('admin.financials.index') }}">{{ __('Finance Dashboard') }}</a>
+    <a href="{{ route('admin.financials.handover-requests.index') }}">{{ __('Handover') }}</a>
     <span class="sep">/</span>
     <span class="current">{{ __('Settle Driver') }}</span>
 @endsection
@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.financials.settle-driver.submit', $driver) }}" method="POST" id="settleForm">
+    <form action="{{ route('admin.financials.handover-requests.settle.submit', $driver) }}" method="POST" id="settleForm">
         @csrf
 
         {{-- Orders Table --}}
@@ -115,12 +115,12 @@
             </div>
 
             <div style="display: flex; gap: 12px;">
-                @if(auth()->user()->hasAdminAction('finances.settlements'))
+                @if(auth()->user()->hasAdminAction('finances.handover'))
                 <button type="submit" class="btn-primary" style="flex: 1; justify-content: center; height: 42px;" id="submitButton" disabled>
                     {{ __('Confirm Settle Cash') }}
                 </button>
                 @endif
-                <a href="{{ route('admin.financials.index') }}" class="btn-secondary" style="justify-content: center; height: 42px; padding: 0 24px; display: flex; align-items: center; box-sizing: border-box;">
+                <a href="{{ route('admin.financials.handover-requests.index') }}" class="btn-secondary" style="justify-content: center; height: 42px; padding: 0 24px; display: flex; align-items: center; box-sizing: border-box;">
                     {{ __('Cancel') }}
                 </a>
             </div>

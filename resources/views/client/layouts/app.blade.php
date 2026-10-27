@@ -475,7 +475,7 @@
             </a>
             @endif
 
-            @if(auth()->user()->hasClientPermission('support') || auth()->user()->hasClientPermission('payout_invoices') || auth()->user()->hasClientPermission('billing') || auth()->user()->hasClientPermission('reports'))
+            @if(auth()->user()->hasClientPermission('support') || auth()->user()->hasClientPermission('statements') || auth()->user()->hasClientPermission('reports'))
             <span class="nav-label" style="margin-top:8px;">{{ __('Support & Finance') }}</span>
             @endif
 
@@ -492,17 +492,10 @@
             </a>
             @endif
 
-            @if(auth()->user()->hasClientPermission('payout_invoices'))
-            <a href="{{ route('client.financials.invoices') }}" class="nav-item {{ request()->routeIs('client.financials.invoices*') ? 'active' : '' }}">
+            @if(auth()->user()->hasClientPermission('statements'))
+            <a href="{{ route('client.statements.index') }}" class="nav-item {{ request()->routeIs('client.statements.*') ? 'active' : '' }}">
                 <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                {{ __('Payout Invoices') }}
-            </a>
-            @endif
-
-            @if(auth()->user()->hasClientPermission('billing'))
-            <a href="{{ route('client.billing.index') }}" class="nav-item {{ request()->routeIs('client.billing.*') ? 'active' : '' }}">
-                <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                {{ __('Billing') }}
+                {{ __('Statements') }}
             </a>
             @endif
 

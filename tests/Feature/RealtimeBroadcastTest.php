@@ -225,7 +225,7 @@ class RealtimeBroadcastTest extends TestCase
         $this->assertNull(RealtimePages::typesFor('admin.cms.faqs.index'));
         $this->assertSame(['*'], RealtimePages::typesFor('admin.dashboard'));
         $this->assertContains('order', RealtimePages::typesFor('admin.orders.index'));
-        $this->assertContains('financial_ledger_entry', RealtimePages::typesFor('admin.financials.index'));
+        $this->assertContains('financial_ledger_entry', RealtimePages::typesFor('admin.financials.client-statements.index'));
 
         $this->assertSame('admin.realtime', RealtimePages::channelFor($this->admin));
         $this->assertSame('client.' . $this->client->id, RealtimePages::channelFor($this->clientUser));

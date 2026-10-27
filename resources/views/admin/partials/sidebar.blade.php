@@ -88,42 +88,27 @@
         <div class="nav-label">{{ __('Finance') }}</div>
         <button
             id="financeBtn"
-            class="nav-item nav-parent-btn {{ request()->routeIs('admin.financials.*') || request()->routeIs('admin.payroll.*') || request()->routeIs('admin.billing.*') || request()->routeIs('admin.expenses.*') ? 'active parent-open' : '' }}"
+            class="nav-item nav-parent-btn {{ request()->routeIs('admin.financials.*') || request()->routeIs('admin.payroll.*') || request()->routeIs('admin.expenses.*') ? 'active parent-open' : '' }}"
             onclick="toggleSubmenu('financeBtn','financeMenu')"
         >
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span class="nav-label-text">{{ __('Finance') }}</span>
             <svg class="nav-chevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
-        <div class="nav-submenu {{ request()->routeIs('admin.financials.*') || request()->routeIs('admin.payroll.*') || request()->routeIs('admin.billing.*') || request()->routeIs('admin.expenses.*') ? 'open' : '' }}" id="financeMenu">
-            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.settlements'))
-            <a href="{{ route('admin.financials.index') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.index') || request()->routeIs('admin.financials.settle-driver') || request()->routeIs('admin.financials.payout-client') ? 'active' : '' }}">
-                <span class="sub-dot"></span> {{ __('Settlements') }}
-            </a>
-            @endif
-            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.checkout_approvals'))
+        <div class="nav-submenu {{ request()->routeIs('admin.financials.*') || request()->routeIs('admin.payroll.*') || request()->routeIs('admin.expenses.*') ? 'open' : '' }}" id="financeMenu">
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.handover'))
             <a href="{{ route('admin.financials.handover-requests.index') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.handover-requests.*') ? 'active' : '' }}">
-                <span class="sub-dot"></span> {{ __('Checkout Approvals') }}
+                <span class="sub-dot"></span> {{ __('Handover') }}
             </a>
             @endif
-            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.cod_invoices'))
-            <a href="{{ route('admin.financials.invoices') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.invoices*') ? 'active' : '' }}">
-                <span class="sub-dot"></span> {{ __('COD Invoices') }}
-            </a>
-            @endif
-            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.reconciliation'))
-            <a href="{{ route('admin.financials.reconciliation') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.reconciliation') ? 'active' : '' }}">
-                <span class="sub-dot"></span> {{ __('Reconciliation') }}
+            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.client_statements'))
+            <a href="{{ route('admin.financials.client-statements.index') }}" class="nav-sub-item {{ request()->routeIs('admin.financials.client-statements.*') ? 'active' : '' }}">
+                <span class="sub-dot"></span> {{ __('Client Statements') }}
             </a>
             @endif
             @if($u->isSuperAdmin() || $u->hasAdminAction('finances.driver_payroll'))
             <a href="{{ route('admin.payroll.index') }}" class="nav-sub-item {{ request()->routeIs('admin.payroll.*') ? 'active' : '' }}">
                 <span class="sub-dot"></span> {{ __('Driver Payroll') }}
-            </a>
-            @endif
-            @if($u->isSuperAdmin() || $u->hasAdminAction('finances.client_billing'))
-            <a href="{{ route('admin.billing.index') }}" class="nav-sub-item {{ request()->routeIs('admin.billing.*') ? 'active' : '' }}">
-                <span class="sub-dot"></span> {{ __('Client Billing') }}
             </a>
             @endif
             @if($u->isSuperAdmin() || $u->hasAdminAction('finances.expenses'))

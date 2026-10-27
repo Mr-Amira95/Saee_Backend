@@ -58,54 +58,6 @@ class ExpandedFeaturesTest extends TestCase
         ]);
     }
 
-    public function test_invoice_creation_upon_client_payout()
-    {
-        $this->actingAs($this->admin);
-
-        // Create an order
-        $order = $this->orderService->createOrder([
-            'client_profile_id' => $this->client->id,
-            'driver_id' => $this->driver->id,
-            'payment_type' => 'cod',
-            'order_price' => 120.00,
-            'receiver_name' => 'Customer Recipient',
-            'receiver_phone' => '0790000010',
-            'city_id' => $this->city->id,
-            'area_id' => $this->area->id,
-            'address_text' => 'Abdali St Amman',
-        ], $this->admin);
-
-        // Mark Delivered (sets status to delivered, logs cod_collection to driver, logs shipping charge)
-        $this->orderService->updateStatus($order, 'delivered', [], $this->admin);
-
-        // Settle Cash from Driver to Company
-        $this->orderService->settleDriverCash($this->driver, [$order->id], $this->admin);
-
-        // Verify Invoice is NOT created yet
-        $this->assertEquals(0, Invoice::count());
-
-        // Process client payout (Company -> Client)
-        $payoutCount = $this->orderService->payoutClient($this->client, [$order->id], $this->admin, 'REF-998877', 'Paid COD goods');
-
-        $this->assertEquals(1, $payoutCount);
-
-        // Verify Invoice is auto-generated
-        $invoice = Invoice::first();
-        $this->assertNotNull($invoice);
-        $this->assertEquals($this->client->id, $invoice->client_profile_id);
-        $this->assertEquals(1, $invoice->total_orders);
-        $this->assertEquals(120.00, $invoice->cod_amount);
-        $this->assertEquals(10.00, $invoice->shipping_amount);
-        $this->assertEquals(110.00, $invoice->net_amount);
-        $this->assertEquals('paid', $invoice->status);
-
-        // Fetch invoice route
-        $response = $this->get(route('admin.financials.invoices.show', $invoice));
-        $response->assertStatus(200);
-        $response->assertSee($invoice->invoice_number);
-        $response->assertSee('Billed To');
-    }
-
     public function test_support_ticket_creation_and_live_polling()
     {
         // 1. Create ticket

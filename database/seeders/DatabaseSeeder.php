@@ -166,8 +166,8 @@ class DatabaseSeeder extends Seeder
                 'add' => 'Add Rejection Reason', 'edit' => 'Edit Rejection Reason', 'delete' => 'Delete Rejection Reason', 'activate' => 'Activate Rejection Reason',
             ]],
             'finances'          => ['label' => 'Finances',           'actions' => [
-                'settlements' => 'Settlements', 'checkout_approvals' => 'Checkout Approvals', 'cod_invoices' => 'COD Invoices',
-                'reconciliation' => 'Reconciliation', 'driver_payroll' => 'Driver Payroll', 'client_billing' => 'Client Billing', 'expenses' => 'Expenses',
+                'handover' => 'Handover', 'client_statements' => 'Client Statements',
+                'driver_payroll' => 'Driver Payroll', 'expenses' => 'Expenses',
             ]],
             'cms'               => ['label' => 'Control Website CMS', 'actions' => []],
             'attendance'        => ['label' => 'View Attendance',    'actions' => []],
@@ -194,8 +194,7 @@ class DatabaseSeeder extends Seeder
             // Having the permission grants full access to everything inside that page.
             ['name' => 'orders',           'display_name' => 'Orders',           'scope' => 'client', 'group' => 'orders'],
             ['name' => 'support',          'display_name' => 'Support',          'scope' => 'client', 'group' => 'support'],
-            ['name' => 'payout_invoices',  'display_name' => 'Payout Invoices',  'scope' => 'client', 'group' => 'payout_invoices'],
-            ['name' => 'billing',          'display_name' => 'Billing',          'scope' => 'client', 'group' => 'billing'],
+            ['name' => 'statements',       'display_name' => 'Statements',       'scope' => 'client', 'group' => 'statements'],
             ['name' => 'reports',          'display_name' => 'Reports',          'scope' => 'client', 'group' => 'reports'],
             ['name' => 'team',             'display_name' => 'Team',             'scope' => 'client', 'group' => 'team'],
             ['name' => 'account',          'display_name' => 'Account',          'scope' => 'client', 'group' => 'account'],

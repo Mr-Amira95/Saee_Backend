@@ -101,14 +101,11 @@
                 <a href="{{ route('admin.orders.index', ['client_profile_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
                     📦 {{ __('Orders') }}
                 </a>
-                <a href="{{ route('admin.financials.invoices', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    📄 {{ __('Invoices') }}
+                <a href="{{ route('admin.financials.client-statements.index', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
+                    📄 {{ __('Statements') }}
                 </a>
                 <a href="{{ route('admin.support.index', ['client_id' => $client->id]) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
                     🎫 {{ __('Support Tickets') }}
-                </a>
-                <a href="{{ route('admin.financials.payout-client', $client) }}" class="btn-secondary" style="font-size:.78rem;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;">
-                    💰 {{ __('Payout') }}
                 </a>
             </div>
 

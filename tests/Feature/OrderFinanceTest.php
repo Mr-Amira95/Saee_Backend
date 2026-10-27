@@ -9,6 +9,7 @@ use App\Models\City;
 use App\Models\Area;
 use App\Models\Order;
 use App\Models\FinancialLedgerEntry;
+use App\Services\ClientStatementService;
 use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -207,66 +208,70 @@ class OrderFinanceTest extends TestCase
         // Since it's COD, company now holds the cash. Order is NOT yet marked fully 'paid' to client
         $this->assertNotEquals('paid', $order->fresh()->payment_status);
 
-        // Now payout the client
-        $this->orderService->payoutClient($this->client, [$order->id], $this->admin, 'PAY-991');
-
-        $this->assertEquals('paid', $order->fresh()->payment_status);
-
-        // Assert payout entry: company -> client for 100.00
-        $this->assertDatabaseHas('financial_ledger_entries', [
-            'order_id' => $order->id,
-            'from_account' => 'company',
-            'to_account' => 'client',
-            'amount' => 100.00,
-            'type' => 'client_payout',
-            'reference_number' => 'PAY-991'
-        ]);
+        $this->assertEquals('with_company', $order->fresh()->payment_status);
     }
 
-    public function test_client_payout_creates_invoice_with_attachment_and_notifies_client_users()
+    public function test_client_statement_export_reexport_and_payment()
     {
-        $order = $this->orderService->createOrder([
+        $statements = app(ClientStatementService::class);
+
+        $cod = $this->makeOrder(['payment_type' => 'cod', 'order_price' => 100.00]);
+        $this->orderService->updateStatus($cod, 'delivered', [], $this->admin);
+        $this->orderService->settleDriverCash($this->driver, [$cod->id], $this->admin);
+
+        $returned = $this->makeOrder(['payment_type' => 'cod', 'order_price' => 50.00]);
+        $this->orderService->updateStatus($returned, 'picked_up', [], $this->admin);
+        $this->orderService->updateStatus($returned, 'returned', [], $this->admin);
+
+        // Still with the driver → not on the statement yet
+        $withDriver = $this->makeOrder(['payment_type' => 'cod', 'order_price' => 30.00]);
+        $this->orderService->updateStatus($withDriver, 'delivered', [], $this->admin);
+
+        // COD 100 − fee 10, returned: − fee 10
+        $first = $statements->export($this->client, [], $this->admin);
+        $this->assertEquals(2, $first->orders_count);
+        $this->assertEquals(80.00, (float) $first->net_amount);
+        $this->assertEquals('exported', $cod->fresh()->payment_status);
+        $this->assertEquals('exported', $returned->fresh()->payment_status);
+        $this->assertEquals('with_driver', $withDriver->fresh()->payment_status);
+
+        // Re-exporting only the COD order supersedes the first statement; the returned order goes back to ready
+        $second = $statements->export($this->client, ['search' => $cod->order_number], $this->admin);
+        $this->assertEquals('superseded', $first->fresh()->status);
+        $this->assertEquals($second->id, $cod->fresh()->client_statement_id);
+        $this->assertNull($returned->fresh()->client_statement_id);
+        $this->assertNotEquals('exported', $returned->fresh()->payment_status);
+
+        $statements->confirmPayment($second, $this->admin, 'BANK-1');
+
+        $this->assertEquals('paid', $second->fresh()->status);
+        $this->assertEquals('paid', $cod->fresh()->payment_status);
+        $this->assertDatabaseHas('financial_ledger_entries', [
+            'order_id'         => $cod->id,
+            'type'             => 'client_payout',
+            'amount'           => 100.00,
+            'reference_number' => $second->statement_number,
+        ]);
+        $this->assertDatabaseHas('system_notifications', [
+            'user_id'     => $this->client->master_user_id,
+            'entity_type' => 'client_statement',
+        ]);
+
+        // Paid orders are never exported again
+        $third = $statements->export($this->client, [], $this->admin);
+        $this->assertFalse($third->orders->contains('id', $cod->id));
+    }
+
+    private function makeOrder(array $data): Order
+    {
+        return $this->orderService->createOrder(array_merge([
             'client_profile_id' => $this->client->id,
             'driver_id' => $this->driver->id,
-            'payment_type' => 'cod',
-            'order_price' => 100.00,
             'receiver_name' => 'Receiver One',
             'receiver_phone' => '0790000001',
             'city_id' => $this->city->id,
             'area_id' => $this->area->id,
             'address_text' => '123 Abdali St',
-        ], $this->admin);
-
-        $this->orderService->updateStatus($order, 'delivered', [], $this->admin);
-        $this->orderService->settleDriverCash($this->driver, [$order->id], $this->admin, 'REC-001');
-
-        // Verify database does not have payout notifications
-        $this->assertDatabaseMissing('system_notifications', [
-            'entity_type' => 'client_payout',
-        ]);
-
-        // Trigger payout with notes and attachment path
-        $this->orderService->payoutClient(
-            $this->client,
-            [$order->id],
-            $this->admin,
-            'PAY-TEST-ATTACH',
-            'Settle with receipt',
-            'payout-attachments/receipt.pdf'
-        );
-
-        // Assert Invoice is created with attachment
-        $this->assertDatabaseHas('invoices', [
-            'client_profile_id' => $this->client->id,
-            'attachment_path' => 'payout-attachments/receipt.pdf',
-            'status' => 'paid',
-        ]);
-
-        // Assert system notification is created for the client master user
-        $this->assertDatabaseHas('system_notifications', [
-            'user_id' => $this->client->master_user_id,
-            'entity_type' => 'client_payout',
-            'title' => 'COD Payout Received',
-        ]);
+        ], $data), $this->admin);
     }
 }

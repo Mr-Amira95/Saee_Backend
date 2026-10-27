@@ -27,7 +27,6 @@ class EnsureAdminPagePermission
         'admin.rejection-reasons.' => 'rejection_reasons',
         'admin.financials.'       => 'finances',
         'admin.payroll.'          => 'finances',
-        'admin.billing.'          => 'finances',
         'admin.expenses.'         => 'finances',
         'admin.cms.'               => 'cms',
         'admin.settings.site.'    => 'cms',

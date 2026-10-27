@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BulkOrderController;
 use App\Http\Controllers\Admin\BusinessBenefitController;
 use App\Http\Controllers\Admin\CityController;
-use App\Http\Controllers\Admin\ClientBillingController;
+use App\Http\Controllers\Admin\ClientStatementController;
 use App\Http\Controllers\Admin\ContactFormSubmissionController;
 use App\Http\Controllers\Admin\ContactInformationController;
 use App\Http\Controllers\Admin\CustomerStorySectionController;
@@ -24,7 +24,6 @@ use App\Http\Controllers\Admin\DriverPayrollController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\FaqPageController;
-use App\Http\Controllers\Admin\FinancialController;
 use App\Http\Controllers\Admin\FlowSectionController;
 use App\Http\Controllers\Admin\FlowStepController;
 use App\Http\Controllers\Admin\ForBusinessPageController;
@@ -56,10 +55,9 @@ use App\Http\Controllers\Client\AccountController as ClientAccountController;
 use App\Http\Controllers\Client\AiChatController;
 use App\Http\Controllers\Client\AuthController as ClientAuthController;
 use App\Http\Controllers\Client\BankingDetailsController as ClientBankingController;
-use App\Http\Controllers\Client\BillingController as ClientPortalBillingController;
 use App\Http\Controllers\Client\CompanyController as ClientCompanyController;
 use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
-use App\Http\Controllers\Client\FinanceController as ClientFinanceController;
+use App\Http\Controllers\Client\StatementController as ClientStatementPortalController;
 use App\Http\Controllers\Client\NotificationController as ClientNotificationController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\Client\ReportController as ClientReportController;
@@ -290,20 +288,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('orders/{order}/print', [OrderController::class, 'printOrder'])->name('orders.print');
         Route::resource('orders', OrderController::class)->names('orders');
 
-        // Financial Ledger & Settlements
-        Route::get('financials/invoices', [FinancialController::class, 'invoices'])->name('financials.invoices');
-        Route::get('financials/invoices/{invoice}', [FinancialController::class, 'showInvoice'])->name('financials.invoices.show');
-        Route::get('financials/reconciliation', [FinancialController::class, 'reconciliation'])->name('financials.reconciliation');
-        Route::get('financials', [FinancialController::class, 'index'])->name('financials.index');
-        Route::get('financials/settle-driver/{driver}', [FinancialController::class, 'driverSettlementForm'])->name('financials.settle-driver');
-        Route::post('financials/settle-driver/{driver}', [FinancialController::class, 'settleDriver'])->name('financials.settle-driver.submit');
-        Route::get('financials/payout-client/{client}', [FinancialController::class, 'clientPayoutForm'])->name('financials.payout-client');
-        Route::post('financials/payout-client/{client}', [FinancialController::class, 'payoutClient'])->name('financials.payout-client.submit');
-
-        // Checkout Approvals (Driver Handover Requests)
+        // Handover (driver cash held, pending approvals, approved handovers)
         Route::get('financials/handover-requests', [HandoverRequestController::class, 'index'])->name('financials.handover-requests.index');
+        Route::get('financials/handover-requests/drivers/{driver}/settle', [HandoverRequestController::class, 'settleForm'])->name('financials.handover-requests.settle');
+        Route::post('financials/handover-requests/drivers/{driver}/settle', [HandoverRequestController::class, 'settle'])->name('financials.handover-requests.settle.submit');
         Route::get('financials/handover-requests/{handoverRequest}', [HandoverRequestController::class, 'show'])->name('financials.handover-requests.show');
         Route::post('financials/handover-requests/{handoverRequest}/approve', [HandoverRequestController::class, 'approve'])->name('financials.handover-requests.approve');
+
+        // Client Statements (COD + customer delivery − Saee delivery fee, per client)
+        Route::get('financials/client-statements', [ClientStatementController::class, 'index'])->name('financials.client-statements.index');
+        Route::post('financials/client-statements/export', [ClientStatementController::class, 'export'])->name('financials.client-statements.export');
+        Route::get('financials/client-statements/{statement}', [ClientStatementController::class, 'show'])->name('financials.client-statements.show');
+        Route::get('financials/client-statements/{statement}/download/{format}', [ClientStatementController::class, 'download'])->name('financials.client-statements.download');
+        Route::post('financials/client-statements/{statement}/confirm-payment', [ClientStatementController::class, 'confirmPayment'])->name('financials.client-statements.confirm-payment');
 
         // Driver Payroll (Saee → Driver compensation)
         Route::get('payroll', [DriverPayrollController::class, 'index'])->name('payroll.index');
@@ -312,15 +309,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('payroll/{payment}', [DriverPayrollController::class, 'show'])->name('payroll.show');
         Route::post('payroll/{payment}/pay', [DriverPayrollController::class, 'pay'])->name('payroll.pay');
         Route::delete('payroll/{payment}', [DriverPayrollController::class, 'destroy'])->name('payroll.destroy');
-
-        // Client Delivery Fee Billing (Client → Saee invoicing)
-        Route::get('billing', [ClientBillingController::class, 'index'])->name('billing.index');
-        Route::get('billing/clients/{client}/new', [ClientBillingController::class, 'create'])->name('billing.create');
-        Route::post('billing/clients/{client}', [ClientBillingController::class, 'store'])->name('billing.store');
-        Route::get('billing/{invoice}', [ClientBillingController::class, 'show'])->name('billing.show');
-        Route::post('billing/{invoice}/issue', [ClientBillingController::class, 'issue'])->name('billing.issue');
-        Route::post('billing/{invoice}/pay', [ClientBillingController::class, 'pay'])->name('billing.pay');
-        Route::delete('billing/{invoice}', [ClientBillingController::class, 'destroy'])->name('billing.destroy');
 
         // Expenses
         Route::get('expenses', [ExpenseController::class, 'index'])->name('expenses.index');
@@ -380,15 +368,9 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::post('notifications/read-all', [ClientNotificationController::class, 'markAllRead'])->name('notifications.read-all');
         Route::get('notifications/unread', [ClientNotificationController::class, 'unreadCount'])->name('notifications.unread');
 
-        // Financials (read-only overview for client)
-        Route::get('financials/invoices', [ClientFinanceController::class, 'invoices'])->name('financials.invoices');
-        Route::get('financials/invoices/{invoice}', [ClientFinanceController::class, 'showInvoice'])->name('financials.invoices.show');
-        Route::get('financials/invoices/{invoice}/print', [ClientFinanceController::class, 'printInvoice'])->name('financials.invoices.print');
-
-        // Billing (read-only delivery invoices for client)
-        Route::get('billing', [ClientPortalBillingController::class, 'index'])->name('billing.index');
-        Route::get('billing/{invoice}', [ClientPortalBillingController::class, 'show'])->name('billing.show');
-        Route::post('billing/{invoice}/pay', [ClientPortalBillingController::class, 'pay'])->name('billing.pay');
+        // Statements (read-only: order payment status + statements exported by Saee)
+        Route::get('statements', [ClientStatementPortalController::class, 'index'])->name('statements.index');
+        Route::get('statements/{statement}/download/{format}', [ClientStatementPortalController::class, 'download'])->name('statements.download');
 
         // Reports
         Route::get('reports', [ClientReportController::class, 'index'])->name('reports.index');

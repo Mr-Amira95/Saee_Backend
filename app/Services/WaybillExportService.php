@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\Order;
-use ArPHP\I18N\Arabic;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as DomPdf;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -37,8 +35,9 @@ class WaybillExportService
     /** Public-disk folder that stored waybill files go to (see waybills:prune). */
     public const STORAGE_DIR = 'waybills';
 
-    /** Max characters per line when shaping Arabic text (lines are wrapped before dompdf sees them). */
-    private const ARABIC_LINE_CHARS = 60;
+    public function __construct(private ArabicPdfRenderer $renderer)
+    {
+    }
 
     /**
      * Stream the waybills PDF inline (opens in the browser's PDF viewer, where
@@ -135,11 +134,7 @@ class WaybillExportService
 
     private function pdf(Collection $orders): DomPdf
     {
-        @set_time_limit(300);
-
-        $html = $this->shapeArabic(view('shared.orders.pdf', compact('orders'))->render());
-
-        return Pdf::loadHTML($html)->setPaper('a4');
+        return $this->renderer->render('shared.orders.pdf', compact('orders'));
     }
 
     private function filename(Collection $orders): string
@@ -147,28 +142,5 @@ class WaybillExportService
         return $orders->count() === 1
             ? "waybill-{$orders->first()->order_number}.pdf"
             : 'waybills-' . now()->format('Ymd_His') . '.pdf';
-    }
-
-    /**
-     * dompdf cannot join Arabic letters or apply right-to-left ordering, so
-     * every Arabic fragment of the HTML is pre-shaped into presentation forms
-     * in visual order (ar-php's documented dompdf recipe).
-     */
-    private function shapeArabic(string $html): string
-    {
-        $arabic = new Arabic();
-        $positions = $arabic->arIdentify($html);
-
-        for ($i = count($positions) - 1; $i >= 0; $i -= 2) {
-            $start  = $positions[$i - 1];
-            $length = $positions[$i] - $start;
-
-            // Diacritics (tashkeel) can't be positioned by dompdf — drop them before shaping
-            $text   = preg_replace('/[\x{064B}-\x{065F}\x{0670}]/u', '', substr($html, $start, $length));
-            $shaped = $arabic->utf8Glyphs($text, self::ARABIC_LINE_CHARS, false);
-            $html   = substr_replace($html, str_replace("\n", '<br>', $shaped), $start, $length);
-        }
-
-        return $html;
     }
 }

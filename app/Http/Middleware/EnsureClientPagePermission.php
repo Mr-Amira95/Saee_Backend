@@ -18,8 +18,7 @@ class EnsureClientPagePermission
     protected array $pages = [
         'client.orders.'      => 'orders',
         'client.support.'     => 'support',
-        'client.financials.'  => 'payout_invoices',
-        'client.billing.'     => 'billing',
+        'client.statements.'  => 'statements',
         'client.reports.'     => 'reports',
         'client.users.'       => 'team',
         'client.account.'     => 'account',
