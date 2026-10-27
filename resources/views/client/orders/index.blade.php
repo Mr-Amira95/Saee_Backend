@@ -147,7 +147,7 @@
                     <th>{{ __('COD Amount') }}</th>
                     <th>{{ __('Del. Fee') }}</th>
                     <th>{{ __('Status') }}</th>
-                    <th>{{ __('Date') }}</th>
+                    <th>{{ __('Created At') }}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -202,7 +202,10 @@
                         @endif
                     </td>
                     <td><span class="badge {{ $statusClass }}"><span class="badge-dot"></span>{{ $statusLabel }}</span></td>
-                    <td><span style="font-size:.8rem;color:var(--text-dim);">{{ $order->created_at->format('d M Y') }}</span></td>
+                    <td>
+                        <div class="cell-main">{{ $order->created_at->format('d M Y') }}</div>
+                        <div class="cell-sub">{{ $order->created_at->format('h:i A') }}</div>
+                    </td>
                     <td>
                         <div class="act-btns">
                             <a href="{{ route('client.orders.show', $order) }}" class="act-btn act-btn-view" title="View">

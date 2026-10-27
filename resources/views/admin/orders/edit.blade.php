@@ -224,6 +224,62 @@
             </div>
         </div>
 
+        {{-- 4. Statuses --}}
+        <div class="form-section">
+            <div class="form-section-title">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ __('Order Status') }}
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label" for="status">{{ __('Order Status') }} <span class="req">*</span></label>
+                    <select name="status" id="status" class="form-select @error('status') err @enderror" required>
+                        @foreach($orderStatuses as $status)
+                            <option value="{{ $status }}" {{ old('status', $order->status) === $status ? 'selected' : '' }}>
+                                {{ __(ucwords(str_replace('_', ' ', $status))) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('status') <span class="form-error">{{ $message }}</span> @enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="payment_status">{{ __('Payment Status') }} <span class="req">*</span></label>
+                    <select name="payment_status" id="payment_status" class="form-select @error('payment_status') err @enderror" required>
+                        @foreach($paymentStatuses as $paymentStatus)
+                            <option value="{{ $paymentStatus }}" {{ old('payment_status', $order->payment_status) === $paymentStatus ? 'selected' : '' }}>
+                                {{ __(ucwords(str_replace('_', ' ', $paymentStatus))) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('payment_status') <span class="form-error">{{ $message }}</span> @enderror
+                </div>
+            </div>
+
+            <div class="form-group" id="rejectionReasonGroup" style="margin-top:16px;display:none;">
+                <label class="form-label" for="rejection_reason_id">{{ __('Rejection Reason') }} <span class="req">*</span></label>
+                <select name="rejection_reason_id" id="rejection_reason_id" class="form-select @error('rejection_reason_id') err @enderror">
+                    <option value="">{{ __('Select Rejection Reason') }}</option>
+                    @foreach($rejectionReasons as $reason)
+                        <option value="{{ $reason->id }}" {{ old('rejection_reason_id', $order->rejection_reason_id) == $reason->id ? 'selected' : '' }}>
+                            {{ $reason->reason }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('rejection_reason_id') <span class="form-error">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="form-group" id="cancellationReasonGroup" style="margin-top:16px;display:none;">
+                <label class="form-label" for="cancellation_reason">{{ __('Cancellation Reason') }}</label>
+                <input type="text" name="cancellation_reason" id="cancellation_reason" class="form-input @error('cancellation_reason') err @enderror"
+                    value="{{ old('cancellation_reason', $order->cancellation_reason) }}">
+                @error('cancellation_reason') <span class="form-error">{{ $message }}</span> @enderror
+            </div>
+
+            <p style="font-size:.78rem;color:var(--text-sub);margin-top:14px;">
+                {{ __('Changing the order status is recorded in the tracking log and applies the same effects as a normal status change (financial entries, notifications).') }}
+            </p>
+        </div>
+
         <div class="form-actions">
             <a href="{{ route('admin.orders.show', $order) }}" class="btn-secondary">{{ __('Cancel') }}</a>
             <button type="submit" class="btn-primary" id="submitBtn">{{ __('Save Changes') }}</button>
@@ -417,6 +473,16 @@
         }
     });
     if (deliveryOnCustomerCheck.checked) deliveryOnCustomerCheck.dispatchEvent(new Event('change'));
+
+    // ── Status-dependent fields ───────────────────────────────────────
+    const statusSelect = document.getElementById('status');
+
+    statusSelect.addEventListener('change', function () {
+        document.getElementById('rejectionReasonGroup').style.display = this.value === 'rejected' ? 'flex' : 'none';
+        document.getElementById('rejection_reason_id').required = this.value === 'rejected';
+        document.getElementById('cancellationReasonGroup').style.display = this.value === 'cancelled' ? 'flex' : 'none';
+    });
+    statusSelect.dispatchEvent(new Event('change'));
 
     document.getElementById('orderForm').addEventListener('submit', () => {
         document.getElementById('submitBtn').disabled = true;

@@ -213,20 +213,8 @@ class OrderService
                 rescue(fn () => app(SupportNotificationService::class)->notifyClientOrderStatusChanged($order, $newStatus, $actor->id));
             }
 
-            if ($newStatus === 'picked_up') {
-                $receiver = $order->receiver;
-                SendWhatsappMessageJob::dispatch(
-                    'assign_order',
-                    $receiver?->receiver_phone ?? '',
-                    [
-                        'cutomer_name' => $receiver?->receiver_name ?? '',
-                        'order_number' => $order->order_number ?? '',
-                    ],
-                    $order->id,
-                    [$order->order_number ?? ''],
-                    'ar',
-                )->onQueue(config('whatsapp.queue', 'default'));
-            }
+            // The picked-up WhatsApp message is sent in a daily 8 AM batch
+            // by the whatsapp:send-pickup-messages command.
 
             if ($newStatus === 'delivered') {
                 $receiver = $order->receiver;

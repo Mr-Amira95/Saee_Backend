@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DriverProfile;
 use App\Models\Order;
+use App\Models\OrderTrackingLog;
 use App\Models\ClientProfile;
 use App\Models\City;
 use App\Models\User;
@@ -31,6 +32,10 @@ class OrderController extends Controller
     protected const STATUS_GROUPS = [
         'rejected_returned_cancelled' => ['rejected', 'returned', 'cancelled'],
     ];
+
+    protected const ORDER_STATUSES = ['pending', 'assigned', 'picked_up', 'delivered', 'rejected', 'returned', 'cancelled'];
+
+    protected const PAYMENT_STATUSES = ['pending', 'with_driver', 'with_company', 'paid', 'no_payment'];
 
     protected $orderService;
 
@@ -199,8 +204,11 @@ class OrderController extends Controller
             ->orderBy('name')
             ->get();
         $clients = ClientProfile::where('status', 'active')->orderBy('company_name')->get();
+        $rejectionReasons = RejectionReason::where('is_active', true)->orderBy('reason')->get();
+        $orderStatuses = self::ORDER_STATUSES;
+        $paymentStatuses = self::PAYMENT_STATUSES;
 
-        return view('admin.orders.edit', compact('order', 'cities', 'clients'));
+        return view('admin.orders.edit', compact('order', 'cities', 'clients', 'rejectionReasons', 'orderStatuses', 'paymentStatuses'));
     }
 
     public function update(Request $request, Order $order)
@@ -223,6 +231,10 @@ class OrderController extends Controller
                 'address_text'             => 'required|string',
                 'notes'                    => 'nullable|string',
                 'delivery_shift'           => 'nullable|string|in:doesnt_matter,before_12pm,after_12pm',
+                'status'                   => 'required|in:' . implode(',', self::ORDER_STATUSES),
+                'payment_status'           => 'required|in:' . implode(',', self::PAYMENT_STATUSES),
+                'rejection_reason_id'      => 'nullable|required_if:status,rejected|exists:rejection_reasons,id',
+                'cancellation_reason'      => 'nullable|string|max:255',
             ]);
 
             $deliveryOnCustomer = $request->boolean('delivery_on_customer');
@@ -255,6 +267,8 @@ class OrderController extends Controller
                 'area_id'        => (int) $validated['area_id'],
                 'address_text'   => $validated['address_text'],
             ]);
+
+            $this->applyManualStatuses($order, $validated, Auth::user());
 
             return redirect()->route('admin.orders.show', $order)
                 ->with('success', __('Order details updated successfully.'));
@@ -385,6 +399,45 @@ class OrderController extends Controller
             'success' => true,
             'price'   => $price,
         ]);
+    }
+
+    /**
+     * Apply the order / payment statuses set manually from the edit page.
+     *
+     * Order status changes go through OrderService so tracking logs, ledger
+     * entries and notifications stay consistent. The payment status is only
+     * overridden when the admin actually changed it, so it doesn't clobber
+     * the value derived from the new order status (e.g. on delivery).
+     */
+    private function applyManualStatuses(Order $order, array $validated, User $actor): void
+    {
+        $originalPaymentStatus = $order->payment_status;
+
+        if ($validated['status'] !== $order->status) {
+            $extra = match ($validated['status']) {
+                'rejected'  => ['rejection_reason_id' => $validated['rejection_reason_id']],
+                'cancelled' => array_filter(['cancellation_reason' => $validated['cancellation_reason'] ?? null]),
+                default     => [],
+            };
+
+            $this->orderService->updateStatus($order->refresh(), $validated['status'], $extra, $actor);
+        } elseif ($order->status === 'rejected' && (int) $validated['rejection_reason_id'] !== $order->rejection_reason_id) {
+            $order->update(['rejection_reason_id' => $validated['rejection_reason_id']]);
+        } elseif ($order->status === 'cancelled' && ($validated['cancellation_reason'] ?? null) !== $order->cancellation_reason) {
+            $order->update(['cancellation_reason' => $validated['cancellation_reason'] ?? null]);
+        }
+
+        if ($validated['payment_status'] !== $originalPaymentStatus) {
+            $order->update(['payment_status' => $validated['payment_status']]);
+
+            OrderTrackingLog::create([
+                'order_id'    => $order->id,
+                'user_id'     => $actor->id,
+                'from_status' => $order->status,
+                'to_status'   => $order->status,
+                'description' => "Payment status manually changed from {$originalPaymentStatus} to {$validated['payment_status']}.",
+            ]);
+        }
     }
 
     private function getFilteredQuery(Request $request, $withRelations = true, $withStatus = true)

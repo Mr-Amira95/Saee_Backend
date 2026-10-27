@@ -119,6 +119,7 @@
   "Type": "النوع",
   "Status": "الحالة",
   "Date": "التاريخ",
+  "Created At": "تاريخ الإنشاء",
   "Delivered": "تم التوصيل",
   "Rejected": "مرفوض",
   "Returned": "مُعاد",
@@ -2393,5 +2394,13 @@
   "Show all orders": "عرض جميع الطلبات",
   "View orders": "عرض الطلبات",
   "Orders: :count": "الطلبات: :count",
-  "Unavailable": "غير متاح"
+  "Unavailable": "غير متاح",
+  "Order Status": "حالة الطلب",
+  "Payment Status": "حالة الدفع",
+  "With Driver": "مع السائق",
+  "With Company": "مع الشركة",
+  "No Payment": "لا يوجد دفع",
+  "Select Rejection Reason": "اختر سبب الرفض",
+  "Cancellation Reason": "سبب الإلغاء",
+  "Changing the order status is recorded in the tracking log and applies the same effects as a normal status change (financial entries, notifications).": "يتم تسجيل تغيير حالة الطلب في سجل التتبع ويطبّق نفس آثار تغيير الحالة العادي (القيود المالية والإشعارات)."
 }

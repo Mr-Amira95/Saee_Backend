@@ -51,6 +51,7 @@ class Order extends Model
             'delivery_longitude'  => 'float',
             'delivered_at'        => 'datetime',
             'returned_at'         => 'datetime',
+            'pickup_whatsapp_sent_at' => 'datetime',
             'deleted_at'          => 'datetime',
             'delivery_shift'      => \App\Enums\DeliveryShift::class,
         ];

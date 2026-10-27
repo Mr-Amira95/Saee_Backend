@@ -251,6 +251,7 @@
                         <th>{{ __('Client') }}</th>
                         <th>{{ __('Driver') }}</th>
                         <th>{{ __('Status') }}</th>
+                        <th>{{ __('Created At') }}</th>
                         <th style="width: 100px; text-align: center;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -308,6 +309,10 @@
                                 </span>
                             </td>
                             <td>
+                                <div class="cell-main">{{ $order->created_at->format('d M Y') }}</div>
+                                <div class="cell-sub">{{ $order->created_at->format('h:i A') }}</div>
+                            </td>
+                            <td>
                                 <div class="act-btns" style="justify-content: center;">
                                     <a href="{{ route('admin.orders.show', $order) }}" class="act-btn act-view" title="{{ __('View Details') }}">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -329,7 +334,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                            <td colspan="8" style="text-align: center; color: var(--text-dim); padding: 30px;">
                                 {{ __('No orders found matching the filter criteria.') }}
                             </td>
                         </tr>

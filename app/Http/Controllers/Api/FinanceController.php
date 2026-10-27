@@ -100,24 +100,57 @@ class FinanceController extends Controller
         ];
     }
 
+    /**
+     * Collected / settled / pending totals, each with the orders that make up the figure.
+     * Every collection and settlement ledger entry is tied to an order, so totals are built per order.
+     */
     private function buildSummary(int $driverId, string $from, string $to): array
     {
-        $totalCollected = FinancialLedgerEntry::where('driver_id', $driverId)
-            ->whereIn('type', ['cod_collection', 'delivery_collection'])
+        $rows = FinancialLedgerEntry::with('order.receiver')
+            ->where('driver_id', $driverId)
+            ->whereIn('type', ['cod_collection', 'delivery_collection', 'driver_settlement'])
+            ->whereNotNull('order_id')
             ->whereDate('created_at', '>=', $from)
             ->whereDate('created_at', '<=', $to)
-            ->sum('amount');
+            ->get()
+            ->groupBy('order_id')
+            ->map(function ($entries) {
+                $order     = $entries->first()->order;
+                $collected = (float) $entries->where('type', '!=', 'driver_settlement')->sum('amount');
+                $settled   = (float) $entries->where('type', 'driver_settlement')->sum('amount');
 
-        $totalSettled = FinancialLedgerEntry::where('driver_id', $driverId)
-            ->where('type', 'driver_settlement')
-            ->whereDate('created_at', '>=', $from)
-            ->whereDate('created_at', '<=', $to)
-            ->sum('amount');
+                return [
+                    'id'             => $order?->id,
+                    'order_number'   => $order?->order_number,
+                    'status'         => $order?->status,
+                    'payment_status' => $order?->payment_status,
+                    'receiver_name'  => $order?->receiver?->receiver_name,
+                    'collected'      => $collected,
+                    'settled'        => $settled,
+                    'pending'        => round(max(0, $collected - $settled), 2),
+                    'last_activity'  => $entries->max('created_at')?->toDateTimeString(),
+                ];
+            })
+            ->sortByDesc('last_activity')
+            ->values();
+
+        $collectedOrders = $rows->filter(fn ($row) => $row['collected'] > 0)->values();
+        $settledOrders   = $rows->filter(fn ($row) => $row['settled'] > 0)->values();
+        $pendingOrders   = $rows->filter(fn ($row) => $row['pending'] > 0)->values();
 
         return [
-            'total_collected' => (float) $totalCollected,
-            'total_settled'   => (float) $totalSettled,
-            'pending_cash'    => (float) max(0, $totalCollected - $totalSettled),
+            'total_collected' => [
+                'total'  => (float) $collectedOrders->sum('collected'),
+                'orders' => $collectedOrders,
+            ],
+            'total_settled'   => [
+                'total'  => (float) $settledOrders->sum('settled'),
+                'orders' => $settledOrders,
+            ],
+            'pending_cash'    => [
+                'total'  => round((float) $pendingOrders->sum('pending'), 2),
+                'orders' => $pendingOrders,
+            ],
         ];
     }
 }

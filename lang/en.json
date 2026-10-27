@@ -96,6 +96,7 @@
   "Type": "Type",
   "Status": "Status",
   "Date": "Date",
+  "Created At": "Created At",
   "Delivered": "Delivered",
   "Rejected": "Rejected",
   "Returned": "Returned",
@@ -2367,5 +2368,13 @@
   "Show all orders": "Show all orders",
   "View orders": "View orders",
   "Orders: :count": "Orders: :count",
-  "Unavailable": "Unavailable"
+  "Unavailable": "Unavailable",
+  "Order Status": "Order Status",
+  "Payment Status": "Payment Status",
+  "With Driver": "With Driver",
+  "With Company": "With Company",
+  "No Payment": "No Payment",
+  "Select Rejection Reason": "Select Rejection Reason",
+  "Cancellation Reason": "Cancellation Reason",
+  "Changing the order status is recorded in the tracking log and applies the same effects as a normal status change (financial entries, notifications).": "Changing the order status is recorded in the tracking log and applies the same effects as a normal status change (financial entries, notifications)."
 }
