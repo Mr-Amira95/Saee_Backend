@@ -2438,5 +2438,10 @@
   "Generate an invoice for :count orders (net :net JD). Ready and already-invoiced orders in these filters are included; paid orders are not.": "Generate an invoice for :count orders (net :net JD). Ready and already-invoiced orders in these filters are included; paid orders are not.",
   "Generate a new invoice for these orders? They will be marked as exported, and any earlier invoice that contains them will be superseded.": "Generate a new invoice for these orders? They will be marked as exported, and any earlier invoice that contains them will be superseded.",
   "Generate Invoice": "Generate Invoice",
-  "Invoice :number generated for :count orders. Download it as PDF or Excel below.": "Invoice :number generated for :count orders. Download it as PDF or Excel below."
+  "Invoice :number generated for :count orders. Download it as PDF or Excel below.": "Invoice :number generated for :count orders. Download it as PDF or Excel below.",
+  "Statements retrieved successfully.": "Statements retrieved successfully.",
+  "Statement retrieved successfully.": "Statement retrieved successfully.",
+  "Statement file generated successfully.": "Statement file generated successfully.",
+  "Unable to generate the statement file.": "Unable to generate the statement file.",
+  "Statement not found.": "Statement not found."
 }

@@ -21,10 +21,8 @@ use App\Http\Controllers\Api\BankDetailController;
 use App\Http\Controllers\Api\ClientUserController;
 use App\Http\Controllers\Api\TrackOrderController;
 use App\Http\Controllers\Api\ReportController;
-use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\WhatsAppWebhookController;
-use App\Http\Controllers\Api\InvoiceController;
-use App\Http\Controllers\Api\BillingController;
+use App\Http\Controllers\Api\ClientStatementController;
 use App\Http\Controllers\Public\LegalController;
 use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ContactInformationController;
@@ -129,9 +127,6 @@ Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () 
 
     Route::match(['put', 'post'], 'profile/personal', [ProfileController::class, 'updatePersonal'])
         ->name('api.profile.personal.update');
-
-    Route::get('wallet', [WalletController::class, 'index'])
-        ->name('api.wallet.index');
 
     Route::post('location', [LocationController::class, 'update'])
         ->name('api.location.update');
@@ -255,14 +250,10 @@ Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () 
     Route::put('users/{employee}',    [ClientUserController::class, 'update'])->name('api.users.update');
     Route::delete('users/{employee}', [ClientUserController::class, 'destroy'])->name('api.users.destroy');
 
-    // Client invoices
-    Route::get('client/invoices', [InvoiceController::class, 'index'])->name('api.client.invoices.index');
-    Route::get('client/invoices/{invoice}', [InvoiceController::class, 'show'])->name('api.client.invoices.show');
-
-    // Client delivery billing invoices
-    Route::get('client/billing', [BillingController::class, 'index'])->name('api.client.billing.index');
-    Route::get('client/billing/{invoice}', [BillingController::class, 'show'])->name('api.client.billing.show');
-    Route::post('client/billing/{invoice}/pay', [BillingController::class, 'pay'])->name('api.client.billing.pay');
+    // Client statements (summary + statements + order payment status)
+    Route::get('client/statements', [ClientStatementController::class, 'index'])->name('api.client.statements.index');
+    Route::get('client/statements/{statement}', [ClientStatementController::class, 'show'])->whereNumber('statement')->name('api.client.statements.show');
+    Route::get('client/statements/{statement}/download', [ClientStatementController::class, 'download'])->whereNumber('statement')->name('api.client.statements.download');
 
     Route::get('support', [SupportController::class, 'index'])
         ->name('api.support.index');

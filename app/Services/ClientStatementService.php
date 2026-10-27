@@ -8,9 +8,12 @@ use App\Models\FinancialLedgerEntry;
 use App\Models\Order;
 use App\Models\OrderTrackingLog;
 use App\Models\User;
+use Barryvdh\DomPDF\PDF as DomPdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -28,6 +31,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ClientStatementService
 {
     public const PAYMENT_STATUSES = ['ready', 'exported', 'paid'];
+
+    /** Public-disk folder for statement files generated for the mobile API (see waybills:prune). */
+    public const STORAGE_DIR = 'statements';
 
     public function __construct(private ArabicPdfRenderer $pdf)
     {
@@ -310,62 +316,105 @@ class ClientStatementService
 
         return response()->streamDownload(function () use ($statement, $orders) {
             $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM so Excel renders Arabic correctly
-
-            fputcsv($file, ['Statement', $statement->statement_number]);
-            fputcsv($file, ['Client', $statement->clientProfile?->company_name]);
-            fputcsv($file, ['Period', $this->periodLabel($statement)]);
-            fputcsv($file, ['Exported At', $statement->created_at->format('Y-m-d H:i')]);
-            fputcsv($file, ['Status', ucfirst($statement->status)]);
-            fputcsv($file, []);
-
-            fputcsv($file, [
-                'Order #', 'Date', 'Order Status', 'Receiver Name', 'Receiver Phone', 'City', 'Area',
-                'Payment Type', 'COD (JD)', 'Customer Delivery (JD)', 'Saee Delivery Fee (JD)', 'Net (JD)',
-            ]);
-
-            foreach ($orders as $order) {
-                fputcsv($file, [
-                    $order->order_number,
-                    $this->completedAt($order)?->toDateString(),
-                    ucfirst($order->status),
-                    $order->receiver?->receiver_name,
-                    $order->receiver?->receiver_phone,
-                    $order->receiver?->city?->name,
-                    $order->receiver?->area?->name,
-                    strtoupper($order->payment?->payment_type ?? ''),
-                    number_format($order->pivot->cod_amount, 2, '.', ''),
-                    number_format($order->pivot->customer_delivery_amount, 2, '.', ''),
-                    number_format($order->pivot->client_delivery_amount, 2, '.', ''),
-                    number_format($order->pivot->net_amount, 2, '.', ''),
-                ]);
-            }
-
-            fputcsv($file, []);
-            fputcsv($file, [
-                'Total', '', '', '', '', '', '', $statement->orders_count . ' orders',
-                number_format($statement->total_cod, 2, '.', ''),
-                number_format($statement->total_customer_delivery, 2, '.', ''),
-                number_format($statement->total_client_delivery, 2, '.', ''),
-                number_format($statement->net_amount, 2, '.', ''),
-            ]);
-
+            $this->writeCsv($file, $statement, $orders);
             fclose($file);
         }, $statement->statement_number . '.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function downloadPdf(ClientStatement $statement): Response
     {
+        return $this->pdfDocument($statement)->download($statement->statement_number . '.pdf');
+    }
+
+    /**
+     * Generate the statement file and save it on the public disk (mobile API
+     * returns the link). Old files are removed by the waybills:prune command.
+     *
+     * @param  'pdf'|'excel'  $format
+     * @return array{url: string, file_name: string, format: string}
+     */
+    public function store(ClientStatement $statement, string $format): array
+    {
+        if ($format === 'pdf') {
+            $fileName = $statement->statement_number . '.pdf';
+            $content  = $this->pdfDocument($statement)->output();
+        } else {
+            [$statement, $orders] = $this->loadForDownload($statement);
+            $fileName = $statement->statement_number . '.csv';
+            $file     = fopen('php://temp', 'w+');
+            $this->writeCsv($file, $statement, $orders);
+            rewind($file);
+            $content  = stream_get_contents($file);
+            fclose($file);
+        }
+
+        // Random folder name keeps stored links unguessable
+        $path = self::STORAGE_DIR . '/' . now()->format('Y/m/d') . '/' . Str::random(40) . '/' . $fileName;
+        Storage::disk('public')->put($path, $content);
+
+        return [
+            'url'       => Storage::disk('public')->url($path),
+            'file_name' => $fileName,
+            'format'    => $format,
+        ];
+    }
+
+    private function pdfDocument(ClientStatement $statement): DomPdf
+    {
         [$statement, $orders] = $this->loadForDownload($statement);
 
-        return $this->pdf
-            ->render('shared.statements.pdf', [
-                'statement' => $statement,
-                'orders'    => $orders,
-                'period'    => $this->periodLabel($statement),
-                'service'   => $this,
-            ], 'landscape')
-            ->download($statement->statement_number . '.pdf');
+        return $this->pdf->render('shared.statements.pdf', [
+            'statement' => $statement,
+            'orders'    => $orders,
+            'period'    => $this->periodLabel($statement),
+            'service'   => $this,
+        ], 'landscape');
+    }
+
+    /**
+     * @param  resource  $file
+     */
+    private function writeCsv($file, ClientStatement $statement, $orders): void
+    {
+        fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM so Excel renders Arabic correctly
+
+        fputcsv($file, ['Statement', $statement->statement_number]);
+        fputcsv($file, ['Client', $statement->clientProfile?->company_name]);
+        fputcsv($file, ['Period', $this->periodLabel($statement)]);
+        fputcsv($file, ['Exported At', $statement->created_at->format('Y-m-d H:i')]);
+        fputcsv($file, ['Status', ucfirst($statement->status)]);
+        fputcsv($file, []);
+
+        fputcsv($file, [
+            'Order #', 'Date', 'Order Status', 'Receiver Name', 'Receiver Phone', 'City', 'Area',
+            'Payment Type', 'COD (JD)', 'Customer Delivery (JD)', 'Saee Delivery Fee (JD)', 'Net (JD)',
+        ]);
+
+        foreach ($orders as $order) {
+            fputcsv($file, [
+                $order->order_number,
+                $this->completedAt($order)?->toDateString(),
+                ucfirst($order->status),
+                $order->receiver?->receiver_name,
+                $order->receiver?->receiver_phone,
+                $order->receiver?->city?->name,
+                $order->receiver?->area?->name,
+                strtoupper($order->payment?->payment_type ?? ''),
+                number_format($order->pivot->cod_amount, 2, '.', ''),
+                number_format($order->pivot->customer_delivery_amount, 2, '.', ''),
+                number_format($order->pivot->client_delivery_amount, 2, '.', ''),
+                number_format($order->pivot->net_amount, 2, '.', ''),
+            ]);
+        }
+
+        fputcsv($file, []);
+        fputcsv($file, [
+            'Total', '', '', '', '', '', '', $statement->orders_count . ' orders',
+            number_format($statement->total_cod, 2, '.', ''),
+            number_format($statement->total_customer_delivery, 2, '.', ''),
+            number_format($statement->total_client_delivery, 2, '.', ''),
+            number_format($statement->net_amount, 2, '.', ''),
+        ]);
     }
 
     public function completedAt(Order $order): ?\Illuminate\Support\Carbon

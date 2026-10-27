@@ -2464,5 +2464,10 @@
   "Generate an invoice for :count orders (net :net JD). Ready and already-invoiced orders in these filters are included; paid orders are not.": "إنشاء فاتورة لـ :count طلب (الصافي :net دينار). تشمل الطلبات الجاهزة والمفوترة سابقاً ضمن هذه الفلاتر، ولا تشمل الطلبات المدفوعة.",
   "Generate a new invoice for these orders? They will be marked as exported, and any earlier invoice that contains them will be superseded.": "إنشاء فاتورة جديدة لهذه الطلبات؟ سيتم تحويلها إلى حالة \"تم التصدير\"، وسيتم استبدال أي فاتورة سابقة تحتوي عليها.",
   "Generate Invoice": "إنشاء فاتورة",
-  "Invoice :number generated for :count orders. Download it as PDF or Excel below.": "تم إنشاء الفاتورة :number لـ :count طلب. يمكنك تحميلها بصيغة PDF أو Excel أدناه."
+  "Invoice :number generated for :count orders. Download it as PDF or Excel below.": "تم إنشاء الفاتورة :number لـ :count طلب. يمكنك تحميلها بصيغة PDF أو Excel أدناه.",
+  "Statements retrieved successfully.": "تم جلب الكشوفات بنجاح.",
+  "Statement retrieved successfully.": "تم جلب الكشف بنجاح.",
+  "Statement file generated successfully.": "تم إنشاء ملف الكشف بنجاح.",
+  "Unable to generate the statement file.": "تعذر إنشاء ملف الكشف.",
+  "Statement not found.": "الكشف غير موجود."
 }
