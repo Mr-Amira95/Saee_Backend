@@ -36,11 +36,11 @@ class WaybillExportService
     public const STORAGE_DIR = 'waybills';
 
     /** Thermal label size (width x height, mm) for the "Print Label" button. */
-    public const LABEL_WIDTH_MM = 40;
+    public const LABEL_WIDTH_MM = 30;
     public const LABEL_HEIGHT_MM = 60;
 
     /** Arabic wrap width for the narrow label. */
-    private const LABEL_ARABIC_LINE_CHARS = 40;
+    private const LABEL_ARABIC_LINE_CHARS = 30;
 
     public function __construct(private ArabicPdfRenderer $renderer)
     {

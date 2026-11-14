@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <title>{{ __('Delivery Waybill') }}</title>
     {{--
-        Thermal label (see WaybillExportService::renderLabel) — same content as
-        pdf.blade.php, condensed for a 40 x 60 mm page. Pure black only: no
+        Thermal label (see WaybillExportService::renderLabel) — the content of
+        pdf.blade.php condensed for a 30 x 60 mm page; the disclaimer and
+        signature lines stay on the A4 waybill only. Pure black only: no
         colours, greys or background fills, which dither badly on thermal heads.
     --}}
     <style>
@@ -76,6 +77,7 @@
             padding-top: 0.2mm;
             font-weight: bold;
             font-size: 5pt;
+            white-space: normal;
         }
 
         .sec {
@@ -88,26 +90,6 @@
         }
         .lbl {
             font-weight: bold;
-        }
-
-        .sig td {
-            width: 50%;
-            text-align: center;
-            padding: 0 1mm;
-        }
-        .sig-line {
-            border-bottom: 0.6pt solid #000;
-            height: 1.8mm;
-        }
-        .sig-label {
-            font-size: 3.2pt;
-        }
-
-        .disclaimer {
-            margin-top: 0.4mm;
-            font-size: 2.8pt;
-            line-height: 1;
-            text-align: justify;
         }
     </style>
 </head>
@@ -152,7 +134,7 @@
                             <td class="val">{{ number_format($deliveryAmount, 2) }}</td>
                         </tr>
                         <tr class="total">
-                            <td colspan="2">{{ __('Total Cash to Collect:') }}<br>{{ number_format($toCollect, 2) }} JOD</td>
+                            <td colspan="2"><span style="font-size: 4pt;">{{ __('Total Cash to Collect:') }}</span><br>{{ number_format($toCollect, 2) }} JOD</td>
                         </tr>
                     </table>
                 </td>
@@ -175,23 +157,6 @@
             <div><span class="lbl">{{ __('Description:') }}</span> {{ Str::limit($order->order_description ?? __('No description'), 60) }}</div>
             <div><span class="lbl">{{ __('Shift:') }}</span> {{ match ($order->delivery_shift) { 'before_12pm' => __('Before 12 PM (Morning)'), 'after_12pm' => __('After 12 PM (Evening)'), default => __("Doesn't Matter") } }}</div>
             <div><span class="lbl">{{ __('Notes:') }}</span> {{ Str::limit($order->notes ?? __('None'), 60) }}</div>
-        </div>
-
-        <table class="sig" style="margin-top: 0.4mm;">
-            <tr>
-                <td>
-                    <div class="sig-line"></div>
-                    <div class="sig-label">{{ __('Courier Signature & Date') }}</div>
-                </td>
-                <td>
-                    <div class="sig-line"></div>
-                    <div class="sig-label">{{ __('Receiver Signature & Date') }}</div>
-                </td>
-            </tr>
-        </table>
-
-        <div class="disclaimer">
-            <strong>{{ __('Disclaimer:') }}</strong> {{ __("The sender agrees that Sa'ee Logistics Services' responsibility is limited to transportation and delivery services, and the company bears no responsibility for damage, shortage, or loss resulting from improper packaging, the nature of the shipment's contents, incorrect information provided by the sender, force majeure, or any cause beyond the company's control.") }}
         </div>
     </div>
 @endforeach
