@@ -5,7 +5,7 @@
     <title>{{ __('Delivery Waybill') }}</title>
     {{--
         Thermal label (see WaybillExportService::renderLabel) — the content of
-        pdf.blade.php condensed for a 30 x 60 mm page; the disclaimer and
+        pdf.blade.php condensed for a 40 x 60 mm page (5 mm margins); the disclaimer and
         signature lines stay on the A4 waybill only. Pure black only: no
         colours, greys or background fills, which dither badly on thermal heads.
     --}}
@@ -14,14 +14,14 @@
             box-sizing: border-box;
         }
         @page {
-            margin: 1mm;
+            margin: 5mm;
         }
         body {
             color: #000;
             font-family: DejaVu Sans, sans-serif;
             margin: 0;
             padding: 0;
-            font-size: 4pt;
+            font-size: 3.5pt;
             line-height: 1.1;
         }
         .label-page.with-break {
@@ -49,11 +49,11 @@
             text-align: right;
         }
         .order-no {
-            font-size: 6pt;
+            font-size: 5.3pt;
             font-weight: bold;
         }
         .order-date {
-            font-size: 4pt;
+            font-size: 3.5pt;
         }
 
         .qr-row td {
@@ -76,7 +76,7 @@
             border-top: 0.6pt solid #000;
             padding-top: 0.2mm;
             font-weight: bold;
-            font-size: 5pt;
+            font-size: 4.4pt;
             white-space: normal;
         }
 
@@ -134,7 +134,7 @@
                             <td class="val">{{ number_format($deliveryAmount, 2) }}</td>
                         </tr>
                         <tr class="total">
-                            <td colspan="2"><span style="font-size: 4pt;">{{ __('Total Cash to Collect:') }}</span><br>{{ number_format($toCollect, 2) }} JOD</td>
+                            <td colspan="2"><span style="font-size: 3.5pt;">{{ __('Total Cash to Collect:') }}</span><br>{{ number_format($toCollect, 2) }} JOD</td>
                         </tr>
                     </table>
                 </td>
@@ -148,7 +148,7 @@
 
         <div class="sec">
             <div class="sec-title">{{ __('Receiver (Customer)') }}:</div>
-            <div style="font-weight: bold; font-size: 5pt;">{{ $order->receiver?->receiver_name }} · {{ $order->receiver?->receiver_phone }}</div>
+            <div style="font-weight: bold; font-size: 4.4pt;">{{ $order->receiver?->receiver_name }} · {{ $order->receiver?->receiver_phone }}</div>
             <div><span class="lbl">{{ __('Destination:') }}</span> {{ $order->receiver?->city?->name ?? 'N/A' }} - {{ $order->receiver?->area?->name ?? 'N/A' }}</div>
             <div><span class="lbl">{{ __('Address:') }}</span> {{ Str::limit($order->receiver?->address_text, 75) }}</div>
         </div>
