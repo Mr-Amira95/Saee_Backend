@@ -40,7 +40,7 @@ class WaybillExportService
     public const LABEL_HEIGHT_MM = 60;
 
     /** Arabic wrap width for the narrow label. */
-    private const LABEL_ARABIC_LINE_CHARS = 30;
+    private const LABEL_ARABIC_LINE_CHARS = 40;
 
     public function __construct(private ArabicPdfRenderer $renderer)
     {

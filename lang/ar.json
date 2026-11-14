@@ -1908,6 +1908,8 @@
   "Cancel Order": "إلغاء الطلب",
   "Print Waybill": "طباعة بوليصة الشحن",
   "Print Label": "طباعة الملصق",
+  "Sender Details": "تفاصيل المرسل",
+  "Customer Details": "تفاصيل العميل",
   "Reassign Driver": "إعادة تعيين السائق",
   "Client:": "العميل:",
   "Receiver Name:": "اسم المستلم:",
