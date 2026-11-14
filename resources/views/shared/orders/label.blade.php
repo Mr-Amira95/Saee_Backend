@@ -5,7 +5,8 @@
     <title>{{ __('Delivery Waybill') }}</title>
     {{--
         Thermal label (see WaybillExportService::renderLabel) — the content of
-        pdf.blade.php condensed for a 40 x 60 mm page (5 mm side, 2 mm top/bottom margins); the
+        pdf.blade.php condensed for a 40 x 60 mm page (5 mm side, 1.5 mm top
+        margins; the footer note is pinned 5 mm above the bottom edge). The
         signature lines stay on the A4 waybill only. Pure black and white only:
         no colours or greys, which dither badly on thermal heads.
     --}}
@@ -13,8 +14,9 @@
         * {
             box-sizing: border-box;
         }
+        /* Bottom margin = 5 mm gap + 8.5 mm reserved for the footer note */
         @page {
-            margin: 2mm 5mm;
+            margin: 1.5mm 5mm 13.5mm 5mm;
         }
         body {
             color: #000;
@@ -42,16 +44,16 @@
         }
         .hd img {
             display: block;
-            width: 20mm;
+            width: 18mm;
             margin: 0 auto 0.3mm auto;
         }
         .order-no {
-            margin-top: 1mm;
+            margin-top: 0.7mm;
             font-size: 5.3pt;
             font-weight: bold;
         }
         .order-date {
-            margin-bottom: 1mm;
+            margin-bottom: 0.7mm;
             font-size: 3.5pt;
         }
 
@@ -78,7 +80,7 @@
         }
 
         .sec {
-            margin-top: 1.2mm;
+            margin-top: 1mm;
         }
         .sec-title {
             background: #000;
@@ -93,8 +95,18 @@
             font-weight: bold;
         }
 
+        /* Fixed in the bottom margin so it repeats on every label; text sits on
+           the bottom of the box, 5 mm above the edge, however many lines it wraps to */
         .note {
-            margin-top: 0.8mm;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: -8.5mm;
+            height: 8.5mm;
+        }
+        .note td {
+            height: 8.5mm;
+            vertical-align: bottom;
             font-size: 2.2pt;
             line-height: 1;
             text-align: center;
@@ -102,6 +114,10 @@
     </style>
 </head>
 <body>
+
+<div class="note">
+    <table><tr><td>{{ __("The sender agrees that Sa'ee Logistics Services' responsibility is limited to transportation and delivery services, and the company bears no responsibility for damage, shortage, or loss resulting from improper packaging, the nature of the shipment's contents, incorrect information provided by the sender, force majeure, or any cause beyond the company's control.") }}</td></tr></table>
+</div>
 
 @foreach($orders as $order)
     @php
@@ -172,10 +188,6 @@
                 @endif
             </div>
         @endif
-
-        <div class="note">
-            {{ __("The sender agrees that Sa'ee Logistics Services' responsibility is limited to transportation and delivery services, and the company bears no responsibility for damage, shortage, or loss resulting from improper packaging, the nature of the shipment's contents, incorrect information provided by the sender, force majeure, or any cause beyond the company's control.") }}
-        </div>
     </div>
 @endforeach
 
