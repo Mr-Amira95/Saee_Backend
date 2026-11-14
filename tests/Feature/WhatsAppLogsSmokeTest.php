@@ -92,7 +92,7 @@ class WhatsAppLogsSmokeTest extends TestCase
         $indexResponse = $this->get(route('admin.whatsapp-logs.index'));
         $indexResponse->assertOk();
         $indexResponse->assertSee('Jane Repeat-Customer');
-        $indexResponse->assertSee('+1 more order(s)', false);
+        $indexResponse->assertSee('wa-item', false);
 
         $showResponse = $this->get(route('admin.whatsapp-logs.show', $normalized));
         $showResponse->assertOk();

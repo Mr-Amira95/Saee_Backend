@@ -35,6 +35,18 @@ return [
     'queue' => env('WHATSAPP_QUEUE', 'default'),
 
     /*
+     * Private disk where sent and received media files are stored.
+     */
+    'media_disk' => env('WHATSAPP_MEDIA_DISK', 'local'),
+
+    /*
+     * ffmpeg binary, used to turn browser voice recordings into OGG/Opus so they
+     * arrive as WhatsApp voice messages. Optional — without it, recordings are
+     * sent in whatever WhatsApp-supported format the browser produced.
+     */
+    'ffmpeg' => env('WHATSAPP_FFMPEG_PATH', 'ffmpeg'),
+
+    /*
      * Message bodies keyed by event. {{placeholder}} tokens are replaced with
      * the variables passed to WhatsAppService::sendTemplate().
      */
@@ -45,6 +57,25 @@ return [
         'order_rejected' => "Hello {{customer_name}}, your order #{{order_number}} could not be delivered. Reason: {{rejection_reason}}. Please review and update your details here: {{location_link}}",
         'user_invitation' => "مرحباً {{user_name}} 👋\n\nتم إنشاء حسابك بنجاح في ساعي للخدمات اللوجستية. يرجى تعيين كلمة المرور الخاصة بك من خلال الزر أدناه\n\nهذا الرابط صالح لمدة 24 ساعة",
         'otp' => "{{code}} هو كود التحقق الخاص بك. للحفاظ على أمانك، لا تشارك هذا الكود مع أي شخص.",
+        'support_follow_up' => "مرحباً {{1}} 👋\n\nمعك فريق خدمة العملاء في ساعي للخدمات اللوجستية، ونود التواصل معك بخصوص طلبك.\n\nيرجى الرد على هذه الرسالة لمتابعة المحادثة.",
+    ],
+
+    /*
+     * Templates admins can send by hand from the WhatsApp inbox — to start a new
+     * chat, or to reopen one after the 24-hour reply window has closed. Each one
+     * must be approved in WhatsApp Manager under the same name and language, and
+     * its body (positional {{1}}, {{2}}… placeholders) listed in 'templates' above.
+     * 'fields' label the placeholders in order; 'prefill' => 'name' fills one
+     * with the contact's name.
+     */
+    'inbox_templates' => [
+        'support_follow_up' => [
+            'label'    => 'Support follow-up',
+            'language' => 'ar',
+            'fields'   => [
+                ['label' => 'Customer name', 'prefill' => 'name'],
+            ],
+        ],
     ],
 
     /*

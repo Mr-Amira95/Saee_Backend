@@ -6,8 +6,8 @@
  * the content area is morphed in place (idiomorph) — no reload, no scroll jump.
  *
  * Page state is protected:
- *  - nothing happens while a modal/dropdown is open, the user is typing or selecting text,
- *    or the tab is hidden (the refresh waits until it's safe);
+ *  - nothing happens while a modal/dropdown is open, the user is typing (outside
+ *    [data-live-allow-typing]) or selecting text, or the tab is hidden (the refresh waits until it's safe);
  *  - form fields the user touched are never overwritten;
  *  - attribute / class / style changes made by page JS are kept unless the server changed
  *    the same thing (3-way merge against the originally rendered HTML);
@@ -186,7 +186,9 @@
 
     function userBusy() {
         var a = document.activeElement;
-        if (a && a !== document.body && (a.matches('textarea, select, [contenteditable=""], [contenteditable="true"]') ||
+        // Fields marked [data-live-allow-typing] (e.g. a chat composer) don't hold refreshes back —
+        // their value is still protected by the touched-field rule.
+        if (a && a !== document.body && !a.closest('[data-live-allow-typing]') && (a.matches('textarea, select, [contenteditable=""], [contenteditable="true"]') ||
             (a.matches('input') && !/^(checkbox|radio|button|submit|reset)$/i.test(a.type)))) {
             return true;
         }

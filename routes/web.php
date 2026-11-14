@@ -221,7 +221,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // WhatsApp Messages
         Route::get('whatsapp-logs', [WhatsAppLogController::class, 'index'])->name('whatsapp-logs.index');
+        Route::post('whatsapp-logs/template', [WhatsAppLogController::class, 'sendTemplate'])->name('whatsapp-logs.template');
+        Route::get('whatsapp-logs/media/{log}', [WhatsAppLogController::class, 'media'])->name('whatsapp-logs.media');
         Route::get('whatsapp-logs/{phone}', [WhatsAppLogController::class, 'show'])->name('whatsapp-logs.show');
+        Route::post('whatsapp-logs/{phone}/send', [WhatsAppLogController::class, 'send'])->name('whatsapp-logs.send');
 
         // Support Tickets & Chat Center
         Route::get('support', [SupportController::class, 'index'])->name('support.index');

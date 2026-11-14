@@ -18,6 +18,40 @@ class WhatsappWebhookService
         foreach ($this->extractMessages($payload) as $message) {
             $this->handleMessage($message);
         }
+
+        foreach ($this->extractStatuses($payload) as $status) {
+            $this->handleStatus($status);
+        }
+    }
+
+    /**
+     * Apply a delivery status update (sent → delivered → read, or failed) to the
+     * outbound log it belongs to, matched by Meta's message id.
+     */
+    public function handleStatus(array $status): void
+    {
+        $rank = ['sent' => 1, 'delivered' => 2, 'read' => 3];
+        $new  = $status['status'] ?? null;
+        $log  = empty($status['id']) ? null : WhatsAppLog::where('meta->wamid', $status['id'])->first();
+
+        if (! $log || ! $new) {
+            return;
+        }
+
+        if ($new === 'failed') {
+            $error = $status['errors'][0] ?? [];
+            $log->update([
+                'status' => 'failed',
+                'meta'   => [...($log->meta ?? []), 'error' => $error['error_data']['details'] ?? $error['message'] ?? $error['title'] ?? null],
+            ]);
+
+            return;
+        }
+
+        // Statuses can arrive out of order — never step backwards.
+        if (isset($rank[$new]) && $rank[$new] > ($rank[$log->status] ?? 0)) {
+            $log->update(['status' => $new]);
+        }
     }
 
     /**
@@ -34,6 +68,11 @@ class WhatsappWebhookService
             return;
         }
 
+        // Meta may deliver the same webhook more than once, and the job itself retries.
+        if (! empty($message['id']) && WhatsAppLog::where('meta->wamid', $message['id'])->exists()) {
+            return;
+        }
+
         $order = $this->findOrderByPhone($phone);
 
         if (! $order) {
@@ -47,6 +86,12 @@ class WhatsappWebhookService
         }
 
         [$body, $meta] = $this->describeMessage($type, $message);
+
+        $meta = array_filter([
+            ...($meta ?? []),
+            'profile_name' => $message['_profile_name'] ?? null,
+            'wamid'        => $message['id'] ?? null,
+        ], fn ($value) => $value !== null) ?: null;
 
         WhatsAppLog::create([
             'order_id'     => $order?->id,
@@ -79,8 +124,39 @@ class WhatsappWebhookService
                     ?? trim(($message['location']['latitude'] ?? '') . ', ' . ($message['location']['longitude'] ?? '')),
                 $message['location'] ?? null,
             ],
+            'image', 'video', 'audio', 'document', 'sticker' => [
+                $message[$type]['caption'] ?? '',
+                ['media' => $this->fetchMedia($message[$type] ?? [])],
+            ],
             default => ["[{$type}]", $message[$type] ?? $message],
         };
+    }
+
+    /**
+     * Download an incoming media file right away (Meta's links expire within
+     * minutes). Never throws: on failure the media id is kept so the admin
+     * inbox can retry when the file is opened.
+     */
+    private function fetchMedia(array $media): array
+    {
+        $info = array_filter([
+            'id'       => $media['id'] ?? null,
+            'mime'     => isset($media['mime_type']) ? strtolower(trim(explode(';', $media['mime_type'])[0])) : null,
+            'filename' => $media['filename'] ?? null,
+            'voice'    => ($media['voice'] ?? false) ?: null,
+        ], fn ($value) => $value !== null);
+
+        if (empty($info['id'])) {
+            return $info;
+        }
+
+        try {
+            return [...$info, ...app(WhatsAppMediaService::class)->download($info['id'])];
+        } catch (\Throwable $e) {
+            Log::warning('WhatsApp webhook: media download failed.', ['media_id' => $info['id'], 'error' => $e->getMessage()]);
+
+            return [...$info, 'download_error' => $e->getMessage()];
+        }
     }
 
     /**
@@ -135,9 +211,12 @@ class WhatsappWebhookService
 
     /**
      * Pull the messages array out of either a Meta nested payload or a flat test payload.
+     * Each Meta message gets the sender's WhatsApp profile name (from the sibling
+     * contacts[] list) attached as "_profile_name".
      *
      * Meta format:
      *   entry[].changes[].value.messages[]
+     *   entry[].changes[].value.contacts[].{wa_id, profile.name}
      */
     private function extractMessages(array $payload): array
     {
@@ -145,7 +224,11 @@ class WhatsappWebhookService
             $messages = [];
             foreach ($payload['entry'] as $entry) {
                 foreach ($entry['changes'] ?? [] as $change) {
+                    $profileNames = collect($change['value']['contacts'] ?? [])
+                        ->mapWithKeys(fn ($contact) => [($contact['wa_id'] ?? '') => $contact['profile']['name'] ?? null]);
+
                     foreach ($change['value']['messages'] ?? [] as $msg) {
+                        $msg['_profile_name'] = $profileNames[$msg['from'] ?? ''] ?? null;
                         $messages[] = $msg;
                     }
                 }
@@ -159,6 +242,25 @@ class WhatsappWebhookService
         }
 
         return [];
+    }
+
+    /**
+     * Pull delivery status updates out of a Meta payload:
+     *   entry[].changes[].value.statuses[]
+     */
+    private function extractStatuses(array $payload): array
+    {
+        $statuses = [];
+
+        foreach ($payload['entry'] ?? [] as $entry) {
+            foreach ($entry['changes'] ?? [] as $change) {
+                foreach ($change['value']['statuses'] ?? [] as $status) {
+                    $statuses[] = $status;
+                }
+            }
+        }
+
+        return $statuses;
     }
 
     /**

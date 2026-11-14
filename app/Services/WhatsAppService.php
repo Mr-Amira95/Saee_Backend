@@ -116,6 +116,102 @@ class WhatsAppService
     }
 
     /**
+     * Send a free-form text reply (e.g. typed by an admin in the inbox). Meta only
+     * delivers these within 24 hours of the contact's last message; outside that
+     * window an approved template is required instead.
+     *
+     * @param  array  $meta  Extra data stored on the log (e.g. ['sent_by' => $adminId]).
+     * @return array{success: bool, log: WhatsAppLog, error?: string}
+     */
+    public function sendText(string $phone, string $message, ?int $orderId = null, array $meta = []): array
+    {
+        $apiResult = $this->sendRawMessage($this->normalizePhone($phone), $message);
+
+        $log = WhatsAppLog::create([
+            'order_id'     => $orderId,
+            'phone'        => $phone,
+            'message'      => $message,
+            'status'       => $apiResult['success'] ? 'sent' : 'failed',
+            'direction'    => 'outbound',
+            'message_type' => 'text',
+            'meta'         => array_filter([
+                ...$meta,
+                'wamid' => $apiResult['response']['messages'][0]['id'] ?? null,
+                'error' => $apiResult['error'] ?? null,
+            ], fn ($value) => $value !== null),
+        ]);
+
+        if ($apiResult['success']) {
+            return ['success' => true, 'log' => $log];
+        }
+
+        return ['success' => false, 'error' => $apiResult['error'], 'log' => $log];
+    }
+
+    /**
+     * Send a stored media file (image, video, audio or document) as a reply.
+     * Same 24-hour window rule as sendText().
+     *
+     * @param  string  $path  Path on the media disk (see WhatsAppMediaService::store()).
+     * @param  array   $meta  Extra data stored on the log (e.g. ['sent_by' => $adminId]).
+     * @return array{success: bool, log: WhatsAppLog, error?: string}
+     */
+    public function sendMedia(
+        string  $phone,
+        string  $path,
+        string  $mime,
+        ?string $caption = null,
+        ?string $filename = null,
+        ?int    $orderId = null,
+        array   $meta = [],
+        bool    $voice = false
+    ): array {
+        $media = app(WhatsAppMediaService::class);
+        $type  = $media->typeFor($mime);
+
+        try {
+            $content = array_filter([
+                'id'       => $media->upload($path, $mime),
+                // Meta ignores captions on audio, and file names on anything but documents.
+                'caption'  => $type === 'audio' ? null : $caption,
+                'filename' => $type === 'document' ? $filename : null,
+            ], fn ($value) => $value !== null && $value !== '');
+
+            $apiResult = $this->postToMeta($this->normalizePhone($phone), $type, $content);
+        } catch (\Throwable $e) {
+            Log::error("WhatsApp media send failed: {$e->getMessage()}");
+            $apiResult = ['success' => false, 'error' => $e->getMessage()];
+        }
+
+        $log = WhatsAppLog::create([
+            'order_id'     => $orderId,
+            'phone'        => $phone,
+            'message'      => $type === 'audio' ? '' : (string) $caption,
+            'status'       => $apiResult['success'] ? 'sent' : 'failed',
+            'direction'    => 'outbound',
+            'message_type' => $type,
+            'meta'         => array_filter([
+                ...$meta,
+                'media' => array_filter([
+                    'path'     => $path,
+                    'mime'     => $mime,
+                    'size'     => $media->exists($path) ? filesize($media->absolutePath($path)) : null,
+                    'filename' => $filename,
+                    'voice'    => $voice ?: null,
+                ], fn ($value) => $value !== null),
+                'wamid' => $apiResult['response']['messages'][0]['id'] ?? null,
+                'error' => $apiResult['error'] ?? null,
+            ], fn ($value) => $value !== null),
+        ]);
+
+        if ($apiResult['success']) {
+            return ['success' => true, 'log' => $log];
+        }
+
+        return ['success' => false, 'error' => $apiResult['error'], 'log' => $log];
+    }
+
+    /**
      * Send a plain text message to a phone number via the configured provider.
      *
      * @return array{success: bool, response?: array, error?: string, status?: int}
@@ -141,6 +237,17 @@ class WhatsAppService
      */
     private function sendViaMeta(string $phone, string $message): array
     {
+        return $this->postToMeta($phone, 'text', [
+            'preview_url' => false,
+            'body'        => $message,
+        ]);
+    }
+
+    /**
+     * POST one message of $type (text, image, video, audio, document) to the Meta Cloud API.
+     */
+    private function postToMeta(string $phone, string $type, array $content): array
+    {
         $url = sprintf('%s/%s/messages', rtrim(config('whatsapp.api_url'), '/'), config('whatsapp.sender'));
 
         $response = Http::withToken(config('whatsapp.api_token'))
@@ -149,11 +256,8 @@ class WhatsAppService
                 'messaging_product' => 'whatsapp',
                 'recipient_type'    => 'individual',
                 'to'                => $phone,
-                'type'              => 'text',
-                'text'              => [
-                    'preview_url' => false,
-                    'body'        => $message,
-                ],
+                'type'              => $type,
+                $type               => $content,
             ]);
 
         if ($response->successful()) {
@@ -236,6 +340,7 @@ class WhatsAppService
      * @param  int|null $orderId      Optional order ID for auditing.
      * @param  array   $buttonParams  Positional array of parameters for the template's dynamic URL button (e.g. the order number appended to a "track order" link).
      * @param  bool    $isNamed       Whether the template body was approved with named parameters (e.g. {{user_name}}) rather than positional ({{1}}).
+     * @param  array   $meta          Extra data stored on the log (e.g. ['sent_by' => $adminId]).
      * @return array{success: bool, log?: WhatsAppLog, error?: string, response?: array}
      */
     public function sendStructuredTemplate(
@@ -245,7 +350,8 @@ class WhatsAppService
         array  $parameters = [],
         ?int   $orderId    = null,
         array  $buttonParams = [],
-        bool   $isNamed = false
+        bool   $isNamed = false,
+        array  $meta = []
     ): array {
         $normalizedPhone = $this->normalizePhone($phone);
         $url = sprintf('%s/%s/messages', rtrim(config('whatsapp.api_url'), '/'), config('whatsapp.sender'));
@@ -306,6 +412,11 @@ class WhatsAppService
                 'status'       => $status,
                 'direction'    => 'outbound',
                 'message_type' => 'template',
+                'meta'         => array_filter([
+                    ...$meta,
+                    'wamid' => $response->json('messages.0.id'),
+                    'error' => $success ? null : $response->json('error.message'),
+                ], fn ($value) => $value !== null) ?: null,
             ]);
 
             if ($success) {

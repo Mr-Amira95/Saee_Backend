@@ -31,6 +31,72 @@ class WhatsAppLog extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public const MEDIA_TYPES = ['image', 'video', 'audio', 'document', 'sticker'];
+
+    /**
+     * Media details (path, mime, size, filename, voice, Meta id) for media
+     * messages, or null for anything else.
+     */
+    public function mediaInfo(): ?array
+    {
+        $meta = $this->meta ?? [];
+
+        if (isset($meta['media'])) {
+            return $meta['media'];
+        }
+
+        // Logs saved before media support kept Meta's raw media object as meta.
+        if (in_array($this->message_type, self::MEDIA_TYPES, true) && isset($meta['id'])) {
+            return array_filter([
+                'id'       => $meta['id'],
+                'mime'     => $meta['mime_type'] ?? null,
+                'filename' => $meta['filename'] ?? null,
+                'voice'    => $meta['voice'] ?? null,
+            ], fn ($value) => $value !== null);
+        }
+
+        return null;
+    }
+
+    /**
+     * Caption of a media message ('' when there is none).
+     */
+    public function caption(): string
+    {
+        $message = trim((string) $this->message);
+
+        // Older logs stored a "[image]"-style placeholder instead of a caption.
+        return preg_match('/^\[\w+\]$/', $message) ? '' : $message;
+    }
+
+    /**
+     * Readable message text. Template sends are stored as
+     * "Template: {name} ({json params})", so rebuild the body from the
+     * configured template text when possible.
+     */
+    public function displayBody(): string
+    {
+        if ($this->message_type !== 'template'
+            || ! preg_match('/^Template: (\S+) \((.*)\)$/s', (string) $this->message, $m)) {
+            return (string) $this->message;
+        }
+
+        $body   = config("whatsapp.templates.{$m[1]}");
+        $params = json_decode($m[2], true);
+
+        if (! $body || ! is_array($params)) {
+            return (string) $this->message;
+        }
+
+        $position = 0;
+
+        return preg_replace_callback('/\{\{([^}]+)\}\}/', function ($match) use ($params, &$position) {
+            $value = array_is_list($params) ? ($params[$position++] ?? '') : ($params[trim($match[1])] ?? '');
+
+            return (string) $value;
+        }, $body);
+    }
+
     /**
      * Canonical international-digits form of a phone number (e.g. "962792856567"),
      * used to group inbound/outbound logs into one conversation regardless of

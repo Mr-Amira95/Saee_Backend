@@ -51,35 +51,57 @@
     {{-- Filter bar --}}
     <div class="filter-bar">
         {{-- Filters apply as soon as a value changes --}}
-        <form action="{{ route('admin.financials.client-statements.index') }}" method="GET" class="filter-form" style="flex-wrap: wrap;"
-              onchange="this.submit()">
+        <form action="{{ route('admin.financials.client-statements.index') }}" method="GET" class="filter-form" id="filter-form" style="flex-wrap: wrap;">
             <input type="hidden" name="tab" value="{{ $tab }}">
 
-            <select name="client_id" class="filter-select">
-                <option value="">{{ __('All Clients') }}</option>
-                @foreach($clients as $c)
-                    <option value="{{ $c->id }}" {{ (string) $filters['client_id'] === (string) $c->id ? 'selected' : '' }}>{{ $c->company_name }}</option>
-                @endforeach
-            </select>
+            {{-- Searchable: Clients --}}
+            <div class="ss-wrap" style="flex:1; min-width:180px;">
+                <div class="ss-trigger" tabindex="0">
+                    <span class="ss-label">
+                        @php $selectedClient = $clients->firstWhere('id', $filters['client_id']); @endphp
+                        {{ $selectedClient ? $selectedClient->company_name : __('All Clients') }}
+                    </span>
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="ss-panel">
+                    <input type="text" class="ss-search-input" placeholder="{{ __('Search clients...') }}">
+                    <div class="ss-opts">
+                        <div class="ss-opt {{ !$filters['client_id'] ? 'selected' : '' }}" data-value="">{{ __('All Clients') }}</div>
+                        @foreach($clients as $c)
+                            <div class="ss-opt {{ (string) $filters['client_id'] === (string) $c->id ? 'selected' : '' }}" data-value="{{ $c->id }}">{{ $c->company_name }}</div>
+                        @endforeach
+                    </div>
+                </div>
+                <input type="hidden" name="client_id" value="{{ $filters['client_id'] }}">
+            </div>
 
-            <input type="date" name="from" value="{{ $filters['from'] }}" class="filter-input" style="max-width: 150px; flex: none;" title="{{ __('From Date') }}">
-            <input type="date" name="to" value="{{ $filters['to'] }}" class="filter-input" style="max-width: 150px; flex: none;" title="{{ __('To Date') }}">
+            <input type="date" name="from" value="{{ $filters['from'] }}" class="filter-input" style="max-width: 150px; flex: none;" title="{{ __('From Date') }}" onchange="this.form.submit()">
+            <input type="date" name="to" value="{{ $filters['to'] }}" class="filter-input" style="max-width: 150px; flex: none;" title="{{ __('To Date') }}" onchange="this.form.submit()">
 
-            @if($tab === 'orders')
-                <select name="payment_status" class="filter-select">
-                    <option value="">{{ __('All Payment Statuses') }}</option>
-                    @foreach($paymentBadges as $value => $badge)
-                        <option value="{{ $value }}" {{ $filters['payment_status'] === $value ? 'selected' : '' }}>{{ $badge['label'] }}</option>
-                    @endforeach
-                </select>
-            @else
-                <select name="statement_status" class="filter-select">
-                    <option value="">{{ __('All Statuses') }}</option>
-                    @foreach($statementBadges as $value => $badge)
-                        <option value="{{ $value }}" {{ request('statement_status') === $value ? 'selected' : '' }}>{{ $badge['label'] }}</option>
-                    @endforeach
-                </select>
-            @endif
+            {{-- Searchable: Statuses (payment status on the Orders tab, statement status on the Statements tab) --}}
+            @php
+                [$statusName, $statusBadges, $statusValue, $statusAll] = $tab === 'orders'
+                    ? ['payment_status', $paymentBadges, $filters['payment_status'], __('All Payment Statuses')]
+                    : ['statement_status', $statementBadges, request('statement_status'), __('All Statuses')];
+            @endphp
+            <div class="ss-wrap" style="flex:1; min-width:180px;">
+                <div class="ss-trigger" tabindex="0">
+                    <span class="ss-label">
+                        {{ $statusBadges[$statusValue]['label'] ?? $statusAll }}
+                    </span>
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="ss-panel">
+                    <input type="text" class="ss-search-input" placeholder="{{ __('Search statuses...') }}">
+                    <div class="ss-opts">
+                        <div class="ss-opt {{ !$statusValue ? 'selected' : '' }}" data-value="">{{ $statusAll }}</div>
+                        @foreach($statusBadges as $value => $badge)
+                            <div class="ss-opt {{ $statusValue === $value ? 'selected' : '' }}" data-value="{{ $value }}">{{ $badge['label'] }}</div>
+                        @endforeach
+                    </div>
+                </div>
+                <input type="hidden" name="{{ $statusName }}" value="{{ $statusValue }}">
+            </div>
 
             <a href="{{ route('admin.financials.client-statements.index', ['tab' => $tab]) }}" class="btn-secondary" style="padding: 8px 16px;">{{ __('Reset') }}</a>
         </form>
@@ -258,4 +280,133 @@
             @endif
         </div>
     @endif
+
+    <style>
+    /* Searchable select — same as the Orders page filters */
+    .ss-wrap {
+        position: relative;
+        min-width: 0;
+    }
+    .ss-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        height: 35px;
+        border: 1px solid var(--bdr);
+        border-radius: 8px;
+        background: var(--card);
+        cursor: pointer;
+        font-size: .875rem;
+        color: var(--text);
+        gap: 8px;
+        user-select: none;
+        transition: border-color .15s;
+    }
+    .ss-trigger:hover,
+    .ss-wrap.open .ss-trigger {
+        border-color: var(--red-lt);
+    }
+    .ss-label {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .ss-panel {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: var(--card);
+        border: 1px solid var(--bdr);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.35);
+        z-index: 200;
+        display: none;
+        overflow: hidden;
+    }
+    .ss-wrap.open .ss-panel {
+        display: block;
+    }
+    .ss-search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        border-bottom: 1px solid var(--bdr);
+        font-size: .875rem;
+        outline: none;
+        background: var(--card);
+        color: var(--text);
+        box-sizing: border-box;
+    }
+    .ss-opts {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .ss-opt {
+        padding: 9px 14px;
+        font-size: .875rem;
+        cursor: pointer;
+        color: var(--text);
+        transition: background .1s;
+    }
+    .ss-opt:hover {
+        background: rgba(255,255,255,.08);
+    }
+    .ss-opt.selected {
+        color: var(--red-lt);
+        font-weight: 600;
+    }
+    .ss-opt.ss-hidden {
+        display: none;
+    }
+    </style>
+
+    <script>
+    // Searchable selects
+    document.querySelectorAll('.ss-wrap').forEach(function(wrap) {
+        var trigger    = wrap.querySelector('.ss-trigger');
+        var label      = wrap.querySelector('.ss-label');
+        var searchInp  = wrap.querySelector('.ss-search-input');
+        var opts       = wrap.querySelectorAll('.ss-opt');
+        var hidden     = wrap.querySelector('input[type=hidden]');
+        var form       = document.getElementById('filter-form');
+
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var isOpen = wrap.classList.contains('open');
+            // close all
+            document.querySelectorAll('.ss-wrap.open').forEach(function(w) { w.classList.remove('open'); });
+            if (!isOpen) {
+                wrap.classList.add('open');
+                searchInp.value = '';
+                opts.forEach(function(o) { o.classList.remove('ss-hidden'); });
+                searchInp.focus();
+            }
+        });
+
+        searchInp.addEventListener('input', function() {
+            var val = this.value.toLowerCase();
+            opts.forEach(function(opt) {
+                opt.classList.toggle('ss-hidden', val !== '' && !opt.textContent.toLowerCase().includes(val));
+            });
+        });
+
+        opts.forEach(function(opt) {
+            opt.addEventListener('click', function() {
+                hidden.value = this.dataset.value;
+                label.textContent = this.textContent.trim();
+                opts.forEach(function(o) { o.classList.remove('selected'); });
+                this.classList.add('selected');
+                wrap.classList.remove('open');
+                form.submit();
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!wrap.contains(e.target)) wrap.classList.remove('open');
+        });
+    });
+    </script>
 @endsection
