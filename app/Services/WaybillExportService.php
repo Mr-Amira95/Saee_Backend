@@ -35,6 +35,13 @@ class WaybillExportService
     /** Public-disk folder that stored waybill files go to (see waybills:prune). */
     public const STORAGE_DIR = 'waybills';
 
+    /** Thermal label size (width x height, mm) for the "Print Label" button. */
+    public const LABEL_WIDTH_MM = 40;
+    public const LABEL_HEIGHT_MM = 60;
+
+    /** Arabic wrap width for the narrow label. */
+    private const LABEL_ARABIC_LINE_CHARS = 40;
+
     public function __construct(private ArabicPdfRenderer $renderer)
     {
     }
@@ -50,6 +57,24 @@ class WaybillExportService
         $orders = $this->resolve($orders);
 
         return $this->pdf($orders)->stream($this->filename($orders));
+    }
+
+    /**
+     * Stream the order(s) as black-only thermal labels, one label per page,
+     * sized LABEL_WIDTH_MM x LABEL_HEIGHT_MM.
+     *
+     * @param  Builder|iterable<Order>|Order  $orders
+     */
+    public function renderLabel(Builder|iterable|Order $orders): Response
+    {
+        $orders = $this->resolve($orders);
+
+        $toPt  = fn (float $mm) => $mm * 72 / 25.4;
+        $paper = [0, 0, $toPt(self::LABEL_WIDTH_MM), $toPt(self::LABEL_HEIGHT_MM)];
+
+        return $this->renderer
+            ->render('shared.orders.label', compact('orders'), 'portrait', $paper, self::LABEL_ARABIC_LINE_CHARS)
+            ->stream('label-' . $this->filename($orders));
     }
 
     /**

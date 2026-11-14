@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers\Client;
 
-use App\Mail\UserInvitationMail;
 use App\Models\ClientEmployee;
 use App\Models\Permission;
 use App\Models\User;
-use App\Services\SetPasswordTokenService;
-use App\Services\WhatsAppService;
+use App\Services\UserInvitationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password as PasswordRule;
@@ -92,18 +89,14 @@ class UserManagementController extends Controller
 
         $this->syncPermissions($user->id, $profile->id, $data['permissions'] ?? []);
 
-        $token = app(SetPasswordTokenService::class)->issue($user);
-        if ($data['otp_channel'] === 'email' && $user->email) {
-            Mail::to($user->email)->send(new UserInvitationMail($user, $token));
-        } else {
-            $queryTail = '?token='.urlencode($token).'&email='.urlencode($user->email ?? '');
-            app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
-                'user_name' => $user->name,
-            ], null, 'ar', [$queryTail]);
-        }
+        $result = app(UserInvitationService::class)->send($user, $data['otp_channel']);
 
-        return redirect()->route('client.users.index')
+        $redirect = redirect()->route('client.users.index')
             ->with('success', __('User created successfully.'));
+
+        return $result['success']
+            ? $redirect
+            : $redirect->with('error', UserInvitationService::failureMessage($result));
     }
 
     public function edit(int $id): View

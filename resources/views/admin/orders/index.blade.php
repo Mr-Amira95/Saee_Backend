@@ -82,7 +82,7 @@
                 {{-- Search --}}
                 <div class="filter-search-wrap" style="flex: 1; width: 100%;">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" name="search" id="live-search" value="{{ request('search') }}" class="filter-input" placeholder="{{ __('Search order #, batch #, receiver name, phone...') }}">
+                    <input type="text" name="search" id="live-search" value="{{ request('search') }}" class="filter-input" placeholder="{{ __('Search order #, batch #, receiver name, phone, city, area...') }}">
                 </div>
             </div>
 
@@ -249,6 +249,9 @@
                         <th>{{ __('Order #') }}</th>
                         <th>{{ __('Batch #') }}</th>
                         <th>{{ __('Client') }}</th>
+                        <th>{{ __('Receiver Name') }}</th>
+                        <th>{{ __('Receiver Phone') }}</th>
+                        <th>{{ __('City / Area') }}</th>
                         <th>{{ __('Driver') }}</th>
                         <th>{{ __('Status') }}</th>
                         <th>{{ __('Created At') }}</th>
@@ -283,6 +286,23 @@
                             </td>
                             <td>
                                 <div class="cell-main">{{ $order->clientProfile?->company_name ?? 'N/A' }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-main">{{ $order->receiver?->receiver_name ?? '—' }}</div>
+                            </td>
+                            <td>
+                                <div class="cell-main" dir="ltr">{{ $order->receiver?->receiver_phone ?? '—' }}</div>
+                            </td>
+                            <td>
+                                @php
+                                    $isAr = app()->getLocale() === 'ar';
+                                    $rCity = $order->receiver?->city;
+                                    $rArea = $order->receiver?->area;
+                                @endphp
+                                <div class="cell-main">{{ $rCity ? ($isAr ? ($rCity->name_ar ?: $rCity->name) : $rCity->name) : '—' }}</div>
+                                @if($rArea)
+                                    <div class="cell-sub">{{ $isAr ? ($rArea->name_ar ?: $rArea->name) : $rArea->name }}</div>
+                                @endif
                             </td>
                             <td>
                                 @if($order->driver)
@@ -334,7 +354,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                            <td colspan="11"style="text-align: center; color: var(--text-dim); padding: 30px;">
                                 {{ __('No orders found matching the filter criteria.') }}
                             </td>
                         </tr>

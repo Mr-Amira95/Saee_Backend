@@ -1885,6 +1885,7 @@
   "Returned Orders Today": "الطلبات المرتجعة اليوم",
   "All Cash with Drivers": "إجمالي النقد مع السائقين",
   "Search order #, batch #, receiver name, phone...": "ابحث برقم الطلب، رقم الدفعة، اسم المستلم، الهاتف...",
+  "Search order #, batch #, receiver name, phone, city, area...": "ابحث برقم الطلب، رقم الدفعة، اسم المستلم، الهاتف، المدينة، المنطقة...",
   "Picked Up": "تم الاستلام",
   "All Drivers": "جميع السائقين",
   "Search drivers...": "ابحث عن السائقين...",
@@ -1906,6 +1907,7 @@
   "Created by :company on :date": "أنشئ بواسطة :company في :date",
   "Cancel Order": "إلغاء الطلب",
   "Print Waybill": "طباعة بوليصة الشحن",
+  "Print Label": "طباعة الملصق",
   "Reassign Driver": "إعادة تعيين السائق",
   "Client:": "العميل:",
   "Receiver Name:": "اسم المستلم:",
@@ -2469,5 +2471,8 @@
   "Statement retrieved successfully.": "تم جلب الكشف بنجاح.",
   "Statement file generated successfully.": "تم إنشاء ملف الكشف بنجاح.",
   "Unable to generate the statement file.": "تعذر إنشاء ملف الكشف.",
-  "Statement not found.": "الكشف غير موجود."
+  "Statement not found.": "الكشف غير موجود.",
+  "The invitation could not be sent via :via: :error": "تعذر إرسال الدعوة عبر :via: :error",
+  "Unknown error": "خطأ غير معروف",
+  "Employee account created successfully.": "تم إنشاء حساب الموظف بنجاح."
 }

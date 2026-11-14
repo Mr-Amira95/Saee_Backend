@@ -56,6 +56,30 @@ class User extends Authenticatable
     public function isClientMaster(): bool { return $this->role === 'client_master'; }
     public function isClientEmployee(): bool { return $this->role === 'client_employee'; }
 
+    /**
+     * Phone in "+<country code><number>" form for WhatsApp delivery. Falls back
+     * to the raw phone (treated as Jordanian downstream) when no country code is set.
+     */
+    public function whatsappPhone(): string
+    {
+        $phone = preg_replace('/\D/', '', (string) $this->phone);
+        $code  = preg_replace('/\D/', '', (string) $this->phone_country_code);
+
+        if ($phone === '' || $code === '') {
+            return $phone;
+        }
+
+        if (str_starts_with($phone, '00')) {
+            return '+' . substr($phone, 2);
+        }
+
+        if (str_starts_with($phone, $code)) {
+            return '+' . $phone;
+        }
+
+        return '+' . $code . ltrim($phone, '0');
+    }
+
     public function resolveClientProfile(): ?ClientProfile
     {
         if ($this->isClientMaster()) {

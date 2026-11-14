@@ -3,16 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\UserInvitationMail;
 use App\Models\ClientEmployee;
 use App\Models\ClientProfile;
 use App\Models\User;
-use App\Services\SetPasswordTokenService;
-use App\Services\WhatsAppService;
+use App\Services\UserInvitationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -79,18 +76,15 @@ class ClientEmployeeController extends Controller
             }
         });
 
-        $token = app(SetPasswordTokenService::class)->issue($user);
+        $result = app(UserInvitationService::class)->send($user, $data['otp_channel']);
 
-        if ($data['otp_channel'] === 'email') {
-            Mail::to($user->email)->send(new UserInvitationMail($user, $token));
-        } else {
-            $queryTail = '?token='.urlencode($token).'&email='.urlencode($user->email ?? '');
-            app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
-                'user_name' => $user->name,
-            ], null, 'ar', [$queryTail]);
+        if (! $result['success']) {
+            return back()
+                ->with('success', __('Employee account created successfully.'))
+                ->with('error', UserInvitationService::failureMessage($result));
         }
 
-        $via = $data['otp_channel'] === 'email' ? 'email' : 'WhatsApp';
+        $via = $result['channel'] === 'email' ? 'email' : 'WhatsApp';
         return back()->with('success', __('Employee account created. An invitation has been sent via :via.', ['via' => $via]));
     }
 

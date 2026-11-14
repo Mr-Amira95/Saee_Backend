@@ -1858,6 +1858,7 @@
   "Returned Orders Today": "Returned Orders Today",
   "All Cash with Drivers": "All Cash with Drivers",
   "Search order #, batch #, receiver name, phone...": "Search order #, batch #, receiver name, phone...",
+  "Search order #, batch #, receiver name, phone, city, area...": "Search order #, batch #, receiver name, phone, city, area...",
   "Picked Up": "Picked Up",
   "All Drivers": "All Drivers",
   "Search drivers...": "Search drivers...",
@@ -1879,6 +1880,7 @@
   "Created by :company on :date": "Created by :company on :date",
   "Cancel Order": "Cancel Order",
   "Print Waybill": "Print Waybill",
+  "Print Label": "Print Label",
   "Reassign Driver": "Reassign Driver",
   "Client:": "Client:",
   "Receiver Name:": "Receiver Name:",
@@ -2443,5 +2445,8 @@
   "Statement retrieved successfully.": "Statement retrieved successfully.",
   "Statement file generated successfully.": "Statement file generated successfully.",
   "Unable to generate the statement file.": "Unable to generate the statement file.",
-  "Statement not found.": "Statement not found."
+  "Statement not found.": "Statement not found.",
+  "The invitation could not be sent via :via: :error": "The invitation could not be sent via :via: :error",
+  "Unknown error": "Unknown error",
+  "Employee account created successfully.": "Employee account created successfully."
 }

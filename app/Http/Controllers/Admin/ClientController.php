@@ -3,17 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\UserInvitationMail;
 use App\Models\City;
 use App\Models\ClientAttachment;
 use App\Models\ClientProfile;
 use App\Models\User;
-use App\Services\SetPasswordTokenService;
-use App\Services\WhatsAppService;
+use App\Services\UserInvitationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -82,8 +79,8 @@ class ClientController extends Controller
             'company_phone'               => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/'],
             'company_phone_country_code'  => 'nullable|string|max:10',
             'address_line1'               => 'nullable|string|max:255',
-            'city_id'                     => 'nullable|exists:cities,id',
-            'area_id'                     => 'nullable|exists:areas,id',
+            'city_id'                     => 'nullable|exists:cities,id,deleted_at,NULL',
+            'area_id'                     => 'nullable|exists:areas,id,deleted_at,NULL',
             'credit_limit'                => 'nullable|numeric|min:0',
             'expiry_date'                 => ['nullable', 'date_format:d-m-Y', 'after:today'],
             'status'                      => ['nullable', Rule::in(['active','suspended','pending_verification'])],
@@ -175,10 +172,15 @@ class ClientController extends Controller
         });
 
         if (empty($data['password'])) {
-            $channel = $data['otp_channel'] ?? 'whatsapp';
-            $this->sendInvitation($user, $channel);
+            $result = app(UserInvitationService::class)->send($user, $data['otp_channel'] ?? 'whatsapp');
 
-            $via = $channel === 'email' ? 'email' : 'WhatsApp';
+            if (! $result['success']) {
+                return redirect()->route('admin.clients.index')
+                    ->with('success', __('Client account created successfully.'))
+                    ->with('error', UserInvitationService::failureMessage($result));
+            }
+
+            $via = $result['channel'] === 'email' ? 'email' : 'WhatsApp';
             return redirect()->route('admin.clients.index')
                 ->with('success', __('Client account created. An invitation has been sent via :via.', ['via' => $via]));
         }
@@ -222,8 +224,8 @@ class ClientController extends Controller
             'company_phone'               => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/'],
             'company_phone_country_code'  => 'nullable|string|max:10',
             'address_line1'               => 'nullable|string|max:255',
-            'city_id'                     => 'nullable|exists:cities,id',
-            'area_id'                     => 'nullable|exists:areas,id',
+            'city_id'                     => 'nullable|exists:cities,id,deleted_at,NULL',
+            'area_id'                     => 'nullable|exists:areas,id,deleted_at,NULL',
             'credit_limit'                => 'nullable|numeric|min:0',
             'expiry_date'                 => ['nullable', 'date_format:d-m-Y'],
             'status'                      => ['nullable', Rule::in(['active','suspended','pending_verification'])],
@@ -344,7 +346,12 @@ class ClientController extends Controller
 
     public function resendInvitation(ClientProfile $client)
     {
-        $this->sendInvitation($client->masterUser, $client->masterUser->otp_channel ?? 'whatsapp');
+        $result = app(UserInvitationService::class)->send($client->masterUser);
+
+        if (! $result['success']) {
+            return back()->with('error', UserInvitationService::failureMessage($result));
+        }
+
         return back()->with('success', __('Invitation resent to :name.', ['name' => $client->masterUser->name]));
     }
 
@@ -411,20 +418,6 @@ class ClientController extends Controller
                 'file_size'         => $file->getSize(),
                 'uploaded_by'       => $uploadedBy,
             ]);
-        }
-    }
-
-    private function sendInvitation(User $user, string $channel = 'whatsapp'): void
-    {
-        $token = app(SetPasswordTokenService::class)->issue($user);
-
-        if ($channel === 'email' && $user->email) {
-            Mail::to($user->email)->send(new UserInvitationMail($user, $token));
-        } else {
-            $queryTail = '?token='.urlencode($token).'&email='.urlencode($user->email ?? '');
-            app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
-                'user_name' => $user->name,
-            ], null, 'ar', [$queryTail]);
         }
     }
 

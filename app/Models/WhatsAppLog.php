@@ -35,10 +35,16 @@ class WhatsAppLog extends Model
      * Canonical international-digits form of a phone number (e.g. "962792856567"),
      * used to group inbound/outbound logs into one conversation regardless of
      * which raw format (+962…, 0…, local 7-digit…) each side stored it in.
+     * Numbers with an explicit "+" prefix are already international and are
+     * kept as-is, so non-Jordanian numbers (e.g. +966…) aren't re-prefixed.
      */
     public static function normalizePhone(?string $phone): string
     {
         $digits = preg_replace('/\D/', '', (string) $phone);
+
+        if (str_starts_with(trim((string) $phone), '+')) {
+            return $digits;
+        }
 
         if (str_starts_with($digits, '00')) {
             $digits = substr($digits, 2);

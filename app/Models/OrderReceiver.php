@@ -45,12 +45,12 @@ class OrderReceiver extends Model
 
     public function city(): BelongsTo
     {
-        return $this->belongsTo(City::class);
+        return $this->belongsTo(City::class)->withTrashed();
     }
 
     public function area(): BelongsTo
     {
-        return $this->belongsTo(Area::class);
+        return $this->belongsTo(Area::class)->withTrashed();
     }
 
     public function realtimeAudience(): array

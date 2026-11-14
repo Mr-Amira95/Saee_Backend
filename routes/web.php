@@ -286,6 +286,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
         Route::get('orders/print-all', [OrderController::class, 'printAll'])->name('orders.print-all');
         Route::get('orders/{order}/print', [OrderController::class, 'printOrder'])->name('orders.print');
+        Route::get('orders/{order}/print-label', [OrderController::class, 'printLabel'])->name('orders.print-label');
         Route::resource('orders', OrderController::class)->names('orders');
 
         // Handover (driver cash held, pending approvals, approved handovers)

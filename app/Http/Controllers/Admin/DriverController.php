@@ -3,17 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\UserInvitationMail;
 use App\Models\DriverBankDetail;
 use App\Models\DriverProfile;
 use App\Models\User;
-use App\Services\SetPasswordTokenService;
-use App\Services\WhatsAppService;
+use App\Services\UserInvitationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -155,10 +152,15 @@ class DriverController extends Controller
         });
 
         if (empty($data['password'])) {
-            $channel = $data['otp_channel'] ?? 'whatsapp';
-            $this->sendInvitation($user, $channel);
+            $result = app(UserInvitationService::class)->send($user, $data['otp_channel'] ?? 'whatsapp');
 
-            $via = $channel === 'email' ? 'email' : 'WhatsApp';
+            if (! $result['success']) {
+                return redirect()->route('admin.drivers.index')
+                    ->with('success', __('Driver account created successfully.'))
+                    ->with('error', UserInvitationService::failureMessage($result));
+            }
+
+            $via = $result['channel'] === 'email' ? 'email' : 'WhatsApp';
             return redirect()->route('admin.drivers.index')
                 ->with('success', __('Driver account created. An invitation has been sent via :channel.', ['channel' => $via]));
         }
@@ -352,7 +354,11 @@ class DriverController extends Controller
 
     public function resendInvitation(DriverProfile $driver)
     {
-        $this->sendInvitation($driver->user, $driver->user->otp_channel ?? 'whatsapp');
+        $result = app(UserInvitationService::class)->send($driver->user);
+
+        if (! $result['success']) {
+            return back()->with('error', UserInvitationService::failureMessage($result));
+        }
 
         return back()->with('success', __('Invitation sent to :name.', ['name' => $driver->user->name]));
     }
@@ -388,20 +394,6 @@ class DriverController extends Controller
         $a    = sin($dLat / 2) ** 2
               + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
         return $R * 2 * atan2(sqrt($a), sqrt(1 - $a));
-    }
-
-    private function sendInvitation(User $user, string $channel = 'whatsapp'): void
-    {
-        $token = app(SetPasswordTokenService::class)->issue($user);
-
-        if ($channel === 'email' && $user->email) {
-            Mail::to($user->email)->send(new UserInvitationMail($user, $token));
-        } else {
-            $queryTail = '?token='.urlencode($token).'&email='.urlencode($user->email ?? '');
-            app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
-                'user_name' => $user->name,
-            ], null, 'ar', [$queryTail]);
-        }
     }
 
     private function cliqIdRule(Request $request)

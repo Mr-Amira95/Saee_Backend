@@ -143,6 +143,11 @@ class OrderController extends Controller
         return $waybills->render($order);
     }
 
+    public function printLabel(Order $order, WaybillExportService $waybills)
+    {
+        return $waybills->renderLabel($order);
+    }
+
     public function create()
     {
         $clients = ClientProfile::where('status', 'active')->with('deliveryPrices')->orderBy('company_name')->get();
@@ -170,8 +175,8 @@ class OrderController extends Controller
             'order_price'              => 'nullable|required_if:payment_type,cod|numeric|min:0',
             'receiver_name'            => 'required|string|max:255',
             'receiver_phone'           => 'required|string|max:20',
-            'city_id'                  => 'required|exists:cities,id',
-            'area_id'                  => 'required|exists:areas,id',
+            'city_id'                  => 'required|exists:cities,id,deleted_at,NULL',
+            'area_id'                  => 'required|exists:areas,id,deleted_at,NULL',
             'address_text'             => 'required|string',
             'notes'                    => 'nullable|string',
             'batch_number'             => 'nullable|string|max:60',
@@ -226,8 +231,8 @@ class OrderController extends Controller
                 'order_price'              => 'nullable|required_if:payment_type,cod|numeric|min:0',
                 'receiver_name'            => 'required|string|max:255',
                 'receiver_phone'           => 'required|string|max:20',
-                'city_id'                  => 'required|exists:cities,id',
-                'area_id'                  => 'required|exists:areas,id',
+                'city_id'                  => 'required|exists:cities,id,deleted_at,NULL',
+                'area_id'                  => 'required|exists:areas,id,deleted_at,NULL',
                 'address_text'             => 'required|string',
                 'notes'                    => 'nullable|string',
                 'delivery_shift'           => 'nullable|string|in:doesnt_matter,before_12pm,after_12pm',
@@ -389,7 +394,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'client_profile_id' => 'required|exists:client_profiles,id',
-            'city_id'           => 'required|exists:cities,id',
+            'city_id'           => 'required|exists:cities,id,deleted_at,NULL',
         ]);
 
         $client = ClientProfile::find($request->input('client_profile_id'));
@@ -456,6 +461,12 @@ class OrderController extends Controller
                   ->orWhereHas('receiver', fn ($rq) => $rq
                       ->where('receiver_name', 'like', "%{$search}%")
                       ->orWhere('receiver_phone', 'like', "%{$search}%")
+                      ->orWhereHas('city', fn ($cq) => $cq
+                          ->where('name', 'like', "%{$search}%")
+                          ->orWhere('name_ar', 'like', "%{$search}%"))
+                      ->orWhereHas('area', fn ($aq) => $aq
+                          ->where('name', 'like', "%{$search}%")
+                          ->orWhere('name_ar', 'like', "%{$search}%"))
                   );
             });
         }

@@ -52,12 +52,12 @@ class ClientProfile extends Model
 
     public function city(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\City::class);
+        return $this->belongsTo(\App\Models\City::class)->withTrashed();
     }
 
     public function area(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Area::class);
+        return $this->belongsTo(\App\Models\Area::class)->withTrashed();
     }
 
     public function attachments(): HasMany

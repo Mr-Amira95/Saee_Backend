@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Area;
 use App\Models\City;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CityController extends Controller
 {
@@ -102,7 +103,12 @@ class CityController extends Controller
     {
         abort_unless(auth()->user()->hasAdminAction('cities.delete'), 403);
 
-        $city->delete();
+        // Soft delete: orders/clients still reference this city and its areas.
+        DB::transaction(function () use ($city) {
+            $city->areas()->delete();
+            $city->delete();
+        });
+
         return redirect()->route('admin.cities.index')
             ->with('success', __('City deleted.'));
     }

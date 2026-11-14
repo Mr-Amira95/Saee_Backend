@@ -30,8 +30,8 @@ class CompanyController extends Controller
             'vat_number'                  => ['nullable', 'string', 'max:50', 'regex:/^[0-9]+$/'],
             'email'                       => ['nullable', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
             'company_phone'               => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{6,15}$/'],
-            'city_id'                     => ['nullable', 'exists:cities,id'],
-            'area_id'                     => ['nullable', 'exists:areas,id'],
+            'city_id'                     => ['nullable', 'exists:cities,id,deleted_at,NULL'],
+            'area_id'                     => ['nullable', 'exists:areas,id,deleted_at,NULL'],
             'address_line1'               => ['nullable', 'string', 'max:500'],
         ], [
             'commercial_register_number.regex' => 'The commercial registration number must contain numbers only.',

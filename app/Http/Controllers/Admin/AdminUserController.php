@@ -3,15 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\UserInvitationMail;
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use App\Services\SetPasswordTokenService;
-use App\Services\WhatsAppService;
-use Illuminate\Support\Facades\Mail;
+use App\Services\UserInvitationService;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password as PasswordRule;
@@ -93,10 +90,15 @@ class AdminUserController extends Controller
         });
 
         if (empty($data['password'])) {
-            $channel = $data['otp_channel'] ?? 'whatsapp';
-            $this->sendInvitation($user, $channel);
+            $result = app(UserInvitationService::class)->send($user, $data['otp_channel'] ?? 'whatsapp');
 
-            $via = $channel === 'email' ? 'email' : 'WhatsApp';
+            if (! $result['success']) {
+                return redirect()->route('admin.admins.index')
+                    ->with('success', __('Admin account created successfully.'))
+                    ->with('error', UserInvitationService::failureMessage($result));
+            }
+
+            $via = $result['channel'] === 'email' ? 'email' : 'WhatsApp';
             return redirect()->route('admin.admins.index')
                 ->with('success', __('Admin account created. An invitation has been sent via :via.', ['via' => $via]));
         }
@@ -186,7 +188,12 @@ class AdminUserController extends Controller
 
     public function resendInvitation(User $admin)
     {
-        $this->sendInvitation($admin, $admin->otp_channel ?? 'whatsapp');
+        $result = app(UserInvitationService::class)->send($admin);
+
+        if (! $result['success']) {
+            return back()->with('error', UserInvitationService::failureMessage($result));
+        }
+
         return back()->with('success', __('Invitation sent to :name.', ['name' => $admin->name]));
     }
 
@@ -201,19 +208,5 @@ class AdminUserController extends Controller
         $admin->update(['password' => Hash::make($data['password'])]);
 
         return back()->with('success', __('Password reset for :name.', ['name' => $admin->name]));
-    }
-
-    private function sendInvitation(User $user, string $channel = 'whatsapp'): void
-    {
-        $token = app(SetPasswordTokenService::class)->issue($user);
-
-        if ($channel === 'email' && $user->email) {
-            Mail::to($user->email)->send(new UserInvitationMail($user, $token));
-        } else {
-            $queryTail = '?token='.urlencode($token).'&email='.urlencode($user->email ?? '');
-            app(WhatsAppService::class)->sendTemplate('user_invitation', $user->phone ?? '', [
-                'user_name' => $user->name,
-            ], null, 'ar', [$queryTail]);
-        }
     }
 }

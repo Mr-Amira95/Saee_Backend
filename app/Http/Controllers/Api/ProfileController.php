@@ -206,8 +206,8 @@ class ProfileController extends Controller
             'vat_number'                  => ['sometimes', 'nullable', 'string', 'max:50'],
             'commercial_register_number'  => ['sometimes', 'nullable', 'string', 'max:100'],
             'address_line1'               => ['sometimes', 'nullable', 'string', 'max:500'],
-            'city_id'                     => ['sometimes', 'nullable', 'integer', 'exists:cities,id'],
-            'area_id'                     => ['sometimes', 'nullable', 'integer', 'exists:areas,id'],
+            'city_id'                     => ['sometimes', 'nullable', 'integer', 'exists:cities,id,deleted_at,NULL'],
+            'area_id'                     => ['sometimes', 'nullable', 'integer', 'exists:areas,id,deleted_at,NULL'],
             'logo'                        => ['sometimes', 'nullable', 'image', 'max:2048'],
         ]);
 
