@@ -265,8 +265,9 @@
                     @forelse($orders as $order)
                         @php
                             $isPending = $order->status === 'pending';
-                            // At the office: can be assigned to a driver who takes it back to the client
-                            $isReturnable = in_array($order->status, ['in_office', 'out_for_return'], true);
+                            // At the office with no return driver yet: can be assigned to one who takes it back to the client.
+                            // Orders already out for return are not selectable (reassign from the order page).
+                            $isReturnable = $order->status === 'in_office';
                         @endphp
                         <tr class="{{ $isPending ? 'order-row-pending' : '' }}">
                             <td style="text-align:center;">
