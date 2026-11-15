@@ -23,9 +23,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  *
  * Order lifecycle on the statement (orders.payment_status):
  *   ready     → delivered with the cash at Saee (with_company / no_payment),
- *               or returned to the client (delivery fee only, when it is due —
- *               see Order::chargesClientDeliveryFee()). A rejected order only
- *               goes on a statement once it is back with the client.
+ *               or returned to the client (delivery fees only: what the customer
+ *               paid the driver, minus Saee's fee when it is due — see
+ *               Order::chargesClientDeliveryFee()). A rejected order only goes
+ *               on a statement once it is back with the client.
  *   exported  → included in an exported statement (can be exported again —
  *               the new statement supersedes the old one)
  *   paid      → the statement's payment was confirmed (never exported again)
@@ -102,8 +103,8 @@ class ClientStatementService
             ->selectRaw("
                 COUNT(*) as orders_count,
                 SUM(CASE WHEN orders.status = 'delivered' AND op.payment_type = 'cod' THEN COALESCE(op.order_amount, 0) ELSE 0 END) as cod,
-                SUM(CASE WHEN orders.status = 'delivered' AND op.delivery_on_customer = 1 THEN COALESCE(op.customer_delivery_amount, 0) ELSE 0 END) as customer_delivery,
-                SUM(CASE WHEN orders.status = 'delivered' OR orders.rejection_fee_status IS NULL OR orders.rejection_fee_status = 'client_charged' THEN COALESCE(op.client_delivery_amount, 0) ELSE 0 END) as client_delivery
+                SUM(CASE WHEN (orders.status = 'delivered' OR orders.rejection_fee_status = 'collected') AND op.delivery_on_customer = 1 THEN COALESCE(op.customer_delivery_amount, 0) ELSE 0 END) as customer_delivery,
+                SUM(CASE WHEN orders.status = 'delivered' OR orders.rejection_fee_status IS NULL OR orders.rejection_fee_status <> 'not_charged' THEN COALESCE(op.client_delivery_amount, 0) ELSE 0 END) as client_delivery
             ")
             ->toBase()
             ->first();
@@ -122,10 +123,11 @@ class ClientStatementService
     }
 
     /**
-     * Statement amounts for one order. COD and the customer's delivery fee are
-     * only collected on delivery; Saee's delivery fee is also charged for a
-     * returned order, unless the client's rejected orders are free or the
-     * customer paid the fee to the driver (it then stays with Saee).
+     * Statement amounts for one order. COD is only collected on delivery.
+     * The customer's delivery fee is credited to the client when the driver
+     * collected it: on delivery, or on a rejected order whose customer still
+     * paid it. Saee's delivery fee is charged for a returned order too,
+     * unless the client's rejected orders are free.
      *
      * @return array{cod: float, customer_delivery: float, client_delivery: float, net: float}
      */
@@ -135,7 +137,7 @@ class ClientStatementService
         $delivered = $order->status === 'delivered';
 
         $cod            = $delivered && $payment?->payment_type === 'cod' ? (float) ($payment->order_amount ?? 0) : 0.0;
-        $customer       = $delivered && $payment?->delivery_on_customer ? (float) ($payment->customer_delivery_amount ?? 0) : 0.0;
+        $customer       = $order->collectedCustomerDeliveryFee();
         $clientDelivery = $order->chargesClientDeliveryFee() ? (float) ($payment?->client_delivery_amount ?? 0) : 0.0;
 
         return [

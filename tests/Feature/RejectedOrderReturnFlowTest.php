@@ -221,7 +221,7 @@ class RejectedOrderReturnFlowTest extends TestCase
         $this->assertSame(0.0, $statements->totals($statements->ordersQuery(['client_id' => $this->client->id]))['client_delivery']);
     }
 
-    public function test_delivery_fee_collected_from_the_customer_covers_the_fee(): void
+    public function test_delivery_fee_collected_from_the_customer_is_credited_to_the_client(): void
     {
         Storage::fake('public');
 
@@ -285,13 +285,88 @@ class RejectedOrderReturnFlowTest extends TestCase
         $this->orderService->assignReturnDriver($order, $this->returnDriver, $this->admin);
         $this->orderService->updateStatus($order, 'returned', [], $this->returnDriver);
 
-        // The client is charged nothing: the collected cash covers Saee's fee
-        $this->assertDatabaseMissing('financial_ledger_entries', ['order_id' => $order->id, 'type' => 'shipping_charge']);
+        // Saee's fee (10) is charged as usual; the 3 the customer paid are credited to the client
+        $this->assertDatabaseHas('financial_ledger_entries', [
+            'order_id' => $order->id,
+            'amount'   => 10.00,
+            'type'     => 'shipping_charge',
+        ]);
 
         $statements = app(ClientStatementService::class);
         $amounts = $statements->amounts($order->fresh()->load('payment'));
-        $this->assertSame(0.0, $amounts['client_delivery']);
-        $this->assertSame(0.0, $amounts['net']);
+        $this->assertSame(0.0, $amounts['cod'], 'The COD of a rejected order is never collected.');
+        $this->assertSame(3.0, $amounts['customer_delivery']);
+        $this->assertSame(10.0, $amounts['client_delivery']);
+        $this->assertSame(-7.0, $amounts['net']);
+    }
+
+    /**
+     * Saee's fee is 2. Two rejected orders whose customers still paid a 10
+     * delivery fee, and two with no delivery fee on the customer:
+     * 20 collected − 8 in Saee fees = 12 owed to the client.
+     */
+    public function test_statement_pays_the_client_the_collected_delivery_fees_minus_saee_fees(): void
+    {
+        $this->client->deliveryPrices()->create(['city_id' => $this->city->id, 'delivery_price' => 2.00]);
+
+        $orders = [
+            'cod_paid'       => $this->pickedUpOrder(['payment_type' => 'cod', 'order_price' => 150, 'delivery_on_customer' => true, 'delivery_customer_amount' => 10]),
+            'prepaid_paid'   => $this->pickedUpOrder(['payment_type' => 'prepaid', 'delivery_on_customer' => true, 'delivery_customer_amount' => 10]),
+            'cod_no_fee'     => $this->pickedUpOrder(['payment_type' => 'cod', 'order_price' => 150]),
+            'prepaid_no_fee' => $this->pickedUpOrder(['payment_type' => 'prepaid']),
+        ];
+
+        foreach ($orders as $order) {
+            $this->actingAs($this->driver, 'sanctum')
+                ->postJson("/api/orders/{$order->id}/reject", [
+                    'rejection_reason_id'    => $this->reason->id,
+                    'delivery_fee_collected' => true,
+                ])
+                ->assertOk();
+        }
+
+        // Nothing to collect on an order without a customer delivery fee
+        $this->assertSame(Order::REJECTION_FEE_COLLECTED, $orders['cod_paid']->fresh()->rejection_fee_status);
+        $this->assertSame(Order::REJECTION_FEE_COLLECTED, $orders['prepaid_paid']->fresh()->rejection_fee_status);
+        $this->assertSame(Order::REJECTION_FEE_CLIENT_CHARGED, $orders['cod_no_fee']->fresh()->rejection_fee_status);
+        $this->assertSame(Order::REJECTION_FEE_CLIENT_CHARGED, $orders['prepaid_no_fee']->fresh()->rejection_fee_status);
+
+        // Driver hands over the 20 he collected, then the orders go back to the client
+        $this->orderService->confirmHandover($this->driver, null, null, 'cash');
+        $this->orderService->approveHandover(HandoverRequest::where('driver_id', $this->driver->id)->firstOrFail(), $this->admin);
+
+        foreach ($orders as $order) {
+            $this->orderService->assignReturnDriver($order->fresh(), $this->returnDriver, $this->admin);
+            $this->orderService->updateStatus($order->fresh(), 'returned', [], $this->returnDriver);
+        }
+
+        $statements = app(ClientStatementService::class);
+
+        $nets = collect($orders)->map(fn (Order $order) => $statements->amounts($order->fresh()->load('payment'))['net']);
+        $this->assertSame(
+            ['cod_paid' => 8.0, 'prepaid_paid' => 8.0, 'cod_no_fee' => -2.0, 'prepaid_no_fee' => -2.0],
+            $nets->all()
+        );
+
+        $totals = $statements->totals($statements->ordersQuery(['client_id' => $this->client->id]));
+        $this->assertSame(4, $totals['orders']);
+        $this->assertSame(0.0, $totals['cod']);
+        $this->assertSame(20.0, $totals['customer_delivery']);
+        $this->assertSame(8.0, $totals['client_delivery']);
+        $this->assertSame(12.0, $totals['net']);
+
+        // Exported and paid: the client receives the 20 collected, and is charged 2 per order
+        $statement = $statements->export($this->client, [], $this->admin);
+        $this->assertSame(12.0, (float) $statement->net_amount);
+
+        $statements->confirmPayment($statement, $this->admin, 'BANK-12');
+
+        $ledger = fn (string $type) => (float) \App\Models\FinancialLedgerEntry::whereIn('order_id', collect($orders)->pluck('id'))
+            ->where('type', $type)
+            ->sum('amount');
+
+        $this->assertSame(20.0, $ledger('client_payout'));
+        $this->assertSame(8.0, $ledger('shipping_charge'));
     }
 
     public function test_client_is_charged_when_the_customer_did_not_pay_the_delivery_fee(): void

@@ -112,6 +112,21 @@ class SupportNotificationService
         );
     }
 
+    /**
+     * The client confirmed receiving an order the driver brought back.
+     */
+    public function notifyAdminsReturnConfirmed(Order $order): void
+    {
+        $company = $order->clientProfile?->company_name ?? 'Client';
+        $this->sendToAdmins(
+            title:      'Returned Order Confirmed',
+            message:    "{$company} confirmed receiving returned order #{$order->order_number}",
+            type:       'info',
+            entityType: 'order',
+            entityId:   $order->id,
+        );
+    }
+
     public function notifyAdminsOrdersImported(string $company, int $count, string $batchNumber): void
     {
         $this->sendToAdmins(

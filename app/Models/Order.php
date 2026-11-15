@@ -18,10 +18,10 @@ class Order extends Model
     use BroadcastsRealtimeChanges;
     use SoftDeletes;
 
-    /** Who bears the delivery fee of a rejected order (orders.rejection_fee_status). */
+    /** How the delivery fee of a rejected order is settled (orders.rejection_fee_status). */
     public const REJECTION_FEE_NOT_CHARGED    = 'not_charged';    // client option off: nobody pays
-    public const REJECTION_FEE_COLLECTED      = 'collected';      // driver collected it from the customer
-    public const REJECTION_FEE_CLIENT_CHARGED = 'client_charged'; // not collected: charged to the client
+    public const REJECTION_FEE_COLLECTED      = 'collected';      // customer paid the driver: credited to the client, minus Saee's fee
+    public const REJECTION_FEE_CLIENT_CHARGED = 'client_charged'; // customer did not pay: the client is charged Saee's fee
 
     /** A rejected order on its way back to the client, before it is returned. */
     public const RETURN_FLOW_STATUSES = ['rejected', 'in_office', 'out_for_return'];
@@ -175,13 +175,14 @@ class Order extends Model
 
     /**
      * Whether Saee's delivery fee is charged to the client. Always for a
-     * delivered order; for a rejected / returned one only when the fee was
-     * neither waived nor collected from the customer.
+     * delivered order; for a rejected / returned one unless the client's
+     * rejected orders are free. When the customer paid the driver, that
+     * amount is credited to the client (see collectedCustomerDeliveryFee()).
      */
     public function chargesClientDeliveryFee(): bool
     {
         return $this->status === 'delivered'
-            || in_array($this->rejection_fee_status, [null, self::REJECTION_FEE_CLIENT_CHARGED], true);
+            || $this->rejection_fee_status !== self::REJECTION_FEE_NOT_CHARGED;
     }
 
     /** Delivery fee the customer pays the driver (0 when the client pays it). */
@@ -193,16 +194,25 @@ class Order extends Model
     }
 
     /**
+     * Delivery fee the customer actually paid the driver, owed to the client:
+     * on delivery, or on a rejected order whose fee the driver collected.
+     */
+    public function collectedCustomerDeliveryFee(): float
+    {
+        $collected = $this->status === 'delivered' || $this->rejection_fee_status === self::REJECTION_FEE_COLLECTED;
+
+        return $collected ? $this->customerDeliveryFee() : 0.0;
+    }
+
+    /**
      * Cash the driver collected for this order: COD + customer delivery fee on
      * delivery, or only the delivery fee when a rejected order's fee was collected.
      */
     public function driverCashAmount(): float
     {
-        if ($this->status === 'delivered') {
-            return (float) ($this->payment?->order_amount ?? 0) + $this->customerDeliveryFee();
-        }
+        $cod = $this->status === 'delivered' ? (float) ($this->payment?->order_amount ?? 0) : 0.0;
 
-        return $this->rejection_fee_status === self::REJECTION_FEE_COLLECTED ? $this->customerDeliveryFee() : 0.0;
+        return $cod + $this->collectedCustomerDeliveryFee();
     }
 
     public function handoverRequest(): BelongsTo

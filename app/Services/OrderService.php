@@ -517,6 +517,8 @@ class OrderService
 
             $this->logTracking($order->id, $actor->id, 'returned', 'returned', 'Client confirmed receiving the returned order.');
 
+            rescue(fn () => app(SupportNotificationService::class)->notifyAdminsReturnConfirmed($order));
+
             return $order;
         });
     }

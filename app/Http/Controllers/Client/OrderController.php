@@ -35,7 +35,7 @@ class OrderController extends Controller
             'awaiting_return_confirmation' => Order::where('client_profile_id', $clientId)->awaitingReturnConfirmation()->count(),
             'pending_cash' => Order::where('client_profile_id', $clientId)
                 ->whereIn('payment_status', ['with_driver', 'with_company'])
-                // A rejected order never holds cash owed to the client (only a delivery fee kept by Saee)
+                // A rejected order's COD is never collected; a delivery fee its customer paid shows on the statement instead
                 ->whereNotIn('status', [...Order::RETURN_FLOW_STATUSES, 'returned', 'cancelled'])
                 ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
                 ->selectRaw('COALESCE(SUM(COALESCE(order_payments.order_amount, 0) + COALESCE(order_payments.customer_delivery_amount, 0)), 0) as total')
