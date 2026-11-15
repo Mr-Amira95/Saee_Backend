@@ -131,6 +131,7 @@ class OrderService
                 $order->delivery_latitude  = $extra['delivery_latitude'] ?? null;
                 $order->delivery_longitude = $extra['delivery_longitude'] ?? null;
                 $order->rejection_reason_id = null;
+                $order->rejection_fee_status = null;
 
                 $payment = $order->payment;
 
@@ -176,25 +177,68 @@ class OrderService
                 $order->rejection_reason_id = $extra['rejection_reason_id'] ?? null;
                 $order->notes = $extra['notes'] ?? $order->notes;
 
+                // Only a driver can have collected the customer's delivery fee
+                $feeCollected = $driverUserId && ($extra['delivery_fee_collected'] ?? false);
+                $order->rejection_fee_status = $this->rejectionFeeStatus($order, (bool) $feeCollected);
+
                 $reasonText = $order->rejectionReason ? $order->rejectionReason->reason : 'Not specified';
-                $this->logTracking($order->id, $actor->id, $oldStatus, 'rejected', "Order rejected. Reason: {$reasonText}. Notes: " . ($extra['notes'] ?? ''));
+                $description = "Order rejected. Reason: {$reasonText}. Notes: " . ($extra['notes'] ?? '');
+
+                if ($order->rejection_fee_status === Order::REJECTION_FEE_COLLECTED) {
+                    $fee = $order->customerDeliveryFee();
+                    $order->payment_status = 'with_driver';
+
+                    FinancialLedgerEntry::create([
+                        'order_id'          => $order->id,
+                        'client_profile_id' => $order->client_profile_id,
+                        'driver_id'         => $driverUserId,
+                        'from_account'      => 'customer',
+                        'to_account'        => 'driver',
+                        'amount'            => $fee,
+                        'type'              => 'delivery_collection',
+                        'recorded_by'       => $actor->id,
+                        'notes'             => 'Delivery fee collected from customer on rejected order',
+                    ]);
+
+                    $description .= " Delivery fee of {$fee} collected from the customer.";
+                }
+
+                $this->logTracking($order->id, $actor->id, $oldStatus, 'rejected', $description);
+
+            } elseif ($newStatus === 'in_office') {
+                $order->return_driver_profile_id = null;
+
+                $this->logTracking($order->id, $actor->id, $oldStatus, 'in_office', 'Order is at the office, waiting to be returned to the client.');
 
             } elseif ($newStatus === 'returned') {
                 $order->returned_at = now();
-                if ($oldStatus === 'picked_up') {
+                $order->return_confirmed_at = null;
+                $order->return_confirmed_by = null;
+                $order->rejection_fee_status ??= $this->rejectionFeeStatus($order, false);
+
+                // Keep the status if the order is on a client statement, or the driver still holds its cash
+                if (! in_array($order->payment_status, ['exported', 'paid', 'with_driver'], true)) {
+                    $order->payment_status = 'no_payment';
+                }
+
+                $clientDeliveryAmount = (float) ($order->payment?->client_delivery_amount ?? 0);
+                $alreadyCharged = FinancialLedgerEntry::where('order_id', $order->id)->where('type', 'shipping_charge')->exists();
+
+                if ($order->chargesClientDeliveryFee() && $clientDeliveryAmount > 0 && ! $alreadyCharged) {
                     FinancialLedgerEntry::create([
                         'order_id'          => $order->id,
                         'client_profile_id' => $order->client_profile_id,
                         'driver_id'         => $driverUserId,
                         'from_account'      => 'client',
                         'to_account'        => 'company',
-                        'amount'            => $order->payment->client_delivery_amount,
+                        'amount'            => $clientDeliveryAmount,
                         'type'              => 'shipping_charge',
                         'recorded_by'       => $actor->id,
                         'notes'             => 'Delivery charge for returned order ' . $order->order_number,
                     ]);
                 }
-                $this->logTracking($order->id, $actor->id, $oldStatus, 'returned', 'Order returned to hub/client.');
+
+                $this->logTracking($order->id, $actor->id, $oldStatus, 'returned', 'Order returned to the client.');
 
             } elseif ($newStatus === 'cancelled') {
                 $order->cancellation_reason = $extra['cancellation_reason'] ?? $order->cancellation_reason;
@@ -209,7 +253,7 @@ class OrderService
 
             $order->save();
 
-            if (in_array($newStatus, ['delivered', 'rejected', 'picked_up'])) {
+            if (in_array($newStatus, ['delivered', 'rejected', 'picked_up', 'returned'])) {
                 rescue(fn () => app(SupportNotificationService::class)->notifyClientOrderStatusChanged($order, $newStatus, $actor->id));
             }
 
@@ -246,7 +290,7 @@ class OrderService
             $count = 0;
             $orders = Order::whereIn('id', $orderIds)
                 ->where('driver_profile_id', $driverProfile?->id)
-                ->where('status', 'delivered')
+                ->whereIn('status', ['delivered', 'rejected'])
                 ->where('payment_status', 'with_driver')
                 ->with('payment')
                 ->get();
@@ -355,7 +399,9 @@ class OrderService
     }
 
     /**
-     * Approve a handover request: perform cash settlement and return rejected orders.
+     * Approve a handover request: settle the driver's cash and receive the
+     * rejected orders at the office (in_office), ready to be assigned to a
+     * driver who takes them back to the client.
      */
     public function approveHandover(HandoverRequest $handoverRequest, User $actor): void
     {
@@ -364,12 +410,13 @@ class OrderService
                 throw new \Exception("Only pending handover requests can be approved.");
             }
 
-            $deliveredOrders = $handoverRequest->orders()
-                ->where('status', 'delivered')
+            // Delivered orders, plus rejected ones whose delivery fee the driver collected
+            $cashOrders = $handoverRequest->orders()
+                ->whereIn('status', ['delivered', 'rejected'])
                 ->where('payment_status', 'with_driver')
                 ->get();
 
-            foreach ($deliveredOrders as $order) {
+            foreach ($cashOrders as $order) {
                 $driverCollected = FinancialLedgerEntry::where('order_id', $order->id)
                     ->where('driver_id', $handoverRequest->driver_id)
                     ->where('to_account', 'driver')
@@ -403,38 +450,17 @@ class OrderService
 
             $rejectedOrders = $handoverRequest->orders()
                 ->where('status', 'rejected')
-                ->with('payment')
                 ->get();
 
             foreach ($rejectedOrders as $order) {
-                $order->update([
-                    'status'         => 'returned',
-                    // Keep the status if the order is already on a client statement
-                    'payment_status' => in_array($order->payment_status, ['exported', 'paid'], true) ? $order->payment_status : 'no_payment',
-                    'returned_at'    => now(),
-                ]);
+                $order->update(['status' => 'in_office']);
 
-                $clientDeliveryAmount = $order->payment?->client_delivery_amount ?? 0;
-                if ($clientDeliveryAmount > 0) {
-                    FinancialLedgerEntry::create([
-                        'order_id'          => $order->id,
-                        'client_profile_id' => $order->client_profile_id,
-                        'driver_id'         => $handoverRequest->driver_id,
-                        'from_account'      => 'client',
-                        'to_account'        => 'company',
-                        'amount'            => $clientDeliveryAmount,
-                        'type'              => 'shipping_charge',
-                        'recorded_by'       => $actor->id,
-                        'notes'             => 'Delivery charge for returned order ' . $order->order_number,
-                    ]);
-                }
-
-                $description = 'Driver handover approved by admin — order returned to client.';
+                $description = 'Driver handover approved by admin — order received at the office.';
                 if ($handoverRequest->notes) {
                     $description .= " Notes: {$handoverRequest->notes}";
                 }
 
-                $this->logTracking($order->id, $actor->id, 'rejected', 'returned', $description);
+                $this->logTracking($order->id, $actor->id, 'rejected', 'in_office', $description);
             }
 
             $handoverRequest->update([
@@ -443,6 +469,71 @@ class OrderService
                 'approved_at' => now(),
             ]);
         });
+    }
+
+    /**
+     * Assign (or re-assign) the driver who takes an in-office order back to
+     * the client. The delivery driver (driver_profile_id) is left untouched.
+     */
+    public function assignReturnDriver(Order $order, User $driver, User $actor): Order
+    {
+        return DB::transaction(function () use ($order, $driver, $actor) {
+            if (! in_array($order->status, ['in_office', 'out_for_return'], true)) {
+                throw new \InvalidArgumentException('Only orders at the office can be assigned to a driver for return.');
+            }
+
+            $driverProfile = DriverProfile::where('user_id', $driver->id)->firstOrFail();
+            $oldStatus = $order->status;
+
+            if ($oldStatus === 'out_for_return' && $order->return_driver_profile_id === $driverProfile->id) {
+                return $order;
+            }
+
+            $order->update([
+                'status'                   => 'out_for_return',
+                'return_driver_profile_id' => $driverProfile->id,
+            ]);
+
+            $this->logTracking($order->id, $actor->id, $oldStatus, 'out_for_return', "Order assigned to driver {$driver->name} to be returned to the client.");
+
+            return $order;
+        });
+    }
+
+    /**
+     * The client confirms receiving a returned order.
+     */
+    public function confirmReturn(Order $order, User $actor): Order
+    {
+        return DB::transaction(function () use ($order, $actor) {
+            if (! $order->awaitsReturnConfirmation()) {
+                return $order;
+            }
+
+            $order->update([
+                'return_confirmed_at' => now(),
+                'return_confirmed_by' => $actor->id,
+            ]);
+
+            $this->logTracking($order->id, $actor->id, 'returned', 'returned', 'Client confirmed receiving the returned order.');
+
+            return $order;
+        });
+    }
+
+    /**
+     * Who bears the delivery fee of a rejected order, from the client's
+     * "rejected orders are payable" option and what the driver collected.
+     */
+    private function rejectionFeeStatus(Order $order, bool $collectedFromCustomer): string
+    {
+        if (! $order->clientProfile?->charge_rejected_orders) {
+            return Order::REJECTION_FEE_NOT_CHARGED;
+        }
+
+        return $collectedFromCustomer && $order->customerDeliveryFee() > 0
+            ? Order::REJECTION_FEE_COLLECTED
+            : Order::REJECTION_FEE_CLIENT_CHARGED;
     }
 
     private function logTracking(int $orderId, int $userId, ?string $fromStatus, string $toStatus, string $description): OrderTrackingLog

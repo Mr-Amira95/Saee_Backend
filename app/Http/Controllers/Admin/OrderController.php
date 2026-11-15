@@ -23,17 +23,23 @@ class OrderController extends Controller
      * Final statuses in which the driver assignment is locked and the
      * order is no longer eligible for reassignment.
      */
-    protected const DRIVER_LOCKED_STATUSES = ['delivered', 'rejected', 'cancelled', 'returned'];
+    protected const DRIVER_LOCKED_STATUSES = ['delivered', 'rejected', 'in_office', 'out_for_return', 'cancelled', 'returned'];
+
+    /**
+     * Statuses in which a rejected order sits at the office and can be
+     * assigned (or re-assigned) to a driver who takes it back to the client.
+     */
+    protected const RETURN_ASSIGNABLE_STATUSES = ['in_office', 'out_for_return'];
 
     /**
      * Grouped values accepted by the `status` filter, each covering several
      * order statuses (used by the merged stats card).
      */
     protected const STATUS_GROUPS = [
-        'rejected_returned_cancelled' => ['rejected', 'returned', 'cancelled'],
+        'rejected_returned_cancelled' => ['rejected', 'out_for_return', 'returned', 'cancelled'],
     ];
 
-    protected const ORDER_STATUSES = ['pending', 'assigned', 'picked_up', 'delivered', 'rejected', 'returned', 'cancelled'];
+    protected const ORDER_STATUSES = ['pending', 'assigned', 'picked_up', 'delivered', 'rejected', 'in_office', 'out_for_return', 'returned', 'cancelled'];
 
     protected const PAYMENT_STATUSES = ['pending', 'with_driver', 'with_company', 'paid', 'no_payment'];
 
@@ -64,6 +70,7 @@ class OrderController extends Controller
             'assigned'                    => $statusCounts['assigned'] ?? 0,
             'picked_up'                   => $statusCounts['picked_up'] ?? 0,
             'delivered'                   => $statusCounts['delivered'] ?? 0,
+            'in_office'                   => $statusCounts['in_office'] ?? 0,
             'rejected_returned_cancelled' => collect(self::STATUS_GROUPS['rejected_returned_cancelled'])
                 ->sum(fn ($status) => $statusCounts[$status] ?? 0),
         ];
@@ -193,7 +200,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['clientProfile.masterUser', 'driverProfile.user', 'receiver.city', 'receiver.area', 'rejectionReason', 'trackingLogs.user', 'financialLedgerEntries.recordedBy']);
+        $order->load(['clientProfile.masterUser', 'driverProfile.user', 'returnDriverProfile.user', 'returnConfirmedBy', 'receiver.city', 'receiver.area', 'rejectionReason', 'trackingLogs.user', 'financialLedgerEntries.recordedBy']);
 
         $drivers = User::where('role', 'driver')->where('status', 'active')->orderBy('name')->get();
         $rejectionReasons = RejectionReason::where('is_active', true)->orderBy('reason')->get();
@@ -210,7 +217,7 @@ class OrderController extends Controller
             ->get();
         $clients = ClientProfile::where('status', 'active')->orderBy('company_name')->get();
         $rejectionReasons = RejectionReason::where('is_active', true)->orderBy('reason')->get();
-        $orderStatuses = self::ORDER_STATUSES;
+        $orderStatuses = $this->manualStatusesFor($order);
         $paymentStatuses = self::PAYMENT_STATUSES;
 
         return view('admin.orders.edit', compact('order', 'cities', 'clients', 'rejectionReasons', 'orderStatuses', 'paymentStatuses'));
@@ -236,7 +243,7 @@ class OrderController extends Controller
                 'address_text'             => 'required|string',
                 'notes'                    => 'nullable|string',
                 'delivery_shift'           => 'nullable|string|in:doesnt_matter,before_12pm,after_12pm',
-                'status'                   => 'required|in:' . implode(',', self::ORDER_STATUSES),
+                'status'                   => 'required|in:' . implode(',', $this->manualStatusesFor($order)),
                 'payment_status'           => 'required|in:' . implode(',', self::PAYMENT_STATUSES),
                 'rejection_reason_id'      => 'nullable|required_if:status,rejected|exists:rejection_reasons,id',
                 'cancellation_reason'      => 'nullable|string|max:255',
@@ -281,7 +288,7 @@ class OrderController extends Controller
 
         // Status or driver update
         $validated = $request->validate([
-            'status'              => 'required|in:pending,assigned,picked_up,delivered,rejected,returned,cancelled',
+            'status'              => 'required|in:' . implode(',', $this->manualStatusesFor($order)),
             'driver_id'           => 'nullable|exists:users,id',
             'rejection_reason_id' => 'nullable|required_if:status,rejected|exists:rejection_reasons,id',
             'notes'               => 'nullable|string',
@@ -349,11 +356,26 @@ class OrderController extends Controller
         ]);
 
         $orders = Order::whereIn('id', $validated['order_ids'])
-            ->whereIn('status', ['pending', 'assigned'])
+            ->whereIn('status', ['pending', 'assigned', ...self::RETURN_ASSIGNABLE_STATUSES])
             ->get();
 
+        $driver = User::findOrFail($validated['driver_id']);
+
+        if (! DriverProfile::where('user_id', $driver->id)->exists()) {
+            return redirect()->back()->with('error', __('The selected user is not a driver.'));
+        }
+
+        // Orders at the office are assigned for return to the client; the rest for delivery
         $assignedOrderIds = [];
+        $returnOrderIds = [];
         foreach ($orders as $order) {
+            if (in_array($order->status, self::RETURN_ASSIGNABLE_STATUSES, true)) {
+                $this->orderService->assignReturnDriver($order, $driver, Auth::user());
+                $returnOrderIds[] = $order->id;
+
+                continue;
+            }
+
             $this->orderService->updateStatus(
                 $order,
                 'assigned',
@@ -364,6 +386,7 @@ class OrderController extends Controller
         }
 
         $assigned = count($assignedOrderIds);
+        $returning = count($returnOrderIds);
 
         if ($assigned > 0) {
             app(SupportNotificationService::class)->notifyOrdersAssigned(
@@ -373,13 +396,28 @@ class OrderController extends Controller
             );
         }
 
-        $skipped = count($validated['order_ids']) - $assigned;
-        $msg = __(':count order(s) assigned to driver and marked as Picked Up.', ['count' => $assigned]);
-        if ($skipped > 0) {
-            $msg .= ' ' . __(':count order(s) skipped (not pending).', ['count' => $skipped]);
+        if ($returning > 0) {
+            rescue(fn () => app(SupportNotificationService::class)->notifyReturnOrdersAssigned(
+                $validated['driver_id'],
+                $returnOrderIds,
+                Auth::id()
+            ));
         }
 
-        return redirect()->back()->with('success', $msg);
+        $messages = [];
+        if ($assigned > 0 || $returning === 0) {
+            $messages[] = __(':count order(s) assigned to driver and marked as Picked Up.', ['count' => $assigned]);
+        }
+        if ($returning > 0) {
+            $messages[] = __(':count order(s) assigned to driver to be returned to the client.', ['count' => $returning]);
+        }
+
+        $skipped = count($validated['order_ids']) - $assigned - $returning;
+        if ($skipped > 0) {
+            $messages[] = __(':count order(s) skipped (not pending).', ['count' => $skipped]);
+        }
+
+        return redirect()->back()->with('success', implode(' ', $messages));
     }
 
     public function destroy(Order $order)
@@ -414,6 +452,21 @@ class OrderController extends Controller
      * overridden when the admin actually changed it, so it doesn't clobber
      * the value derived from the new order status (e.g. on delivery).
      */
+    /**
+     * Statuses an admin may set by hand. "Out for return" needs a return
+     * driver, so it is only offered once one is assigned (use Assign Driver).
+     *
+     * @return array<int, string>
+     */
+    private function manualStatusesFor(Order $order): array
+    {
+        if ($order->return_driver_profile_id) {
+            return self::ORDER_STATUSES;
+        }
+
+        return array_values(array_diff(self::ORDER_STATUSES, ['out_for_return']));
+    }
+
     private function applyManualStatuses(Order $order, array $validated, User $actor): void
     {
         $originalPaymentStatus = $order->payment_status;
@@ -450,7 +503,7 @@ class OrderController extends Controller
         $query = Order::query();
 
         if ($withRelations) {
-            $query->with(['clientProfile', 'driverProfile.user', 'receiver.city', 'receiver.area', 'payment']);
+            $query->with(['clientProfile', 'driverProfile.user', 'returnDriverProfile.user', 'receiver.city', 'receiver.area', 'payment']);
         }
 
         if ($request->filled('search')) {
@@ -488,7 +541,8 @@ class OrderController extends Controller
         if ($request->filled('driver_id')) {
             $driverProfile = DriverProfile::where('user_id', $request->input('driver_id'))->first();
             if ($driverProfile) {
-                $query->where('driver_profile_id', $driverProfile->id);
+                // Orders the driver delivers or takes back to the client
+                $query->forDriver($driverProfile->id);
             }
         }
         if ($request->filled('city_id')) {

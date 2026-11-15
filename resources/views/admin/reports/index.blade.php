@@ -146,7 +146,7 @@
                 </div>
                 <span style="font-size:.68rem;color:#f87171;font-weight:700;">{{ __('Failed') }}</span>
             </div>
-            <div class="metric-val" style="color:#f87171;">{{ number_format(($statusCounts['rejected'] ?? 0) + ($statusCounts['returned'] ?? 0)) }}</div>
+            <div class="metric-val" style="color:#f87171;">{{ number_format(collect(['rejected', 'in_office', 'out_for_return', 'returned'])->sum(fn ($status) => $statusCounts[$status] ?? 0)) }}</div>
             <div class="metric-lbl">{{ __('Rejected & Returns') }}</div>
         </a>
 
@@ -213,6 +213,8 @@
                                 'picked_up' => 'badge-info',
                                 'delivered' => 'badge-active',
                                 'rejected'  => 'badge-suspended',
+                                'in_office' => 'badge-pending',
+                                'out_for_return' => 'badge-info',
                                 'returned'  => 'badge-no',
                                 'cancelled' => 'badge-suspended',
                             ];
@@ -353,6 +355,8 @@
                     ['key' => 'pending',    'label' => __('Pending'),      'color' => '#fbbf24'],
                     ['key' => 'picked_up',  'label' => __('In Transit'),   'color' => '#60a5fa'],
                     ['key' => 'rejected',   'label' => __('Rejected'),     'color' => '#f87171'],
+                    ['key' => 'in_office',  'label' => __('In Office'),    'color' => '#f97316'],
+                    ['key' => 'out_for_return', 'label' => __('Out for Return'), 'color' => '#a78bfa'],
                     ['key' => 'returned',   'label' => __('Returned'),     'color' => '#fb923c'],
                     ['key' => 'cancelled',  'label' => __('Cancelled'),    'color' => '#94a3b8'],
                 ];

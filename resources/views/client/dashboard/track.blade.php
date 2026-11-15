@@ -58,6 +58,8 @@
                             'picked_up' => 'badge-info',
                             'delivered' => 'badge-success',
                             'rejected'  => 'badge-danger',
+                            'in_office' => 'badge-pending',
+                            'out_for_return' => 'badge-info',
                             default     => 'badge-neutral',
                         };
                         $statusLabel = match($order->status) {
@@ -66,6 +68,8 @@
                             'picked_up' => __('In Transit'),
                             'delivered' => __('Delivered'),
                             'rejected'  => __('Rejected'),
+                            'in_office' => __('In Office'),
+                            'out_for_return' => __('Out for Return'),
                             'returned'  => __('Returned'),
                             'cancelled' => __('Cancelled'),
                             default     => ucfirst($order->status),

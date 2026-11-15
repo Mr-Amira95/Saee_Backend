@@ -54,6 +54,7 @@
             'pending'                     => ['label' => __('All Pending Orders'),   'color' => '#f59e0b', 'bg' => 'rgba(245, 158, 11, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
             'assigned'                    => ['label' => __('All Assigned Orders'),  'color' => '#6366f1', 'bg' => 'rgba(99, 102, 241, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>'],
             'picked_up'                   => ['label' => __('All Picked Up Orders'), 'color' => '#3b82f6', 'bg' => 'rgba(59, 130, 246, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1m-6 0a1 1 0 001-1m-6 0H3"/>'],
+            'in_office'                   => ['label' => __('In Office (to return to client)'), 'color' => '#f97316', 'bg' => 'rgba(249, 115, 22, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>'],
             'delivered'                   => ['label' => __('All Delivered Orders'), 'color' => '#10b981', 'bg' => 'rgba(16, 185, 129, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
             'rejected_returned_cancelled' => ['label' => __('Rejected, Returned & Cancelled Orders'), 'color' => '#ef4444', 'bg' => 'rgba(239, 68, 68, 0.15)', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>'],
         ];
@@ -95,6 +96,8 @@
                         'picked_up'                   => __('Picked Up'),
                         'delivered'                   => __('Delivered'),
                         'rejected'                    => __('Rejected'),
+                        'in_office'                   => __('In Office'),
+                        'out_for_return'              => __('Out for Return'),
                         'returned'                    => __('Returned'),
                         'cancelled'                   => __('Cancelled'),
                         'rejected_returned_cancelled' => __('Rejected, Returned & Cancelled'),
@@ -241,7 +244,7 @@
                 <thead>
                     <tr>
                         <th style="width:40px; text-align:center;">
-                            <label class="custom-cb" title="{{ __('Select all pending orders') }}">
+                            <label class="custom-cb" title="{{ __('Select all pending and in-office orders') }}">
                                 <input type="checkbox" id="select-all">
                                 <span class="custom-cb-ring"></span>
                             </label>
@@ -260,12 +263,16 @@
                 </thead>
                 <tbody>
                     @forelse($orders as $order)
-                        @php $isPending = $order->status === 'pending'; @endphp
+                        @php
+                            $isPending = $order->status === 'pending';
+                            // At the office: can be assigned to a driver who takes it back to the client
+                            $isReturnable = in_array($order->status, ['in_office', 'out_for_return'], true);
+                        @endphp
                         <tr class="{{ $isPending ? 'order-row-pending' : '' }}">
                             <td style="text-align:center;">
-                                @if($isPending)
+                                @if($isPending || $isReturnable)
                                     <label class="custom-cb">
-                                        <input type="checkbox" class="order-checkbox" value="{{ $order->id }}">
+                                        <input type="checkbox" class="order-checkbox" value="{{ $order->id }}" data-return="{{ $isReturnable ? 1 : 0 }}">
                                         <span class="custom-cb-ring"></span>
                                     </label>
                                 @endif
@@ -310,6 +317,9 @@
                                 @else
                                     <span class="cell-sub" style="font-style: italic;">{{ __('Unassigned') }}</span>
                                 @endif
+                                @if($order->returnDriverProfile?->user)
+                                    <div class="cell-sub">{{ __('Return:') }} {{ $order->returnDriverProfile->user->name }}</div>
+                                @endif
                             </td>
                             <td>
                                 @php
@@ -319,14 +329,19 @@
                                         'picked_up' => 'badge-info',
                                         'delivered' => 'badge-active',
                                         'rejected'  => 'badge-suspended',
+                                        'in_office' => 'badge-pending',
+                                        'out_for_return' => 'badge-info',
                                         'returned'  => 'badge-no',
                                         'cancelled' => 'badge-suspended',
                                     ];
                                 @endphp
                                 <span class="badge {{ $statusClasses[$order->status] ?? 'badge-no' }}">
                                     <span class="badge-dot"></span>
-                                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                                    {{ $statusOptions[$order->status] ?? ucfirst(str_replace('_', ' ', $order->status)) }}
                                 </span>
+                                @if($order->awaitsReturnConfirmation())
+                                    <div class="cell-sub">{{ __('Awaiting client confirmation') }}</div>
+                                @endif
                             </td>
                             <td>
                                 <div class="cell-main">{{ $order->created_at->format('d M Y') }}</div>
@@ -337,6 +352,11 @@
                                     <a href="{{ route('admin.orders.show', $order) }}" class="act-btn act-view" title="{{ __('View Details') }}">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     </a>
+                                    @if($isReturnable && auth()->user()->hasAdminAction('orders.assign_driver'))
+                                        <button class="act-btn act-edit" title="{{ __('Assign Driver for Return') }}" onclick="openSingleAssign({{ $order->id }}, '#{{ $order->order_number }}', true)">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                                        </button>
+                                    @endif
                                     @if($isPending)
                                         @if(auth()->user()->hasAdminAction('orders.assign_driver'))
                                         <button class="act-btn act-edit" title="{{ __('Assign Driver') }}" onclick="openSingleAssign({{ $order->id }}, '#{{ $order->order_number }}')">
@@ -541,6 +561,9 @@
         orderSelectedTpl: @json(__(':count order(s) selected')),
         pendingWillAssignTpl: @json(__(':count pending order(s) will be assigned and marked as Picked Up.')),
         orderWillAssignTpl: @json(__('Order :label will be assigned and marked as Picked Up.')),
+        returnWillAssignTpl: @json(__(':count order(s) at the office will be assigned to the driver to be returned to the client.')),
+        orderWillReturnTpl: @json(__('Order :label will be assigned to the driver to be returned to the client.')),
+        mixedWillAssignTpl: @json(__(':pending pending order(s) will be assigned for delivery and :returns order(s) at the office for return to the client.')),
     };
 
     // Modal helpers
@@ -658,15 +681,23 @@
         }
 
         window.openBulkAssign = function() {
-            var ids = getChecked().map(function(cb) { return cb.value; });
+            var checked = getChecked();
+            var ids = checked.map(function(cb) { return cb.value; });
+            var returns = checked.filter(function(cb) { return cb.dataset.return === '1'; }).length;
             buildHiddenInputs(ids);
-            subtitle.textContent = i18nOrdersIndex.pendingWillAssignTpl.replace(':count', ids.length);
+            if (returns === 0) {
+                subtitle.textContent = i18nOrdersIndex.pendingWillAssignTpl.replace(':count', ids.length);
+            } else if (returns === ids.length) {
+                subtitle.textContent = i18nOrdersIndex.returnWillAssignTpl.replace(':count', returns);
+            } else {
+                subtitle.textContent = i18nOrdersIndex.mixedWillAssignTpl.replace(':pending', ids.length - returns).replace(':returns', returns);
+            }
             openModal('assignDriverModal');
         };
 
-        window.openSingleAssign = function(orderId, orderLabel) {
+        window.openSingleAssign = function(orderId, orderLabel, isReturn) {
             buildHiddenInputs([orderId]);
-            subtitle.textContent = i18nOrdersIndex.orderWillAssignTpl.replace(':label', orderLabel);
+            subtitle.textContent = (isReturn ? i18nOrdersIndex.orderWillReturnTpl : i18nOrdersIndex.orderWillAssignTpl).replace(':label', orderLabel);
             openModal('assignDriverModal');
         };
     })();

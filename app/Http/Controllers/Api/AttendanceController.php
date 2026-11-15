@@ -192,7 +192,8 @@ class AttendanceController extends Controller
             ->where('payment_status', 'with_driver')
             ->whereNull('handover_request_id')
             ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
-            ->sum(\DB::raw('COALESCE(order_payments.order_amount, 0) + COALESCE(order_payments.customer_delivery_amount, 0)'));
+            // A rejected order only holds the delivery fee the customer paid, never the COD amount
+            ->sum(\DB::raw("CASE WHEN orders.status = 'delivered' THEN COALESCE(order_payments.order_amount, 0) ELSE 0 END + COALESCE(order_payments.customer_delivery_amount, 0)"));
 
         // COD cash collected during this shift only
         $shiftCodCollected = (float) $deliveredOrders

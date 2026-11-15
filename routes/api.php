@@ -224,6 +224,10 @@ Route::middleware(['auth:sanctum', 'client.api.permission'])->group(function () 
     Route::post('orders/{order}/return', [OrderController::class, 'returnOrder'])
         ->name('api.orders.return');
 
+    // Client confirms receiving a returned order
+    Route::post('orders/{order}/confirm-return', [OrderController::class, 'confirmReturn'])
+        ->name('api.orders.confirm-return');
+
     Route::post('driver/confirm-handover', [OrderController::class, 'confirmHandover'])
         ->name('api.driver.confirm-handover');
 

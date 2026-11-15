@@ -27,7 +27,7 @@ class UserFactory extends Factory
         return [
             'name' => 'Test User',
             'email' => 'user' . Str::random(6) . '@example.com',
-            'phone' => '0799999999',
+            'phone' => '07' . str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT),
             'role' => 'client_master',
             'status' => 'active',
             'email_verified_at' => now(),

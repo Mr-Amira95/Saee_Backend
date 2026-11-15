@@ -154,6 +154,8 @@
                             'picked_up' => 'badge-info',
                             'delivered' => 'badge-success',
                             'rejected'  => 'badge-danger',
+                            'in_office' => 'badge-pending',
+                            'out_for_return' => 'badge-info',
                             'returned'  => 'badge-neutral',
                             'cancelled' => 'badge-neutral',
                             default     => 'badge-neutral',
@@ -163,6 +165,8 @@
                             'picked_up' => __('In Transit'),
                             'delivered' => __('Delivered'),
                             'rejected'  => __('Rejected'),
+                            'in_office' => __('In Office'),
+                            'out_for_return' => __('Out for Return'),
                             'returned'  => __('Returned'),
                             'cancelled' => __('Cancelled'),
                             default     => ucfirst($order->status),
@@ -303,6 +307,8 @@
                 'picked_up'  => ['label' => __('In Transit'),  'color' => '#3b82f6'],
                 'returned'   => ['label' => __('Returned'),    'color' => '#94a3b8'],
                 'rejected'   => ['label' => __('Rejected'),    'color' => '#f87171'],
+                'in_office'  => ['label' => __('In Office'),   'color' => '#f97316'],
+                'out_for_return' => ['label' => __('Out for Return'), 'color' => '#a78bfa'],
                 'cancelled'  => ['label' => __('Cancelled'),   'color' => '#6b7280'],
             ];
 

@@ -85,6 +85,7 @@ class ClientController extends Controller
             'expiry_date'                 => ['nullable', 'date_format:d-m-Y', 'after:today'],
             'status'                      => ['nullable', Rule::in(['active','suspended','pending_verification'])],
             'require_national_id'         => 'nullable|boolean',
+            'charge_rejected_orders'      => 'nullable|boolean',
             'logo'                        => 'nullable|image:allow_svg|max:2048',
             'attachment_labels'           => 'nullable|array',
             'attachment_labels.*'         => 'nullable|string|max:255',
@@ -141,6 +142,7 @@ class ClientController extends Controller
                 'expiry_date'                  => $data['expiry_date'] ?? null,
                 'status'                       => $data['status'] ?? 'active',
                 'require_national_id'          => $request->boolean('require_national_id'),
+                'charge_rejected_orders'       => $request->boolean('charge_rejected_orders', true),
             ]);
 
             $this->saveAttachments($request, $client, $user->id);
@@ -230,6 +232,7 @@ class ClientController extends Controller
             'expiry_date'                 => ['nullable', 'date_format:d-m-Y'],
             'status'                      => ['nullable', Rule::in(['active','suspended','pending_verification'])],
             'require_national_id'         => 'nullable|boolean',
+            'charge_rejected_orders'      => 'nullable|boolean',
             'logo'                        => 'nullable|image:allow_svg|max:2048',
             'attachment_labels'           => 'nullable|array',
             'attachment_labels.*'         => 'nullable|string|max:255',
@@ -286,6 +289,7 @@ class ClientController extends Controller
                 'expiry_date'                 => $data['expiry_date'] ?? null,
                 'status'                      => $data['status'] ?? $client->status,
                 'require_national_id'         => $request->boolean('require_national_id'),
+                'charge_rejected_orders'      => $request->boolean('charge_rejected_orders', (bool) $client->charge_rejected_orders),
             ]);
 
             // Sync custom delivery prices

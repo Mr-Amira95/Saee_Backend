@@ -360,6 +360,14 @@ html[dir="rtl"] .searchable-select-btn .ss-arrow {
                     <span style="font-size:.9rem;color:var(--text);">{{ __('Require national ID attachment on delivery') }}</span>
                     <span style="font-size:.78rem;color:var(--text-sub);">({{ __("driver must upload a copy of the receiver's national ID when marking the order as delivered") }})</span>
                 </label>
+                <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:10px 14px;background:var(--in-bg);border:1px solid var(--bdr);border-radius:8px;margin-top:8px;">
+                    <input type="hidden" name="charge_rejected_orders" value="0">
+                    <input type="checkbox" name="charge_rejected_orders" id="charge_rejected_orders" value="1"
+                           {{ old('charge_rejected_orders', true) ? 'checked' : '' }}
+                           style="width:16px;height:16px;accent-color:var(--red);cursor:pointer;">
+                    <span style="font-size:.9rem;color:var(--text);">{{ __('Rejected orders are payable') }}</span>
+                    <span style="font-size:.78rem;color:var(--text-sub);">({{ __('the delivery fee is still due when the customer rejects the order: the driver reports whether the customer paid it, otherwise it is charged to the client. When off, rejected orders are not charged at all') }})</span>
+                </label>
             </div>
             <div class="form-group">
                 <label class="form-label" for="credit_limit">{{ __('Credit Limit') }} <span class="opt">({{ __('optional') }})</span></label>

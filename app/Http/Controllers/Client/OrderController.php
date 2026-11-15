@@ -29,12 +29,14 @@ class OrderController extends Controller
         $clientId = $profile->id;
 
         $stats = [
-            'pending'   => Order::where('client_profile_id', $clientId)->whereIn('status', ['pending', 'picked_up', 'rejected'])->count(),
+            'pending'   => Order::where('client_profile_id', $clientId)->whereIn('status', ['pending', 'picked_up', ...Order::RETURN_FLOW_STATUSES])->count(),
             'delivered' => Order::where('client_profile_id', $clientId)->where('status', 'delivered')->count(),
             'returned'  => Order::where('client_profile_id', $clientId)->where('status', 'returned')->count(),
+            'awaiting_return_confirmation' => Order::where('client_profile_id', $clientId)->awaitingReturnConfirmation()->count(),
             'pending_cash' => Order::where('client_profile_id', $clientId)
                 ->whereIn('payment_status', ['with_driver', 'with_company'])
-                ->whereNotIn('status', ['returned', 'cancelled'])
+                // A rejected order never holds cash owed to the client (only a delivery fee kept by Saee)
+                ->whereNotIn('status', [...Order::RETURN_FLOW_STATUSES, 'returned', 'cancelled'])
                 ->join('order_payments', 'orders.id', '=', 'order_payments.order_id')
                 ->selectRaw('COALESCE(SUM(COALESCE(order_payments.order_amount, 0) + COALESCE(order_payments.customer_delivery_amount, 0)), 0) as total')
                 ->value('total') ?? 0,
@@ -198,9 +200,28 @@ class OrderController extends Controller
 
         abort_if($order->client_profile_id !== $profile->id, 403);
 
-        $order->load(['receiver.city', 'receiver.area', 'payment', 'trackingLogs.user', 'driverProfile.user']);
+        $order->load(['receiver.city', 'receiver.area', 'payment', 'trackingLogs.user', 'driverProfile.user', 'rejectionReason', 'returnConfirmedBy']);
 
         return view('client.orders.show', compact('order', 'profile'));
+    }
+
+    /**
+     * The client confirms receiving an order the driver brought back.
+     */
+    public function confirmReturn(Order $order): RedirectResponse
+    {
+        $profile = $this->getClientProfile();
+
+        abort_if($order->client_profile_id !== $profile->id, 403);
+
+        if (! $order->awaitsReturnConfirmation()) {
+            return redirect()->back()->with('error', __('This order is not awaiting a return confirmation.'));
+        }
+
+        $this->orderService->confirmReturn($order, Auth::user());
+
+        return redirect()->back()
+            ->with('success', __('Order #:number confirmed as received.', ['number' => $order->order_number]));
     }
 
     public function destroy(Order $order): RedirectResponse
@@ -732,7 +753,9 @@ class OrderController extends Controller
             if ($request->status === 'in_transit') {
                 $query->whereIn('status', ['assigned', 'picked_up']);
             } elseif ($request->status === 'returned_failed') {
-                $query->whereIn('status', ['returned', 'rejected']);
+                $query->whereIn('status', [...Order::RETURN_FLOW_STATUSES, 'returned']);
+            } elseif ($request->status === 'awaiting_return_confirmation') {
+                $query->awaitingReturnConfirmation();
             } else {
                 $query->where('status', $request->status);
             }

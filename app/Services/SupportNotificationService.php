@@ -180,6 +180,36 @@ class SupportNotificationService
         }
     }
 
+    /**
+     * Orders at the office assigned to a driver to take back to the client.
+     */
+    public function notifyReturnOrdersAssigned(int $driverId, array $orderIds, int $createdBy): void
+    {
+        if (count($orderIds) === 1) {
+            $this->sendToUser(
+                userId:     $driverId,
+                title:      'Order to Return',
+                message:    'You have an order to return to the client.',
+                type:       'info',
+                createdBy:  $createdBy,
+                entityType: 'single_order',
+                entityId:   $orderIds[0],
+            );
+
+            return;
+        }
+
+        $this->sendToUser(
+            userId:     $driverId,
+            title:      'Orders to Return',
+            message:    'You have ' . count($orderIds) . ' orders to return to their clients.',
+            type:       'info',
+            createdBy:  $createdBy,
+            entityType: 'batch_order',
+            entityId:   null,
+        );
+    }
+
     // ── Admin → Custom Broadcast (admin/notifications page) ────────────────
 
     public function sendCustomNotification(
@@ -319,6 +349,7 @@ class SupportNotificationService
             'rejected'   => 'Order Rejected',
             'picked_up'  => 'Order Picked Up',
             'cancelled'  => 'Order Cancelled',
+            'returned'   => 'Order Returned',
             default      => 'Order Status Updated',
         };
         $message = match ($status) {
@@ -326,7 +357,8 @@ class SupportNotificationService
             'rejected'   => "Your order #{$order->order_number} has been rejected.",
             'picked_up'  => "Your order #{$order->order_number} has been picked up by the driver.",
             'cancelled'  => "Your order #{$order->order_number} has been cancelled by the driver. Reason: {$order->cancellation_reason}",
-            default      => "Your order #{$order->order_number} status has been updated to {$status}.",
+            'returned'   => "Your order #{$order->order_number} has been returned to you. Please confirm that you received it.",
+            default     => "Your order #{$order->order_number} status has been updated to {$status}.",
         };
 
         foreach (array_unique(array_filter($userIds)) as $userId) {

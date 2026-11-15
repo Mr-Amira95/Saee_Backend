@@ -19,7 +19,7 @@ class DashboardController extends Controller
         'pending'         => ['pending'],
         'in_transit'      => ['picked_up'],
         'delivered'       => ['delivered'],
-        'returned_failed' => ['returned', 'rejected'],
+        'returned_failed' => ['rejected', 'in_office', 'out_for_return', 'returned'],
         'cancelled'       => ['cancelled'],
     ];
 

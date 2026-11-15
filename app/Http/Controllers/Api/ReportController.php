@@ -50,7 +50,7 @@ class ReportController extends Controller
 
         $total     = array_sum($statusCounts);
         $delivered = $statusCounts['delivered']  ?? 0;
-        $returned  = ($statusCounts['returned']  ?? 0) + ($statusCounts['rejected'] ?? 0);
+        $returned  = collect(['rejected', 'in_office', 'out_for_return', 'returned'])->sum(fn ($status) => $statusCounts[$status] ?? 0);
         $pending   = $statusCounts['pending']    ?? 0;
         $inTransit = $statusCounts['picked_up']  ?? 0;
         $completed = $delivered + $returned;
@@ -85,7 +85,7 @@ class ReportController extends Controller
         $totalDelivery = (float) $paymentRows->sum('delivery_amount');
 
         $completedOrders = $orders
-            ->filter(fn (Order $order) => in_array($order->status, ['delivered', 'returned', 'rejected'], true))
+            ->filter(fn (Order $order) => in_array($order->status, ['delivered', 'rejected', 'in_office', 'out_for_return', 'returned'], true))
             ->map(fn (Order $order) => [
                 'id'            => $order->id,
                 'order_number'  => $order->order_number,
@@ -124,7 +124,7 @@ class ReportController extends Controller
                 'cities.name as city_name',
                 DB::raw('count(*) as total'),
                 DB::raw('SUM(CASE WHEN orders.status = "delivered"                        THEN 1 ELSE 0 END) as delivered'),
-                DB::raw('SUM(CASE WHEN orders.status IN ("returned","rejected")           THEN 1 ELSE 0 END) as returned'),
+                DB::raw('SUM(CASE WHEN orders.status IN ("returned","rejected","in_office","out_for_return") THEN 1 ELSE 0 END) as returned'),
                 DB::raw('SUM(CASE WHEN orders.status IN ("pending","picked_up")           THEN 1 ELSE 0 END) as active')
             )
             ->groupBy('cities.id', 'cities.name')

@@ -416,6 +416,8 @@
                                 'pending' => ['label' => __('Pending'), 'color' => '#fbbf24'],
                                 'picked_up' => ['label' => __('In Transit'), 'color' => '#60a5fa'],
                                 'rejected' => ['label' => __('Rejected'), 'color' => '#f87171'],
+                                'in_office' => ['label' => __('In Office'), 'color' => '#f97316'],
+                                'out_for_return' => ['label' => __('Out for Return'), 'color' => '#a78bfa'],
                                 'returned' => ['label' => __('Returned'), 'color' => '#fb923c'],
                                 'cancelled' => ['label' => __('Cancelled'), 'color' => '#94a3b8'],
                             ];

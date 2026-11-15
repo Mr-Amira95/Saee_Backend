@@ -42,6 +42,8 @@
         'picked_up' => 'badge-info',
         'delivered' => 'badge-success',
         'rejected'  => 'badge-danger',
+        'in_office' => 'badge-pending',
+        'out_for_return' => 'badge-info',
         'returned'  => 'badge-neutral',
         'cancelled' => 'badge-neutral',
         default     => 'badge-neutral',
@@ -52,10 +54,16 @@
         'picked_up' => __('In Transit'),
         'delivered' => __('Delivered'),
         'rejected'  => __('Rejected'),
+        'in_office' => __('In Office'),
+        'out_for_return' => __('Out for Return'),
         'returned'  => __('Returned'),
         'cancelled' => __('Cancelled'),
         default     => ucfirst($order->status),
     };
+    $trackingLabels = [
+        'in_office'      => __('In Office'),
+        'out_for_return' => __('Out for Return'),
+    ];
 @endphp
 
 {{-- Page Header --}}
@@ -77,6 +85,15 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M4 10V6a2 2 0 012-2h6l6 6v4"/></svg>
             {{ __('Download PDF') }}
         </a>
+        @if($order->awaitsReturnConfirmation())
+        <form method="POST" action="{{ route('client.orders.confirm-return', $order) }}" style="margin:0;">
+            @csrf
+            <button type="submit" class="btn-primary" style="padding:7px 14px;font-size:.82rem;display:inline-flex;align-items:center;gap:6px;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                {{ __('Confirm Return Received') }}
+            </button>
+        </form>
+        @endif
         @if($order->status === 'pending')
         <a href="{{ route('client.orders.edit', $order) }}" class="btn-secondary" style="padding:7px 14px;font-size:.82rem;">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -89,6 +106,22 @@
         @endif
     </div>
 </div>
+
+{{-- Returned order waiting for the client's confirmation --}}
+@if($order->awaitsReturnConfirmation())
+<div class="info-card" style="margin-bottom:16px;border-color:rgba(245,158,11,.35);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <div>
+        <div style="font-size:.9rem;font-weight:700;color:#fbbf24;margin-bottom:4px;">{{ __('This order was returned to you') }}</div>
+        <div style="font-size:.82rem;color:var(--text-sub);">
+            {{ __('Returned on :date. Please confirm that you received it.', ['date' => $order->returned_at?->format('d M Y, H:i') ?? '—']) }}
+        </div>
+    </div>
+    <form method="POST" action="{{ route('client.orders.confirm-return', $order) }}" style="margin:0;">
+        @csrf
+        <button type="submit" class="btn-primary" style="padding:8px 16px;font-size:.84rem;">{{ __('Confirm Return Received') }}</button>
+    </form>
+</div>
+@endif
 
 {{-- Row 1: Shipment Info + Financial Details --}}
 <div class="info-grid">
@@ -224,7 +257,7 @@
                 <div class="timeline-time">{{ $log->created_at->format('d M Y, H:i') }}</div>
                 <div class="timeline-title">{{ __('Status:') }}
                     <span style="color: {{ $log->to_status === 'delivered' ? '#4ade80' : (in_array($log->to_status, ['rejected', 'cancelled', 'returned']) ? '#f87171' : 'var(--red-lt)') }};">
-                        {{ ucfirst(str_replace('_', ' ', $log->to_status)) }}
+                        {{ $trackingLabels[$log->to_status] ?? ucfirst(str_replace('_', ' ', $log->to_status)) }}
                     </span>
                 </div>
                 <div class="timeline-desc">{{ $log->description }}</div>
@@ -298,11 +331,26 @@
                         <span style="font-size:.82rem;color:var(--text-dim);font-style:italic;">{{ __('No national ID uploaded') }}</span>
                     @endif
                 </div>
-            @elseif($order->status === 'rejected')
+            @elseif(in_array($order->status, [...\App\Models\Order::RETURN_FLOW_STATUSES, 'returned']))
                 <div>
                     <div style="font-size:.72rem;font-weight:700;color:rgba(220,38,38,.6);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">{{ __('Rejection Reason') }}</div>
                     <strong style="color:#f87171;">{{ $order->rejectionReason?->reason ?? __('Not specified') }}</strong>
                 </div>
+                @if($order->status === 'returned')
+                <div>
+                    <div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">{{ __('Return Confirmation') }}</div>
+                    @if($order->awaitsReturnConfirmation())
+                        <span class="badge badge-pending"><span class="badge-dot"></span>{{ __('Awaiting your confirmation') }}</span>
+                    @elseif($order->returnConfirmedBy)
+                        <span class="badge badge-success"><span class="badge-dot"></span>{{ __('Confirmed') }}</span>
+                        <div style="font-size:.8rem;color:var(--text-sub);margin-top:6px;">
+                            {{ __('By :name on :date', ['name' => $order->returnConfirmedBy->name, 'date' => $order->return_confirmed_at->format('d M Y, H:i')]) }}
+                        </div>
+                    @else
+                        <span style="font-size:.82rem;color:var(--text-dim);">—</span>
+                    @endif
+                </div>
+                @endif
             @else
                 <div style="text-align:center;padding:24px 0;color:var(--text-dim);font-size:.85rem;">
                     {{ __('Proof of delivery will appear here once the order is delivered.') }}

@@ -287,7 +287,7 @@
         </div>
 
         {{-- Dynamic Header --}}
-        @if(in_array($order->status, ['delivered', 'rejected']))
+        @if(in_array($order->status, ['delivered', 'rejected', 'in_office', 'out_for_return']))
             <div class="header">
                 <h1>{{ __('Rate Your Delivery') }}</h1>
                 <p>{{ __('We value your feedback. Please rate your delivery agent,') }} {{ $order->driver->name ?? __('our driver') }}.</p>
@@ -333,7 +333,7 @@
 
         {{-- Dynamic Action Box --}}
         <div class="action-box" id="actionBox">
-            @if(in_array($order->status, ['delivered', 'rejected']))
+            @if(in_array($order->status, ['delivered', 'rejected', 'in_office', 'out_for_return']))
                 @if($order->driverRating)
                     {{-- Already Rated --}}
                     <div class="status-msg success" style="display:block;">

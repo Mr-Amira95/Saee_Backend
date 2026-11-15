@@ -10,7 +10,6 @@ use App\Models\Attendance;
 use App\Models\City;
 use App\Models\ClientProfile;
 use App\Models\Order;
-use App\Models\OrderTrackingLog;
 use App\Models\RejectionReason;
 use App\Models\User;
 use App\Services\OpenAIService;
@@ -42,7 +41,12 @@ class OrderController extends Controller
 
         if ($user->isDriver()) {
             $driverProfile = $user->driverProfile;
-            $query->where('driver_profile_id', $driverProfile?->id);
+            // Orders the driver delivers, plus the ones assigned to them to take back to the client
+            $query->forDriver($driverProfile?->id)->with(['clientProfile', 'returnDriverProfile.user']);
+
+            if ($request->boolean('return_tasks')) {
+                $query->where('status', 'out_for_return')->where('return_driver_profile_id', $driverProfile?->id);
+            }
         } elseif ($user->isClientMaster()) {
             $clientProfile = $user->clientProfile;
             if (! $clientProfile) {
@@ -71,6 +75,11 @@ class OrderController extends Controller
 
         if ($request->filled('payment_status')) {
             $query->where('payment_status', $request->input('payment_status'));
+        }
+
+        // Returned orders the client has not confirmed receiving yet
+        if ($request->boolean('awaiting_return_confirmation')) {
+            $query->awaitingReturnConfirmation();
         }
 
         if ($request->filled('payment_type')) {
@@ -157,7 +166,7 @@ class OrderController extends Controller
             ], 404);
         }
 
-        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'returnDriverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
         return response()->json([
             'success' => true,
@@ -380,13 +389,17 @@ class OrderController extends Controller
             'notes'     => ['nullable', 'string', 'max:1000'],
             'latitude'  => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            // Did the customer pay the delivery fee although they refused the order?
+            // Only used when the client's rejected orders are payable (ask_delivery_fee_on_reject).
+            'delivery_fee_collected' => ['nullable', 'boolean'],
         ]);
 
         $reason = RejectionReason::find($request->input('rejection_reason_id'));
 
         $order = $this->orderService->updateStatus($order, 'rejected', [
-            'rejection_reason_id' => $reason->id,
-            'notes'               => $request->input('notes'),
+            'rejection_reason_id'    => $reason->id,
+            'notes'                  => $request->input('notes'),
+            'delivery_fee_collected' => $request->boolean('delivery_fee_collected'),
         ], $user);
 
         $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
@@ -445,12 +458,15 @@ class OrderController extends Controller
         ]);
     }
 
+    /**
+     * The return driver hands a rejected order back to the client (out_for_return → returned).
+     */
     public function returnOrder(Request $request, Order $order): JsonResponse
     {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (! $user->isDriver() || $order->driverProfile?->user_id !== $user->id) {
+        if (! $user->isDriver() || $order->returnDriverProfile?->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => __('Unauthorized.'),
@@ -465,10 +481,10 @@ class OrderController extends Controller
             ], 403);
         }
 
-        if ($order->status !== 'rejected') {
+        if ($order->status !== 'out_for_return') {
             return response()->json([
                 'success' => false,
-                'message' => __('Only rejected orders can be marked as returned.'),
+                'message' => __('Only orders out for return can be marked as returned.'),
                 'code'    => 'INVALID_STATUS_TRANSITION',
             ], 422);
         }
@@ -478,28 +494,59 @@ class OrderController extends Controller
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        $order->update([
-            'status'         => 'returned',
-            // Keep the status if the order is already on a client statement
-            'payment_status' => in_array($order->payment_status, ['exported', 'paid'], true) ? $order->payment_status : 'no_payment',
-            'returned_at'    => now(),
-        ]);
+        // Charges the client where due and notifies them to confirm the return
+        $order = $this->orderService->updateStatus($order, 'returned', [], $user);
 
-        OrderTrackingLog::create([
-            'order_id'    => $order->id,
-            'user_id'     => $user->id,
-            'from_status' => 'rejected',
-            'to_status'   => 'returned',
-            'description' => 'Order returned to hub/client by driver.',
-            'latitude'    => $request->input('latitude'),
-            'longitude'   => $request->input('longitude'),
-        ]);
-
-        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'returnDriverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
 
         return response()->json([
             'success' => true,
             'message' => __('Order marked as returned successfully.'),
+            'data'    => new OrderResource($order),
+        ]);
+    }
+
+    /**
+     * The client confirms receiving a returned order.
+     */
+    public function confirmReturn(Request $request, Order $order): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (! $user->isClientMaster() && ! $user->isClientEmployee()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Unauthorized.'),
+            ], 403);
+        }
+
+        $clientProfile = $this->resolveClientProfile($user);
+
+        if (! $clientProfile || (int) $order->client_profile_id !== (int) $clientProfile->id) {
+            return response()->json([
+                'success' => false,
+                'message' => __('Order not found.'),
+            ], 404);
+        }
+
+        if (! $order->awaitsReturnConfirmation()) {
+            return response()->json([
+                'success' => false,
+                'message' => $order->status === 'returned'
+                    ? __('This returned order has already been confirmed.')
+                    : __('Only returned orders can be confirmed.'),
+                'code'    => 'INVALID_STATUS_TRANSITION',
+            ], 422);
+        }
+
+        $order = $this->orderService->confirmReturn($order, $user);
+
+        $order->load(['payment', 'receiver.city', 'receiver.area', 'driverProfile.user', 'returnDriverProfile.user', 'clientProfile', 'rejectionReason', 'trackingLogs.user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('Returned order confirmed successfully.'),
             'data'    => new OrderResource($order),
         ]);
     }
@@ -518,13 +565,14 @@ class OrderController extends Controller
 
         $driverProfile = $user->driverProfile;
 
+        // Delivered orders, plus rejected ones whose delivery fee the driver collected
         $cashToHandover = (float) Order::where('driver_profile_id', $driverProfile?->id)
-            ->where('status', 'delivered')
+            ->whereIn('status', ['delivered', 'rejected'])
             ->where('payment_status', 'with_driver')
             ->whereNull('handover_request_id')
             ->with('payment')
             ->get()
-            ->sum(fn (Order $o) => (float) ($o->payment?->order_amount ?? 0) + ($o->payment?->delivery_on_customer ? (float) ($o->payment?->customer_delivery_amount ?? 0) : 0));
+            ->sum(fn (Order $o) => $o->driverCashAmount());
 
         $requiresProof = $cashToHandover > 0;
 
@@ -1313,7 +1361,7 @@ class OrderController extends Controller
     {
         if ($user->isDriver()) {
             $driverProfile = $user->driverProfile;
-            return $driverProfile && (int) $order->driver_profile_id === (int) $driverProfile->id;
+            return $driverProfile && in_array((int) $driverProfile->id, [(int) $order->driver_profile_id, (int) $order->return_driver_profile_id], true);
         }
 
         if ($user->isClientMaster()) {
@@ -1338,7 +1386,7 @@ class OrderController extends Controller
         if ($user->isDriver()) {
             $driverProfile = $user->driverProfile;
 
-            return $driverProfile ? Order::where('driver_profile_id', $driverProfile->id) : null;
+            return $driverProfile ? Order::forDriver($driverProfile->id) : null;
         }
 
         $clientProfile = $this->resolveClientProfile($user);

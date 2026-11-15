@@ -73,6 +73,11 @@
         </div>
         <div style="font-size:2rem;font-weight:800;color:#94a3b8;line-height:1;margin-bottom:5px;">{{ number_format($stats['returned']) }}</div>
         <div style="font-size:.72rem;color:var(--text-dim);">{{ __('Returned to sender') }}</div>
+        @if($stats['awaiting_return_confirmation'] > 0)
+            <a href="{{ route('client.orders.index', ['status' => 'awaiting_return_confirmation']) }}" style="display:inline-block;margin-top:8px;font-size:.74rem;font-weight:700;color:#fbbf24;text-decoration:none;">
+                {{ __(':count awaiting your confirmation →', ['count' => number_format($stats['awaiting_return_confirmation'])]) }}
+            </a>
+        @endif
     </div>
 
     {{-- Pending cash --}}
@@ -121,6 +126,7 @@
         <option value="in_transit" {{ request('status') === 'in_transit' ? 'selected' : '' }}>{{ __('In Transit') }}</option>
         <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>{{ __('Delivered') }}</option>
         <option value="returned_failed" {{ request('status') === 'returned_failed' ? 'selected' : '' }}>{{ __('Returned/Failed') }}</option>
+        <option value="awaiting_return_confirmation" {{ request('status') === 'awaiting_return_confirmation' ? 'selected' : '' }}>{{ __('Returned — awaiting confirmation') }}</option>
         <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>{{ __('Cancelled') }}</option>
     </select>
     <select name="payment_type" class="filter-select">
@@ -162,6 +168,8 @@
                         'picked_up' => 'badge-info',
                         'delivered' => 'badge-success',
                         'rejected'  => 'badge-danger',
+                        'in_office' => 'badge-pending',
+                        'out_for_return' => 'badge-info',
                         'returned'  => 'badge-neutral',
                         'cancelled' => 'badge-neutral',
                         default     => 'badge-neutral',
@@ -172,6 +180,8 @@
                         'picked_up' => 'In Transit',
                         'delivered' => 'Delivered',
                         'rejected'  => 'Rejected',
+                        'in_office' => __('In Office'),
+                        'out_for_return' => __('Out for Return'),
                         'returned'  => 'Returned',
                         'cancelled' => 'Cancelled',
                         default     => ucfirst($order->status),
@@ -201,7 +211,12 @@
                             <span style="color:var(--text-dim);">—</span>
                         @endif
                     </td>
-                    <td><span class="badge {{ $statusClass }}"><span class="badge-dot"></span>{{ $statusLabel }}</span></td>
+                    <td>
+                        <span class="badge {{ $statusClass }}"><span class="badge-dot"></span>{{ $statusLabel }}</span>
+                        @if($order->awaitsReturnConfirmation())
+                            <div class="cell-sub" style="color:#fbbf24;margin-top:4px;">{{ __('Awaiting your confirmation') }}</div>
+                        @endif
+                    </td>
                     <td>
                         <div class="cell-main">{{ $order->created_at->format('d M Y') }}</div>
                         <div class="cell-sub">{{ $order->created_at->format('h:i A') }}</div>
@@ -211,6 +226,14 @@
                             <a href="{{ route('client.orders.show', $order) }}" class="act-btn act-btn-view" title="View">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </a>
+                            @if($order->awaitsReturnConfirmation())
+                            <form method="POST" action="{{ route('client.orders.confirm-return', $order) }}" style="margin:0;display:inline-flex;">
+                                @csrf
+                                <button type="submit" class="act-btn act-btn-view" title="{{ __('Confirm Return Received') }}" style="color:#4ade80;">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                            </form>
+                            @endif
                             @if($order->status === 'pending')
                             <button type="button" class="act-btn act-btn-del" title="Delete" onclick="confirmDelete({{ $order->id }}, '{{ $order->order_number }}')">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>

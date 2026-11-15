@@ -349,6 +349,7 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::get('orders/print-all', [ClientOrderController::class, 'printAll'])->name('orders.print-all');
         Route::get('orders/pdf', [ClientOrderController::class, 'pdf'])->name('orders.pdf');
         Route::get('orders/{order}/print', [ClientOrderController::class, 'printOrder'])->name('orders.print');
+        Route::post('orders/{order}/confirm-return', [ClientOrderController::class, 'confirmReturn'])->name('orders.confirm-return');
         Route::get('orders/create', [ClientOrderController::class, 'create'])->name('orders.create');
         Route::post('orders', [ClientOrderController::class, 'store'])->name('orders.store');
         Route::get('orders/{order}/edit', [ClientOrderController::class, 'edit'])->name('orders.edit');

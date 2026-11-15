@@ -15,6 +15,12 @@ class OrderResource extends JsonResource
 
         $paymentType = $payment?->payment_type;
 
+        $user = $request->user();
+        $isReturnTask = $this->status === 'out_for_return'
+            && $user?->isDriver()
+            && $this->return_driver_profile_id !== null
+            && $this->return_driver_profile_id === $user->driverProfile?->id;
+
         return [
             'id'                       => $this->id,
             'order_number'             => $this->order_number,
@@ -60,11 +66,28 @@ class OrderResource extends JsonResource
                 'id'   => $this->driverProfile->user->id,
                 'name' => $this->driverProfile->user->name,
             ] : null),
-            'client_profile'           => $this->whenLoaded('clientProfile', fn () => $this->clientProfile ? [
-                'id'                   => $this->clientProfile->id,
-                'company_name'         => $this->clientProfile->company_name,
-                'require_national_id'  => (bool) $this->clientProfile->require_national_id,
+            'return_driver'            => $this->whenLoaded('returnDriverProfile', fn () => $this->returnDriverProfile?->user ? [
+                'id'   => $this->returnDriverProfile->user->id,
+                'name' => $this->returnDriverProfile->user->name,
             ] : null),
+            // True for the driver who has to take this order back to the client
+            'is_return_task'           => $isReturnTask,
+            'client_profile'           => $this->whenLoaded('clientProfile', fn () => $this->clientProfile ? [
+                'id'                     => $this->clientProfile->id,
+                'company_name'           => $this->clientProfile->company_name,
+                'require_national_id'    => (bool) $this->clientProfile->require_national_id,
+                'charge_rejected_orders' => (bool) $this->clientProfile->charge_rejected_orders,
+            ] : null),
+            // When true, the driver must say on rejection whether the customer paid the delivery fee
+            'ask_delivery_fee_on_reject' => $this->whenLoaded('clientProfile', fn () => (bool) $this->clientProfile?->charge_rejected_orders
+                && $payment !== null
+                && $this->customerDeliveryFee() > 0),
+            // not_charged | collected | client_charged — set once the order is rejected
+            'rejection_fee_status'     => $this->rejection_fee_status,
+            'returned_at'              => $this->returned_at?->toDateTimeString(),
+            'return_confirmed_at'      => $this->return_confirmed_at?->toDateTimeString(),
+            // Returned to the client, who still has to confirm receiving it
+            'awaiting_return_confirmation' => $this->awaitsReturnConfirmation(),
             'rejection_reason'         => $this->whenLoaded('rejectionReason', fn () => $this->rejectionReason ? [
                 'id'        => $this->rejectionReason->id,
                 'reason'    => $this->rejectionReason->reason,

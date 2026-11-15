@@ -31,6 +31,7 @@ class ClientProfile extends Model
         'balance',
         'status',
         'require_national_id',
+        'charge_rejected_orders',
         'expiry_date',
     ];
 
@@ -40,6 +41,7 @@ class ClientProfile extends Model
             'credit_limit'                    => 'decimal:2',
             'balance'                         => 'decimal:2',
             'require_national_id'             => 'boolean',
+            'charge_rejected_orders'          => 'boolean',
             'expiry_date'                     => 'date',
             'deleted_at'                      => 'datetime',
         ];

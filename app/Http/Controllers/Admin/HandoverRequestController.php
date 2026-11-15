@@ -41,7 +41,7 @@ class HandoverRequestController extends Controller
 
                 $pendingOrdersCount = $driver->driverProfile
                     ? Order::where('driver_profile_id', $driver->driverProfile->id)
-                        ->where('status', 'delivered')
+                        ->whereIn('status', ['delivered', 'rejected'])
                         ->where('payment_status', 'with_driver')
                         ->whereNull('handover_request_id')
                         ->count()
@@ -87,12 +87,14 @@ class HandoverRequestController extends Controller
             ->where('status', 'delivered')
             ->get();
 
+        // Rejected orders handed over; once approved they move on to in_office → out_for_return → returned
         $rejectedOrders = $handoverRequest->orders()
-            ->where('status', 'rejected')
+            ->whereIn('status', [...Order::RETURN_FLOW_STATUSES, 'returned'])
             ->get();
 
+        // Cash the driver collected: delivered orders, plus the delivery fee of rejected ones
         $totalCash = 0;
-        foreach ($deliveredOrders as $order) {
+        foreach ($deliveredOrders->concat($rejectedOrders) as $order) {
             $order->cash_held = FinancialLedgerEntry::where('order_id', $order->id)
                 ->where('driver_id', $handoverRequest->driver_id)
                 ->where('to_account', 'driver')
@@ -134,7 +136,7 @@ class HandoverRequestController extends Controller
 
         $orders = $driverProfile
             ? Order::where('driver_profile_id', $driverProfile->id)
-                ->where('status', 'delivered')
+                ->whereIn('status', ['delivered', 'rejected'])
                 ->where('payment_status', 'with_driver')
                 ->whereNull('handover_request_id')
                 ->with('payment')

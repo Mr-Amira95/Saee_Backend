@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\BroadcastsRealtimeChanges;
 use App\Realtime\RealtimeHub;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,11 +18,20 @@ class Order extends Model
     use BroadcastsRealtimeChanges;
     use SoftDeletes;
 
+    /** Who bears the delivery fee of a rejected order (orders.rejection_fee_status). */
+    public const REJECTION_FEE_NOT_CHARGED    = 'not_charged';    // client option off: nobody pays
+    public const REJECTION_FEE_COLLECTED      = 'collected';      // driver collected it from the customer
+    public const REJECTION_FEE_CLIENT_CHARGED = 'client_charged'; // not collected: charged to the client
+
+    /** A rejected order on its way back to the client, before it is returned. */
+    public const RETURN_FLOW_STATUSES = ['rejected', 'in_office', 'out_for_return'];
+
     protected $fillable = [
         'order_number',
         'batch_number',
         'client_profile_id',
         'driver_profile_id',
+        'return_driver_profile_id',
         'handover_request_id',
         'client_statement_id',
         'order_description',
@@ -34,10 +44,13 @@ class Order extends Model
         'delivery_latitude',
         'delivery_longitude',
         'rejection_reason_id',
+        'rejection_fee_status',
         'cancellation_reason',
         'notes',
         'delivered_at',
         'returned_at',
+        'return_confirmed_at',
+        'return_confirmed_by',
         'delivery_shift',
     ];
 
@@ -46,12 +59,15 @@ class Order extends Model
         return [
             'client_profile_id'   => 'integer',
             'driver_profile_id'   => 'integer',
+            'return_driver_profile_id' => 'integer',
             'rejection_reason_id' => 'integer',
             'route_order'         => 'integer',
             'delivery_latitude'   => 'float',
             'delivery_longitude'  => 'float',
             'delivered_at'        => 'datetime',
             'returned_at'         => 'datetime',
+            'return_confirmed_at' => 'datetime',
+            'return_confirmed_by' => 'integer',
             'pickup_whatsapp_sent_at' => 'datetime',
             'deleted_at'          => 'datetime',
             'delivery_shift'      => \App\Enums\DeliveryShift::class,
@@ -123,6 +139,72 @@ class Order extends Model
         return $this->belongsTo(DriverProfile::class)->withTrashed();
     }
 
+    /** Driver taking a rejected order back to the client. */
+    public function returnDriverProfile(): BelongsTo
+    {
+        return $this->belongsTo(DriverProfile::class, 'return_driver_profile_id')->withTrashed();
+    }
+
+    public function returnConfirmedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'return_confirmed_by');
+    }
+
+    /** Orders a driver delivers or has to take back to the client. */
+    public function scopeForDriver(Builder $query, ?int $driverProfileId): Builder
+    {
+        if ($driverProfileId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(fn (Builder $q) => $q
+            ->where('orders.driver_profile_id', $driverProfileId)
+            ->orWhere('orders.return_driver_profile_id', $driverProfileId));
+    }
+
+    /** Returned to the client, who has not confirmed receiving it yet. */
+    public function scopeAwaitingReturnConfirmation(Builder $query): Builder
+    {
+        return $query->where('orders.status', 'returned')->whereNull('orders.return_confirmed_at');
+    }
+
+    public function awaitsReturnConfirmation(): bool
+    {
+        return $this->status === 'returned' && $this->return_confirmed_at === null;
+    }
+
+    /**
+     * Whether Saee's delivery fee is charged to the client. Always for a
+     * delivered order; for a rejected / returned one only when the fee was
+     * neither waived nor collected from the customer.
+     */
+    public function chargesClientDeliveryFee(): bool
+    {
+        return $this->status === 'delivered'
+            || in_array($this->rejection_fee_status, [null, self::REJECTION_FEE_CLIENT_CHARGED], true);
+    }
+
+    /** Delivery fee the customer pays the driver (0 when the client pays it). */
+    public function customerDeliveryFee(): float
+    {
+        $payment = $this->payment;
+
+        return $payment?->delivery_on_customer ? (float) ($payment->customer_delivery_amount ?? 0) : 0.0;
+    }
+
+    /**
+     * Cash the driver collected for this order: COD + customer delivery fee on
+     * delivery, or only the delivery fee when a rejected order's fee was collected.
+     */
+    public function driverCashAmount(): float
+    {
+        if ($this->status === 'delivered') {
+            return (float) ($this->payment?->order_amount ?? 0) + $this->customerDeliveryFee();
+        }
+
+        return $this->rejection_fee_status === self::REJECTION_FEE_COLLECTED ? $this->customerDeliveryFee() : 0.0;
+    }
+
     public function handoverRequest(): BelongsTo
     {
         return $this->belongsTo(HandoverRequest::class);
@@ -184,7 +266,10 @@ class Order extends Model
 
         return [
             'clients' => $this->realtimeCurrentAndPrevious('client_profile_id'),
-            'drivers' => array_map(fn ($id) => $hub->driverUserId($id), $this->realtimeCurrentAndPrevious('driver_profile_id')),
+            'drivers' => array_map(fn ($id) => $hub->driverUserId($id), array_merge(
+                $this->realtimeCurrentAndPrevious('driver_profile_id'),
+                $this->realtimeCurrentAndPrevious('return_driver_profile_id'),
+            )),
         ];
     }
 }

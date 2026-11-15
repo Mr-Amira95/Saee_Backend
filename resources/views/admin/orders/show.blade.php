@@ -131,7 +131,13 @@
                 {{ __('Edit Order') }}
             </a>
             @endif
-            @if(auth()->user()->hasAdminAction('orders.assign_driver') && !in_array($order->status, ['delivered', 'rejected', 'cancelled', 'returned']))
+            @if(auth()->user()->hasAdminAction('orders.assign_driver') && in_array($order->status, ['in_office', 'out_for_return']))
+            <button class="btn-primary" onclick="openModal('assignReturnDriverModal')">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                {{ $order->returnDriverProfile ? __('Reassign Return Driver') : __('Assign Driver for Return') }}
+            </button>
+            @endif
+            @if(auth()->user()->hasAdminAction('orders.assign_driver') && !in_array($order->status, ['delivered', 'rejected', 'in_office', 'out_for_return', 'cancelled', 'returned']))
             <button class="btn-primary" onclick="openModal('assignDriverModal')">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 {{ $order->driver ? __('Reassign Driver') : __('Assign Driver') }}
@@ -237,6 +243,43 @@
                     <div class="info-row">
                         <span>{{ __('Assigned Driver:') }}</span>
                         <strong>{{ $order->driver->name }} ({{ $order->driver->phone }})</strong>
+                    </div>
+                @endif
+                @if($order->returnDriverProfile?->user)
+                    <div class="info-row">
+                        <span>{{ __('Return Driver:') }}</span>
+                        <strong>{{ $order->returnDriverProfile->user->name }} ({{ $order->returnDriverProfile->user->phone }})</strong>
+                    </div>
+                @endif
+                @if($order->rejection_fee_status)
+                    <div class="info-row">
+                        <span>{{ __('Rejected Order Fee:') }}</span>
+                        <strong>
+                            @switch($order->rejection_fee_status)
+                                @case(\App\Models\Order::REJECTION_FEE_COLLECTED)
+                                    {{ __('Collected from the customer by the driver') }}
+                                    @break
+                                @case(\App\Models\Order::REJECTION_FEE_CLIENT_CHARGED)
+                                    {{ __('Charged to the client') }}
+                                    @break
+                                @default
+                                    {{ __('Not charged') }}
+                            @endswitch
+                        </strong>
+                    </div>
+                @endif
+                @if($order->status === 'returned')
+                    <div class="info-row">
+                        <span>{{ __('Return Confirmation:') }}</span>
+                        <strong>
+                            @if($order->awaitsReturnConfirmation())
+                                <span class="badge badge-pending">{{ __('Awaiting client confirmation') }}</span>
+                            @elseif($order->returnConfirmedBy)
+                                {{ __('Confirmed by :name on :date', ['name' => $order->returnConfirmedBy->name, 'date' => $order->return_confirmed_at->format('Y-m-d H:i')]) }}
+                            @else
+                                —
+                            @endif
+                        </strong>
                     </div>
                 @endif
             </div>
@@ -411,7 +454,7 @@
                             <span class="cell-sub" style="font-style:italic;">{{ __('No national ID uploaded') }}</span>
                         @endif
                     </div>
-                @elseif($order->status === 'rejected')
+                @elseif(in_array($order->status, [...\App\Models\Order::RETURN_FLOW_STATUSES, 'returned']))
                     <div class="form-group">
                         <label class="form-label" style="color: #ef4444;">{{ __('Rejection Reason') }}</label>
                         <strong style="color: #ef4444;">{{ $order->rejectionReason ? $order->rejectionReason->reason : __('Not specified') }}</strong>
@@ -445,8 +488,39 @@
     </div>
     @endif
 
+    {{-- MODAL: Assign the driver who takes the order back to the client --}}
+    @if(auth()->user()->hasAdminAction('orders.assign_driver') && in_array($order->status, ['in_office', 'out_for_return']))
+    <div class="modal-overlay" id="assignReturnDriverModal">
+        <div class="modal-card" style="border-color: rgba(59,130,246,0.3); max-width: 440px;">
+            <h3>{{ __('Assign Driver for Return') }}</h3>
+            <p style="margin-bottom: 18px;">{{ __('Select the driver who will take this order back to the client.') }}</p>
+            <form action="{{ route('admin.orders.assign-driver') }}" method="POST">
+                @csrf
+                <input type="hidden" name="order_ids[]" value="{{ $order->id }}">
+
+                <div class="form-group" style="text-align: left; margin-bottom: 22px;">
+                    <label class="form-label" for="return_driver_id">{{ __('Driver Name') }}</label>
+                    <select name="driver_id" id="return_driver_id" class="form-select" required style="width:100%">
+                        <option value="">{{ __('Select Driver') }}</option>
+                        @foreach($drivers as $driver)
+                            <option value="{{ $driver->id }}" {{ $order->returnDriverProfile?->user_id == $driver->id ? 'selected' : '' }}>
+                                {{ $driver->name }} ({{ $driver->phone }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('assignReturnDriverModal')">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn-primary">{{ __('Assign') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
     {{-- MODAL 1: Assign Driver --}}
-    @if(auth()->user()->hasAdminAction('orders.assign_driver') && !in_array($order->status, ['delivered', 'rejected', 'cancelled', 'returned']))
+    @if(auth()->user()->hasAdminAction('orders.assign_driver') && !in_array($order->status, ['delivered', 'rejected', 'in_office', 'out_for_return', 'cancelled', 'returned']))
     <div class="modal-overlay" id="assignDriverModal">
         <div class="modal-card" style="border-color: rgba(59,130,246,0.3); max-width: 440px;">
             <h3>{{ __('Assign Driver to Order') }}</h3>

@@ -42,7 +42,8 @@ class TrackOrderController extends Controller
             'data'    => $orders->map(fn ($order) => [
                 'order_id'      => $order->id,
                 'order_number'  => $order->order_number,
-                'status'        => $order->status,
+                // The customer never sees the internal return handling of an order they refused
+                'status'        => in_array($order->status, ['in_office', 'out_for_return'], true) ? 'rejected' : $order->status,
                 'payment_type'  => $order->payment?->payment_type,
                 'receiver_name' => $order->receiver?->receiver_name,
                 'address_text'  => $order->receiver?->address_text,

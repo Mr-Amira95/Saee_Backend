@@ -40,7 +40,7 @@ class OrderPdfExportRequest extends FormRequest
             'ids.*'        => ['integer', 'min:1'],
             'status'       => ['nullable', 'array'],
             'status.*'     => ['string', Rule::in([
-                'pending', 'assigned', 'picked_up', 'delivered', 'rejected', 'returned', 'cancelled', 'active',
+                'pending', 'assigned', 'picked_up', 'delivered', 'rejected', 'in_office', 'out_for_return', 'returned', 'cancelled', 'active',
             ])],
             'payment_type' => ['nullable', 'string', 'in:cod,prepaid'],
             'from'         => ['nullable', 'date_format:Y-m-d'],

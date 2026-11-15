@@ -99,7 +99,7 @@
                     {{ __('Action Required') }}
                 </h3>
                 <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.4; margin-bottom: 16px;">
-                    {{ __('Verify that you have physically received the cash amount and returned orders. Once confirmed, approve the handover to post ledger entries.') }}
+                    {{ __('Verify that you have physically received the cash amount and the rejected orders. Once approved, the cash is posted to the ledger and the rejected orders become "In Office", ready to be assigned to a driver for return to the client.') }}
                 </p>
                 <form action="{{ route('admin.financials.handover-requests.approve', $handoverRequest) }}" method="POST">
                     @csrf
@@ -213,6 +213,7 @@
                         <th>{{ __('Client / Merchant') }}</th>
                         <th>{{ __('Rejection Reason') }}</th>
                         <th>{{ __('Receiver Info') }}</th>
+                        <th>{{ __('Delivery Fee Collected') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -236,10 +237,17 @@
                                 <div class="cell-main">{{ $order->receiver?->receiver_name ?? __('N/A') }}</div>
                                 <div class="cell-sub">{{ $order->receiver?->receiver_phone ?? '' }}</div>
                             </td>
+                            <td>
+                                @if($order->cash_held > 0)
+                                    <strong style="color: var(--green);">{{ number_format($order->cash_held, 2) }} JD</strong>
+                                @else
+                                    <span style="color: var(--text-dim);">—</span>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" style="text-align: center; color: var(--text-dim); padding: 30px;">
+                            <td colspan="5" style="text-align: center; color: var(--text-dim); padding: 30px;">
                                 {{ __('No rejected orders in this handover request.') }}
                             </td>
                         </tr>

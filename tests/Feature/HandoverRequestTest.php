@@ -157,8 +157,19 @@ class HandoverRequestTest extends TestCase
         $this->assertEquals('approved', $handoverRequest->fresh()->status);
         $this->assertEquals($this->admin->id, $handoverRequest->fresh()->approved_by);
 
-        // Assert order statuses are updated
+        // Assert order statuses are updated: the rejected order is now at the
+        // office, waiting to be assigned to a driver who returns it to the client
         $this->assertEquals('with_company', $order1->fresh()->payment_status);
+        $this->assertEquals('in_office', $order2->fresh()->status);
+        $this->assertDatabaseMissing('financial_ledger_entries', [
+            'order_id' => $order2->id,
+            'type' => 'shipping_charge',
+        ]);
+
+        // Returning it to the client charges the delivery fee
+        $this->orderService->assignReturnDriver($order2->fresh(), $this->driver, $this->admin);
+        $this->orderService->updateStatus($order2->fresh(), 'returned', [], $this->driver);
+
         $this->assertEquals('returned', $order2->fresh()->status);
         $this->assertEquals('no_payment', $order2->fresh()->payment_status);
 

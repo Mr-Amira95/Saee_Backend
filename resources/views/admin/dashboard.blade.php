@@ -310,6 +310,8 @@
         'picked_up' => 'badge-info',
         'delivered' => 'badge-active',
         'rejected'  => 'badge-suspended',
+        'in_office' => 'badge-pending',
+        'out_for_return' => 'badge-info',
         'returned'  => 'badge-no',
         'cancelled' => 'badge-suspended',
     ];
@@ -482,6 +484,10 @@
         if ($totalCount === 0) return 0;
         return (($statusCounts[$status] ?? 0) / $totalCount) * 100;
     };
+    // Rejected orders, including the ones on their way back to the client
+    $failedStatuses = ['rejected', 'in_office', 'out_for_return', 'returned'];
+    $failedCount = collect($failedStatuses)->sum(fn ($status) => $statusCounts[$status] ?? 0);
+    $failedPercentage = collect($failedStatuses)->sum(fn ($status) => $getPercentage($status));
 @endphp
 <div class="panel" style="margin-bottom: 20px; animation: fu .5s .15s both;">
     <div class="panel-head">
@@ -494,7 +500,7 @@
             <div style="width: {{ $getPercentage('pending') }}%; background: var(--warning);" title="{{ __('Pending') }}: {{ round($getPercentage('pending'), 1) }}%"></div>
             <div style="width: {{ $getPercentage('picked_up') }}%; background: var(--info);" title="{{ __('In Transit') }}: {{ round($getPercentage('picked_up'), 1) }}%"></div>
             <div style="width: {{ $getPercentage('delivered') }}%; background: var(--success);" title="{{ __('Delivered') }}: {{ round($getPercentage('delivered'), 1) }}%"></div>
-            <div style="width: {{ $getPercentage('rejected') + $getPercentage('returned') }}%; background: #f87171;" title="{{ __('Failed/Returned') }}: {{ round($getPercentage('rejected') + $getPercentage('returned'), 1) }}%"></div>
+            <div style="width: {{ $failedPercentage }}%; background: #f87171;" title="{{ __('Failed/Returned') }}: {{ round($failedPercentage, 1) }}%"></div>
             <div style="width: {{ $getPercentage('cancelled') }}%; background: var(--text-dim);" title="{{ __('Cancelled') }}: {{ round($getPercentage('cancelled'), 1) }}%"></div>
         </div>
         <!-- Grid details — click a non-zero card to list its orders below -->
@@ -503,7 +509,7 @@
                 'pending'         => ['label' => __('Pending'),         'badge' => 'badge-pending', 'count' => $statusCounts['pending'] ?? 0],
                 'in_transit'      => ['label' => __('In Transit'),      'badge' => 'badge-info',    'count' => $statusCounts['picked_up'] ?? 0],
                 'delivered'       => ['label' => __('Delivered'),       'badge' => 'badge-success', 'count' => $statusCounts['delivered'] ?? 0],
-                'returned_failed' => ['label' => __('Returned/Failed'), 'badge' => 'badge-danger',  'count' => ($statusCounts['returned'] ?? 0) + ($statusCounts['rejected'] ?? 0)],
+                'returned_failed' => ['label' => __('Returned/Failed'), 'badge' => 'badge-danger',  'count' => $failedCount],
                 'cancelled'       => ['label' => __('Cancelled'),       'badge' => 'badge-neutral', 'count' => $statusCounts['cancelled'] ?? 0],
             ];
         @endphp
@@ -561,6 +567,8 @@
                         'picked_up' => 'badge-info',
                         'delivered' => 'badge-active',
                         'rejected'  => 'badge-suspended',
+                        'in_office' => 'badge-pending',
+                        'out_for_return' => 'badge-info',
                         'returned'  => 'badge-no',
                         'cancelled' => 'badge-suspended',
                     ];

@@ -331,6 +331,9 @@
             <div>
                 <div style="font-size: .72rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: .06em;">{{ __('Returned/Failed') }}</div>
                 <div style="font-size: 1.35rem; font-weight: 800; color: var(--text); margin-top: 2px;">{{ $stats['returned'] ?? 0 }}</div>
+                @if(($stats['awaiting_return_confirmation'] ?? 0) > 0)
+                    <div style="font-size: .72rem; font-weight: 700; color: #fbbf24; margin-top: 3px;">{{ __(':count awaiting your confirmation →', ['count' => number_format($stats['awaiting_return_confirmation'])]) }}</div>
+                @endif
             </div>
         </div>
     </a>

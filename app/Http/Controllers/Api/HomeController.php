@@ -77,10 +77,9 @@ class HomeController extends Controller
             ->latest('delivered_at')
             ->get()
             ->map(function (Order $order) {
-                $orderAmount = (float) ($order->payment->order_amount ?? 0);
-                $deliveryAmount = $order->payment->delivery_on_customer
-                    ? (float) ($order->payment->customer_delivery_amount ?? 0)
-                    : 0.0;
+                // A rejected order only holds the delivery fee the customer paid, never the COD amount
+                $orderAmount = $order->status === 'delivered' ? (float) ($order->payment->order_amount ?? 0) : 0.0;
+                $deliveryAmount = $order->driverCashAmount() - $orderAmount;
 
                 return [
                     'id' => $order->id,
@@ -96,7 +95,7 @@ class HomeController extends Controller
 
         $isCheckedIn = $attendance && $attendance->check_in_at && !$attendance->check_out_at;
 
-        $ordersQuery = Order::with(['receiver.city', 'receiver.area', 'payment', 'rejectionReason'])
+        $ordersQuery = Order::with(['receiver.city', 'receiver.area', 'payment', 'rejectionReason', 'clientProfile'])
             ->where('driver_profile_id', $driverProfileId)
             ->whereIn('status', ['picked_up', 'assigned'])
             ->latest();
@@ -104,6 +103,13 @@ class HomeController extends Controller
         $checkInAlert = null;
 
         $orders = $ordersQuery->get();
+
+        // Orders at the office assigned to this driver to take back to the client
+        $returnOrders = Order::with(['receiver.city', 'receiver.area', 'payment', 'rejectionReason', 'clientProfile'])
+            ->where('return_driver_profile_id', $driverProfileId)
+            ->where('status', 'out_for_return')
+            ->latest()
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -127,12 +133,14 @@ class HomeController extends Controller
                     'completed_orders' => $completedOrders,
                     'rejected_orders' => $rejectedOrders,
                     'assigned_orders' => $assignedOrders,
+                    'return_orders' => $returnOrders->count(),
                     'cash_collected' => [
                         'total' => (float) $cashOrders->sum('collected_amount'),
                         'orders' => $cashOrders->values(),
                     ],
                 ],
                 'orders' => OrderResource::collection($orders),
+                'return_orders' => OrderResource::collection($returnOrders),
             ],
         ]);
     }
@@ -158,7 +166,8 @@ class HomeController extends Controller
                 SUM(CASE WHEN status IN ('assigned', 'picked_up') THEN 1 ELSE 0 END) as in_transit,
                 SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered,
                 SUM(CASE WHEN status = 'returned'  THEN 1 ELSE 0 END) as returned,
-                SUM(CASE WHEN status = 'rejected'  THEN 1 ELSE 0 END) as rejected
+                SUM(CASE WHEN status IN ('rejected', 'in_office', 'out_for_return') THEN 1 ELSE 0 END) as rejected,
+                SUM(CASE WHEN status = 'returned' AND return_confirmed_at IS NULL THEN 1 ELSE 0 END) as awaiting_return_confirmation
             ")
             ->first();
 
@@ -189,6 +198,7 @@ class HomeController extends Controller
                     'delivered' => (int) $summary->delivered,
                     'returned' => (int) $summary->returned,
                     'rejected' => (int) $summary->rejected,
+                    'awaiting_return_confirmation' => (int) $summary->awaiting_return_confirmation,
                 ],
                 'dashboard' => [
                     'pending_cash' => $cash['pending_cash'],

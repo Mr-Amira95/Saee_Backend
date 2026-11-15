@@ -29,7 +29,7 @@ class ReportController extends Controller
             'delivered'         => $query->where('orders.status', 'delivered'),
             'in_transit'        => $query->where('orders.status', 'picked_up'),
             'pending'           => $query->where('orders.status', 'pending'),
-            'rejected_returned' => $query->whereIn('orders.status', ['rejected', 'returned']),
+            'rejected_returned' => $query->whereIn('orders.status', ['rejected', 'in_office', 'out_for_return', 'returned']),
             default             => null,
         };
     }
@@ -113,9 +113,9 @@ class ReportController extends Controller
         abort_unless(auth()->user()->hasAdminAction('reports.kpi_insights'), 403);
 
         $totalOrders     = Order::count();
-        $completedOrders = Order::whereIn('status', ['delivered', 'rejected', 'returned'])->count();
+        $completedOrders = Order::whereIn('status', ['delivered', 'rejected', 'in_office', 'out_for_return', 'returned'])->count();
 
-        $failedCount    = Order::whereIn('status', ['rejected', 'returned'])->count();
+        $failedCount    = Order::whereIn('status', ['rejected', 'in_office', 'out_for_return', 'returned'])->count();
         $deliveredCount = Order::where('status', 'delivered')->count();
         $returnRate     = $completedOrders > 0 ? round(($failedCount    / $completedOrders) * 100, 1) : 0.0;
         $successRate    = $completedOrders > 0 ? round(($deliveredCount / $completedOrders) * 100, 1) : 100.0;
@@ -141,7 +141,7 @@ class ReportController extends Controller
                     ->toArray();
 
                 $delivered   = $statusCounts['delivered'] ?? 0;
-                $failed      = ($statusCounts['rejected'] ?? 0) + ($statusCounts['returned'] ?? 0);
+                $failed      = collect(['rejected', 'in_office', 'out_for_return', 'returned'])->sum(fn ($status) => $statusCounts[$status] ?? 0);
                 $completed   = $delivered + $failed;
                 $successRate = $completed > 0 ? round(($delivered / $completed) * 100, 1) : 100.0;
 
@@ -181,7 +181,7 @@ class ReportController extends Controller
             ->toArray();
 
         $delivered   = $statusCounts['delivered']                                     ?? 0;
-        $failed      = ($statusCounts['rejected'] ?? 0) + ($statusCounts['returned'] ?? 0);
+        $failed      = collect(['rejected', 'in_office', 'out_for_return', 'returned'])->sum(fn ($status) => $statusCounts[$status] ?? 0);
         $inTransit   = ($statusCounts['picked_up'] ?? 0) + ($statusCounts['pending'] ?? 0);
         $totalOrders = array_sum($statusCounts);
         $completed   = $delivered + $failed;

@@ -37,7 +37,8 @@ class ClientDashboardService
                 ->where('status', 'delivered')
                 ->whereBetween('delivered_at', [now()->startOfDay(), now()->endOfDay()])
                 ->count(),
-            'returned' => Order::where('client_profile_id', $clientProfileId)->whereIn('status', ['returned', 'rejected'])->count(),
+            'returned' => Order::where('client_profile_id', $clientProfileId)->whereIn('status', [...Order::RETURN_FLOW_STATUSES, 'returned'])->count(),
+            'awaiting_return_confirmation' => Order::where('client_profile_id', $clientProfileId)->awaitingReturnConfirmation()->count(),
         ];
 
         // 7-day orders trend (oldest -> newest, including today, zero-filled)
